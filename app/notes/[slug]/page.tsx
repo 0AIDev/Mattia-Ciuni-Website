@@ -45,12 +45,13 @@ export async function generateMetadata({
       publishedTime: note.date,
       authors: ["Mattia Ciuni"],
       tags: note.keywords.slice(0, 3),
+      images: [`/notes/${note.slug}/og.png`],
     },
     twitter: {
       card: "summary_large_image",
       title: note.title,
       description: note.description,
-      images: ["/og.png"],
+      images: [`/notes/${note.slug}/og.png`],
     },
   };
 }
@@ -100,6 +101,7 @@ export default async function Note({
     author: { "@type": "Person", name: "Mattia Ciuni", url: site.url },
     publisher: { "@type": "Person", name: "Mattia Ciuni", url: site.url },
     mainEntityOfPage: { "@type": "WebPage", "@id": url },
+    image: `${base}/notes/${note.slug}/og.png`,
     keywords: note.keywords.join(", "),
     inLanguage: "en",
   };

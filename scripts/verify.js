@@ -111,6 +111,26 @@ check("card notes index: 3 notes", (notesCard.match(/^\- \[.*\]\(notes\/[a-z0-9-
 check("page: For AI link on home", index.includes("For AI:") && index.includes('href="/index.md"'));
 check("page: For AI link on post", post.includes("For AI:") && post.includes('href="/thoughts/money-layer-for-ai-agents.md"'));
 
+// OG images: ogni pagina che ne dichiara una deve averla davvero, nel suo formato
+// 1200x630 (le card le scrive scripts/og.ps1: qui si controlla solo che esistano).
+check(
+  "og: card files exist (home, indexes, post, note)",
+  fs.existsSync(path.join(out, "og.png")) &&
+    fs.existsSync(path.join(out, "thoughts", "og.png")) &&
+    fs.existsSync(path.join(out, "notes", "og.png")) &&
+    fs.existsSync(path.join(out, "thoughts", "money-layer-for-ai-agents", "og.png")) &&
+    fs.existsSync(path.join(out, "notes", "on-boring-systems", "og.png"))
+);
+check(
+  "og: each section declares its own card",
+  blog.includes(`og:image" content="${PROD}/thoughts/og.png"`) &&
+    read("notes.html").includes(`og:image" content="${PROD}/notes/og.png"`)
+);
+check(
+  "note: own og image declared",
+  note.includes(`og:image" content="${PROD}/notes/on-boring-systems/og.png"`)
+);
+
 // Favicon e logo nuovo
 check("index: favicon icon.png", index.includes('rel="icon"') && index.includes("icon.png") && !index.includes("icon.svg"));
 check(

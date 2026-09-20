@@ -1,21 +1,44 @@
 # Genera le OG images PNG statiche (1200x630) in public/.
-# Esegui con: powershell -NoProfile -ExecutionPolicy Bypass -File scripts/og.ps1
-# Opzioni: -Domain "https://iltuodominio.com" (default: mattaciuni.xyz)
-#           -HomeOnly -> rigenera SOLO la OG della homepage (dal master og.png in root)
-# I titoli dei post vengono letti da lib/posts.ts (slug + title) -> zero duplicazioni.
-# Rifai girare lo script ogni volta che aggiungi/cambi un post.
+#
+#   powershell -NoProfile -ExecutionPolicy Bypass -File scripts/og.ps1
+#   powershell ... -File scripts/og.ps1 -HomeOnly          # solo la OG della homepage
+#   powershell ... -File scripts/og.ps1 -Only <slug>       # solo un articolo / una nota
+#   powershell ... -File scripts/og.ps1 -Only <slug> -Preview   # scrive in out/_tmp/og (per approvare)
+#   powershell ... -File scripts/og.ps1 -Subtitle meta     # sottotitolo = etichetta + punto medio + data
+#
+# NB: le pagine indice (/thoughts/, /notes/) hanno le loro immagini, non passano di qui.
+#
+# Tre mestieri, tre sorgenti:
+#   1. homepage  <- `og.png` (master disegnato a mano in root), ridotto a 1200x630;
+#   2. articoli  <- `og-sfondo.png` (sfondo, da sfondo.svg: vedi scripts/gen-og-bg.mjs)
+#                   + titolo in Instrument Serif Regular + sottotitolo in Inter Light,
+#                   entrambi centrati sotto il logo (font in scripts/fonts/);
+#
+# I titoli, le descrizioni e le date vengono letti da lib/posts.ts e lib/notes.ts:
+# zero duplicazioni. Rilanciare lo script quando cambia un articolo o cambia il dominio.
 
 param(
   [string]$Domain = "mattiaciuni.xyz",
-  [switch]$HomeOnly
+  [switch]$HomeOnly,
+  [ValidateSet("description", "meta")]
+  [string]$Subtitle = "meta",
+  [string]$Only = "",
+  [switch]$Preview
 )
 
 Add-Type -AssemblyName System.Drawing
 
-$Bg     = [System.Drawing.Color]::FromArgb(252, 252, 252)
-$Ink    = [System.Drawing.Color]::FromArgb(22, 22, 22)
-$Ink60  = [System.Drawing.Color]::FromArgb(60, 60, 60)
-$Ink40  = [System.Drawing.Color]::FromArgb(160, 160, 160)
+$Root     = Split-Path $PSScriptRoot -Parent
+# Il punto medio si compone dal codepoint e non si scrive nel file: PowerShell 5.1
+# legge i .ps1 senza BOM come ANSI, quindi un carattere non-ASCII scritto qui
+# arriverebbe sdoppiato nel testo disegnato ("Notes A· 12 September 2026" invece
+# di "Notes · 12 September 2026").
+$Dot      = [char]0x00B7
+$Bg       = [System.Drawing.Color]::FromArgb(252, 252, 252)
+$Ink      = [System.Drawing.Color]::FromArgb(22, 22, 22)     # gray-1200 #161616
+$Ink60    = [System.Drawing.Color]::FromArgb(60, 60, 60)     # gray-1100 #3C3C3C
+$Ink40    = [System.Drawing.Color]::FromArgb(104, 104, 104)  # gray-1000 #686868
+$OutRoot  = if ($Preview) { Join-Path $Root ("out\_tmp\og\" + $Subtitle) } else { Join-Path $Root "public" }
 
 function New-OgCanvas {
   $bmp = New-Object System.Drawing.Bitmap(1200, 630)
@@ -48,13 +71,33 @@ function Save-Og($bmp, $g, $path) {
   Write-Output "wrote $path"
 }
 
-# --- 1. Homepage OG: public/og.png ---
+# ---------------------------------------------------------------- font del sito
+# Instrument Serif (titoli) e Inter Light (sottotitoli) dai file in scripts/fonts/:
+# PrivateFontCollection li usa da disco, senza installarli nel sistema.
+$fonts = New-Object System.Drawing.Text.PrivateFontCollection
+foreach ($ttf in @("InstrumentSerif-Regular.ttf", "Inter-Light.ttf")) {
+  $path = Join-Path $Root "scripts\fonts\$ttf"
+  if (!(Test-Path $path)) { Write-Error "font mancante: $path"; exit 1 }
+  $fonts.AddFontFile($path)
+}
+# Attenzione al nome: "Instrument Serif" contiene "Inter", quindi un filtro
+# largo sul secondo matcherebbe il primo e il sottotitolo uscirebbe in serif.
+$serifFamily = $fonts.Families | Where-Object { $_.Name -like "Instrument*" } | Select-Object -First 1
+$sansFamily  = $fonts.Families | Where-Object { $_.Name -like "Inter*" -and $_.Name -notlike "Instrument*" } | Select-Object -First 1
+if (!$serifFamily -or !$sansFamily) {
+  Write-Error ("font non riconosciuti: " + (($fonts.Families | ForEach-Object { $_.Name }) -join ", "))
+  exit 1
+}
+Write-Output ("font: titolo in " + $serifFamily.Name + ", sottotitolo in " + $sansFamily.Name)
+
+# ------------------------------------------------------------ 1. OG della home
 # Il disegno e' un master a mano (og.png in root, come Vector.svg e mattia.png):
 # qui si porta a 1200x630 e si ricodifica, senza disegnare niente. Il master e'
 # 1920x1008, cioe' lo stesso rapporto di 1200x630, quindi la riduzione e' esatta.
-$master = "og.png"
-if (Test-Path $master) {
-  $srcImg = [System.Drawing.Image]::FromFile((Resolve-Path $master).Path)
+function Copy-MasterCard($masterFile, $outPath) {
+  $master = Join-Path $Root $masterFile
+  if (!(Test-Path $master)) { Write-Output "master assente: $masterFile (salto)"; return }
+  $srcImg = [System.Drawing.Image]::FromFile($master)
   $bmp = New-Object System.Drawing.Bitmap(1200, 630, [System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
   $g = [System.Drawing.Graphics]::FromImage($bmp)
   $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
@@ -64,8 +107,11 @@ if (Test-Path $master) {
   $g.Clear($Bg)
   $g.DrawImage($srcImg, 0, 0, 1200, 630)
   $srcImg.Dispose()
-  Save-Og $bmp $g "public/og.png"
-} else {
+  Save-Og $bmp $g $outPath
+}
+
+function New-HomeCard($outPath) {
+  if (Test-Path (Join-Path $Root "og.png")) { Copy-MasterCard "og.png" $outPath; return }
   Write-Output "og.png (master) assente: disegno la OG della homepage con il testo"
   $pair = New-OgCanvas; $bmp = $pair[0]; $g = $pair[1]
   $titleFont = New-Object System.Drawing.Font("Segoe UI Semibold", 96, [System.Drawing.FontStyle]::Bold)
@@ -74,31 +120,108 @@ if (Test-Path $master) {
   $g.DrawString("Mattia Ciuni", $titleFont, [System.Drawing.SolidBrush]::new($Ink), 76, 180)
   $g.DrawString("Founder & CEO @ Payle", $subFont, [System.Drawing.SolidBrush]::new($Ink60), 80, 330)
   $g.DrawString("usepayle.com", $smallFont, [System.Drawing.SolidBrush]::new($Ink40), 80, 440)
-  Save-Og $bmp $g "public/og.png"
+  Save-Og $bmp $g $outPath
 }
 
-if ($HomeOnly) {
-  Write-Output "solo homepage: fatto"
-  exit 0
-}
+# ------------------------------------------------- 2. OG di un articolo / una nota
+# Sfondo (og-sfondo.png, che ha gia' il logo in alto al centro) + titolo centrato
+# in Instrument Serif + sottotitolo in Inter Light, subito sotto. Il blocco dei due
+# testi e' centrato verticalmente nella fascia sotto il logo, cosi' un titolo corto
+# e uno lungo occupano lo stesso posto.
+function New-ArticleCard($bgPath, $title, $subText, $outPath) {
+  $bgImg = [System.Drawing.Image]::FromFile($bgPath)
+  $bmp = New-Object System.Drawing.Bitmap(1200, 630, [System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
+  $g = [System.Drawing.Graphics]::FromImage($bmp)
+  $g.InterpolationMode  = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+  $g.PixelOffsetMode    = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
+  $g.CompositingQuality = [System.Drawing.Drawing2D.CompositingQuality]::HighQuality
+  $g.SmoothingMode      = [System.Drawing.Drawing2D.SmoothingMode]::AntiAlias
+  $g.TextRenderingHint  = [System.Drawing.Text.TextRenderingHint]::AntiAliasGridFit
+  $g.DrawImage($bgImg, 0, 0, 1200, 630)
+  $bgImg.Dispose()
 
-# --- 2. Thoughts OG: public/thoughts/<slug>/og.png ---
-$src = Get-Content "lib/posts.ts" -Raw
-$slugs = [regex]::Matches($src, 'slug:\s*"([^"]+)"') | ForEach-Object { $_.Groups[1].Value }
-$titles = [regex]::Matches($src, 'title:\s*"([^"]+)"') | ForEach-Object { $_.Groups[1].Value }
+  $titleFont = New-Object System.Drawing.Font($serifFamily, [float]72, [System.Drawing.FontStyle]::Regular, [System.Drawing.GraphicsUnit]::Pixel)
+  $subFont   = New-Object System.Drawing.Font($sansFamily,  [float]27, [System.Drawing.FontStyle]::Regular, [System.Drawing.GraphicsUnit]::Pixel)
+  $titleBrush = New-Object System.Drawing.SolidBrush($Ink)
+  $subBrush   = New-Object System.Drawing.SolidBrush($Ink40)
 
-for ($i = 0; $i -lt $slugs.Count; $i++) {
-  $pair = New-OgCanvas; $bmp = $pair[0]; $g = $pair[1]
-  $eyeFont   = New-Object System.Drawing.Font("Segoe UI", 30)
-  $postFont  = New-Object System.Drawing.Font("Segoe UI Semibold", 68, [System.Drawing.FontStyle]::Bold)
-  $footFont  = New-Object System.Drawing.Font("Segoe UI", 30)
-  $g.DrawString("$Domain - thoughts", $eyeFont, [System.Drawing.SolidBrush]::new($Ink40), 78, 90)
-  $lines = Get-WrappedLines $g $titles[$i] $postFont 1040
-  $y = 160
-  foreach ($ln in $lines) {
-    $g.DrawString($ln, $postFont, [System.Drawing.SolidBrush]::new($Ink), 76, $y)
-    $y += 88
+  $fmt = New-Object System.Drawing.StringFormat
+  $fmt.Alignment = [System.Drawing.StringAlignment]::Center
+  $fmt.LineAlignment = [System.Drawing.StringAlignment]::Near
+  $fmt.Trimming = [System.Drawing.StringTrimming]::None
+
+  $titleW = 960; $titleX = 120
+  $subW   = 820; $subX   = 190
+  $gap    = 26
+  $zoneTop = 230; $zoneBottom = 604
+
+  $bigBox = New-Object System.Drawing.SizeF($titleW, 4000)
+  $titleSize = $g.MeasureString($title, $titleFont, $bigBox, $fmt)
+  $subSize = if ($subText) { $g.MeasureString($subText, $subFont, (New-Object System.Drawing.SizeF($subW, 4000)), $fmt) } else { New-Object System.Drawing.SizeF(0, 0) }
+
+  $blockH = $titleSize.Height + $(if ($subText) { $gap + $subSize.Height } else { 0 })
+  $y = [Math]::Max($zoneTop, $zoneTop + (($zoneBottom - $zoneTop) - $blockH) / 2)
+
+  $titleH = $titleSize.Height + 8
+  $titleRect = New-Object System.Drawing.RectangleF($titleX, $y, $titleW, $titleH)
+  $g.DrawString($title, $titleFont, $titleBrush, $titleRect, $fmt)
+  if ($subText) {
+    $subY = $y + $titleSize.Height + $gap
+    $subH = $subSize.Height + 8
+    $subRect = New-Object System.Drawing.RectangleF($subX, $subY, $subW, $subH)
+    $g.DrawString($subText, $subFont, $subBrush, $subRect, $fmt)
   }
-  $g.DrawString("Mattia Ciuni - Founder & CEO @ Payle", $footFont, [System.Drawing.SolidBrush]::new($Ink60), 80, 500)
-  Save-Og $bmp $g ("public/thoughts/" + $slugs[$i] + "/og.png")
+  Save-Og $bmp $g $outPath
+}
+
+function Get-Articles($fileName, $label) {
+  # -Encoding UTF8: i registri sono UTF-8 senza BOM (senza, un titolo accentato
+  # arriverebbe al disegno sdoppiato dal default ANSI di PowerShell 5.1).
+  $src = Get-Content (Join-Path $Root $fileName) -Raw -Encoding UTF8
+  $re = [regex]'(?s)slug:\s*"([^"]+)".*?title:\s*"([^"]+)".*?description:\s*"((?:[^"\\]|\\.)*)".*?date:\s*"([^"]+)"'
+  return $re.Matches($src) | ForEach-Object {
+    [pscustomobject]@{
+      Kind        = $label
+      Slug        = $_.Groups[1].Value
+      Title       = $_.Groups[2].Value
+      Description = $_.Groups[3].Value
+      Date        = $_.Groups[4].Value
+      Meta        = $label + " " + $Dot + " " + ([datetime]::ParseExact($_.Groups[4].Value, "yyyy-MM-dd", $null).ToString("d MMMM yyyy", [System.Globalization.CultureInfo]::InvariantCulture))
+    }
+  }
+}
+
+# ---------------------------------------------------------------- esecuzione
+if (!$Only -or $HomeOnly) { New-HomeCard (Join-Path $OutRoot "og.png") }
+if ($Preview -and !$Only) { Write-Output "-Preview: la homepage si rigenera solo con -HomeOnly" }
+if ($HomeOnly) { Write-Output "solo homepage: fatto"; exit 0 }
+
+$bgCard = Join-Path $Root "og-sfondo.png"
+if (!(Test-Path $bgCard)) {
+  Write-Error 'og-sfondo.png assente: lancialo prima con  node scripts/gen-og-bg.mjs'
+  exit 1
+}
+if ((Get-Item (Join-Path $Root "sfondo.svg")).LastWriteTime -gt (Get-Item $bgCard).LastWriteTime) {
+  Write-Output 'ATTENZIONE: sfondo.svg e'' piu'' recente di og-sfondo.png: rilancia  node scripts/gen-og-bg.mjs'
+}
+
+$articles = @()
+$articles += Get-Articles "lib/posts.ts" "Thoughts"
+$articles += Get-Articles "lib/notes.ts" "Notes"
+if ($Only) { $articles = $articles | Where-Object { $_.Slug -eq $Only } }
+if (!$articles) { Write-Error "nessun articolo trovato con slug '$Only'"; exit 1 }
+
+foreach ($a in $articles) {
+  $dir = if ($a.Kind -eq "Thoughts") { "thoughts" } else { "notes" }
+  $subText = if ($Subtitle -eq "meta") { $a.Meta } else { $a.Description }
+  $out = Join-Path $OutRoot ($dir + "\" + $a.Slug + "\og.png")
+  New-ArticleCard $bgCard $a.Title $subText $out
+}
+
+# --- OG delle pagine indice (/thoughts/ e /notes/) -----
+# Anche queste sono master disegnati a mano (thoughts-og.png, notesog.png),
+# come la homepage: qui si portano soltanto a 1200x630.
+if (!$Only -and !$Preview) {
+  Copy-MasterCard "thoughts-og.png" (Join-Path $OutRoot "thoughts\og.png")
+  Copy-MasterCard "notesog.png"    (Join-Path $OutRoot "notes\og.png")
 }

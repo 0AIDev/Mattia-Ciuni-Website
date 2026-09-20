@@ -62,7 +62,8 @@ sitemap è la riga che fa smettere Chrome di disegnarlo come albero dei tag).
 | `out/manifest.webmanifest` | `app/manifest.ts` | |
 | la `<head>` di ogni pagina | `generateMetadata` nella pagina, dai campi del registro | titolo, description, canonical, OG, JSON-LD, annuncio della card |
 | `public/_headers`, `public/_redirects` | **a mano** | le regole di Cloudflare Pages (header di sicurezza, riscritture): riguardano il dominio, non la pagina, e sono l'unica cosa qui che nessuno rigenera |
-| `public/og.png`, `public/thoughts/<slug>/og.png` | `scripts/og.ps1` | una volta, e quando cambia il dominio |
+| `public/og.png`, `public/thoughts/og.png`, `public/notes/og.png` | `scripts/og.ps1` | i master disegnati in root (`og.png`, `thoughts-og.png`, `notesog.png`) ridotti a 1200×630 |
+| `public/thoughts/<slug>/og.png`, `public/notes/<slug>/og.png` | `scripts/og.ps1` | articoli e note dal template: `og-sfondo.png` + Instrument Serif + Inter Light (font in `scripts/fonts/`) |
 | `public/logo.svg` | `scripts/gen-logo.mjs` | dal `Vector.svg` in root |
 | le card in `public/` (sviluppo) | `scripts/gen-cards.mjs` (`predev`) | la stessa card che finisce in `out/`, servita da `next dev` |
 

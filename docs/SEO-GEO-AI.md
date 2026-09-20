@@ -82,7 +82,8 @@ voce in lib/posts.ts ──►  rotta /thoughts/<slug>/
 | `out/manifest.webmanifest` | `app/manifest.ts` |
 | la `<head>` di ogni pagina | `generateMetadata` nella pagina, dai campi del registro |
 | `public/_headers`, `public/_redirects` | **a mano**: riguardano il dominio, non la pagina |
-| `public/og.png`, `public/thoughts/<slug>/og.png` | `scripts/og.ps1` (una volta, quando cambia il dominio) |
+| `public/og.png`, `public/thoughts/og.png`, `public/notes/og.png` | `scripts/og.ps1` | i tre master disegnati a mano in root (`og.png`, `thoughts-og.png`, `notesog.png`), solo ridotti a 1200×630 |
+| `public/thoughts/<slug>/og.png`, `public/notes/<slug>/og.png` | `scripts/og.ps1` | dal template: `og-sfondo.png` (da `sfondo.svg`) + Instrument Serif + Inter Light |
 | `public/logo.svg` | `scripts/gen-logo.mjs` (dal `Vector.svg` in root) |
 | `app/icon.png` | a mano (è il logo raster) |
 

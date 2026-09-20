@@ -159,6 +159,18 @@ Se una pagina ha un peso che sale o un controllo che cade, la risposta non è
 allentare il controllo: è capire cosa è cambiato. `verify.js` cresce di una riga
 solo per una regola che **ha già morso** almeno una volta.
 
+**E la card social.** Ogni articolo e ogni nota ha la sua immagine 1200×630, e la
+compone `scripts/og.ps1` dalla voce che hai appena scritto: sfondo, titolo in
+Instrument Serif, riga di contesto (`Thoughts · 20 September 2026`) in Inter
+Light, letti da `lib/posts.ts` / `lib/notes.ts`. Per rilanciarla solo su questo
+articolo, e vedere il risultato prima di scriverlo in `public/`:
+
+```bash
+node scripts/gen-og-bg.mjs                                        # solo se cambia sfondo.svg
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/og.ps1 -Only <slug> -Preview
+powershell -NoProfile -ExecutionPolicy Bypass -File scripts/og.ps1 -Only <slug>
+```
+
 ## 7 · La lista, in breve
 
 1. Voce in `lib/posts.ts` (o `lib/notes.ts`): slug, titolo-affermazione,

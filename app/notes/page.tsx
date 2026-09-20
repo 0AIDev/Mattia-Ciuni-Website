@@ -18,13 +18,14 @@ export const metadata: Metadata = {
     title: "Notes · Mattia Ciuni",
     description:
       "Long-form notes on AI agents, payments and the philosophy of building software.",
+    images: ["/notes/og.png"],
   },
   twitter: {
     card: "summary_large_image",
     title: "Notes · Mattia Ciuni",
     description:
       "Long-form notes on AI agents, payments and the philosophy of building software.",
-    images: ["/og.png"],
+    images: ["/notes/og.png"],
   },
 };
 

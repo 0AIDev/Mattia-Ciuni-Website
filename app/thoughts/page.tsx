@@ -19,13 +19,14 @@ export const metadata: Metadata = {
     title: "Thoughts · Mattia Ciuni",
     description:
       "Thoughts by Mattia Ciuni on AI agents, payments and building Payle.",
+    images: ["/thoughts/og.png"],
   },
   twitter: {
     card: "summary_large_image",
     title: "Thoughts · Mattia Ciuni",
     description:
       "Thoughts by Mattia Ciuni on AI agents, payments and building Payle.",
-    images: ["/og.png"],
+    images: ["/thoughts/og.png"],
   },
 };
 
