@@ -1,0 +1,2 @@
+# www -> apex redirect. Aggiorna il dominio quando lo scegli (devono matchare lib/site.ts).
+https://www.mattiaciuni.xyz/* https://mattiaciuni.xyz/:splat 301
