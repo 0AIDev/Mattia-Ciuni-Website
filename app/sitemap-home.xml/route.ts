@@ -1,5 +1,7 @@
 import { site } from "@/lib/site";
-import { urlsetXml } from "@/lib/sitemap";
+import { latestOf, urlsetXml } from "@/lib/sitemap";
+import { posts } from "@/lib/posts";
+import { notes } from "@/lib/notes";
 
 export const dynamic = "force-static";
 
@@ -8,7 +10,11 @@ export async function GET() {
   const xml = urlsetXml([
     {
       loc: `${base}/`,
-      lastmod: "2026-09-20",
+      // La home cambia quando cambia quello che elenca (Thoughts + Notes).
+      lastmod: latestOf([
+        ...posts.map((p) => p.updated ?? p.date),
+        ...notes.map((n) => n.date),
+      ]),
       changeFrequency: "monthly",
       priority: "1.0",
     },

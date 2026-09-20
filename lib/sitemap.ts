@@ -5,6 +5,23 @@ export interface SitemapUrl {
   priority: string;
 }
 
+// Fallback per un sito senza contenuti (in pratica mai):
+// una data troppo vecchia fa riscansire la pagina, troppo nuova è una bugia.
+const LAUNCH = "2026-09-20";
+
+/**
+ * Le pagine indice non hanno una data propria: cambiano quando cambiano i loro
+ * contenuti, quindi la loro `lastmod` è la più recente fra quelle reali (date
+ * degli articoli, `updated` quando c'è). Un sitemap che a ogni deploy dichiara
+ * cambiate tutte le pagine è il caso in cui Google smette di credergli.
+ */
+export function latestOf(dates: Array<string | undefined>): string {
+  const valid = dates
+    .filter((date): date is string => !!date && /^\d{4}-\d{2}-\d{2}$/.test(date))
+    .sort();
+  return valid.length ? valid[valid.length - 1] : LAUNCH;
+}
+
 function esc(s: string) {
   return s
     .replace(/&/g, "&amp;")

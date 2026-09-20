@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight } from "@/components/icons";
 import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
-import { ArrowUpRightIcon } from "@/components/ui/arrow-up-right";
 import { site } from "@/lib/site";
 import { posts } from "@/lib/posts";
 
@@ -10,7 +9,10 @@ export const metadata: Metadata = {
   title: "Thoughts",
   description:
     "Thoughts by Mattia Ciuni on AI agents, payments and building Payle: the money layer for the agentic economy.",
-  alternates: { canonical: "/thoughts/" },
+  alternates: {
+    canonical: "/thoughts/",
+    types: { "text/markdown": "/thoughts.md" },
+  },
   openGraph: {
     type: "website",
     url: "/thoughts/",
@@ -85,11 +87,18 @@ export default function BlogIndex() {
         ))}
       </ul>
 
-      <footer className="mt-16 border-t border-gray-300 pt-8 sm:mt-24">
-        <a href="/feed.xml" className="flex w-fit items-center gap-1.5 text-gray-1000">
-          Feed <ArrowUpRightIcon size={15} className="inline-flex shrink-0" />
-        </a>
-      </footer>
+      <nav aria-label="Notes" className="mt-16 border-t border-gray-300">
+        <Link
+          href="/notes/"
+          className="group flex items-baseline justify-between gap-4 py-3.5"
+        >
+          <span className="text-gray-1000">Longer, slower pieces</span>
+          <span className="flex items-center gap-2 font-medium">
+            Notes
+            <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </span>
+        </Link>
+      </nav>
     </main>
   );
 }

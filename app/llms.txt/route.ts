@@ -28,6 +28,9 @@ ${thoughtLinks}
 - [Notes](${base}/notes/): longer, slower pieces on the philosophy of building software.
 ${noteLinks}
 
+## Cards
+Every page has a concise machine-readable card in markdown at the same path with .md: [home](${base}/index.md), [thoughts](${base}/thoughts.md), [notes](${base}/notes.md), e.g. [this post](${base}/thoughts/money-layer-for-ai-agents.md).
+
 ## Contact
 - [Email](mailto:${site.email})
 - [Payle](${site.payleUrl}): the money layer for AI agents.

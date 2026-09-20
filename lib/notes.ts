@@ -44,7 +44,7 @@ const raw: Note[] = [
       },
       {
         type: "p",
-        text: "At Payle every spend call carries an idempotency key, and the authorization engine answers the same key with the same result. Agents become free to fail honestly, and fail on purpose.",
+        text: "At Payle every spend call carries an idempotency key, and the authorization engine answers the same key with the same result. Agents become free to fail honestly, and fail on purpose. It is one of the things [the money layer for AI agents](/thoughts/money-layer-for-ai-agents/) has to get right, together with [wallets with rules](/notes/the-agentic-economy-is-a-trust-problem/).",
       },
     ],
   },
@@ -80,7 +80,7 @@ const raw: Note[] = [
       },
       {
         type: "p",
-        text: "This is why I think the agentic economy will be won by whoever builds the trust layer first, not by whoever ships the most convincing agent. Technology amplifies; trust permits. Without permission, even perfect technology stays idle.",
+        text: "This is why I think the agentic economy will be won by whoever builds the trust layer first, not by whoever ships the most convincing agent. Technology amplifies; trust permits. Without permission, even perfect technology stays idle. The concrete version of this is [the money layer for AI agents](/thoughts/money-layer-for-ai-agents/), and the discipline behind it is [on boring systems](/notes/on-boring-systems/).",
       },
     ],
   },
@@ -112,7 +112,7 @@ const raw: Note[] = [
       },
       {
         type: "p",
-        text: "Monotonicity is the discipline I keep returning to: change that only makes things better, never differently. Better latency, better errors, better receipts. If you cannot replay a week of transactions and observe exactly the same decisions, you do not have a system; you have a performance.",
+        text: "Monotonicity is the discipline I keep returning to: change that only makes things better, never differently. Better latency, better errors, better receipts. If you cannot replay a week of transactions and observe exactly the same decisions, you do not have a system; you have a performance. Retries are the classic test: [idempotency](/notes/idempotent-payments-for-ai-agents/) is what makes a repeat safe instead of a duplicate.",
       },
       {
         type: "p",

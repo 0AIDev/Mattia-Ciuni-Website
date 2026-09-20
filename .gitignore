@@ -4,3 +4,11 @@ out/
 .vercel/
 .env
 .env*.local
+# card For AI (artefatti generati in postbuild: out/ e public/)
+public/index.md
+public/thoughts.md
+public/notes.md
+public/thoughts/*.md
+public/notes/*.md
+# artefatti di build (tsc --noEmit / next dev)
+*.tsbuildinfo

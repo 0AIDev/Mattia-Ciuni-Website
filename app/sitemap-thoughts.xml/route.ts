@@ -1,6 +1,6 @@
 import { site } from "@/lib/site";
 import { posts } from "@/lib/posts";
-import { urlsetXml } from "@/lib/sitemap";
+import { latestOf, urlsetXml } from "@/lib/sitemap";
 
 export const dynamic = "force-static";
 
@@ -9,7 +9,8 @@ export async function GET() {
   const urls = [
     {
       loc: `${base}/thoughts/`,
-      lastmod: "2026-09-20",
+      // L'indice cambia quando cambia l'articolo più recente.
+      lastmod: latestOf(posts.map((p) => p.updated ?? p.date)),
       changeFrequency: "weekly",
       priority: "0.8",
     },

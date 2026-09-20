@@ -8,7 +8,10 @@ export const metadata: Metadata = {
   title: "Notes",
   description:
     "Long-form notes by Mattia Ciuni on AI, payments and the philosophy of building software. Written slowly, updated rarely.",
-  alternates: { canonical: "/notes/" },
+  alternates: {
+    canonical: "/notes/",
+    types: { "text/markdown": "/notes.md" },
+  },
   openGraph: {
     type: "website",
     url: "/notes/",
@@ -68,6 +71,19 @@ export default function NotesIndex() {
           </li>
         ))}
       </ul>
+
+      <nav aria-label="Thoughts" className="mt-16 border-t border-gray-300">
+        <Link
+          href="/thoughts/"
+          className="group flex items-baseline justify-between gap-4 py-3.5"
+        >
+          <span className="text-gray-1000">Shorter, faster pieces</span>
+          <span className="flex items-center gap-2 font-medium">
+            Thoughts
+            <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+          </span>
+        </Link>
+      </nav>
     </main>
   );
 }

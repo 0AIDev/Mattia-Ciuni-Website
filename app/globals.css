@@ -84,3 +84,35 @@ html {
     scroll-behavior: auto;
   }
 }
+
+/* Footer: logo riempito con la sfumatura. La mask usa il file SVG, così i
+   ~30KB di path non vengono duplicati nell'HTML di ogni pagina. */
+.site-signature {
+  width: 7rem;
+  height: 7rem;
+  background: linear-gradient(#6f6f6f, #585858 46%, #454545);
+  -webkit-mask: url("/logo.svg") no-repeat center / contain;
+  mask: url("/logo.svg") no-repeat center / contain;
+}
+
+@media (min-width: 640px) {
+  .site-signature {
+    width: 9rem;
+    height: 9rem;
+  }
+}
+
+/* Lenis: smooth scroll globale */
+html.lenis,
+html.lenis body {
+  height: auto;
+}
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+.lenis.lenis-stopped {
+  overflow: hidden;
+}

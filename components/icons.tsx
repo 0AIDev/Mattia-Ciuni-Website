@@ -53,9 +53,22 @@ export function ChainLink({ className = "" }: { className?: string }) {
   );
 }
 
-export function Check({ className = "" }: { className?: string }) {
+export function Check({
+  className = "",
+  size,
+}: {
+  className?: string;
+  size?: number;
+}) {
   return (
-    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" className={className}>
+    <svg
+      viewBox="0 0 16 16"
+      width={size}
+      height={size}
+      fill="none"
+      aria-hidden="true"
+      className={className}
+    >
       <path
         d="m2.5 8.5 3.5 3.5 7.5-8"
         stroke="currentColor"

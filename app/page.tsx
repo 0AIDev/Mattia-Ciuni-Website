@@ -4,18 +4,19 @@ import Link from "next/link";
 import CopyEmail from "@/components/CopyEmail";
 import MilanClock from "@/components/MilanClock";
 import NowSection from "@/components/NowSection";
-import { ChevronRight, Mark } from "@/components/icons";
+import { ChevronRight } from "@/components/icons";
 import { GithubIcon } from "@/components/ui/github";
 import { LinkedinIcon } from "@/components/ui/linkedin";
 import { CrunchbaseIcon } from "@/components/ui/crunchbase";
 import { InstagramIcon } from "@/components/ui/instagram";
 import { TwitterIcon } from "@/components/ui/twitter";
-import { ArrowUpRightIcon } from "@/components/ui/arrow-up-right";
 import { site } from "@/lib/site";
 import { posts } from "@/lib/posts";
 
 export const metadata: Metadata = {
-  alternates: { canonical: "/" },
+  // La card markdown della pagina si annuncia nella <head>, non solo nel piè di
+  // pagina: chi legge la testata (un crawler) non esegue la pagina.
+  alternates: { canonical: "/", types: { "text/markdown": "/index.md" } },
 };
 
 const personJsonLd = {
@@ -224,14 +225,6 @@ export default function Home() {
           ))}
         </ul>
       </section>
-
-      <footer className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-gray-300 pt-8 text-gray-1000">
-        <a href="/feed.xml" className="flex items-center gap-1.5">
-          Feed <ArrowUpRightIcon size={15} className="inline-flex shrink-0" />
-        </a>
-        <Mark className="h-4 w-4" aria-hidden="true" />
-        <span>© 2026 Mattia Ciuni</span>
-      </footer>
     </main>
   );
 }

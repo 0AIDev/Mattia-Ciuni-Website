@@ -3,12 +3,21 @@ import Link from "next/link";
 import { Fragment } from "react";
 import { notFound } from "next/navigation";
 import CopyPostLink from "@/components/CopyPostLink";
+import { RelatedList } from "@/components/RelatedList";
+import { InlineText } from "@/components/RichText";
 import { ChevronRight } from "@/components/icons";
 import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
-import { LinkIcon } from "@/components/ui/link";
 import { MailCheckIcon } from "@/components/ui/mail-check";
+import SectionCopyLink from "@/components/SectionCopyLink";
+import TableOfContents, {
+  MobileTableOfContents,
+  type TocItem,
+} from "@/components/TableOfContents";
 import { site } from "@/lib/site";
 import { getPost, posts, type Block } from "@/lib/posts";
+import { notes } from "@/lib/notes";
+import { relatedArticles } from "@/lib/related";
+import { slugify } from "@/lib/slug";
 
 export function generateStaticParams() {
   return posts.map((p) => ({ slug: p.slug }));
@@ -28,7 +37,10 @@ export async function generateMetadata({
     description: post.description,
     keywords: post.keywords,
     authors: [{ name: "Mattia Ciuni", url: site.url }],
-    alternates: { canonical: url },
+    alternates: {
+      canonical: url,
+      types: { "text/markdown": `/thoughts/${post.slug}.md` },
+    },
     openGraph: {
       type: "article",
       url,
@@ -56,27 +68,6 @@ export async function generateMetadata({
   };
 }
 
-function slugify(s: string) {
-  return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/(^-|-$)/g, "");
-}
-
-function Inline({ text }: { text: string }) {
-  const parts = text.split(/(\*[^*]+\*)/g);
-  return (
-    <>
-      {parts.map((part, i) =>
-        part.length > 2 && part.startsWith("*") && part.endsWith("*") ? (
-          <em key={i} className="font-serif italic">
-            {part.slice(1, -1)}
-          </em>
-        ) : (
-          <Fragment key={i}>{part}</Fragment>
-        )
-      )}
-    </>
-  );
-}
-
 function RenderBlock({ block }: { block: Block }) {
   if (block.type === "h2") {
     const anchor = slugify(block.text);
@@ -85,13 +76,7 @@ function RenderBlock({ block }: { block: Block }) {
         id={anchor}
         className="group mt-20 mb-5 flex scroll-mt-20 items-center gap-3"
       >
-        <a
-          href={`#${anchor}`}
-          aria-label={`Link to section: ${block.text}`}
-          className="text-gray-1000 opacity-0 transition-opacity group-hover:opacity-100"
-        >
-          <LinkIcon size={16} />
-        </a>
+        <SectionCopyLink anchor={anchor} label={block.text} />
         <span className="font-serif leading-tight">{block.text}</span>
         <span className="h-px min-w-8 flex-1 bg-gray-400" aria-hidden="true" />
       </h2>
@@ -100,7 +85,7 @@ function RenderBlock({ block }: { block: Block }) {
   if (block.type === "quote")
     return (
       <blockquote className="m-0 border-l-2 border-gray-400 pl-4 font-serif italic text-gray-1100">
-        <Inline text={block.text} />
+        <InlineText text={block.text} />
       </blockquote>
     );
   if (block.type === "list")
@@ -108,7 +93,7 @@ function RenderBlock({ block }: { block: Block }) {
       <ul className="m-0 list-disc space-y-2 pl-5 text-text-paragraph marker:text-gray-1000">
         {block.items.map((it) => (
           <li key={it}>
-            <Inline text={it} />
+            <InlineText text={it} />
           </li>
         ))}
       </ul>
@@ -121,7 +106,7 @@ function RenderBlock({ block }: { block: Block }) {
     );
   return (
     <p className="w-full text-text-paragraph">
-      <Inline text={block.text} />
+      <InlineText text={block.text} />
     </p>
   );
 }
@@ -181,9 +166,14 @@ export default async function BlogPost({
     ],
   };
 
+  const toc: TocItem[] = post.content.flatMap((block) =>
+    block.type === "h2" ? [{ anchor: slugify(block.text), label: block.text }] : [],
+  );
+
   const idx = posts.findIndex((p) => p.slug === post.slug);
   const next = posts[idx + 1] ?? posts[idx - 1];
-  const related = posts.filter((p) => p.slug !== post.slug).slice(0, 2);
+  const related = relatedArticles(post, posts, 2);
+  const relatedNotes = relatedArticles(post, notes, 2);
 
   return (
     <main
@@ -198,6 +188,28 @@ export default async function BlogPost({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
+      <nav aria-label="Breadcrumb" className="mb-4">
+        <ol className="m-0 flex list-none flex-wrap items-center gap-x-2 p-0 text-sm text-gray-1000">
+          <li>
+            <Link href="/" className="transition-colors hover:text-gray-1200">
+              Home
+            </Link>
+          </li>
+          <li aria-hidden="true">·</li>
+          <li>
+            <Link
+              href="/thoughts/"
+              className="transition-colors hover:text-gray-1200"
+            >
+              Thoughts
+            </Link>
+          </li>
+          <li aria-hidden="true">·</li>
+          <li aria-current="page" className="truncate text-gray-1200">
+            {post.title}
+          </li>
+        </ol>
+      </nav>
       <header className="mb-16 flex items-center justify-between sm:mb-24">
         <div className="flex items-center gap-4">
           <Link
@@ -220,6 +232,9 @@ export default async function BlogPost({
         </div>
         <CopyPostLink />
       </header>
+
+      {toc.length > 0 ? <TableOfContents items={toc} /> : null}
+      <MobileTableOfContents items={toc} />
 
       <article>
         <h1
@@ -246,27 +261,28 @@ export default async function BlogPost({
         </p>
       </article>
 
-      {related.length > 0 && (
-        <section aria-labelledby="more" className="mt-24">
-          <h2 id="more" className="mb-2 font-medium">More</h2>
-          <ul className="m-0 list-none divide-y divide-gray-300 p-0">
-            {related.map((r) => (
-              <li key={r.slug}>
-                <Link
-                  href={`/thoughts/${r.slug}/`}
-                  className="group flex items-baseline justify-between gap-4 py-3.5"
-                >
-                  <span className="font-serif font-[450]">{r.title}</span>
-                  <span className="flex items-center gap-2 whitespace-nowrap text-gray-1000">
-                    {r.category} · {r.date}
-                    <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                  </span>
-                </Link>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+      <RelatedList
+        id="more"
+        heading="More"
+        items={related.map((r) => ({
+          slug: r.slug,
+          href: `/thoughts/${r.slug}/`,
+          title: r.title,
+          meta: `${r.category} · ${r.date}`,
+        }))}
+      />
+
+      <RelatedList
+        id="notes"
+        heading="Notes"
+        className="mt-16"
+        items={relatedNotes.map((n) => ({
+          slug: n.slug,
+          href: `/notes/${n.slug}/`,
+          title: n.title,
+          meta: n.date,
+        }))}
+      />
 
       <nav aria-label="Continue reading" className="mt-8 border-t border-gray-300">
         {next ? (

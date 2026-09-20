@@ -9,7 +9,7 @@
   Content-Type: image/png
   Cache-Control: public, max-age=86400, s-maxage=86400
 
-/blog/*/og.png
+/thoughts/*/og.png
   Content-Type: image/png
   Cache-Control: public, max-age=86400, s-maxage=86400
 
