@@ -530,6 +530,34 @@ const htmlPages = (dir, acc = []) => {
   return acc;
 };
 const pages = htmlPages(out);
+
+// Ogni pagina dichiara la sua card **completa**: `width`, `height` e `type`.
+// Senza `type` alcuni lettori provano a indovinare il formato dall'indirizzo, e
+// senza misure qualcuno non disegna la card grande nemmeno con
+// `summary_large_image`. `check-live.mjs` lo controllava solo sulle pagine delle
+// sitemap, quindi sei pagine fuori da lì (videos, voice-notes e le quattro
+// legali) sono andate avanti a dichiararla a metà: qui il controllo gira su
+// **tutte** le pagine esportate.
+const incompleteCards = [];
+for (const file of pages) {
+  const html = readFileSync(file, "utf8");
+  if (!/property="og:image"/.test(html)) continue;
+  if (
+    !/property="og:image:width"/.test(html) ||
+    !/property="og:image:height"/.test(html) ||
+    !/property="og:image:type"/.test(html)
+  ) {
+    incompleteCards.push(
+      "/" + path.relative(out, file).replace(/index\.html$/, "").split(path.sep).join("/")
+    );
+  }
+}
+check(
+  `og: every page declares a complete card (${pages.length} pages)`,
+  incompleteCards.length === 0
+);
+if (incompleteCards.length) console.log("     senza width/height/type: " + incompleteCards.join(", "));
+
 const declared = pages.map((file) => {
   const html = readFileSync(file, "utf8");
   // Tutte le occorrenze: `og:image` ne ammette più di una, e ognuna deve esistere.

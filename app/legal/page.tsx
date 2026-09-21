@@ -2,8 +2,10 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage, type LegalSection } from "@/components/LegalPage";
 import { site } from "@/lib/site";
+import { socialImages } from "@/lib/social";
 
 const pageTitle = "Legal Center | Privacy, Terms and Cookies";
+const card = socialImages("/og.png", "Legal Center | Mattia Ciuni");
 
 export const metadata: Metadata = {
   title: "Legal Center | Privacy, Terms and Cookies",
@@ -17,9 +19,9 @@ export const metadata: Metadata = {
     title: pageTitle,
     description:
       "Privacy, terms, and cookies for Mattia Ciuni's website, including the newsletter, feedback submissions, the AI chat and analytics.",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Mattia Ciuni" }],
+    images: card.og,
   },
-  twitter: { card: "summary_large_image", title: pageTitle, images: ["/og.png"] },
+  twitter: { card: "summary_large_image", title: pageTitle, images: card.twitter },
 };
 
 const sections: LegalSection[] = [

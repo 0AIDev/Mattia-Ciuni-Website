@@ -3,8 +3,14 @@ import Link from "next/link";
 import { founderVideos } from "@/lib/videos";
 import { VideoPlayer } from "@/components/MediaPlayers";
 import { site } from "@/lib/site";
+import { socialImages } from "@/lib/social";
 
 const pageTitle = "Videos | Mattia Ciuni | Building Payle in public";
+// La card si dichiara con lo stesso helper di tutte le altre pagine: `width`,
+// `height`, `alt` **e `type`**. Qui il `type` mancava, quindi l'`og:image:type`
+// non finiva nell'HTML e `check-live.mjs` segnava la pagina (con `/voice-notes/`)
+// come l'unica senza card completa.
+const card = socialImages("/og.png", "Videos | Mattia Ciuni");
 const pageDescription =
   "Founder videos from Mattia Ciuni on building Payle, working through hard problems and staying close to the work.";
 
@@ -30,13 +36,13 @@ export const metadata: Metadata = {
     siteName: "Mattia Ciuni",
     title: pageTitle,
     description: pageDescription,
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Mattia Ciuni" }],
+    images: card.og,
   },
   twitter: {
     card: "summary_large_image",
     title: pageTitle,
     description: pageDescription,
-    images: ["/og.png"],
+    images: card.twitter,
   },
 };
 

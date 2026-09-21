@@ -2,8 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage, type LegalSection } from "@/components/LegalPage";
 import { site } from "@/lib/site";
+import { socialImages } from "@/lib/social";
 
 const pageTitle = "Cookies Policy | Mattia Ciuni";
+// La card si dichiara con lo stesso helper del resto del sito: mancava il `type`,
+// quindi l'`og:image:type` non arrivava nell'HTML e la card era incompleta.
+const card = socialImages("/og.png", "Cookies Policy | Mattia Ciuni");
 
 export const metadata: Metadata = {
   title: "Cookies Policy | Browser storage on this site",
@@ -17,9 +21,9 @@ export const metadata: Metadata = {
     title: pageTitle,
     description:
       "Every cookie, local storage key and session value this site uses, what each one is for, and how to change your choice.",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Mattia Ciuni" }],
+    images: card.og,
   },
-  twitter: { card: "summary_large_image", title: pageTitle, images: ["/og.png"] },
+  twitter: { card: "summary_large_image", title: pageTitle, images: card.twitter },
 };
 
 function StorageList({ items }: { items: { name: string; body: string }[] }) {

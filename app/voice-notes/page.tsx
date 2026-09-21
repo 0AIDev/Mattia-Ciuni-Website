@@ -4,8 +4,12 @@ import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
 import { AudioPlayer } from "@/components/MediaPlayers";
 import { voiceNotes } from "@/lib/voice-notes";
 import { site } from "@/lib/site";
+import { socialImages } from "@/lib/social";
 
 const pageTitle = "Voice Notes | Mattia Ciuni | Spoken, unedited";
+// Stesso helper delle altre pagine: mancava il `type`, quindi niente
+// `og:image:type` nell'HTML e la card risultava incompleta a `check-live.mjs`.
+const card = socialImages("/og.png", "Voice Notes | Mattia Ciuni");
 
 export const metadata: Metadata = {
   title: "Voice Notes | Spoken, unedited",
@@ -18,9 +22,9 @@ export const metadata: Metadata = {
     siteName: "Mattia Ciuni",
     title: pageTitle,
     description: "Unedited spoken notes from Mattia Ciuni on building Payle.",
-    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Mattia Ciuni" }],
+    images: card.og,
   },
-  twitter: { card: "summary_large_image", title: pageTitle, images: ["/og.png"] },
+  twitter: { card: "summary_large_image", title: pageTitle, description: "Unedited spoken notes from Mattia Ciuni on building Payle.", images: card.twitter },
 };
 
 export default function VoiceNotesPage() {
