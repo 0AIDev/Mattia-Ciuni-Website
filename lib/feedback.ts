@@ -8,6 +8,7 @@ export interface FeedbackPost {
   slug: string;
   title: string;
   author: string; // come compare a video: il nome se accettato, altrimenti l'iniziale
+  github?: string; // profilo dell'autore, quando lo rivendica (stile home: icona + nome)
   description: string;
   date: string; // YYYY-MM-DD
   keywords: string[];
@@ -30,7 +31,8 @@ const raw: FeedbackPost[] = [
   {
     slug: "a-stranger-redesigned-my-pitch-in-one-comment",
     title: "A stranger redesigned my pitch in one comment",
-    author: "A.",
+    author: "Liam Murphy",
+    github: "https://github.com/aka7880-721",
     description:
       "I posted Payle's architecture publicly. An engineer I'd never met corrected my language, found real gaps, and made the product sharper. This is the full exchange.",
     date: "2026-09-21",
@@ -49,7 +51,7 @@ const raw: FeedbackPost[] = [
       { type: "h2", text: "The message" },
       {
         type: "p",
-        text: "An engineer I'll call A., because he can claim his name if he wants it, read my public post about Payle and replied with what he thought, with no introductions:",
+        text: "An engineer read my public post about Payle and replied with what he thought, with no introductions. At the time he hadn't even shared his name; he has since: he is Liam Murphy ([@aka7880-721](https://github.com/aka7880-721) on GitHub). His reply was this:",
       },
       {
         type: "quote",
@@ -113,7 +115,7 @@ const raw: FeedbackPost[] = [
       { type: "h2", text: "The selection effect" },
       {
         type: "p",
-        text: "A. ended his message with \"I can help you if you want.\" So I asked him where he'd want to own: the policy engine edge cases, the dispute automation, or the revocation-latency guarantees, the three places where a sharp engineer matters most right now.",
+        text: "Liam ended his message with \"I can help you if you want.\" So I asked him where he'd want to own: the policy engine edge cases, the dispute automation, or the revocation-latency guarantees, the three places where a sharp engineer matters most right now.",
       },
       {
         type: "p",

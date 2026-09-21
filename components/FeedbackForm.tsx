@@ -108,7 +108,7 @@ export function FeedbackModalButton({
   const baseTrigger =
     variant === "solid"
       ? "rounded-full bg-gray-1200 px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-80"
-      : "rounded-full border border-gray-1200 px-6 py-2.5 text-sm font-semibold text-gray-1200 transition-colors hover:bg-gray-1200 hover:text-white";
+      : "rounded-full border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-1200 transition-colors hover:border-gray-1200";
   const field =
     "w-full rounded-full border border-gray-300 bg-transparent px-5 py-2.5 text-[15px] text-gray-1200 outline-none transition-colors placeholder:text-gray-1000/60 focus:border-gray-1200 disabled:opacity-60";
 
