@@ -13,6 +13,98 @@ export interface Note {
 
 const raw: Note[] = [
   {
+    slug: "the-moment-my-ai-agent-asked-for-my-credit-card",
+    title: "The moment my AI agent asked for my credit card",
+    description:
+      "The scene that started Payle: an AI agent did 90% of the work, then stopped at a credit card form. On the wall between acting and paying.",
+    date: "2026-10-05",
+    keywords: [
+      "AI agents payments",
+      "agentic commerce",
+      "Payle origin story",
+      "money layer for AI agents",
+      "founder story",
+    ],
+    content: [
+      {
+        type: "p",
+        text: "I remember the exact moment I understood the problem I would spend the next years of my life on.",
+      },
+      {
+        type: "h2",
+        text: "The future was on my screen",
+      },
+      {
+        type: "p",
+        text: "I was building Celeste, an AI browser. It was good. The agent could open pages, follow instructions, do research, complete workflows. I gave it a task: find me this, compare these, set up that. And it worked through it like something alive. I sat there watching it think, and for the first time I felt like the future wasn't a video from a keynote. It was on my screen.",
+      },
+      {
+        type: "p",
+        text: "Then it stopped.",
+      },
+      {
+        type: "p",
+        text: "Not crashed. Not confused. It had done 90% of the job: found the option, compared the prices, made the decision. And then it turned around and asked me, in the politest possible way, for my credit card.",
+      },
+      {
+        type: "p",
+        text: "Please enter your payment details.",
+      },
+      {
+        type: "h2",
+        text: "Sixteen little boxes",
+      },
+      {
+        type: "p",
+        text: "I sat there staring at that field. Sixteen little boxes. And I realized I was watching something absurd happen in real time: the most capable software I had ever used, stopped by the same barrier my father faced buying a train ticket in 1995. A human has to hand over a card. A human has to type numbers. A human has to prove, again and again, that he exists and is allowed to spend his own money.",
+      },
+      {
+        type: "p",
+        text: "The agent did the thinking. The agent did the work. And then it needed me, not for judgment, not for taste, not for any decision that actually mattered. It needed me for the typing.",
+      },
+      {
+        type: "h2",
+        text: "The wall was never the browser",
+      },
+      {
+        type: "p",
+        text: "I tried to fix it inside the browser. I really did. Autofill, integrations, little workarounds. But the problem wasn't the browser. The problem was that the entire financial system was built for one specific creature: a human with a hand, a wallet, and a phone to receive an OTP on. Every payment flow on earth assumes that creature exists. And my agent wasn't one.",
+      },
+      {
+        type: "p",
+        text: "That's when it clicked, in the way where you can't unsee it: we gave machines eyes, ears, memory, reasoning. We gave them the ability to work, to create, to decide. And then we drew a line at the one thing every working thing in history has needed: the ability to be paid for what it does, and to pay for what it needs.",
+      },
+      {
+        type: "p",
+        text: "An intern can spend the company's money within limits. A contractor can. An API can. A piece of software with more judgment than all of them cannot, unless a human types sixteen digits first.",
+      },
+      {
+        type: "h2",
+        text: "Building the answer",
+      },
+      {
+        type: "p",
+        text: "So I stopped building the browser and started building [Payle](https://usepayle.com). Not because the browser failed, because it succeeded so well that the payment step became the only wall left standing.",
+      },
+      {
+        type: "p",
+        text: "Now every day I work on the same question, from the other side: what should it mean for a machine to spend money? Not a card handed over blindly. Not a human becoming the typing assistant of his own software. Something in between: rules, limits, a tap when it matters, a receipt you can verify, and an agent that finishes what it started. That is the whole idea behind [the money layer for AI agents](/thoughts/money-layer-for-ai-agents/), and it is why [trust, not technology, is the real problem](/notes/the-agentic-economy-is-a-trust-problem/) to solve first.",
+      },
+      {
+        type: "p",
+        text: "I don't think most people have noticed this wall yet, because most people haven't watched an agent work end to end. But they will. Everyone will, soon. And when they do, they'll hit the same sixteen boxes I did.",
+      },
+      {
+        type: "p",
+        text: "That moment asked me a question I'm still answering every day: if machines are going to act for us, who teaches them to spend?",
+      },
+      {
+        type: "p",
+        text: "I'm building the answer.",
+      },
+    ],
+  },
+  {
     slug: "idempotent-payments-for-ai-agents",
     title: "Why AI agents need idempotent payments",
     description:
