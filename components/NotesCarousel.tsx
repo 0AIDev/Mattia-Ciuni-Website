@@ -2,7 +2,7 @@
 
 import Image from "next/image";
 import Link from "next/link";
-import { useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronRight } from "@/components/icons";
 import type { Note } from "@/lib/notes";
 
@@ -27,6 +27,27 @@ function DirectionArrow({ previous = false }: { previous?: boolean }) {
 
 export function NotesCarousel({ notes }: { notes: Note[] }) {
   const track = useRef<HTMLUListElement>(null);
+  const [canGoBack, setCanGoBack] = useState(false);
+  const [canGoForward, setCanGoForward] = useState(notes.length > 1);
+
+  const updateControls = useCallback(() => {
+    const element = track.current;
+    if (!element) return;
+    setCanGoBack(element.scrollLeft > 1);
+    setCanGoForward(element.scrollLeft + element.clientWidth < element.scrollWidth - 1);
+  }, []);
+
+  useEffect(() => {
+    const element = track.current;
+    if (!element) return;
+    updateControls();
+    element.addEventListener("scroll", updateControls, { passive: true });
+    window.addEventListener("resize", updateControls);
+    return () => {
+      element.removeEventListener("scroll", updateControls);
+      window.removeEventListener("resize", updateControls);
+    };
+  }, [updateControls]);
 
   function move(direction: -1 | 1) {
     track.current?.scrollBy({ left: direction * 292, behavior: "smooth" });
@@ -39,7 +60,8 @@ export function NotesCarousel({ notes }: { notes: Note[] }) {
           type="button"
           aria-label="Previous notes"
           onClick={() => move(-1)}
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 text-gray-1000 transition-colors hover:border-gray-1200 hover:text-gray-1200"
+          disabled={!canGoBack}
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 text-gray-1000 transition-colors hover:border-gray-1200 hover:text-gray-1200 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-gray-300 disabled:hover:text-gray-1000"
         >
           <DirectionArrow previous />
         </button>
@@ -47,7 +69,8 @@ export function NotesCarousel({ notes }: { notes: Note[] }) {
           type="button"
           aria-label="Next notes"
           onClick={() => move(1)}
-          className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 text-gray-1000 transition-colors hover:border-gray-1200 hover:text-gray-1200"
+          disabled={!canGoForward}
+          className="flex h-8 w-8 items-center justify-center rounded-full border border-gray-300 text-gray-1000 transition-colors hover:border-gray-1200 hover:text-gray-1200 disabled:cursor-not-allowed disabled:opacity-30 disabled:hover:border-gray-300 disabled:hover:text-gray-1000"
         >
           <DirectionArrow />
         </button>

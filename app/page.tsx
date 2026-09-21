@@ -239,7 +239,7 @@ export default function Home() {
         <p className="mb-6 max-w-[600px] text-text-paragraph">
           Longer, slower pieces on the systems, people and ideas behind the work.
         </p>
-        <NotesCarousel notes={notes.slice(0, 3)} />
+        <NotesCarousel notes={notes} />
       </section>
 
       <section aria-labelledby="field-notes" className="mb-16 sm:mb-24">
