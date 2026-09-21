@@ -102,7 +102,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           Skip to content
         </a>
         {children}
-        <DeferredNewsletter />
+        <div id="newsletter-slot">
+          <DeferredNewsletter />
+        </div>
         <SiteFooter />
       </body>
     </html>
