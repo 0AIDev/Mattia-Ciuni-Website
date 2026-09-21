@@ -394,8 +394,8 @@ console.log("homepage html+css: " + (bytes / 1024).toFixed(1) + "KB raw | all JS
 // globale e il consenso analytics opzionale. La pagina resta sotto 70KB raw,
 // mentre il browser non scarica font Google né GA finché non c'è consenso. Il
 // numero è un guardrail per evitare regressioni, non un proxy del punteggio Lighthouse.
-// La home ora include anche l'indice Notes e i due ingressi Field notes. Il
-// budget resta un guardrail stretto rispetto al payload completo, ma tiene conto
-// del contenuto editoriale aggiunto senza immagini pesanti nella home.
-check("weight: homepage html+css < 80KB raw", bytes < 80 * 1024);
+// La home include l'indice Notes, i due ingressi Field notes e il carousel
+// interattivo con i suoi controlli accessibili. Il budget resta un guardrail
+// stretto rispetto al payload completo, con spazio per questa interazione client.
+check("weight: homepage html+css < 85KB raw", bytes < 85 * 1024);
 process.exit(fail ? 1 : 0);
