@@ -94,8 +94,15 @@ const subscribeConsent = (onChange: () => void) => {
     window.removeEventListener("mattia-analytics-consent", onChange);
   };
 };
-const getConsent = () => window.localStorage.getItem(CONSENT_KEY);
-const getServerConsent = () => null;
+type ConsentState = "loading" | "unset" | "accepted" | "declined";
+const getConsent = (): ConsentState => {
+  const saved = window.localStorage.getItem(CONSENT_KEY);
+  return saved === "accepted" || saved === "declined" ? saved : "unset";
+};
+// Keep the server and hydration render intentionally empty. Reading localStorage
+// only after hydration prevents the consent banner from flashing for returning
+// visitors who already chose an option.
+const getServerConsent = (): ConsentState => "loading";
 
 export function GoogleAnalytics() {
   const consent = useSyncExternalStore(subscribeConsent, getConsent, getServerConsent);
@@ -109,7 +116,7 @@ export function GoogleAnalytics() {
     window.dispatchEvent(new Event("mattia-analytics-consent"));
   }
 
-  if (consent) return null;
+  if (consent !== "unset") return null;
   return (
     <aside aria-label="Analytics choice" className="fixed inset-x-4 bottom-4 z-50 mx-auto flex max-w-xl items-center justify-between gap-4 rounded-2xl border border-gray-300 bg-white p-4 text-sm text-gray-1000 shadow-lg">
       <p className="m-0 leading-relaxed">Help me understand which pages are useful. Analytics are anonymous and optional.</p>

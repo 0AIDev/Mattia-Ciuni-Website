@@ -45,6 +45,8 @@ assert.match(analytics, /analytics_storage: "granted"/);
 assert.match(analytics, /traffic_source/);
 assert.match(analytics, /outbound_click/);
 assert.match(analytics, /localStorage/);
+assert.match(analytics, /getServerConsent = \(\): ConsentState => "loading"/);
+assert.match(analytics, /consent !== "unset"/);
 
 const out = join(root, "out");
 const pages = [];
