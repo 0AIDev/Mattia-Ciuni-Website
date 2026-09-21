@@ -20,6 +20,8 @@
     "/api/subscribe",
     "/api/chat",
     "/api/feedback",
+    "/api/admin/feedback",
+    "/admin/feedback",
     "/.well-known/*"
   ],
   "exclude": []

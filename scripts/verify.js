@@ -168,9 +168,23 @@ const notesCard = read("notes.md");
 check("card notes index: 8 notes", (notesCard.match(/^\- \[.*\]\(notes\/[a-z0-9-]+\.md\)/gm) || []).length === 8 && notesCard.includes("what-a-security-audit-taught-me.md") && notesCard.includes("the-moment-my-ai-agent-asked-for-my-credit-card.md") && notesCard.includes("idempotent-payments-for-ai-agents.md") && notesCard.includes("the-agentic-economy-is-a-trust-problem.md") && notesCard.includes("on-boring-systems.md") && notesCard.includes("what-interviews-teach-me-about-people-and-my-own-company.md") && notesCard.includes("honestly-im-excited.md") && notesCard.includes("about-the-name.md"));
 const feedbackIndexPage = read("feedback/index.html");
 const feedbackPostPage = read("feedback/a-stranger-redesigned-my-pitch-in-one-comment/index.html");
-check("feedback: index + post built", feedbackIndexPage.includes("The exchanges") && feedbackPostPage.includes("A stranger redesigned my pitch in one comment"));
+check("feedback: index + post built", feedbackIndexPage.includes("What people are saying") && feedbackPostPage.includes("A stranger redesigned my pitch in one comment"));
 check("feedback: card with full article", read("feedback/a-stranger-redesigned-my-pitch-in-one-comment.md").includes("## Full article"));
 check("index: feedback section", index.includes("Feedback") && index.includes("/feedback/"));
+const adminPage = read("admin/feedback/index.html");
+check(
+  "feedback admin: private dashboard scaffold",
+  adminPage.includes("Feedback review") &&
+    adminPage.includes("Admin token") &&
+    adminPage.includes('name="robots" content="noindex, nofollow, nocache"')
+);
+check(
+  "feedback admin: protected API and notification wiring",
+  fs.existsSync(path.join(__dirname, "..", "functions", "api", "admin", "feedback.ts")) &&
+    readFileSync(path.join(__dirname, "..", "functions", "api", "admin", "feedback.ts"), "utf8").includes("ADMIN_TOKEN") &&
+    readFileSync(path.join(__dirname, "..", "functions", "api", "feedback.ts"), "utf8").includes("api.resend.com/emails") &&
+    readFileSync(path.join(__dirname, "..", "functions", "api", "feedback.ts"), "utf8").includes("ceo@usepayle.com")
+);
 // Il form di submission sostituisce il link email: la Function deve essere
 // nell'elenco delle route dinamiche di Pages, altrimenti l'export statico
 // risponderebbe 405 al POST. L'endpoint vive nei chunk JS del form (component

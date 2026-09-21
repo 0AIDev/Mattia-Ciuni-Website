@@ -16,7 +16,7 @@ const COPY = {
     "Received. I read every submission: if it holds up, it gets published here, with your name or just an initial, your choice.",
   genericError: "Something broke on my side. Try again in a minute.",
   rateLimited: "Too many submissions. Try again in a few minutes.",
-  tooShort: "Give me a little more: what would you change, and why?",
+  tooShort: "Tell me a little more about what you think.",
   invalidEmail: "That email doesn't look right.",
 };
 
@@ -110,7 +110,7 @@ export function FeedbackModalButton({
       ? "rounded-full bg-gray-1200 px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-80"
       : "rounded-full border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-1200 transition-colors hover:border-gray-1200";
   const field =
-    "w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-2.5 text-[15px] text-gray-1200 shadow-none outline-none transition-colors placeholder:text-gray-1000/60 hover:border-gray-1000 focus:border-gray-1200 disabled:opacity-60";
+    "w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-2.5 text-[15px] text-gray-1200 shadow-none outline-none transition-colors placeholder:text-gray-1000/60 hover:border-gray-1000 focus:border-gray-1200 focus:outline-none focus-visible:outline-none disabled:opacity-60";
 
   return (
     <>
@@ -136,7 +136,7 @@ export function FeedbackModalButton({
               <div className="text-left">
                 <p className="m-0 font-serif text-2xl leading-tight text-gray-1200">Give feedback</p>
                 <p className="mt-1 text-sm leading-relaxed text-gray-1000">
-                  Attack it, or tell me what&apos;s missing.
+                  Tell me what you think, what interests you, or what you&apos;d like to see next.
                 </p>
               </div>
               <button
@@ -200,12 +200,12 @@ export function FeedbackModalButton({
                   disabled={state === "loading"}
                 />
                 <textarea
-                  placeholder="What would you attack, what's missing, what's wrong?"
+                  placeholder="What would you like to see, try, or improve?"
                   aria-label="Your feedback"
                   rows={5}
                   maxLength={4000}
                   required
-                  className="w-full appearance-none resize-y rounded-2xl border border-gray-400 bg-white px-5 py-3 text-[15px] leading-relaxed text-gray-1200 shadow-none outline-none transition-colors placeholder:text-gray-1000/60 hover:border-gray-1000 focus:border-gray-1200 disabled:opacity-60"
+                  className="w-full appearance-none resize-y rounded-2xl border border-gray-400 bg-white px-5 py-3 text-[15px] leading-relaxed text-gray-1200 shadow-none outline-none transition-colors placeholder:text-gray-1000/60 hover:border-gray-1000 focus:border-gray-1200 focus:outline-none focus-visible:outline-none disabled:opacity-60"
                   name="message"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}

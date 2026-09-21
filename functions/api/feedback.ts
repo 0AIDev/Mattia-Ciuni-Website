@@ -21,6 +21,9 @@ interface FeedbackStore {
 interface Env {
   FEEDBACK?: FeedbackStore;
   RATE_LIMIT?: RateLimitStore;
+  RESEND_API_KEY?: string;
+  RESEND_FROM_EMAIL?: string;
+  FEEDBACK_NOTIFY_TO?: string;
 }
 
 interface PagesContext {
@@ -74,6 +77,41 @@ async function allowed(store: RateLimitStore | undefined, ip: string): Promise<b
 
 function text(value: unknown, max: number): string {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
+}
+
+function escapeHtml(value: string): string {
+  return value.replace(/[&<>\"']/g, (character) => ({
+    "&": "&amp;",
+    "<": "&lt;",
+    ">": "&gt;",
+    '\"': "&quot;",
+    "'": "&#39;",
+  })[character] || character);
+}
+
+async function notifyMattia(env: Env, record: { id: string; name: string; email: string; message: string; page_url: string; submitted_at: string }): Promise<"sent" | "failed" | "not_configured"> {
+  if (!env.RESEND_API_KEY || !env.RESEND_FROM_EMAIL) return "not_configured";
+  const to = env.FEEDBACK_NOTIFY_TO || "ceo@usepayle.com";
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+        Accept: "application/json",
+        "Idempotency-Key": `feedback-notification:${record.id}`,
+      },
+      body: JSON.stringify({
+        from: env.RESEND_FROM_EMAIL,
+        to: [to],
+        subject: `New Payle feedback${record.name ? ` from ${record.name}` : ""}`,
+        html: `<p><strong>New feedback is waiting for review.</strong></p><p><strong>From:</strong> ${escapeHtml(record.name || "Anonymous")}${record.email ? ` (${escapeHtml(record.email)})` : ""}</p><p><strong>Page:</strong> ${escapeHtml(record.page_url)}</p><p><strong>Submitted:</strong> ${escapeHtml(record.submitted_at)}</p><blockquote style="white-space:pre-wrap">${escapeHtml(record.message)}</blockquote><p><a href="https://mattiaciuni.pages.dev/admin/feedback/">Open the review queue</a></p>`,
+      }),
+    });
+    return response.ok ? "sent" : "failed";
+  } catch {
+    return "failed";
+  }
 }
 
 export const onRequestPost = async ({ request, env }: PagesContext): Promise<Response> => {
@@ -133,6 +171,7 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
     message,
     page_url: text(body.page_url, 300) || url.pathname,
     ip_first_octets: ipOf(request).split(".").slice(0, 2).join("."),
+    notification_status: "not_configured" as "sent" | "failed" | "not_configured",
   };
 
   try {
@@ -141,6 +180,10 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
     const currentIndex = (await env.FEEDBACK.get("fb:index")) || "";
     const ids = [id, ...currentIndex.split("\n").filter(Boolean)].slice(0, MAX_INDEX);
     await env.FEEDBACK.put("fb:index", ids.join("\n"));
+    // Una notifica fallita non deve far perdere il feedback: il record resta
+    // in coda e conserva lo stato, così può essere rilevato dalla dashboard.
+    record.notification_status = await notifyMattia(env, record);
+    await env.FEEDBACK.put(id, JSON.stringify(record));
   } catch {
     return finish(json({ code: "provider_error" }, 502), "kv_write_error");
   }

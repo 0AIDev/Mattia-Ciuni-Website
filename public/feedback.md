@@ -1,6 +1,6 @@
 # Feedback on Payle | Mattia Ciuni
 
-> Public exchanges where engineers attacked Payle's architecture and what their attacks changed. Send your own feedback: it gets reviewed, and if it holds, it gets published.
+> A public record of what users and people interested in Payle think, what they want to see next, and which signals are worth building around.
 
 - URL: https://mattiaciuni.pages.dev/feedback
 - Type: Feedback index
