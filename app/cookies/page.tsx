@@ -1,10 +1,21 @@
 import type { Metadata } from "next";
 import { LegalPage, type LegalSection } from "@/components/LegalPage";
 
+const pageTitle = "Cookies Policy | Mattia Ciuni";
+
 export const metadata: Metadata = {
-  title: "Cookies",
+  title: "Cookies Policy | Browser storage on this site",
   description: "A clear summary of cookies and local browser storage used on this site.",
   alternates: { canonical: "/cookies/" },
+  openGraph: {
+    type: "website",
+    url: "/cookies/",
+    siteName: "Mattia Ciuni",
+    title: pageTitle,
+    description: "A clear summary of cookies and local browser storage used on this site.",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Mattia Ciuni" }],
+  },
+  twitter: { card: "summary_large_image", title: pageTitle, images: ["/og.png"] },
 };
 
 const sections: LegalSection[] = [

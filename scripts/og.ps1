@@ -127,7 +127,36 @@ function New-HomeCard($outPath) {
 # in Instrument Serif + sottotitolo in Inter Light, subito sotto. Il blocco dei due
 # testi e' centrato verticalmente nella fascia sotto il logo, cosi' un titolo corto
 # e uno lungo occupano lo stesso posto.
-function New-ArticleCard($bgPath, $title, $subText, $outPath, $zoneTop = 230, $zoneBottom = 604) {
+#
+# Sotto il sottotitolo, la call to action: una pillola nera con angoli tondi e
+# testo bianco ("Read thought" / "Read note"). Deve restare minimal: nessun bordo
+# extra, nessuna ombra, solo il blocco pieno.
+function Draw-CtaPill($g, $text, $centerX, $topY) {
+  $pillFont = New-Object System.Drawing.Font($sansFamily, [float]30, [System.Drawing.FontStyle]::Regular, [System.Drawing.GraphicsUnit]::Pixel)
+  $paddingX = 44
+  $pillH = 78
+  $textSize = $g.MeasureString($text, $pillFont)
+  # MeasureString aggiunge un po' di respiro ai lati: il meno lo compensa, cosi'
+  # il padding dichiarato e' quello che si vede.
+  $pillW = [Math]::Ceiling($textSize.Width - 14) + $paddingX * 2
+  $rect = New-Object System.Drawing.RectangleF(($centerX - $pillW / 2), $topY, $pillW, $pillH)
+  $brush = New-Object System.Drawing.SolidBrush($Ink)
+  $radius = $pillH / 2
+  $path = New-Object System.Drawing.Drawing2D.GraphicsPath
+  $path.AddArc($rect.X, $rect.Y, $radius * 2, $radius * 2, 180, 90)
+  $path.AddArc($rect.Right - $radius * 2, $rect.Y, $radius * 2, $radius * 2, 270, 90)
+  $path.AddArc($rect.Right - $radius * 2, $rect.Bottom - $radius * 2, $radius * 2, $radius * 2, 0, 90)
+  $path.AddArc($rect.X, $rect.Bottom - $radius * 2, $radius * 2, $radius * 2, 90, 90)
+  $path.CloseFigure()
+  $g.FillPath($brush, $path)
+  $fmt = New-Object System.Drawing.StringFormat
+  $fmt.Alignment = [System.Drawing.StringAlignment]::Center
+  $fmt.LineAlignment = [System.Drawing.StringAlignment]::Center
+  $g.DrawString($text, $pillFont, [System.Drawing.Brushes]::White, $rect, $fmt)
+  return $pillH
+}
+
+function New-ArticleCard($bgPath, $title, $subText, $outPath, $zoneTop = 230, $zoneBottom = 604, $ctaText = "") {
   $bgImg = [System.Drawing.Image]::FromFile($bgPath)
   $bmp = New-Object System.Drawing.Bitmap(1200, 630, [System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
   $g = [System.Drawing.Graphics]::FromImage($bmp)
@@ -157,7 +186,9 @@ function New-ArticleCard($bgPath, $title, $subText, $outPath, $zoneTop = 230, $z
   $titleSize = $g.MeasureString($title, $titleFont, $bigBox, $fmt)
   $subSize = if ($subText) { $g.MeasureString($subText, $subFont, (New-Object System.Drawing.SizeF($subW, 4000)), $fmt) } else { New-Object System.Drawing.SizeF(0, 0) }
 
-  $blockH = $titleSize.Height + $(if ($subText) { $gap + $subSize.Height } else { 0 })
+  $ctaH = 0; $ctaGap = 44
+  if ($ctaText) { $ctaH = 78 + $ctaGap }
+  $blockH = $titleSize.Height + $(if ($subText) { $gap + $subSize.Height } else { 0 }) + $ctaH
   $y = [Math]::Max($zoneTop, $zoneTop + (($zoneBottom - $zoneTop) - $blockH) / 2)
 
   $titleH = $titleSize.Height + 8
@@ -168,6 +199,10 @@ function New-ArticleCard($bgPath, $title, $subText, $outPath, $zoneTop = 230, $z
     $subH = $subSize.Height + 8
     $subRect = New-Object System.Drawing.RectangleF($subX, $subY, $subW, $subH)
     $g.DrawString($subText, $subFont, $subBrush, $subRect, $fmt)
+  }
+  if ($ctaText) {
+    $ctaTop = $y + $titleSize.Height + $(if ($subText) { $gap + $subSize.Height } else { 0 }) + $ctaGap
+    Draw-CtaPill $g $ctaText 600 $ctaTop | Out-Null
   }
   Save-Og $bmp $g $outPath
 }
@@ -222,8 +257,9 @@ if (!(Test-Path $bgCover)) {
 foreach ($a in $articles) {
   $dir = if ($a.Kind -eq "Thoughts") { "thoughts" } else { "notes" }
   $subText = if ($Subtitle -eq "meta") { $a.Meta } else { $a.Description }
-  New-ArticleCard $bgCard  $a.Title $subText (Join-Path $OutRoot ($dir + "\" + $a.Slug + "\og.png"))
-  New-ArticleCard $bgCover $a.Title $subText (Join-Path $OutRoot ($dir + "\" + $a.Slug + "\cover.png")) 60 570
+  $cta = if ($a.Kind -eq "Thoughts") { "Read thought" } else { "Read note" }
+  New-ArticleCard $bgCard  $a.Title $subText (Join-Path $OutRoot ($dir + "\" + $a.Slug + "\og.png")) 230 604 $cta
+  New-ArticleCard $bgCover $a.Title $subText (Join-Path $OutRoot ($dir + "\" + $a.Slug + "\cover.png")) 60 570 $cta
 }
 
 # --- OG delle pagine indice (/thoughts/ e /notes/) -----

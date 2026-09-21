@@ -48,6 +48,7 @@ export async function generateMetadata({
     openGraph: {
       type: "article",
       url,
+      siteName: "Mattia Ciuni",
       title: post.title,
       description: post.description,
       publishedTime: post.date,

@@ -44,7 +44,8 @@ export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
     default: "Mattia Ciuni | Founder & CEO @ Payle",
-    template: "%s · Mattia Ciuni",
+    // Un solo divisore, sempre il trattino: mai puntini o punti di sospensione.
+    template: "%s | Mattia Ciuni",
   },
   description: site.description,
   keywords: [

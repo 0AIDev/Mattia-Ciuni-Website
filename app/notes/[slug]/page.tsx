@@ -43,6 +43,7 @@ export async function generateMetadata({
     openGraph: {
       type: "article",
       url,
+      siteName: "Mattia Ciuni",
       title: note.title,
       description: note.description,
       publishedTime: note.date,

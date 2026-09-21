@@ -119,7 +119,29 @@ check(
 );
 check(
   "robots: standard directives only",
-  !robots.includes("Content-Signal:") && !robots.includes("Agentmap:") && robots.includes(`Sitemap: ${PROD}/sitemap.xml`)
+  !robots.includes("Agentmap:") && robots.includes(`Sitemap: ${PROD}/sitemap.xml`)
+);
+// La politica d'uso dichiarata (content signals): deve essere presente e deve
+// concordare con gli Allow del file — un ai-train=no sopra trentadue Allow: /
+// è una politica che nessuno può rispettare, perché robots.txt è l'unico posto
+// in cui può contraddire sé stesso. I motori ignorano la riga (direttiva non
+// standard), quindi non deve mai stare sopra il blocco `User-Agent: *` senza
+// che i tre segnali dicano tutti sì, come il sito dichiara altrove.
+const signalMatch = /Content-Signal:\s*([^\n]+)/.exec(robots);
+const signalValues = signalMatch
+  ? Object.fromEntries(
+      signalMatch[1].split(",").map((pair) => {
+        const [key, value] = pair.split("=").map((part) => part.trim());
+        return [key, value];
+      })
+    )
+  : null;
+check(
+  "robots: content signals declared and consistent",
+  !!signalValues &&
+    signalValues["ai-train"] === "yes" &&
+    signalValues["search"] === "yes" &&
+    signalValues["ai-input"] === "yes"
 );
 // La card markdown si annuncia anche nella <head>: un crawler non esegue la pagina.
 check(
@@ -229,6 +251,25 @@ const declared = pages.map((file) => {
   return { file: path.relative(out, file), urls };
 });
 const relative = (url) => (url.startsWith(PROD) ? url.slice(PROD.length) : null);
+// Titoli e card social, controllati su **ogni** pagina costruita, non su una
+// pagine a caso:
+//   - il titolo SERP usa il divisore `|` (mai puntini o punti di sospensione)
+//     e ha una lunghezza utile (i titoli corti sprecano spazio nella SERP);
+//   - `og:site_name` è dichiarato: senza, Discord mostra una card anonima.
+// Il controllo entra nei post e nelle note (dove il titolo è il contenuto) per
+// il divisore e il site name, mentre la soglia di lunghezza riguarda solo le
+// pagine di navigazione: un titolo d'articolo non si accorcia per far contenta
+// una metrica.
+check(
+  `meta: title uses "|" and og:site_name everywhere (${pages.length} pages)`,
+  pages.length > 0 &&
+    declared.every((p) => {
+      const html = readFileSync(path.join(out, p.file), "utf8");
+      const title = (/<title>([^<]*)<\/title>/.exec(html) || [])[1] || "";
+      return title.includes(" | ") && !title.includes("\u00B7") && html.includes('property="og:site_name"');
+    })
+);
+
 const broken = declared.flatMap((p) =>
   p.urls.length === 0 || p.urls.some((u) => !u.startsWith(PROD))
     ? [p.file]

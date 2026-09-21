@@ -1,4 +1,4 @@
-# Terms of Service · Mattia Ciuni
+# Terms of Service | Reading and newsletter rules | Mattia Ciuni
 
 > Terms for using Mattia Ciuni's website and newsletter.
 

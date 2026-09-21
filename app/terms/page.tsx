@@ -2,10 +2,20 @@ import type { Metadata } from "next";
 import { LegalPage, type LegalSection } from "@/components/LegalPage";
 import { site } from "@/lib/site";
 
+const pageTitle = "Terms of Service | Mattia Ciuni";
+
 export const metadata: Metadata = {
-  title: "Terms of Service",
-  description: "Terms for using Mattia Ciuni's website and newsletter.",
+  title: "Terms of Service | Reading and newsletter rules",  description: "Terms for using Mattia Ciuni's website and newsletter.",
   alternates: { canonical: "/terms/" },
+  openGraph: {
+    type: "website",
+    url: "/terms/",
+    siteName: "Mattia Ciuni",
+    title: pageTitle,
+    description: "Terms for using Mattia Ciuni's website and newsletter.",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Mattia Ciuni" }],
+  },
+  twitter: { card: "summary_large_image", title: pageTitle, images: ["/og.png"] },
 };
 
 const sections: LegalSection[] = [

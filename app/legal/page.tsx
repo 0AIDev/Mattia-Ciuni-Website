@@ -2,10 +2,21 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { LegalPage, type LegalSection } from "@/components/LegalPage";
 
+const pageTitle = "Legal Center | Privacy, Terms and Cookies";
+
 export const metadata: Metadata = {
-  title: "Legal Center",
+  title: "Legal Center | Privacy, Terms and Cookies",
   description: "Privacy, terms, and cookies for Mattia Ciuni's website.",
   alternates: { canonical: "/legal/" },
+  openGraph: {
+    type: "website",
+    url: "/legal/",
+    siteName: "Mattia Ciuni",
+    title: pageTitle,
+    description: "Privacy, terms, and cookies for Mattia Ciuni's website.",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Mattia Ciuni" }],
+  },
+  twitter: { card: "summary_large_image", title: pageTitle, images: ["/og.png"] },
 };
 
 const sections: LegalSection[] = [

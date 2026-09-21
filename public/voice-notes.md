@@ -1,4 +1,4 @@
-# Voice Notes · Mattia Ciuni
+# Voice Notes | Spoken, unedited | Mattia Ciuni
 
 > Unedited spoken notes from Mattia Ciuni on building Payle, work and the questions between decisions.
 

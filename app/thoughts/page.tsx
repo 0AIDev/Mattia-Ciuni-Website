@@ -8,10 +8,11 @@ import { socialImages } from "@/lib/social";
 
 // La card di questa sezione, dichiarata come su tutte le altre pagine: misure,
 // tipo e alt compresi (un'anteprima non indovina niente da sola).
-const card = socialImages("/thoughts/og.png", "Thoughts · Mattia Ciuni");
+const pageTitle = "Thoughts on AI agents and payments | Mattia Ciuni";
+const card = socialImages("/thoughts/og.png", "Thoughts | Mattia Ciuni");
 
 export const metadata: Metadata = {
-  title: "Thoughts",
+  title: "Thoughts on AI agents and payments",
   description:
     "Thoughts by Mattia Ciuni on AI agents, payments and building Payle: the money layer for the agentic economy.",
   alternates: {
@@ -21,14 +22,15 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "/thoughts/",
-    title: "Thoughts · Mattia Ciuni",
+    siteName: "Mattia Ciuni",
+    title: pageTitle,
     description:
       "Thoughts by Mattia Ciuni on AI agents, payments and building Payle.",
     images: card.og,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Thoughts · Mattia Ciuni",
+    title: pageTitle,
     description:
       "Thoughts by Mattia Ciuni on AI agents, payments and building Payle.",
     images: card.twitter,

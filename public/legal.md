@@ -1,4 +1,4 @@
-# Legal Center · Mattia Ciuni
+# Legal Center | Privacy, Terms and Cookies | Mattia Ciuni
 
 > Privacy, terms, and cookies for Mattia Ciuni's website.
 

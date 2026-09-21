@@ -8,10 +8,13 @@ import { socialImages } from "@/lib/social";
 
 // La card di questa sezione, dichiarata come su tutte le altre pagine: misure,
 // tipo e alt compresi (un'anteprima non indovina niente da sola).
-const card = socialImages("/notes/og.png", "Notes · Mattia Ciuni");
+const pageTitle = "Notes on AI, payments and software | Mattia Ciuni";
+const card = socialImages("/notes/og.png", "Notes | Mattia Ciuni");
+// Il `title` del metadata non include il sito: lo aggiunge il template del
+// layout (`%s | Mattia Ciuni`), che è lo stesso divisore di ogni altra pagina.
 
 export const metadata: Metadata = {
-  title: "Notes",
+  title: "Notes on AI, payments and software",
   description:
     "Long-form notes by Mattia Ciuni on AI, payments and the philosophy of building software. Written slowly, updated rarely.",
   alternates: {
@@ -21,14 +24,15 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     url: "/notes/",
-    title: "Notes · Mattia Ciuni",
+    siteName: "Mattia Ciuni",
+    title: pageTitle,
     description:
       "Long-form notes on AI agents, payments and the philosophy of building software.",
     images: card.og,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Notes · Mattia Ciuni",
+    title: pageTitle,
     description:
       "Long-form notes on AI agents, payments and the philosophy of building software.",
     images: card.twitter,

@@ -5,19 +5,22 @@ import { AudioPlayer } from "@/components/MediaPlayers";
 import { voiceNotes } from "@/lib/voice-notes";
 import { site } from "@/lib/site";
 
+const pageTitle = "Voice Notes | Mattia Ciuni | Spoken, unedited";
+
 export const metadata: Metadata = {
-  title: "Voice Notes",
+  title: "Voice Notes | Spoken, unedited",
   description: "Unedited spoken notes from Mattia Ciuni on building Payle, work and the questions between decisions.",
   authors: [{ name: "Mattia Ciuni", url: site.url }],
   alternates: { canonical: "/voice-notes/" },
   openGraph: {
     type: "website",
     url: "/voice-notes/",
-    title: "Voice Notes · Mattia Ciuni",
+    siteName: "Mattia Ciuni",
+    title: pageTitle,
     description: "Unedited spoken notes from Mattia Ciuni on building Payle.",
     images: [{ url: "/og.png", width: 1200, height: 630, alt: "Mattia Ciuni" }],
   },
-  twitter: { card: "summary_large_image", images: ["/og.png"] },
+  twitter: { card: "summary_large_image", title: pageTitle, images: ["/og.png"] },
 };
 
 export default function VoiceNotesPage() {

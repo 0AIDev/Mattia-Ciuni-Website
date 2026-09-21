@@ -3,10 +3,21 @@ import Link from "next/link";
 import { LegalPage, type LegalSection } from "@/components/LegalPage";
 import { site } from "@/lib/site";
 
+const pageTitle = "Privacy Policy | Mattia Ciuni";
+
 export const metadata: Metadata = {
-  title: "Privacy Policy",
+  title: "Privacy Policy | What I collect and why",
   description: "How Mattia Ciuni handles newsletter subscriptions and personal data.",
   alternates: { canonical: "/privacy/" },
+  openGraph: {
+    type: "website",
+    url: "/privacy/",
+    siteName: "Mattia Ciuni",
+    title: pageTitle,
+    description: "How Mattia Ciuni handles newsletter subscriptions and personal data.",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Mattia Ciuni" }],
+  },
+  twitter: { card: "summary_large_image", title: pageTitle, images: ["/og.png"] },
 };
 
 const sections: LegalSection[] = [

@@ -4,12 +4,12 @@ import { founderVideos } from "@/lib/videos";
 import { VideoPlayer } from "@/components/MediaPlayers";
 import { site } from "@/lib/site";
 
-const pageTitle = "Videos · Mattia Ciuni";
+const pageTitle = "Videos | Mattia Ciuni | Building Payle in public";
 const pageDescription =
   "Founder videos from Mattia Ciuni on building Payle, working through hard problems and staying close to the work.";
 
 export const metadata: Metadata = {
-  title: "Videos",
+  title: "Videos | Building Payle in public",
   description: pageDescription,
   keywords: [
     "Mattia Ciuni videos",
