@@ -24,6 +24,8 @@ assert.match(endpoint, /api\.resend\.com\/emails/);
 assert.match(endpoint, /RESEND_API_KEY/);
 assert.match(endpoint, /RESEND_WELCOME_TEMPLATE_ID/);
 assert.match(endpoint, /template: \{ id: env\.RESEND_WELCOME_TEMPLATE_ID/);
+assert.match(endpoint, /Idempotency-Key/);
+assert.match(endpoint, /brevoListMembership/);
 assert.match(endpoint, /api\.brevo\.com\/v3\/contacts/);
 assert.match(endpoint, /BREVO_API_KEY/);
 assert.match(endpoint, /BEEHIIV_API_KEY/);

@@ -97,6 +97,7 @@ async function sendWelcome(env: Env, email: string, variables: Record<string, st
       Authorization: `Bearer ${env.RESEND_API_KEY}`,
       "Content-Type": "application/json",
       Accept: "application/json",
+      "Idempotency-Key": `newsletter-welcome:${email}`,
     },
     body: JSON.stringify({
       from: env.RESEND_FROM_EMAIL,
@@ -105,6 +106,17 @@ async function sendWelcome(env: Env, email: string, variables: Record<string, st
     }),
   });
   if (!response.ok) throw new Error(`resend_${response.status}`);
+}
+
+async function brevoListMembership(env: Env, email: string): Promise<boolean> {
+  if (!env.BREVO_API_KEY) throw new Error("missing_brevo_config");
+  const response = await fetch(`https://api.brevo.com/v3/contacts/${encodeURIComponent(email)}?limit=50&offset=0`, {
+    headers: { "api-key": env.BREVO_API_KEY, Accept: "application/json" },
+  });
+  if (response.status === 404) return false;
+  if (!response.ok) throw new Error(`brevo_lookup_${response.status}`);
+  const contact = (await response.json()) as { listIds?: number[] };
+  return !!env.BREVO_LIST_ID && contact.listIds?.includes(Number(env.BREVO_LIST_ID)) === true;
 }
 
 async function upsertBrevo(env: Env, email: string, attributes: Record<string, string>) {
@@ -187,7 +199,8 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
 
   const fields = attribution(request, body);
   try {
-    await sendWelcome(env, email, fields);
+    const alreadyInBrevo = await brevoListMembership(env, email);
+    if (!alreadyInBrevo) await sendWelcome(env, email, fields);
     await upsertBrevo(env, email, fields);
     await upsertBeehiiv(env, email, fields);
     return finish(json({ ok: true }, 200, { "X-Robots-Tag": "noindex" }), "subscribed");
