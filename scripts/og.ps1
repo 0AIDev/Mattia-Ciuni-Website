@@ -260,10 +260,20 @@ if (!(Test-Path $bgCover)) {
 
 foreach ($a in $articles) {
   $dir = if ($a.Kind -eq "Thoughts") { "thoughts" } else { "notes" }
+  $ogPath = Join-Path $OutRoot ($dir + "\" + $a.Slug + "\og.png")
+  $coverPath = Join-Path $OutRoot ($dir + "\" + $a.Slug + "\cover.png")
   $subText = if ($Subtitle -eq "meta") { $a.Meta } else { $a.Description }
   $cta = if ($noCtaSlugs -contains $a.Slug) { "" } elseif ($a.Kind -eq "Thoughts") { "Read thought" } else { "Read note" }
-  New-ArticleCard $bgCard  $a.Title $subText (Join-Path $OutRoot ($dir + "\" + $a.Slug + "\og.png")) 230 604 $cta
-  New-ArticleCard $bgCover $a.Title $subText (Join-Path $OutRoot ($dir + "\" + $a.Slug + "\cover.png")) 60 570 $cta
+
+  # Ghassen ha un master editoriale dedicato, fornito per questa pagina:
+  # non va ricomposto con il template delle altre Thoughts.
+  if ($a.Slug -eq "finding-ghassen-the-co-founder-question-answered-in-three-weeks" -and (Test-Path (Join-Path $Root "ghassen-og.png"))) {
+    Copy-MasterCard "ghassen-og.png" $ogPath
+  } else {
+    New-ArticleCard $bgCard $a.Title $subText $ogPath 230 604 $cta
+  }
+
+  New-ArticleCard $bgCover $a.Title $subText $coverPath 60 570 $cta
 }
 
 # --- OG delle pagine indice (/thoughts/ e /notes/) -----
