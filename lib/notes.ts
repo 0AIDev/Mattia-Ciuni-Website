@@ -17,7 +17,7 @@ const raw: Note[] = [
     title: "What a security audit taught me that no bootcamp will",
     description:
       "I paid strangers to attack my payments engine. The race conditions, the ledger that lied to itself, and the deletion that would have erased every customer.",
-    date: "2026-10-12",
+    date: "2026-09-21",
     keywords: [
       "security audit",
       "payments security",
@@ -165,7 +165,7 @@ const raw: Note[] = [
     title: "The moment my AI agent asked for my credit card",
     description:
       "The scene that started Payle: an AI agent did 90% of the work, then stopped at a credit card form. On the wall between acting and paying.",
-    date: "2026-10-05",
+    date: "2026-09-21",
     keywords: [
       "AI agents payments",
       "agentic commerce",

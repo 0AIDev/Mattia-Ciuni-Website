@@ -113,7 +113,7 @@ const raw: Post[] = [
     category: "Thoughts",
     description:
       "How a stranger challenged Payle's weakest assumption, became its co-founder and CTO, and turned three weeks of evidence into a partnership.",
-    date: "2026-10-01",
+    date: "2026-09-21",
     tags: ["founders", "fintech", "building in public", "Payle"],
     keywords: [
       "finding a co-founder",

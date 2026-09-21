@@ -107,7 +107,7 @@ Apri `lib/posts.ts`, aggiungi un oggetto all'array `raw`:
   title: "Titolo",
   category: "Thoughts",
   description: "1-2 frasi: è la meta description + anteprima. Includi keyword naturali.",
-  date: "2026-10-01",
+  date: "2026-09-21",
   tags: ["AI agents", "payments"],
   keywords: ["keyword 1", "keyword 2", "Mattia Ciuni"],
   content: [
