@@ -479,6 +479,7 @@ const feedbackLayout = feedbackPages.map((slug) => {
     hasToc: html.includes('aria-label="Table of contents"'),
     exchange: /Exchange\s+\d\d/.test(html),
     credit: !!author && html.includes('aria-label="' + author + ' on GitHub"'),
+    creditRowAligned: html.includes("flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm leading-5"),
   };
 });
 check(
@@ -490,7 +491,8 @@ check(
         !page.hasBlackRule &&
         !page.hasToc &&
         page.exchange &&
-        page.credit,
+        page.credit &&
+        page.creditRowAligned,
     ),
 );
 for (const page of feedbackLayout) {
@@ -652,7 +654,8 @@ check(
   "auth.md: H1 names the file, honest unauthenticated policy",
   fs.existsSync(path.join(out, "auth.md")) &&
     /^#\s.*auth\.md.*$/m.test(read("auth.md")) &&
-    read("auth.md").includes("no credential to obtain") &&
+    read("auth.md").includes("no OAuth/OIDC issuer") &&
+    read("auth.md").includes("/api/admin/feedback") &&
     headersFile.includes("/auth.md") && headersFile.includes("Content-Type: text/markdown")
 );
 

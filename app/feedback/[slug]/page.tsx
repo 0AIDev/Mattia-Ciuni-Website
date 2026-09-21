@@ -218,15 +218,12 @@ export default async function FeedbackPost({
           credito di chi ha scritto, come nella card dell'elenco. */}
       <article>
         <div data-article-content>
-          {/* Riga di credito su una riga di testo, non in un flex: i `{" "}`
-              espliciti servono a due lettori diversi. Il browser li usa come
-              spazi normali (e la riga va a capo da sola su mobile), mentre la card
-              markdown li conserva — in un flex gli elementi finivano incollati
-              (`Liam Murphy[aka7880-721](…)·2026-09-21`), perché il generatore
-              toglie i tag e non vede i `gap` del CSS. */}
+          {/* The credit is a small metadata row, not a paragraph: every item
+              shares one center line, while the flex wrap keeps the author,
+              handle and date readable on narrow screens. */}
           <div className="rounded-2xl border border-gray-300 px-5 py-4">
-            <p className="m-0 text-sm leading-relaxed">
-              <span className="font-medium text-gray-1200">{post.author}</span>{" "}
+            <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm leading-5">
+              <span className="font-medium text-gray-1200">{post.author}</span>
               {post.github ? (
                 <a
                   href={post.github}
@@ -235,19 +232,15 @@ export default async function FeedbackPost({
                   aria-label={`${post.author} on GitHub`}
                   className="inline-flex items-center gap-1.5 text-gray-1000 transition-colors hover:text-gray-1200"
                 >
-                  <GithubIcon size={14} className="inline-flex shrink-0" />
-                  <span className="text-xs">
+                  <GithubIcon size={14} className="shrink-0" />
+                  <span className="text-xs leading-5">
                     {post.github.replace("https://github.com/", "")}
                   </span>
                 </a>
-              ) : null}{" "}
-              <span aria-hidden="true" className="text-gray-1000">
-                ·
-              </span>{" "}
-              <span className="text-gray-1000">
-                <time dateTime={post.date}>{post.date}</time>
-              </span>
-            </p>
+              ) : null}
+              <span aria-hidden="true" className="text-gray-1000">·</span>
+              <time dateTime={post.date} className="text-gray-1000">{post.date}</time>
+            </div>
           </div>
 
           <h1 className="mt-7 mb-6 scroll-mt-20 font-serif text-3xl font-medium leading-tight text-gray-1200 sm:text-4xl">

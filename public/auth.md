@@ -1,9 +1,9 @@
 # auth.md — agent authentication
 
-This website does not expose protected APIs, user accounts, an OAuth/OIDC issuer or an
-agent registration flow. There is therefore **no credential to obtain** and no token
-endpoint to call. Do not send credentials or bearer tokens to this site: every public
-resource here is readable without them, and no endpoint accepts them.
+This website has no OAuth/OIDC issuer or agent registration flow. Its public resources
+are readable without credentials. One private, human-only admin endpoint exists for
+feedback review, but it is not an agent API and does not issue OAuth tokens. Do not send
+credentials or bearer tokens to public resources on this site.
 
 ## Public resources
 
@@ -30,9 +30,9 @@ of authorization servers, scopes and bearer methods: an empty list is the honest
 not a missing field. A `404` at that path would leave an agent wondering if it had looked
 in the wrong place.
 
-If this site ever protects an API for agents, the metadata, an issuer and a registration
-flow will be published **before** any credential is requested, and this file will change
-with them.
+If this site ever exposes a protected API for agents, an issuer and registration flow
+will be published **before** any credential is requested, and this file will change with
+them. The current `/api/admin/feedback` endpoint remains deliberately outside that flow.
 
 ## No MCP server
 

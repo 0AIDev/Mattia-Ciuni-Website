@@ -8,7 +8,7 @@
 
 ## Full article
 
-Liam Murphy [aka7880-721](https://github.com/aka7880-721) · 2026-09-21
+Liam Murphy[aka7880-721](https://github.com/aka7880-721)·2026-09-21
 
 # A stranger redesigned my pitch in one comment
 
