@@ -5,11 +5,11 @@ import CopyEmail from "@/components/CopyEmail";
 import MilanClock from "@/components/MilanClock";
 import NowSection from "@/components/NowSection";
 import { ChevronRight } from "@/components/icons";
-import { GithubIcon } from "@/components/ui/static-icons";
-import { LinkedinIcon } from "@/components/ui/static-icons";
-import { CrunchbaseIcon } from "@/components/ui/static-icons";
-import { InstagramIcon } from "@/components/ui/static-icons";
-import { TwitterIcon } from "@/components/ui/static-icons";
+import { GithubIcon } from "@/components/ui/github";
+import { LinkedinIcon } from "@/components/ui/linkedin";
+import { CrunchbaseIcon } from "@/components/ui/crunchbase";
+import { InstagramIcon } from "@/components/ui/instagram";
+import { TwitterIcon } from "@/components/ui/twitter";
 import { site } from "@/lib/site";
 import { posts } from "@/lib/posts";
 

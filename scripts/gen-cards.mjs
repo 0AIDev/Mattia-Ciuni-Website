@@ -70,7 +70,35 @@ function parse(html) {
     description: grab(/name="description" content="([^"]*)"/),
     url: grab(/rel="canonical" href="([^"]+)"/).replace(/\/$/, ""),
     published: t ? t[1].slice(0, 10) : "",
+    html,
   };
+}
+
+function markdownArticle(html) {
+  const article =
+    html.match(/<div\b[^>]*data-article-content[^>]*>([\s\S]*?)<\/div>\s*<\/article>/i)?.[1] ||
+    html.match(/<article\b[^>]*>([\s\S]*?)<\/article>/i)?.[1] ||
+    "";
+  let text = article
+    .replace(/<button\b[\s\S]*?<\/button>/gi, "")
+    .replace(/<img\b[^>]*>/gi, "")
+    .replace(/<pre\b[^>]*>\s*<code[^>]*>([\s\S]*?)<\/code>\s*<\/pre>/gi, (_, code) => `\n\n\`\`\`\n${clean(code)}\n\`\`\`\n\n`)
+    .replace(/<h([1-6])\b[^>]*>([\s\S]*?)<\/h\1>/gi, (_, level, value) => `\n\n${"#".repeat(Number(level))} ${value}\n\n`)
+    .replace(/<blockquote\b[^>]*>([\s\S]*?)<\/blockquote>/gi, (_, value) => `\n\n> ${value}\n\n`)
+    .replace(/<li\b[^>]*>([\s\S]*?)<\/li>/gi, (_, value) => `\n- ${value}`)
+    .replace(/<\/?(?:ul|ol)\b[^>]*>/gi, "\n")
+    .replace(/<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi, (_, href, value) => `[${value}](${href})`)
+    .replace(/<strong\b[^>]*>([\s\S]*?)<\/strong>/gi, "**$1**")
+    .replace(/<em\b[^>]*>([\s\S]*?)<\/em>/gi, "*$1*")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<p\b[^>]*>/gi, "\n\n")
+    .replace(/<\/p>/gi, "\n\n")
+    .replace(/<[^>]+>/g, "");
+
+  return clean(text)
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 const pages = listPages(outDir)
@@ -108,6 +136,10 @@ function cardBody(p) {
   if (p.meta.description) lines.push("", "> " + p.meta.description);
   lines.push("", "- URL: " + p.meta.url, "- Type: " + p.type);
   if (p.meta.published) lines.push("- Published: " + p.meta.published);
+  if (p.type === "Blog post" || p.type === "Note") {
+    const article = markdownArticle(p.meta.html);
+    if (article) lines.push("", "## Full article", "", article);
+  }
   return lines.join("\n");
 }
 

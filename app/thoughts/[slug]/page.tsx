@@ -8,8 +8,8 @@ import { GhassenLinks } from "@/components/GhassenLinks";
 import { RelatedList } from "@/components/RelatedList";
 import { InlineText } from "@/components/RichText";
 import { ChevronRight } from "@/components/icons";
-import { ArrowUpLeftIcon } from "@/components/ui/static-icons";
-import { MailCheckIcon } from "@/components/ui/static-icons";
+import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
+import { MailCheckIcon } from "@/components/ui/mail-check";
 import SectionCopyLink from "@/components/SectionCopyLink";
 import TableOfContents, {
   MobileTableOfContents,
@@ -230,34 +230,35 @@ export default async function BlogPost({
         <CopyPostLink />
       </header>
 
-      {toc.length > 0 ? <TableOfContents items={toc} /> : null}
-      <MobileTableOfContents items={toc} />
-
       <article>
-        <CoverImage src={`/thoughts/${post.slug}/cover.png`} />
-        <h1
-          id={post.slug}
-          className="mb-5 scroll-mt-20 font-serif text-3xl font-medium leading-tight text-gray-1200 sm:text-4xl"
-        >
-          {post.title}
-        </h1>
-        <BlockFlow blocks={post.content} />
-        {post.slug === "finding-ghassen-the-co-founder-question-answered-in-three-weeks" ? <GhassenLinks /> : null}
-        <p className="mt-12 w-full text-text-paragraph">
-          Building the money layer for AI agents at{" "}
-          <a href={site.payleUrl} rel="noopener noreferrer" className="article-underline">
-            Payle
-          </a>
-          . Reply via{" "}
-          <a
-            href={`mailto:${site.email}`}
-            className="article-underline inline-flex items-center gap-1.5"
+        {toc.length > 0 ? <TableOfContents items={toc} /> : null}
+        <MobileTableOfContents items={toc} />
+        <div data-article-content>
+          <CoverImage src={`/thoughts/${post.slug}/cover.png`} />
+          <h1
+            id={post.slug}
+            className="mb-5 scroll-mt-20 font-serif text-3xl font-medium leading-tight text-gray-1200 sm:text-4xl"
           >
-            <MailCheckIcon size={15} className="inline-flex shrink-0" />
-            {site.email}
-          </a>
-          .
-        </p>
+            {post.title}
+          </h1>
+          <BlockFlow blocks={post.content} />
+          {post.slug === "finding-ghassen-the-co-founder-question-answered-in-three-weeks" ? <GhassenLinks /> : null}
+          <p className="mt-12 w-full text-text-paragraph">
+            Building the money layer for AI agents at{" "}
+            <a href={site.payleUrl} rel="noopener noreferrer" className="article-underline">
+              Payle
+            </a>
+            . Reply via{" "}
+            <a
+              href={`mailto:${site.email}`}
+              className="article-underline inline-flex items-center gap-1.5"
+            >
+              <MailCheckIcon size={15} className="inline-flex shrink-0" />
+              {site.email}
+            </a>
+            .
+          </p>
+        </div>
       </article>
 
       <RelatedList

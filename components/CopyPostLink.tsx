@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Check } from "./icons";
-import { CopyIcon } from "@/components/ui/static-icons";
+import { CopyIcon } from "@/components/ui/copy";
 
 export default function CopyPostLink() {
   const [copied, setCopied] = useState(false);

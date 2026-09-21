@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ChevronRight } from "@/components/icons";
-import { ArrowUpLeftIcon } from "@/components/ui/static-icons";
+import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
 import { site } from "@/lib/site";
 import { posts } from "@/lib/posts";
 import { socialImages } from "@/lib/social";

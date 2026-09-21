@@ -17,7 +17,7 @@ export const site = {
   // TODO: inserisci i tuoi handle reali qui (un solo punto da aggiornare).
   social: {
     linkedin: "https://www.linkedin.com/in/mattiaciuni",
-    github: "https://github.com/mattiaciuni",
+    github: "https://github.com/0AIDev",
     x: "https://x.com/mattiaciuni",
     instagram: "https://www.instagram.com/mciunim",
     crunchbase: "https://www.crunchbase.com/person/mattia-ciuni",

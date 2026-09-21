@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowUpLeftIcon } from "@/components/ui/static-icons";
+import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
 
 export default function NotFound() {
   return (

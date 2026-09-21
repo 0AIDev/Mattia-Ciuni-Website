@@ -1,6 +1,6 @@
-import { ArrowUpRightIcon } from "@/components/ui/static-icons";
-import { LinkedinIcon } from "@/components/ui/static-icons";
-import { MailCheckIcon } from "@/components/ui/static-icons";
+import { ArrowUpRightIcon } from "@/components/ui/arrow-up-right";
+import { LinkedinIcon } from "@/components/ui/linkedin";
+import { MailCheckIcon } from "@/components/ui/mail-check";
 
 export function GhassenLinks() {
   return (

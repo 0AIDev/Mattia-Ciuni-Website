@@ -1,5 +1,5 @@
 import { site } from "@/lib/site";
-import { MailCheckIcon } from "@/components/ui/static-icons";
+import { MailCheckIcon } from "@/components/ui/mail-check";
 
 export default function CopyEmail() {
   return (
