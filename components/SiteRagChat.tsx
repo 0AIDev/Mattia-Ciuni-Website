@@ -11,12 +11,14 @@ const promptsByPath: Record<string, string[]> = {
   "/": ["Who is Mattia Ciuni?", "What is Payle?", "Show me the latest Notes"],
   "/thoughts/": ["What is Mattia building?", "Show me the latest Thought"],
   "/notes/": ["What are the Notes about?", "Show me the latest Note"],
+  "/feedback/": ["What is the Feedback series?", "How do I send feedback?", "Show me the latest exchange"],
 };
 
 function initialPrompts(path: string) {
   if (promptsByPath[path]) return promptsByPath[path];
   if (path.startsWith("/thoughts/")) return ["Summarize this Thought", "Show me related Thoughts"];
   if (path.startsWith("/notes/")) return ["Summarize this Note", "Show me related Notes"];
+  if (path.startsWith("/feedback/")) return ["What changed thanks to this feedback?", "Show me the Feedback index"];
   return ["Who is Mattia Ciuni?", "What is Payle?"];
 }
 
@@ -125,7 +127,7 @@ export function SiteRagChat() {
             {!messages.length && (
               <div className="pt-8 text-center">
                 <p className="font-serif text-2xl">What would you like to know?</p>
-                <p className="mx-auto mt-2 max-w-[260px] text-sm leading-relaxed text-gray-1000">Ask about Mattia, Payle, the Thoughts, the Notes or anything else published here.</p>
+                <p className="mx-auto mt-2 max-w-[260px] text-sm leading-relaxed text-gray-1000">Ask about Mattia, Payle, the Thoughts, the Notes, the Feedback or anything else published here.</p>
               </div>
             )}
             {messages.map((message, index) => (

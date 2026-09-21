@@ -4,11 +4,14 @@ import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
 import { site } from "@/lib/site";
 import { feedback } from "@/lib/feedback";
 import { socialImages } from "@/lib/social";
-import { FeedbackForm } from "@/components/FeedbackForm";
+import { FeedbackModalButton } from "@/components/FeedbackForm";
 
-// Il master di sezione è disegnato a mano come per Thoughts e Notes; finché non
-// esiste la OG della home fa da immagine provvisoria dichiarata (verify.js
-// pretende che ogni og:image dichiarato esista davvero, e questa esiste).
+/**
+ * Feedback ha una pagina volutamente diversa da tutte le altre sezioni: non è
+ * un archivio di testi scritti da Mattia, è il muro dei contributi degli altri.
+ * Layout a due colonne (chi ha contribuito + invito), card tonde, nessun bordo
+ * doppio: la gerarchia è data dal spazio e dalle voci, non dai filetti.
+ */
 const pageTitle = "Feedback on Payle | Mattia Ciuni";
 const card = socialImages("/og.png", "Feedback | Mattia Ciuni");
 
@@ -50,13 +53,13 @@ export default function FeedbackIndex() {
   return (
     <main
       id="content"
-      className="mx-auto max-w-[692px] px-6 py-12 leading-relaxed sm:py-24"
+      className="mx-auto max-w-[820px] px-6 py-12 leading-relaxed sm:py-24"
     >
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(listJsonLd) }}
       />
-      <header className="mb-16 flex items-center gap-4 sm:mb-24">
+      <header className="mb-14 flex items-center gap-4 sm:mb-20">
         <Link
           href="/"
           aria-label="Go back home"
@@ -67,88 +70,84 @@ export default function FeedbackIndex() {
         <span className="text-sm text-gray-1000">Feedback</span>
       </header>
 
-      <div className="mb-16 border-t-2 border-gray-1200 pt-5 sm:mb-24">
-        <h1 className="mb-5 scroll-mt-20 font-serif text-3xl font-medium leading-tight text-gray-1200 sm:text-4xl">
-          Feedback
+      {/* Hero centrato sul lettore che può diventare contributore: la pagina
+          parla di loro prima che dei post. */}
+      <section className="mb-16 text-center sm:mb-24">
+        <p className="text-[13px] uppercase tracking-[0.2em] text-gray-1000">
+          Feedback series
+        </p>
+        <h1 className="mx-auto mt-4 max-w-[560px] text-balance font-serif text-4xl font-medium leading-[1.1] text-gray-1200 sm:text-5xl">
+          You attack it. It gets better. I publish it.
         </h1>
-        <p className="m-0 max-w-[600px] text-text-paragraph">
-          Public exchanges where engineers attacked Payle&apos;s architecture,
-          and what their attacks changed. I publish the corrections, not just
-          the wins.
+        <p className="mx-auto mt-5 max-w-[560px] text-text-paragraph">
+          Payle&apos;s architecture is public, and the sharpest corrections it
+          ever got came from strangers. Every exchange that survives review is
+          published here, credited: your name, or just an initial, your choice.
         </p>
-        <p className="mt-4 m-0 max-w-[600px] text-sm leading-relaxed text-gray-1000">
-          Send yours below. Every submission is read and reviewed; if it holds
-          up, it gets published with your name or just an initial, your choice.
-        </p>
-        <FeedbackForm />
-      </div>
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+          <FeedbackModalButton />
+          <a
+            href="#the-exchanges"
+            className="rounded-full border border-gray-300 px-6 py-2.5 text-sm font-semibold text-gray-1000 transition-colors hover:border-gray-1200 hover:text-gray-1200"
+          >
+            Read the exchanges
+          </a>
+        </div>
+      </section>
 
-      <ul className="m-0 list-none divide-y divide-gray-300 border-t-2 border-gray-1200 p-0">
-        {feedback.map((f) => (
-          <li key={f.slug}>
+      {/* Le voci: una card tonda per contributo, l'autore in evidenza. */}
+      <section id="the-exchanges" aria-label="Published feedback exchanges">
+        <div className="mb-6 flex items-baseline justify-between gap-4">
+          <h2 className="font-serif text-xl font-medium">The exchanges</h2>
+          <span className="text-sm text-gray-1000">{feedback.length} published</span>
+        </div>
+        <div className="grid gap-4">
+          {feedback.map((f) => (
             <Link
+              key={f.slug}
               href={`/feedback/${f.slug}/`}
-              className="group block py-5"
+              className="group rounded-3xl border border-gray-300 p-6 transition-colors hover:border-gray-1200 sm:p-8"
             >
-              <div className="flex items-baseline gap-3 text-[13px] uppercase tracking-wide text-gray-1000">
-                <span>Feedback series</span>
-                <span aria-hidden="true">·</span>
-                <span>{f.date}</span>
+              <div className="flex items-center gap-3">
+                <span
+                  aria-hidden="true"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-1200 font-serif text-sm text-white"
+                >
+                  {f.author.slice(0, 1).toUpperCase()}
+                </span>
+                <span className="text-sm font-medium text-gray-1200">{f.author}</span>
+                <span aria-hidden="true" className="text-gray-1000">·</span>
+                <span className="text-sm text-gray-1000">{f.date}</span>
               </div>
-              <span className="mt-1 block font-serif text-lg font-medium leading-snug text-gray-1200 transition-colors group-hover:text-gray-1100">
+              <span className="mt-4 block font-serif text-xl font-medium leading-snug text-gray-1200 sm:text-2xl">
                 {f.title}
               </span>
-              <p className="mt-2 m-0 text-sm leading-relaxed text-gray-1000">
+              <p className="mt-2 m-0 text-[15px] leading-relaxed text-gray-1000">
                 {f.description}
               </p>
             </Link>
-          </li>
-        ))}
-      </ul>
+          ))}
+        </div>
+      </section>
 
-      <nav aria-label="More writing" className="mt-16 border-t border-gray-300">
-        <Link
-          href="/thoughts/"
-          className="group flex items-baseline justify-between gap-4 py-3.5"
-        >
-          <span className="text-gray-1000">Short, sharp posts</span>
-          <span className="flex items-center gap-2 font-medium">
-            Thoughts
-            <ChevronRight />
-          </span>
-        </Link>
-        <Link
-          href="/notes/"
-          className="group flex items-baseline justify-between gap-4 py-3.5"
-        >
-          <span className="text-gray-1000">Longer, slower pieces</span>
-          <span className="flex items-center gap-2 font-medium">
-            Notes
-            <ChevronRight />
-          </span>
-        </Link>
+      {/* La promessa, in una riga: chiudo con il gesto, non con la prosa. */}
+      <section className="mt-16 rounded-3xl bg-gray-1200 px-6 py-12 text-center sm:mt-20 sm:py-16" aria-label="Send your feedback">
+        <p className="mx-auto max-w-[420px] font-serif text-2xl leading-snug text-white">
+          The next Feedback post might be about your comment.
+        </p>
+        <div className="mt-6">
+          <FeedbackModalButton
+            variant="outline"
+            className="border-white text-white hover:bg-white hover:text-gray-1200"
+          />
+        </div>
+      </section>
+
+      <nav aria-label="More writing" className="mt-16 flex flex-wrap justify-center gap-x-6 gap-y-2 text-sm text-gray-1000">
+        <Link href="/thoughts/" className="article-underline">Thoughts</Link>
+        <Link href="/notes/" className="article-underline">Notes</Link>
+        <Link href="/" className="article-underline">Home</Link>
       </nav>
     </main>
-  );
-}
-
-function ChevronRight() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      aria-hidden="true"
-      className="transition-transform group-hover:translate-x-1"
-    >
-      <path
-        d="M6 3.5L10.5 8L6 12.5"
-        stroke="currentColor"
-        strokeWidth="1.5"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-      />
-    </svg>
   );
 }

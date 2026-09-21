@@ -13,7 +13,7 @@ import { site } from "@/lib/site";
 import { feedback, getFeedback, type FeedbackBlock } from "@/lib/feedback";
 import { slugify } from "@/lib/slug";
 import { socialImages } from "@/lib/social";
-import { FeedbackForm } from "@/components/FeedbackForm";
+import { FeedbackModalButton } from "@/components/FeedbackForm";
 
 export function generateStaticParams() {
   return feedback.map((f) => ({ slug: f.slug }));
@@ -215,7 +215,15 @@ export default async function FeedbackPost({
           published here, with your name or just an initial, your choice. The
           next Feedback post might be about your comment.
         </p>
-        <FeedbackForm />
+        <div className="mt-6">
+          <FeedbackModalButton
+            variant="outline"
+            label="Send your feedback"
+          />
+        </div>
+        <p className="mt-4 text-sm text-gray-1000">
+          Reviewed by Mattia before publication; credited your way or not at all.
+        </p>
       </section>
 
       <nav aria-label="All feedback" className="mt-8 border-t border-gray-300">

@@ -32,6 +32,11 @@ const MODEL = "@cf/meta/llama-3.2-1b-instruct";
 const MAX_QUESTION = 500;
 const STOP_WORDS = new Set(["what", "where", "when", "who", "does", "is", "the", "and", "for", "about", "tell", "me", "can", "you", "how", "this", "that", "with", "from"]);
 const NAV_WORDS = /\b(go|take|send|open|show|vai|portami|mandami|apri|mostrami)\b/i;
+// Gli intent espliciti della sezione Feedback passano prima di qui: il
+// retrieval a token non sempre li vince contro pagine con più testo.
+const NAV_OVERRIDES: Array<[RegExp, string]> = [
+  [/\bfeedback\b|attack(ed)? (it|payle)|send (my|a) (comment|feedback)/i, "/feedback/"],
+];
 
 function json(body: Record<string, unknown>, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -68,8 +73,11 @@ function retrieve(entries: RagEntry[], question: string): RagEntry[] {
 }
 
 function navigation(question: string, entries: RagEntry[]): string | null {
-  if (!NAV_WORDS.test(question)) return null;
   const lower = question.toLowerCase();
+  for (const [pattern, url] of NAV_OVERRIDES) {
+    if (pattern.test(lower)) return url;
+  }
+  if (!NAV_WORDS.test(question)) return null;
   if (/usepayle|payle\.com|payle website|product/i.test(lower)) return "https://usepayle.com";
   const ranked = entries
     .map((entry) => ({ entry, score: tokens(`${entry.title} ${entry.url}`).filter((token) => lower.includes(token)).length }))
