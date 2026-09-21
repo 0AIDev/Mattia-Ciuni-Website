@@ -110,7 +110,7 @@ export function FeedbackModalButton({
       ? "rounded-full bg-gray-1200 px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-80"
       : "rounded-full border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-1200 transition-colors hover:border-gray-1200";
   const field =
-    "w-full rounded-full border border-gray-300 bg-transparent px-5 py-2.5 text-[15px] text-gray-1200 outline-none transition-colors placeholder:text-gray-1000/60 focus:border-gray-1200 disabled:opacity-60";
+    "w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-2.5 text-[15px] text-gray-1200 shadow-none outline-none transition-colors placeholder:text-gray-1000/60 hover:border-gray-1000 focus:border-gray-1200 disabled:opacity-60";
 
   return (
     <>
@@ -133,8 +133,8 @@ export function FeedbackModalButton({
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
-              <div>
-                <p className="font-serif text-2xl leading-tight text-gray-1200">Give feedback</p>
+              <div className="text-left">
+                <p className="m-0 font-serif text-2xl leading-tight text-gray-1200">Give feedback</p>
                 <p className="mt-1 text-sm leading-relaxed text-gray-1000">
                   Attack it, or tell me what&apos;s missing.
                 </p>
@@ -143,7 +143,7 @@ export function FeedbackModalButton({
                 type="button"
                 ref={closeRef}
                 onClick={close}
-                className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-xl leading-none text-gray-1000 transition-colors hover:bg-gray-200"
+                className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xl leading-none text-gray-1000"
                 aria-label="Close"
               >
                 ×
@@ -205,7 +205,7 @@ export function FeedbackModalButton({
                   rows={5}
                   maxLength={4000}
                   required
-                  className="w-full resize-y rounded-2xl border border-gray-300 bg-transparent px-5 py-3 text-[15px] leading-relaxed text-gray-1200 outline-none transition-colors placeholder:text-gray-1000/60 focus:border-gray-1200 disabled:opacity-60"
+                  className="w-full appearance-none resize-y rounded-2xl border border-gray-400 bg-white px-5 py-3 text-[15px] leading-relaxed text-gray-1200 shadow-none outline-none transition-colors placeholder:text-gray-1000/60 hover:border-gray-1000 focus:border-gray-1200 disabled:opacity-60"
                   name="message"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
