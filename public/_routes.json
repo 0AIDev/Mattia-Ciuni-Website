@@ -1,0 +1,20 @@
+{
+  "version": 1,
+  "include": [
+    "/",
+    "/thoughts",
+    "/thoughts/*",
+    "/notes",
+    "/notes/*",
+    "/index.md",
+    "/sitemap.xml",
+    "/sitemap-home.xml",
+    "/sitemap-thoughts.xml",
+    "/sitemap-notes.xml",
+    "/robots.txt",
+    "/feed.xml",
+    "/llms.txt",
+    "/.well-known/*"
+  ],
+  "exclude": []
+}

@@ -140,7 +140,7 @@ Le regole sono poche perché il registro parla da sé:
 
 ```bash
 npm run build            # next build + le card markdown
-node scripts/verify.js   # 52 controlli sul costruito
+node scripts/verify.js   # 56 controlli sul costruito
 npm run lint
 ```
 

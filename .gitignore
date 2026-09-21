@@ -10,9 +10,12 @@ public/thoughts.md
 public/notes.md
 public/thoughts/*.md
 public/notes/*.md
+# documenti di scoperta per gli agenti (generati in postbuild da gen-agent-files.mjs)
+public/.well-known/
 # artefatti di build (tsc --noEmit / next dev)
 *.tsbuildinfo
-# wrangler (stato locale di `wrangler dev`, segreti locali, bundle dell'adapter)
+# wrangler (stato locale di `wrangler pages dev`)
 .wrangler/
-.dev.vars
-.open-next/
+# copia dell'export servita da `wrangler pages dev` e prove a mano
+.pages-preview/
+.scratch/

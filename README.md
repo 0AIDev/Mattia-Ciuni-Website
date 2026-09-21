@@ -1,6 +1,6 @@
 # Mattia Ciuni — personal website
 
-Minimal developer site (stile jakub.kr), tema chiaro fisso `#FCFCFC`, colonna 692px, font Inter (variabile) + Source Serif 4 italic self-hosted via `next/font`. **Next.js 16 App Router (Turbopack) + React 19** con **static export** → deploy nativo su **Cloudflare** (Worker con static assets: `wrangler.jsonc`). Librerie aggiuntive: `motion` (runtime delle icone animate) + `@animateicons/react` + Tailwind in build.
+Minimal developer site (stile jakub.kr), tema chiaro fisso `#FCFCFC`, colonna 692px, font Inter (variabile) + Source Serif 4 italic self-hosted via `next/font`. **Next.js 16 App Router (Turbopack) + React 19** con **static export** → deploy su **Cloudflare Pages** (progetto collegato a GitHub, cartella `out/`, più una Pages Function per la negoziazione markdown: `functions/_middleware.ts`). Librerie aggiuntive: `motion` (runtime delle icone animate) + `@animateicons/react` + Tailwind in build.
 
 ## Documentazione
 
@@ -26,14 +26,17 @@ Tre file, e sono il contratto del sito — non si scrive un articolo senza il se
 - `lib/slug.ts` — `slugify` condivisa: unica fonte degli anchor di sezione (heading + TOC)
 - `lib/posts.ts` — **unico file dove scrivere articoli** (niente MDX, niente dipendenze). Campo `category` mostrato come tag; `*testo*` renderizzato come `em` in Source Serif 4
 - `lib/notes.ts` — **unico file dove scrivere le note** (niente MDX): `slug`, `title`, `description`, `date`, `keywords`, `content` (paragrafi + h2 con `*em*`)
-- `lib/site.ts` — **unico file per dominio + social** (cambia qui quando hai dominio/handle reali; include `social.crunchbase`)
+- `lib/site-origin.ts` — **l'unica stringa del dominio di produzione** (`https://mattiaciuni.pages.dev`): la leggono il build (`lib/site.ts` → canonical, sitemap, feed, JSON-LD, OG), la Pages Function (che sa quale dominio sta dentro l'export per poterlo sostituire con quello che serve la pagina) e `scripts/verify.js`. Un file a parte perché fossero tre copie tornerebbe il guasto del 21/09 (sito live su un host, indirizzi dichiarati su un altro)
+- `lib/site.ts` — **dominio + social**: il dominio lo prende da `NEXT_PUBLIC_SITE_URL` (variabile del progetto Pages) o da `lib/site-origin.ts`; qui stanno gli handle social (`social.crunchbase` incluso)
 - `public/og.png`, `public/thoughts/og.png`, `public/notes/og.png`, `public/thoughts/<slug>/og.png` e `public/notes/<slug>/og.png`: OG 1200×630 statiche (tema chiaro), generate con `scripts/og.ps1` (niente runtime, niente dipendenze; `next/og` evitato di proposito: crasha il build su Windows e richiede Node runtime, incompatibile con static export puro). Homepage, indice Thoughts e indice Notes partono da **master disegnati a mano in root, 1920×1008** — `og.png`, `thoughts-og.png`, `notesog.png` (come `Vector.svg` e `mattia.png`): lo script li porta a 1200×630 con `HighQualityBicubic` e li ricodifica, senza disegnare niente (stesso rapporto d'aspetto, quindi nessun ritaglio). Le OG di **post e note** le compone lo script dal template: `og-sfondo.png` (il tuo `sfondo.svg` rasterizzato con `node scripts/gen-og-bg.mjs`) + **titolo in Instrument Serif Regular** e **sottotitolo in Inter Light**, centrati sotto il logo, con i TTF in `scripts/fonts/` caricati da disco (nessuna installazione). Lo stesso giro scrive anche **`cover.png`** accanto a ogni `og.png`: la stessa card **senza il logo**, ed è quella che la pagina mostra **sopra il `h1`** (`components/CoverImage.tsx` — colonna intera, riquadro con bordo e ombra leggera), perché nella `<head>` va la card con il logo e dentro il sito quella senza. Il sottotitolo è la riga di contesto (`Thoughts · 20 September 2026`, o `Notes · 12 September 2026`); con `-Subtitle description` al suo posto va la description dell'articolo. Titoli, slug e date si leggono da `lib/posts.ts` e `lib/notes.ts`: zero duplicazioni. Utili: `-Only <slug>` (un solo articolo), `-Preview` (scrive in `out/_tmp/og` per approvarlo prima), `-HomeOnly` (solo la homepage)
 - `public/mattia.png`, avatar della home (128×128 **B&W** ottimizzato ~11KB, da `mattia.png` 1254×1254 in root): grayscale + resize HighQualityBicubic via System.Drawing (comando PowerShell una tantum)
 - **Favicon**: `app/icon.png` (copia del logo raster `favicon.png` in root, 1572×1572). Rimuove `app/icon.svg`. Origin dell'icona nel manifest sta su `/icon.png`.
 - **Logo footer**: `public/logo.svg` = variante pulita di `Vector.svg` (in root): viewBox ritagliato sul tratto (il file originale ha canvas 1298×670 con il disegno che sborda e un filtro ombra sfocata) e color `#686868` (gray-1000). Generabile con `node scripts/gen-logo.mjs`.
 - `app/sitemap.xml/route.ts` + `app/sitemap-home.xml/route.ts` + `app/sitemap-thoughts.xml/route.ts` + `app/sitemap-notes.xml/route.ts`, `app/robots.txt/route.ts`, `app/llms.txt/route.ts` — SEO: sitemap **indice** `/sitemap.xml` che divide in sotto-sitemap (home / thoughts / notes), tutte formattate (indentate, `lastmod` YYYY-MM-DD, changefreq, priority) e generate in automatico da posts+notes via helper `lib/sitemap.ts`; robots.txt che permette tutto (`Allow: /`) + riferimento all'indice; llms.txt standard per LLM (H1 + summary blockquote + sezioni Thoughts/Notes/Contact generati da dati reali). Poi: `app/manifest.ts` (theme `#FCFCFC`), `app/feed.xml/route.ts`, `app/not-found.tsx`
-- `wrangler.jsonc` — **il file che pubblica il sito**: Worker con static assets, `directory: "./out"`, `html_handling: "force-trailing-slash"` (gli indirizzi canonici finiscono con `/`), `not_found_handling: "404-page"` (`out/404.html`). Senza questo file `wrangler deploy` si configura da sé e lancia l'adapter OpenNext, che su un export statico fallisce: vedi §Deploy.
-- `public/_headers` (tipo e cache dei file noti, header di sicurezza) e `public/_redirects` — letti dal Worker static-assets. Il redirect `www` → apex **non** sta qui: i Worker accettano solo percorsi relativi e scartano le regole con un dominio dentro (vedi §Dominio custom).
+- `functions/_middleware.ts` — **l'unico codice del sito**, una Pages Function che fa due cose: `Accept: text/markdown` su una pagina restituisce la sua card `.md` (con `Content-Type: text/markdown`, `x-markdown-tokens` e `Vary: Accept`), e gli indirizzi assoluti che l'export dichiara (`canonical`, `og:image`, JSON-LD, `<loc>`, `Sitemap:`) vengono riscritti con **l'host che sta servendo la pagina** — così il dominio segue il deploy invece di dover essere indovinato, e le anteprime (Discord, X, Slack) chiedono la card a un dominio che esiste. Con `SITE_URL` impostata nel progetto il dominio si fissa invece di seguire l'host: è il caso del dominio custom. Tutto il resto passa agli asset. Vedi §Scoperta per gli agenti.
+- `public/_routes.json` — la Function **non viene invocata** per immagini, CSS, font e JS: elenca solo le rotte in cui compaiono indirizzi assoluti (pagine, sitemap, robots, feed, llms.txt, card `.md`, `/.well-known/`). Senza questo file Pages la invocherebbe su ogni richiesta.
+- `agent-skills/<nome>/SKILL.md` — la fonte a mano delle skill per gli agenti (una: come leggere e citare il sito). Da qui `scripts/gen-agent-files.mjs` ricava in `postbuild` `/.well-known/agent-skills/index.json` e la copia pubblicata, col digest sha256 calcolato sugli stessi byte.
+- `public/_headers` (tipo e cache dei file noti, header di sicurezza, `Link` di scoperta) e `public/_redirects` — letti da Cloudflare Pages. Le regole di `_redirects` **non** si possono provare in locale con `next dev`: girano solo nel runtime di Pages (`npx wrangler pages dev out`), come `_headers`.
 
 ## Sviluppo
 
@@ -42,25 +45,34 @@ npm install
 npm run dev     # http://localhost:3000
 npm run build   # static export in ./out
 npm run lint    # ESLint flat config (eslint.config.mjs)
-node scripts/verify.js  # 52 controlli SEO/GEO (meta, JSON-LD, canonical, sitemap, robots, card For AI, OG card per ogni articolo, ogni `og:image` dichiarata che esiste davvero, link interni, TOC, peso)
+node scripts/verify.js  # 57 controlli SEO/GEO (meta, JSON-LD, canonical, sitemap, robots, card For AI, OG card per ogni articolo, ogni `og:image` dichiarata che esiste davvero, documenti di scoperta, link interni, TOC, dominio coerente con l'export, peso)
+node scripts/check-live.mjs --site=https://mattiaciuni.pages.dev  # gli stessi controlli **sul sito pubblicato** (il dominio risolve? ogni pagina elencata risponde e dichiara la propria card?)
 ```
 
-## Deploy su Cloudflare (Worker con static assets)
+## Deploy su Cloudflare Pages
 
-Il sito è un export statico, quindi il Worker che lo pubblica **non ha codice**: serve `out/`. A dirlo è **`wrangler.jsonc`** — cartella degli asset, trailing slash, pagina 404 — ed è il file da non togliere. Senza, `wrangler deploy` prova a configurarsi da sé, riconosce Next.js e costruisce con l'adapter **OpenNext**, che pretende un build Next *standalone* (`.next/standalone/…`): su un export statico quella cartella non esiste e la build cade con `ENOENT … .next/server/pages-manifest.json`. Con un file di configurazione presente, la configurazione automatica non parte.
+Il sito è un export statico: Pages pubblica la cartella `out/` e basta, più `functions/` se c'è (qui c'è, ed è la negoziazione markdown). Nessun server da eseguire, nessun adapter.
 
-1. Pusha il repo su GitHub.
-2. Cloudflare Dashboard → **Workers & Pages → Create → Workers → Connect to Git** (nome del Worker: `mattia-ciuni-website`, come `name` in `wrangler.jsonc`).
-3. Build settings: Build command `npm run build`, Deploy command `npx wrangler deploy`. **Nient'altro da impostare**: la cartella pubblicata e il comportamento degli indirizzi li dice `wrangler.jsonc`.
-4. Deploy → `mattia-ciuni-website.<account>.workers.dev`. Verifica: `/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/feed.xml`, `/og.png`, `/thoughts/`, `/index.md` (card For AI).
-5. **Dominio di produzione**: nel Worker → **Settings → Variables and Secrets** imposta `NEXT_PUBLIC_SITE_URL` (es. `https://mattiaciuni.xyz`) e rilancia un deploy. Se non la imposti, il build usa il fallback in `lib/site.ts`. `verify.js` e le OG rispettano la stessa variabile.
+1. Cloudflare Dashboard → **Workers & Pages → Create → Pages → Connect to Git** → repo `0AIDev/Mattia-Ciuni-Website`, branch `main`.
+2. Build settings: **Build command** `npm run build`, **Build output directory** `out`. Nient'altro: `_headers`, `_redirects`, `_routes.json` e la pagina 404 stanno già nell'export, e li legge Pages da sé.
+3. **Environment variables** (Production): `NEXT_PUBLIC_SITE_URL` = `https://<progetto>.pages.dev` (per questo repo: `https://mattiaciuni.pages.dev`, lo stesso valore scritto in `lib/site-origin.ts`). Serve a far nascere l'export già col dominio giusto; senza, il build usa `lib/site-origin.ts` e va bene lo stesso.
+4. Deploy → `https://mattiaciuni.pages.dev`. Verifica rapida: `/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/feed.xml`, `/og.png`, `/thoughts/`, `/index.md` (card For AI).
+5. Il controllo che guarda **il sito pubblicato** e non l'export (è quello che avrebbe preso il guasto del 21/09, quando il dominio dichiarato non esisteva):
+
+```bash
+node scripts/check-live.mjs --site=https://mattiaciuni.pages.dev
+```
+
+6. **Vecchio Worker**: il progetto Workers omonimo (`mattiaciuni.<account>.workers.dev`) non è più la sorgente. Va cancellato da **Workers & Pages → mattia-ciuni-website → Settings → Delete**, altrimenti resta lì a servire una copia vecchia su un indirizzo che qualcuno può ancora incollare in chat.
 
 ### Dominio custom
 
-1. Worker → **Settings → Domains & Routes → Add → Custom domain** → inserisci `mattiaciuni.xyz`.
-2. Se il DNS è su Cloudflare: record creato in automatico. Se è su registrar esterno: aggiungi il record indicato da Cloudflare, oppure sposta i nameserver su Cloudflare (consigliato).
-3. Aggiorna `NEXT_PUBLIC_SITE_URL` (oppure `lib/site.ts` → `url`) e rigenera le OG col dominio giusto: `powershell -File scripts/og.ps1 -Domain "tuodominio.com"`, rebuild.
-4. **Redirect `www` → apex**, a livello di zona: Cloudflare → **Rules → Redirect Rules** → `www.mattiaciuni.xyz/*` verso `https://mattiaciuni.xyz/${1}` (301). Non si può scrivere in `_redirects`: i Worker con static assets accettano **solo percorsi relativi** e scartano le regole con un dominio dentro, con un avviso che finisce nei log e nient'altro (`Only relative URLs are allowed. Skipping absolute URL …`).
+Quando esiste un dominio vero (es. `mattiaciuni.xyz`) convivono due indirizzi: quello buono e il `.pages.dev`. Il dominio si **fissa**, non si segue:
+
+1. Pages → progetto → **Custom domains → Set up a custom domain** → inserisci il dominio. Se il DNS è su Cloudflare il record si crea da sé; se è su un registrar esterno, aggiungi il record indicato (o sposta i nameserver su Cloudflare, consigliato).
+2. Imposta `SITE_URL` (Environment variables, Production) al dominio vero e rilancia un deploy: da lì canonical, sitemap, `og:image` e i documenti di scoperta dicono **quel** dominio anche se la pagina arriva da un `.pages.dev` o da un deploy di anteprima. Senza `SITE_URL` il sito segue l'host che serve la pagina.
+3. Aggiorna `lib/site-origin.ts` allo stesso dominio (così l'export dice il vero da solo, e `verify.js` lo controlla) e rigenera le OG: `powershell -File scripts/og.ps1`, rebuild.
+4. **Redirect `www` → apex**: su Pages può stare in `public/_redirects` (a differenza dei Worker con static assets, che accettano solo percorsi relativi e scartano in silenzio le regole con un dominio dentro — è la build che è caduta il 20/09, non una svista). Va scritto quando il dominio esiste davvero, altrimenti è una regola che rimanda a un host che non risolve.
 5. HTTPS: automatico (Universal SSL). HSTS opzionale da SSL/TLS → Edge Certificates.
 
 ### Search Console (10 min, fa indicizzare "Mattia Ciuni" in giorni)
@@ -105,6 +117,31 @@ Ogni pagina ha una **card markdown concisa** alla stessa path con estensione `.m
 - **Puntatore in pagina**: in fondo a ogni pagina (in automatico, via `components/ForAICard.tsx` nel root layout) compare la scritta **"For AI: nomedellapagina.md"** con il link alla card del nome della pagina corrente.
 - Aggiungi/rimuovi post o note e non toccare nulla: al build le card si rigenerano. Sono controllate da `scripts/verify.js` e segnalate in `llms.txt` (sezione Cards).
 
+## Scoperta per gli agenti
+
+Quattro cose, tutte che **descrivono solo ciò che esiste** (la regola del progetto: il documento assente costa una riga di rapporto, il documento falso costa la fiducia — l'elenco di quello che **non** pubblichiamo, con il motivo, sta in `docs/SEO-GEO-AI.md` §4.2):
+
+| Cosa | Dove | Dichiarazione |
+| --- | --- | --- |
+| `Link` di risposta (RFC 8288) | `public/_headers`, su ogni pagina | `describedby` → `/llms.txt` · `service-doc` → `/index.md` · `alternate` → `/feed.xml`, `/sitemap.xml` |
+| Catalogo (RFC 9727) | `/.well-known/api-catalog`, `application/linkset+json` | l'ancora è il sito; i due documenti che lo descrivono per una macchina. Nessun `openapi.json`, nessuno `status` |
+| Skill | `/.well-known/agent-skills/index.json` + `SKILL.md` | una skill, `read-and-cite-mattia-ciuni`: dove stanno le cose leggibili, come si cita, cosa non c'è. Il digest è ricalcolato da `verify.js` sul file pubblicato |
+| Markdown a richiesta | `functions/_middleware.ts` (Pages Function) | `Accept: text/markdown` → la card `.md` della pagina, con `x-markdown-tokens` |
+| Dominio che segue il deploy | `functions/_middleware.ts` | gli indirizzi assoluti dichiarati seguono l'host che serve la pagina (`SITE_URL` li fissa su un dominio) |
+
+Come si prova, senza inventarsi un browser:
+
+```bash
+npm run build && npx wrangler pages dev out --port 8787
+curl -sI http://localhost:8787/ | grep -i '^link:'
+curl -s -H 'Accept: text/markdown' http://localhost:8787/thoughts/money-layer-for-ai-agents/ | head -5
+curl -s  http://localhost:8787/.well-known/api-catalog
+# il dominio segue l'host: qui la canonical dice localhost, su Pages il .pages.dev
+curl -s http://localhost:8787/thoughts/money-layer-for-ai-agents/ | grep -o 'rel="canonical" href="[^"]*"'
+```
+
+Non pubblicati, e non per dimenticanza: `openapi.json` (non c'è un'API), server card MCP e `/auth.md` (non c'è un server MCP né un'autenticazione), OAuth/OIDC discovery (nessun issuer), Web Bot Auth (il sito non firma richieste in uscita), `ai-catalog.json` ARD (nessuna capacità da annunciare), x402/MPP/UCP/ACP (non si vende niente a un agente). **DNSSEC** invece è consigliato e non è codice: si accende sulla zona in Cloudflare e si conferma con il record DS dal registrar — è l'unico pezzo della scoperta che vive nel DNS.
+
 ## Note SEO/performance
 
 - Font: solo **Inter + Source Serif 4** in tutto il progetto (stack `font-sans`/`font-serif` senza altri fallback); il titolo della pagina Thoughts è in Source Serif 4. JS client: click-to-copy + icone animate (`motion`, ~45KB gzip in più sul First Load: 88KB→~133KB). Font self-hosted (zero request esterne a runtime); zero immagini decorative.
@@ -116,6 +153,7 @@ Ogni pagina ha una **card markdown concisa** alla stessa path con estensione `.m
 - `next lint` rimosso → `npm run lint` = `eslint .`.
 - `params` nelle pagine dinamiche è `Promise` (await in `generateMetadata` e nel page component).
 - `output: "export"` richiede `export const dynamic = "force-static"` su `robots.ts`, `sitemap.ts`, `manifest.ts`, `feed.xml/route.ts`.
+- `trailingSlash: true` (in `next.config.mjs`): le pagine escono come `out/<path>/index.html`, che è la forma che Pages serve senza reindirizzare. Con i file `.html` Pages risponde 200 su `/thoughts/<slug>` e fa **308** su `/thoughts/<slug>/`, cioè l'opposto di ogni canonical del sito — misurato con `wrangler pages dev`, non dedotto.
 - Build Turbopack: la CSS finisce in `_next/static/chunks/*.css` (non più `_next/static/css/`) → `scripts/verify.js` scansiona ricorsivamente `_next/static` per `.css`/`.js`.
 - icone animate: nei file `components/ui/*` la root del template `@animateicons/react` è `m.div` → convertita in `m.span` (HTML valido inline dentro `<a>`/`<p>`, evita hydration mismatch); tipi dell'evento importati come `MouseEvent` da react (niente `React.` globale, niente `any`).
 - `next dev` rigenera `AGENTS.md`/`CLAUDE.md` (agent rules) a ogni avvio; disabilita con `agentRules: false` in `next.config.mjs`.

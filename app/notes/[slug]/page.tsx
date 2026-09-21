@@ -15,6 +15,7 @@ import { getNote, notes, type NoteBlock } from "@/lib/notes";
 import { posts } from "@/lib/posts";
 import { relatedArticles } from "@/lib/related";
 import { slugify } from "@/lib/slug";
+import { socialImages } from "@/lib/social";
 
 export function generateStaticParams() {
   return notes.map((n) => ({ slug: n.slug }));
@@ -29,6 +30,7 @@ export async function generateMetadata({
   const note = getNote(slug);
   if (!note) return {};
   const url = `/notes/${note.slug}/`;
+  const card = socialImages(`/notes/${note.slug}/og.png`, note.title);
   return {
     title: note.title,
     description: note.description,
@@ -46,13 +48,13 @@ export async function generateMetadata({
       publishedTime: note.date,
       authors: ["Mattia Ciuni"],
       tags: note.keywords.slice(0, 3),
-      images: [`/notes/${note.slug}/og.png`],
+      images: card.og,
     },
     twitter: {
       card: "summary_large_image",
       title: note.title,
       description: note.description,
-      images: [`/notes/${note.slug}/og.png`],
+      images: card.twitter,
     },
   };
 }

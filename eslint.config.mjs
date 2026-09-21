@@ -2,11 +2,18 @@ import nextVitals from "eslint-config-next/core-web-vitals";
 import nextTs from "eslint-config-next/typescript";
 
 const eslintConfig = [
-  // Stato locale dei tool, non codice: `.wrangler/` lo scrive `wrangler dev`
-  // (bundle temporanei che non passano nessuna regola del progetto),
-  // `.next/` e `out/` sono l'output del build.
+  // Stato locale dei tool, non codice: `.wrangler/` lo scrive `wrangler pages dev`,
+  // `.pages-preview/` è la copia dell'export servita dal runtime di Pages,
+  // `.scratch/` sono le prove a mano; `.next/` e `out/` sono l'output del build.
   {
-    ignores: [".wrangler/**", ".next/**", "out/**", "node_modules/**"],
+    ignores: [
+      ".wrangler/**",
+      ".pages-preview/**",
+      ".scratch/**",
+      ".next/**",
+      "out/**",
+      "node_modules/**",
+    ],
   },
   ...nextVitals,
   ...nextTs,

@@ -1,14 +1,13 @@
+import { SITE_ORIGIN } from "./site-origin";
+
 export const site = {
   name: "Mattia Ciuni",
   role: "Founder & CEO @ Payle",
-  // Dominio di produzione.
-  // - Preferito: variabile d'ambiente NEXT_PUBLIC_SITE_URL su Cloudflare Pages
-  //   (se il deploy la imposta, qui non si tocca nulla).
-  // - Altrimenti: cambia il fallback qui sotto (unico punto).
+  // Dominio di produzione. La stringa sta **una volta sola**, in
+  // `lib/site-origin.ts`: qui si legge la variabile del progetto Pages
+  // (`NEXT_PUBLIC_SITE_URL`, vedi README) e in mancanza quella.
   // Usato da metadataBase, canonical, sitemap, robots, llms.txt, JSON-LD, RSS e OG.
-  url:
-    process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ??
-    "https://mattiaciuni.xyz",
+  url: process.env.NEXT_PUBLIC_SITE_URL?.replace(/\/$/, "") ?? SITE_ORIGIN,
   description:
     "Founder & CEO of Payle, the money layer for AI agents. Building controlled spending infrastructure for the agentic economy. YC applicant, relocating to San Francisco.",
   email: "ceo@usepayle.com",

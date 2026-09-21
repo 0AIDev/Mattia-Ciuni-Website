@@ -1,0 +1,137 @@
+// I documenti di scoperta per gli agenti, generati da fonti vere.
+//
+//   /.well-known/api-catalog            linkset RFC 9727: cosa c'e' di leggibile da una macchina
+//   /.well-known/agent-skills/index.json indice delle skill, con il digest di ogni artefatto
+//   /.well-known/agent-skills/<name>/SKILL.md  la skill (copia dell'originale in agent-skills/)
+//
+// Regola, la stessa del resto del sito: si pubblica solo quello che esiste. Il
+// linkset nomina due documenti che rispondono 200, l'indice nomina una skill il
+// cui file e' pubblicato accanto, e il digest e' calcolato **sugli stessi byte**
+// che finiscono in out/ e public/ (se non combaciasse, un agente scaricherebbe
+// un artefatto che non e' quello dichiarato).
+//
+// Le fonti stanno in `agent-skills/<name>/SKILL.md` (a mano, come gli altri
+// master in root: `Vector.svg`, `sfondo.svg`). L'indirizzo esce da `lib/site.ts`,
+// come per sitemap e canonical.
+import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from "node:fs";
+import { createHash } from "node:crypto";
+import { join, dirname } from "node:path";
+import { fileURLToPath } from "node:url";
+
+const baseDir = dirname(fileURLToPath(import.meta.url));
+const root = join(baseDir, "..");
+const outDir = join(root, "out");
+const pubDir = join(root, "public");
+const srcDir = join(root, "agent-skills");
+
+// Stesso schema di gen-cards.mjs: si scrive in out/ (produzione) e in public/
+// (cosi' `next dev` li serve). Se out/ non c'e', la build non e' ancora girata.
+if (!existsSync(outDir)) {
+  console.log("agent files: out/ non presente (build non ancora eseguito) - niente da fare");
+  process.exit(0);
+}
+
+// Il dominio non si riscrive qui e non si indovina dal sorgente: si legge
+// dall'export appena costruito, dal `canonical` che la home dichiara di sé. Così
+// questi file seguono `NEXT_PUBLIC_SITE_URL` come tutto il resto (sitemap,
+// canonical, JSON-LD) invece di avere una seconda verità da tenere allineata.
+const homeHtml = readFileSync(join(outDir, "index.html"), "utf8");
+const base = (homeHtml.match(/<link rel="canonical" href="([^"]+)"/)?.[1] || "").replace(
+  /\/$/,
+  "",
+);
+if (!/^https?:\/\//.test(base)) {
+  console.error("agent files: l'export non dichiara un `canonical` assoluto: niente da generare");
+  process.exit(1);
+}
+
+const write = (rel, body) => {
+  const buf = Buffer.isBuffer(body) ? body : Buffer.from(body, "utf8");
+  for (const dir of [outDir, pubDir]) {
+    const dest = join(dir, ...rel.split("/"));
+    mkdirSync(dirname(dest), { recursive: true });
+    writeFileSync(dest, buf);
+  }
+  return buf;
+};
+
+// --- il linkset -------------------------------------------------------------
+// RFC 9727 chiede `anchor` + `service-desc` / `service-doc`. Qui l'ancora e' il
+// sito: non c'e' un'API, e i due documenti che lo descrivono per una macchina
+// sono llms.txt (descrizione) e la card markdown della home (documentazione).
+// Nessun `status`: non esiste un endpoint di salute da dichiarare.
+const catalog = {
+  linkset: [
+    {
+      anchor: base + "/",
+      "service-desc": [
+        {
+          href: base + "/llms.txt",
+          type: "text/plain",
+          title: "The site in one file, for language models",
+        },
+      ],
+      "service-doc": [
+        {
+          href: base + "/index.md",
+          type: "text/markdown",
+          title: "The site as markdown",
+        },
+      ],
+    },
+  ],
+};
+write(".well-known/api-catalog", JSON.stringify(catalog, null, 2) + "\n");
+
+// --- le skill ---------------------------------------------------------------
+// Solo artefatti che esistono: la cartella `agent-skills/` in root e' la fonte,
+// e ogni voce dell'indice porta il digest del file pubblicato.
+const skills = existsSync(srcDir)
+  ? readdirSync(srcDir, { withFileTypes: true })
+      .filter((e) => e.isDirectory() && existsSync(join(srcDir, e.name, "SKILL.md")))
+      .map((e) => e.name)
+      .sort()
+  : [];
+
+if (skills.length === 0) {
+  console.error("agent files: nessuna skill in agent-skills/<name>/SKILL.md");
+  process.exit(1);
+}
+
+const index = {
+  $schema: "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
+  skills: skills.map((name) => {
+    const body = readFileSync(join(srcDir, name, "SKILL.md"));
+    const rel = `.well-known/agent-skills/${name}/SKILL.md`;
+    const written = write(rel, body);
+    // `description`: il primo paragrafo del documento, che e' il riassunto
+    // scritto a mano per l'agente - non una riga inventata dall'indice.
+    const description = (body
+      .toString("utf8")
+      .replace(/^#\s.*$/m, "")
+      .split(/\n\s*\n/)
+      .map((s) => s.trim())
+      .find((s) => s && !s.startsWith("#")) || "")
+      // Una `description` e' testo, non markdown: via l'enfasi e le virgolette
+      // inverse, che in un campo JSON si leggono come caratteri.
+      .replace(/\*\*/g, "")
+      .replace(/`/g, "")
+      .replace(/\s+/g, " ")
+      .slice(0, 300);
+    return {
+      name,
+      type: "skill-md",
+      description,
+      url: `${base}/${rel}`,
+      digest: "sha256:" + createHash("sha256").update(written).digest("hex"),
+    };
+  }),
+};
+
+// L'indice si riscrive ogni volta: se una skill sparisce da `agent-skills/`,
+// sparisce anche da qui.
+write(".well-known/agent-skills/index.json", JSON.stringify(index, null, 2) + "\n");
+
+console.log(
+  `agent files: api-catalog + ${skills.length} skill (${skills.join(", ")}) in out/ + public/`,
+);

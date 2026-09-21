@@ -18,7 +18,6 @@
 # zero duplicazioni. Rilanciare lo script quando cambia un articolo o cambia il dominio.
 
 param(
-  [string]$Domain = "mattiaciuni.xyz",
   [switch]$HomeOnly,
   [ValidateSet("description", "meta")]
   [string]$Subtitle = "meta",

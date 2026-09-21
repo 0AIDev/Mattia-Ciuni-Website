@@ -4,9 +4,9 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "predev": "node scripts/gen-cards.mjs",
+    "predev": "node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs",
     "build": "next build",
-    "postbuild": "node scripts/gen-cards.mjs",
+    "postbuild": "node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs",
     "start": "next start",
     "lint": "eslint ."
   },

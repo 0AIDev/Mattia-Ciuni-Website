@@ -20,7 +20,8 @@ la SEO:
 | --- | --- |
 | un articolo (Thoughts) | `lib/posts.ts` |
 | una nota (Notes) | `lib/notes.ts` |
-| dominio, email, social | `lib/site.ts` |
+| il dominio | `lib/site-origin.ts` — **una stringa sola** |
+| email, social | `lib/site.ts` |
 
 Da quella voce, **senza scrivere nient'altro**, nascono: la rotta, il documento
 statico esportato, il `<title>`, la `description`, la `canonical` con il
@@ -37,9 +38,13 @@ Due dettagli che valgono come regole:
 - **non c'è un interruttore di bozza.** Un articolo si scrive nel registro quando
   è pronto: finché non c'è, non esiste da nessuna parte (niente rotta, niente
   card, niente riga nel sitemap, niente JSON-LD, niente ingresso in `llms.txt`);
-- **l'indirizzo canonico è una costante** (`site.url` in `lib/site.ts`), non una
-  variabile: sitemap, `canonical`, `og:url`, `llms.txt`, RSS, JSON-LD e card la
-  leggono tutti dallo stesso posto. Cambiare dominio è un numero solo.
+- **l'indirizzo canonico è una costante** (`SITE_ORIGIN` in `lib/site-origin.ts`,
+  oppure `NEXT_PUBLIC_SITE_URL` del progetto Pages): sitemap, `canonical`,
+  `og:url`, `llms.txt`, RSS, JSON-LD e card la leggono tutti dallo stesso posto.
+  Cambiare dominio è un numero solo — e se ci si dimentica, il dominio dichiarato
+  non è quello che risponde: `functions/_middleware.ts` riscrive gli indirizzi
+  con l'host che sta servendo la pagina, e `scripts/check-live.mjs` lo chiede al
+  DNS (§5 di `docs/SEO-GEO-AI.md`).
 
 **Niente `hreflang`**, perché il sito è in una lingua sola: dichiararlo per sé
 stessi più `x-default` è rumore. Il giorno in cui esistono due lingue, il gruppo
@@ -61,8 +66,9 @@ sitemap è la riga che fa smettere Chrome di disegnarlo come albero dei tag).
 | `out/feed.xml` | `app/feed.xml/route.ts` | RSS |
 | `out/manifest.webmanifest` | `app/manifest.ts` | |
 | la `<head>` di ogni pagina | `generateMetadata` nella pagina, dai campi del registro | titolo, description, canonical, OG, JSON-LD, annuncio della card |
-| `public/_headers`, `public/_redirects` | **a mano** | le regole che legge l'host (header di sicurezza, redirect, riscritture): riguardano il dominio, non la pagina, e sono l'unica cosa qui che nessuno rigenera. Sui Worker con static assets il redirect `www` → apex non può stare qui (solo percorsi relativi) e vive in una Redirect Rule di zona |
-| `wrangler.jsonc` | **a mano** | la pubblicazione: `out/` come cartella degli asset, `force-trailing-slash` (la forma canonica ha la barra), `404-page` (`out/404.html`). Senza questo file `wrangler deploy` si autoconfigura con l'adapter OpenNext e la build cade |
+| `public/_headers`, `public/_redirects` | **a mano** | le regole che legge l'host (header di sicurezza, redirect, tipo dei file senza estensione): riguardano il dominio, non la pagina, e sono l'unica cosa qui che nessuno rigenera |
+| `public/_routes.json` | **a mano** | quali rotte invocano la Pages Function: le sole in cui compaiono indirizzi assoluti (pagine, sitemap, robots, feed, `llms.txt`, card, `/.well-known/`) |
+| `functions/_middleware.ts` | **a mano** | l'unico codice: markdown a richiesta, e gli indirizzi assoluti riscritti sull'host che serve la pagina |
 | `public/og.png`, `public/thoughts/og.png`, `public/notes/og.png` | `scripts/og.ps1` | i master disegnati in root (`og.png`, `thoughts-og.png`, `notesog.png`) ridotti a 1200×630 |
 | `public/thoughts/<slug>/og.png`, `public/notes/<slug>/og.png` | `scripts/og.ps1` | articoli e note dal template: `og-sfondo.png` + Instrument Serif + Inter Light (font in `scripts/fonts/`) |
 | `public/thoughts/<slug>/cover.png`, `public/notes/<slug>/cover.png` | `scripts/og.ps1` (stesso giro) | la stessa card **senza il logo**, ed è quella che la pagina mostra sopra il `h1` (`components/CoverImage.tsx`): dentro il sito, non nella `<head>` |
@@ -97,7 +103,7 @@ Tutto quello che si può controllare senza rete, in un comando:
 npm run lint          # ESLint
 npx tsc --noEmit      # i tipi
 npm run build         # next build + le card
-node scripts/verify.js   # 52 controlli sul costruito
+node scripts/verify.js   # 56 controlli sul costruito
 ```
 
 `verify.js` è deliberatamente **una cosa sola**: un file che si legge in un
@@ -135,9 +141,9 @@ curl -s  https://<dominio>/index.md | head -1       # "# Mattia …", non "<!doc
 Con un `--site=` diventano uno script; con un `--wait` diventano il passo che
 aspetta il deploy, che è **l'unico momento** in cui la domanda «il sito è a
 posto?» ha una risposta vera. E il pezzo che esiste solo su Cloudflare
-(`_headers`, `_redirects`, la barra finale, la 404) si prova con `npx wrangler dev`,
-perché né `next dev` né un server statico li fanno girare: workerd legge
-`wrangler.jsonc` ed è la stessa strada della produzione.
+(`_headers`, `_routes.json`, la Function, la barra finale, la 404) si prova con
+`npx wrangler pages dev out`, perché né `next dev` né un server statico li fanno
+girare: è workerd, la stessa strada della produzione.
 
 ## 4 · I crawler AI, e perché sono dichiarati per nome
 
@@ -190,7 +196,7 @@ sito deve poter essere citato senza aver visto la pagina:
 
 > La description della pagina
 
-- URL: https://mattiaciuni.xyz/thoughts/<slug>
+- URL: https://mattiaciuni.pages.dev/thoughts/<slug>
 - Type: Blog post
 - Published: 2026-09-20
 

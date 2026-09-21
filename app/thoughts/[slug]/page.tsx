@@ -19,6 +19,7 @@ import { getPost, posts, type Block } from "@/lib/posts";
 import { notes } from "@/lib/notes";
 import { relatedArticles } from "@/lib/related";
 import { slugify } from "@/lib/slug";
+import { socialImages } from "@/lib/social";
 
 export function generateStaticParams() {
   return posts.map((p) => ({ slug: p.slug }));
@@ -33,6 +34,7 @@ export async function generateMetadata({
   const post = getPost(slug);
   if (!post) return {};
   const url = `/thoughts/${post.slug}/`;
+  const card = socialImages(`/thoughts/${post.slug}/og.png`, post.title);
   return {
     title: post.title,
     description: post.description,
@@ -51,20 +53,13 @@ export async function generateMetadata({
       modifiedTime: post.updated ?? post.date,
       authors: ["Mattia Ciuni"],
       tags: post.tags,
-      images: [
-        {
-          url: `/thoughts/${post.slug}/og.png`,
-          width: 1200,
-          height: 630,
-          alt: post.title,
-        },
-      ],
+      images: card.og,
     },
     twitter: {
       card: "summary_large_image",
       title: post.title,
       description: post.description,
-      images: [`/thoughts/${post.slug}/og.png`],
+      images: card.twitter,
     },
   };
 }

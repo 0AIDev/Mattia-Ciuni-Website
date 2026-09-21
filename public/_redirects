@@ -1,14 +1,15 @@
-# Qui non c'e' nessuna regola, ed e' voluto.
+# Qui non c'e' nessuna regola, ed e' voluto: non c'e' un sito di prima da
+# salvare, e non c'e' ancora un dominio custom con un www da raddrizzare.
 #
-# Il redirect www -> apex c'era, con un dominio dentro la regola, e i Worker con
-# static assets l'hanno scartato in silenzio: accettano solo percorsi relativi.
-# L'avviso e' finito nei log e basta.
+# Su Cloudflare Pages le regole possono avere un dominio dentro (a differenza dei
+# Worker con static assets, che le scartano in silenzio: "Only relative URLs are
+# allowed. Skipping absolute URL https://www.mattiaciuni.xyz/*."). Quando il
+# dominio esiste davvero, il www -> apex e' una riga qui:
 #
-#     Only relative URLs are allowed. Skipping absolute URL https://www.mattiaciuni.xyz/*.
+#     https://www.<dominio>/*  https://<dominio>/${1}  301
 #
-# Il redirect sta quindi a livello di zona (Cloudflare -> Rules -> Redirect Rules:
-# www.mattiaciuni.xyz/* verso https://mattiaciuni.xyz/${1}, 301), che e' anche il
-# posto in cui Cloudflare lo documenta.
+# Occhio al limite: oltre le prime 100 regole Cloudflare le ignora senza dire
+# niente. Se un giorno servissero, quelle regole vanno in functions/_middleware.ts.
 #
-# Se un giorno servisse un'altra regola: percorso relativo, e occhio al limite di
-# 100 regole (oltre quella soglia vengono ignorate senza dire niente).
+# (Il runtime di Pages legge questo file solo nel deploy: `next dev` non lo vede,
+# per provarlo serve `npx wrangler pages dev out`.)

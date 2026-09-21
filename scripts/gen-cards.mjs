@@ -29,13 +29,22 @@ function purgeMd(dir) {
 purgeMd(outDir);
 purgeMd(pubDir);
 
+// Le pagine dell'export sono `index.html` dentro la loro cartella (`trailingSlash:
+// true` in next.config.mjs, che è quello che rende `/thoughts/<slug>/` l'indirizzo
+// servito da Pages): da `thoughts/<slug>/index.html` si torna a `thoughts/<slug>`.
 function listPages(dir, rel = "", acc = []) {
   for (const e of readdirSync(dir, { withFileTypes: true })) {
     if (e.isDirectory()) listPages(join(dir, e.name), rel + e.name + "/", acc);
-    else if (e.name.endsWith(".html") && e.name !== "404.html" && e.name !== "_not-found.html")
-      acc.push({ file: join(dir, e.name), rel: rel + e.name });
+    else if (e.name.endsWith(".html")) acc.push({ file: join(dir, e.name), rel: rel + e.name });
   }
   return acc;
+}
+
+// `thoughts/<slug>/index.html` → `thoughts/<slug>`; `index.html` → `` (la home).
+// Le pagine di servizio (`404`, `_not-found`) non hanno una card: parlare della
+// pagina di errore a un agente è rumore, e la card vivrebbe come `404.html.md`.
+function pagePathOf(rel) {
+  return rel.replace(/\/?index\.html$/, "").replace(/\.html$/, "");
 }
 
 function clean(s) {
@@ -64,18 +73,20 @@ function parse(html) {
   };
 }
 
-const pages = listPages(outDir).map(({ file, rel }) => {
-  const pagePath = rel.replace(/\.html$/, "").replace(/^index$/, "");
-  const segments = pagePath ? pagePath.split("/") : [];
-  let type;
-  if (!pagePath) type = "Home";
-  else if (pagePath === "thoughts") type = "Thoughts index";
-  else if (pagePath === "notes") type = "Notes index";
-  else if (segments[0] === "thoughts") type = "Blog post";
-  else if (segments[0] === "notes") type = "Note";
-  else type = "Page";
-  return { pagePath, segments, type, meta: parse(readFileSync(file, "utf8")) };
-});
+const pages = listPages(outDir)
+  .filter(({ rel }) => !["404", "_not-found"].includes(pagePathOf(rel)))
+  .map(({ file, rel }) => {
+    const pagePath = pagePathOf(rel);
+    const segments = pagePath ? pagePath.split("/") : [];
+    let type;
+    if (!pagePath) type = "Home";
+    else if (pagePath === "thoughts") type = "Thoughts index";
+    else if (pagePath === "notes") type = "Notes index";
+    else if (segments[0] === "thoughts") type = "Blog post";
+    else if (segments[0] === "notes") type = "Note";
+    else type = "Page";
+    return { pagePath, segments, type, meta: parse(readFileSync(file, "utf8")) };
+  });
 
 const byPath = new Map(pages.map((p) => [p.pagePath, p]));
 const byKind = (kind) =>

@@ -12,7 +12,8 @@ le provano, e la lista di cosa è generico e cosa è dato di questo sito.
 
 Differenza importante rispetto all'impianto da cui questo documento deriva: là
 c'era un'applicazione con **server** (middleware, API, MCP, database). Qui c'è un
-**sito statico** (`output: "export"` → `out/`, servito da un Worker Cloudflare con static assets: `wrangler.jsonc`): non
+**sito statico** (`output: "export"` → `out/`, pubblicato da Cloudflare Pages: il progetto
+legge `out/` e una sola Pages Function, `functions/_middleware.ts`): non
 esiste una richiesta da negoziare, quindi un pezzo di quel sistema qui *non può
 esistere* — e la regola (§4.2) è dichiararlo invece di fingere.
 
@@ -50,7 +51,8 @@ Qui le sorgenti sono **tre file**, e sono gli unici che si toccano:
 | --- | --- |
 | un articolo (Thoughts) | `lib/posts.ts` |
 | una nota (Notes) | `lib/notes.ts` |
-| dominio, email, social, lingua | `lib/site.ts` (una sola costante per il dominio) |
+| il dominio | `lib/site-origin.ts` (una stringa sola, letta anche dalla Function) |
+| email, social, lingua | `lib/site.ts` |
 
 Da una voce del registro, **senza scrivere nient'altro**, nascono:
 
@@ -75,14 +77,15 @@ voce in lib/posts.ts ──►  rotta /thoughts/<slug>/
 | --- | --- |
 | `out/**/*.html` | `next build` (static export) |
 | `out/**/*.md` (le card) | `scripts/gen-cards.mjs`, in `postbuild` (e in `predev`) |
+| `out/.well-known/api-catalog`, `out/.well-known/agent-skills/index.json` e la copia della `SKILL.md` | `scripts/gen-agent-files.mjs`, in `postbuild` (e in `predev`), **dopo** `gen-cards` perché quel passo cancella gli `.md` generati |
 | `out/sitemap.xml` + `sitemap-home/thoughts/notes.xml` | `app/sitemap*.xml/route.ts` + `lib/sitemap.ts` |
 | `out/robots.txt` | `app/robots.txt/route.ts` |
 | `out/llms.txt` | `app/llms.txt/route.ts` |
 | `out/feed.xml` | `app/feed.xml/route.ts` |
 | `out/manifest.webmanifest` | `app/manifest.ts` |
 | la `<head>` di ogni pagina | `generateMetadata` nella pagina, dai campi del registro |
-| `public/_headers`, `public/_redirects` | **a mano**: li legge l'host (Worker con static assets), non la pagina |
-| `wrangler.jsonc` | **a mano**: cosa pubblicare (`out/`), quale forma hanno gli indirizzi e cosa risponde agli indirizzi che non esistono |
+| `public/_headers`, `public/_redirects` | **a mano**: li legge l'host (Pages), non la pagina |
+| `public/_routes.json` | **a mano**: quali rotte invocano la Function (le sole in cui compaiono indirizzi assoluti) |
 | `public/og.png`, `public/thoughts/og.png`, `public/notes/og.png` | `scripts/og.ps1` | i tre master disegnati a mano in root (`og.png`, `thoughts-og.png`, `notesog.png`), solo ridotti a 1200×630 |
 | `public/thoughts/<slug>/og.png`, `public/notes/<slug>/og.png` | `scripts/og.ps1` | dal template: `og-sfondo.png` (da `sfondo.svg`) + Instrument Serif + Inter Light |
 | `public/logo.svg` | `scripts/gen-logo.mjs` (dal `Vector.svg` in root) |
@@ -201,24 +204,23 @@ senza un account non si vedono.
 Non ci sono: il dominio è nuovo e non esiste un sito precedente da salvare, quindi
 `public/_redirects` è vuoto (ci sta solo il commento che spiega perché).
 
-L'unico redirect che serviva, `www` → apex, **non si può scrivere lì**, ed è una
-differenza che è costata una build: i Worker con static assets accettano solo
-percorsi relativi e **scartano in silenzio** le regole con un dominio dentro.
-Provato, non dedotto:
+L'unico redirect previsto, `www` → apex, su Pages **si può scrivere lì** (le regole
+possono avere un dominio dentro). Il giorno in cui nacque questo file il sito era
+però pubblicato da un Worker con static assets, che quelle regole le accetta solo
+relative e **scarta in silenzio** le altre — provato, non dedotto:
 
 ```text
 ▶︎ Only relative URLs are allowed. Skipping absolute URL https://www.mattiaciuni.xyz/*.
 ```
 
-Sta quindi a livello di zona (Cloudflare → **Rules → Redirect Rules**), che è
-anche il posto in cui Cloudflare lo documenta.
+È una trappola che vale la pena ricordare se un giorno si tornasse su un Worker:
+l'avviso finisce nei log, la regola non viene applicata e niente fallisce.
 
-**La trappola, già nota per quando servirà:** Cloudflare applica **solo le prime
-100 regole** di `_redirects` e ignora le altre **in silenzio** (è così su Pages, ed
-è la ragione per cui un sito di prima con mille indirizzi finisce in un Worker con
-la tabella nel codice, non in quel file). Se un giorno gli indirizzi da riscrivere
-saranno più di cento, quelle regole vanno in uno script (`main` in
-`wrangler.jsonc`), non nel file.
+**La trappola che resta valida:** Cloudflare applica **solo le prime 100 regole**
+di `_redirects` e ignora le altre **in silenzio** (è così su Pages: ed è la ragione
+per cui un sito di prima con mille indirizzi finisce in una tabella dentro una
+Function, non in quel file). Se un giorno gli indirizzi da riscrivere saranno più
+di cento, quelle regole vanno in `functions/_middleware.ts`.
 
 ---
 
@@ -238,7 +240,7 @@ cambiata**: `/thoughts/money-layer-for-ai-agents` → `/thoughts/money-layer-for
 
 > La description della pagina
 
-- URL: https://mattiaciuni.xyz/thoughts/money-layer-for-ai-agents
+- URL: https://mattiaciuni.pages.dev/thoughts/money-layer-for-ai-agents
 - Type: Blog post
 - Published: 2026-09-20
 
@@ -302,15 +304,21 @@ scrivere invece di lasciarle sembrare una dimenticanza:
   pagina e dove stanno i vicini, in poche righe che stanno in un contesto; un
   `.txt` con dentro tutto il corpo è utile solo a chi ha già deciso di leggere
   quella pagina;
-- **la negoziazione ha bisogno di un server.** Qui non c'è: `output: "export"`
-  produce file, e un file non legge `Accept:`. Farla richiederebbe Cloudflare
-  Pages Functions (§4.3) — cioè un pezzo di infrastruttura che oggi non serve a
-  niente, perché la card **è già** il testo leggibile allo stesso indirizzo.
+- **la card è un documento, la trascrizione è un file**: la card dice cosa è la
+  pagina e dove stanno i vicini, in poche righe che stanno in un contesto; un
+  `.txt` con dentro tutto il corpo è utile solo a chi ha già deciso di leggere
+  quella pagina.
 
-Il giorno in cui serve (per esempio perché un assistente vuole il testo integrale
-e non la scheda), si aggiunge così: un `route.ts` per pagina che restituisce il
-testo ricavato dal documento costruito, lo stesso annuncio nella `<head>` con il
-`type` giusto, e un controllo che il file dica la stessa pagina della card.
+La **negoziazione** invece c'è, perché serve a chi non sa che la card esiste: un
+agente che chiede una pagina all'indirizzo canonico con `Accept: text/markdown`
+non scoprirà mai `…/slug.md` da solo. La Function la serve restituendo **la card**,
+non una conversione (§4.4): è la stessa cosa che il sito pubblica, quindi non può
+divergere.
+
+Il giorno in cui servisse anche il **testo integrale** (un assistente che vuole il
+corpo, non la scheda), si aggiunge così: una rotta che restituisce il testo
+ricavato dal documento costruito, lo stesso annuncio nella `<head>` con il `type`
+giusto, e un controllo che il file dica la stessa pagina della card.
 
 ---
 
@@ -359,37 +367,87 @@ prima.
 
 | Cosa | Perché no | Cosa servirebbe |
 | --- | --- | --- |
-| `/.well-known/openapi.json`, `/.well-known/api-catalog` | non c'è nessuna API: il sito serve file | un'API, e il suo contratto scritto dal codice che la implementa |
+| `/.well-known/openapi.json` | non c'è nessuna API: il sito serve file | un'API, e il suo contratto scritto dal codice che la implementa |
 | `/.well-known/mcp/server-card.json`, `/.well-known/oauth-protected-resource`, `/auth.md` | non c'è un server MCP né un'autorità di autenticazione | un server MCP vero, o una chiave API con il suo ciclo di vita |
 | `/.well-known/openid-configuration` (OAuth/OIDC discovery) | non c'è un issuer: `issuer`, `authorization_endpoint`, `token_endpoint` sono tre campi senza un oggetto | un vero issuer e un flusso da descrivere |
 | **Web Bot Auth** (`/.well-known/http-message-signatures-directory`) | è la chiave con cui un sito **firma le proprie richieste in uscita**: qui non escono richieste a nome di nessuno | un client che firmi davvero, e una chiave con il suo ciclo di vita |
 | **x402**, **MPP**, **UCP**, **ACP** (pagamenti/commercio fra macchine) | il sito non vende niente a un agente | un prodotto comprabile, un incasso, e la decisione di lasciarlo comprare a una macchina |
-| **DNS-AID** (`_index._agents.<dominio>`) | annuncerebbe un endpoint agente (HTTPS/h3/h2) che qui non esiste: è un sito di file | un endpoint vero, con `alpn` **verificato** e non dedotto |
-| **Agent Skills** (`/.well-known/agent-skills/index.json` + `SKILL.md`) | sono skill di un server; qui non c'è niente da chiamare | un server con strumenti veri |
-| **negoziazione `Accept: text/markdown`** | richiede un server | Pages Functions (§4.3), e serve solo se la card non basta (§3.4) |
+| **DNS-AID** (`_index._agents.<dominio>`) | non è una cosa da repository: vive nel DNS, che non sta qui. Ed è pubblicabile **solo** puntandolo a questo sito con un `alpn` **verificato** (h2/h3) — non a un server che non c'è — e con la zona firmata, altrimenti un resolver validante non lo autentica | la zona su Cloudflare (DNSSEC + il record `SVCB`), e la certezza di quale `alpn` risponde davvero |
+| **ARD** (`/.well-known/ai-catalog.json`) | è un catalogo di **capacità** (server MCP, agenti A2A, contratti OpenAPI) e qui non ce n'è nessuna: al massimo conterrebbe tre documenti, che il linkset di `api-catalog` già nomina | una capacità vera da annunciare |
 
 Il documento assente costa una riga di rapporto; il documento falso costa una
 chiamata **e la fiducia**.
 
-### 4.3 Perché questo sito non ha un middleware
+### 4.3 Cosa si è pubblicato, e cosa dichiara
 
-Il sistema da cui questo documento deriva mette in `functions/_middleware.js` i
-`Link` di risposta (RFC 8288) e la negoziazione del markdown. Qui il sito è
-**statico** (`out/`), quindi:
+Quattro cose sono state aggiunte perché **descrivono solo roba che esiste**, e
+ognuna è verificata da `verify.js` (non «il file c'è» ma «ciò che dichiara c'è»):
 
-- i `Link` di risposta non esistono — e non servono: gli stessi indirizzi sono
-  già nominati in `<head>` (`alternate text/markdown`) e in `llms.txt`, cioè dove
-  un agente li cerca comunque;
-- non c'è niente da negoziare: la card ha il suo indirizzo, non serve chiederla
-  con una testata `Accept:`;
-- gli unici file che Cloudflare legge **per noi** sono `public/_headers` (tipo e
-  cache dei file noti e header di sicurezza) e `wrangler.jsonc` (gli indirizzi:
-  barra finale, pagina 404).
+| Cosa | Cosa dichiara | Come si verifica |
+| --- | --- | --- |
+| `Link` di risposta su ogni pagina (RFC 8288) | `describedby` → `/llms.txt`, `service-doc` → `/index.md`, `alternate` → feed e sitemap | ogni `<…>` della riga deve esistere nell'export |
+| `/.well-known/api-catalog` (RFC 9727) | l'ancora è il sito; `service-desc` e `service-doc` sono i due documenti che lo descrivono per una macchina. Nessun `status`, nessun `openapi.json` | ogni `href` del linkset risolve a un file dell'export |
+| `/.well-known/agent-skills/index.json` | una skill, `read-and-cite-mattia-ciuni`, il cui `SKILL.md` è pubblicato accanto | **il digest si ricalcola** sul file pubblicato: se non combacia, il controllo cade |
+| negoziazione `Accept: text/markdown` | serve la card `.md` della pagina richiesta | provata su workerd, non dedotta (§5.3) |
 
-Il giorno in cui servisse qualcosa di dinamico (indexnow server-side, un
-`/mcp`, la negoziazione), il posto è uno script nel Worker (`main` in
-`wrangler.jsonc`, con `assets`) e il comando per provarlo è `npx wrangler dev` —
-perch\u00e9 n\u00e9 `next dev` n\u00e9 un server statico fanno girare quel pezzo.
+La skill è l'unico contenuto **scritto a mano** per gli agenti, e sta in
+`agent-skills/<nome>/SKILL.md` (come gli altri master in root): dice dove stanno
+le cose leggibili, come si cita, e cosa **non** c'è — perché una skill che promette
+una ricerca o un'API inesistente è la stessa bugia di un endpoint inventato, con
+un giro di ritardo.
+
+### 4.4 Una funzione sola, due cose, e si vede
+
+Il sito è **statico** (`out/`): non c'è un'applicazione da far girare. C'è però
+una Pages Function che fa due cose che gli asset da soli non sanno fare.
+
+**La prima** è la negoziazione:
+
+> `Accept: text/markdown` su una pagina restituisce la **card `.md` di quella
+> pagina**, con `Content-Type: text/markdown` e `x-markdown-tokens`.
+
+Perché serve, dopo che la card ha già il suo indirizzo: perché un agente che
+chiede una pagina non sa che esiste `…/slug.md`, e perché la richiesta arriverà
+all'indirizzo canonico, non a quello della card (§3.4). Perché **non** è una
+conversione fatta al momento: convertire sarebbe un secondo modo di dire la stessa
+pagina, e prima o poi direbbe qualcosa di diverso — la card invece nasce
+dall'HTML appena esportato.
+
+**La seconda** è il dominio, ed è la cura del guasto del 21/09 (il sito dichiarava
+`https://mattiaciuni.xyz`, che non esiste in DNS, mentre rispondeva altrove: la
+sitemap elencava otto indirizzi irraggiungibili e Discord e X non mostravano
+nessuna anteprima). Gli indirizzi assoluti che l'export dichiara — `canonical`,
+`og:url`, `og:image`, JSON-LD, `<loc>` delle sitemap, il `Sitemap:` di
+`robots.txt` — vengono riscritti con **l'host che sta servendo la pagina**
+(`new URL(request.url).origin`). Così il dominio segue il deploy invece di essere
+una cosa che qualcuno deve ricordarsi di aggiornare: oggi il `.pages.dev`, domani
+il dominio custom, senza un rebuild. Se nel progetto è impostata `SITE_URL` il
+dominio invece si **fissa** su quello, ed è quello che serve quando esistono due
+host e uno solo deve essere quello dichiarato.
+
+La parte che conta è cosa **non** riscrivere: si riscrivono solo risposte
+testuali (`TEXTUAL`, l'elenco dei tipi), e il corpo ricostruito perde
+`Content-Encoding` e `Content-Length` della risposta originale (una `br` con
+dentro testo già decodificato è un file corrotto). Le immagini passano intatte:
+provato confrontando i byte di `og.png` servito con il file su disco, non
+"sembra uguale".
+
+Tre dettagli che tengono il resto in piedi:
+
+- `public/_routes.json` elenca **solo** le rotte in cui compaiono indirizzi
+  assoluti (pagine, sitemap, robots, feed, `llms.txt`, card `.md`, `/.well-known/`):
+  immagini, CSS, font e JS non invocano la Function;
+- se la card non c'è (`/og.png`, `/.well-known/api-catalog`), si torna agli asset:
+  niente markdown inventato per un file che non è una pagina;
+- la risposta HTML dichiara `Vary: Accept`: senza, un deposito intermedio
+  servirebbe il markdown a un browser (o il contrario) alla prima richiesta.
+
+Gli `Link` di risposta (RFC 8288) invece **non** richiedono codice: sono righe di
+`public/_headers`, e riguardano tutti gli indirizzi della stessa pagina.
+
+Il giorno in cui servisse altro di dinamico (indexnow server-side, un `/mcp`), il
+posto è ancora questo file, e il comando per provarlo è `npx wrangler pages dev out`,
+perché né `next dev` né un server statico fanno girare quel pezzo.
 
 ---
 
@@ -402,43 +460,56 @@ perch\u00e9 n\u00e9 `next dev` n\u00e9 un server statico fanno girare quel pezzo
 | `npm run lint` | ESLint flat config (fra cui: link interni con `next/link`) |
 | `npx tsc --noEmit` | i tipi |
 | `npm run build` | `next build` + `scripts/gen-cards.mjs` (8 pagine, 8 card) |
-| `node scripts/verify.js` | **52 controlli** sul costruito: un solo `h1` per pagina, canonical, OG, JSON-LD parseabile (Person, WebSite, BlogPosting, Article, `BreadcrumbList` **anche per le note**), breadcrumb visibile, `robots.txt` (agenti AI per nome + `Content-Signal`), sitemap (indice + figlie, **date che seguono i contenuti**, indice datato come le figlie), `lastmod`, l'**OG card di ogni articolo e nota** (ricavata dai registri, con il conteggio confrontato con le pagine costruite, e nessuna card orfana) e l'**`og:image` che ogni pagina dichiara** (letto dall'`<head>` di tutte le pagine costruite, e deve esistere: quando cade stampa il file mancante), annuncio della card markdown nella `<head>` **e** nel piè di pagina, link interni fra articoli e sezioni, TOC con gli anchor giusti, card `.md` (struttura e copia in `public/`), 404 `noindex`, peso dell'homepage (html+css < 56KB raw) |
+| `node scripts/verify.js` | **57 controlli** sul costruito: un solo `h1` per pagina, canonical, OG, JSON-LD parseabile (Person, WebSite, BlogPosting, Article, `BreadcrumbList` **anche per le note**), breadcrumb visibile, `robots.txt` (agenti AI per nome + `Content-Signal`), sitemap (indice + figlie, **date che seguono i contenuti**, indice datato come le figlie), `lastmod`, l'**OG card di ogni articolo e nota** (ricavata dai registri, con il conteggio confrontato con le pagine costruite, e nessuna card orfana) e l'**`og:image` che ogni pagina dichiara** (letto dall'`<head>` di tutte le pagine costruite, e deve esistere: quando cade stampa il file mancante), annuncio della card markdown nella `<head>` **e** nel piè di pagina, link interni fra articoli e sezioni, TOC con gli anchor giusti, card `.md` (struttura e copia in `public/`), i **documenti di scoperta** (il `Link` di ogni pagina che punta a file che esistono, il linkset dell'`api-catalog`, il **digest ricalcolato** della skill), 404 `noindex`, peso dell'homepage (html+css < 56KB raw) |
 
 `verify.js` è deliberatamente **una cosa sola**: non è una suite, è un file che si
 legge in un minuto e che aggiunge una riga per ogni regola che ci è già costata
 qualcosa. Un controllo nuovo, qui, entra solo se prima ha **morso** una volta.
 
-### 5.2 Dal vivo: cosa non c'è ancora
+### 5.2 Dal vivo: `scripts/check-live.mjs`
 
-Oggi nessun controllo parla al sito pubblicato. È la lacuna più onesta da
-scrivere: il `dist` può essere perfetto e il file arrivare sul dominio tagliato,
-o servito con la pagina di ripiego. Il minimo, quando servirà:
+`verify.js` è **offline**, e per questo non ha visto il guasto del 21/09: dentro il
+build era tutto verde, mentre il sito dichiarava un dominio che non esiste. La
+lezione non è "aggiungere un controllo", è **da dove si legge**: il controllo dal
+vivo parte dalla **sitemap pubblicata** (che dice qual è il dominio che il deploy
+dichiara davvero) e dalla **pagina pubblicata** (che dice quale `og:image`
+dichiara). Confrontarlo con l'export locale direbbe solo che il computer è
+d'accordo con sé stesso.
 
 ```bash
-curl -sI https://<dominio>/robots.txt | head -1          # 200, e text/plain
-curl -s  https://<dominio>/sitemap.xml | head -3         # <sitemapindex, non la shell SPA
-curl -s  https://<dominio>/index.md   | head -1          # "# Mattia …", non "<!doctype"
+node scripts/check-live.mjs --site=https://mattiaciuni.pages.dev
 ```
 
-Tre righe, tre modi diversi di rompersi (un file mancante, un file sostituito
-dalla shell, un sitemap che elenca un altro deploy). Con un `--site=` diventano
-uno script, e con un `--wait` diventano il passo che aspetta il deploy.
+Cosa morde, in ordine: il dominio **risolve in DNS** (il controllo che mancava),
+`/sitemap.xml` risponde e non nomina un dominio diverso da quello che risponde,
+ogni pagina elencata risponde 200 e dichiara **canonical di sé stessa** e una card
+completa (`width`, `height`, `type`) **sullo stesso dominio**, e ogni card
+dichiarata è raggiungibile ed è un'immagine. È il controllo che chiede la stessa
+cosa che chiede Discord quando qualcuno incolla il link, cioè quando è tardi.
 
 ### 5.3 Provare il pezzo che esiste solo su Cloudflare
 
-`public/_headers`, `public/_redirects` e il comportamento degli indirizzi (la
-barra finale, la 404) **non girano** né in `next dev` né su un server statico: li
-applica l'host, secondo ciò che dice `wrangler.jsonc`.
+`public/_headers`, `public/_redirects`, `public/_routes.json` e il comportamento
+degli indirizzi (la barra finale, la 404) **non girano** né in `next dev` né su un
+server statico: li applica Pages.
 
 ```bash
-npm run build && npx wrangler dev    # workerd vero: _headers, _redirects, trailing slash, 404
+npm run build && npx wrangler pages dev out    # workerd vero: Functions, _headers, _redirects, la barra finale, 404
 ```
 
-\u00c8 la prova che vale, perché è la stessa strada della produzione: `/` 200,
-`/thoughts/<slug>/` **200 senza redirect** (\u00e8 la forma canonica),
-`/thoughts/<slug>` 307 verso quella con la barra, un indirizzo inventato 404 con il
-corpo di `out/404.html`, e su `/og.png` il `Content-Type` e il `Cache-Control` di
-`_headers`.
+È la prova che vale, perché è la stessa strada della produzione: `/` 200,
+`/thoughts/<slug>/` **200 senza redirect** (è la forma canonica),
+`/thoughts/<slug>` **308** verso quella con la barra, un indirizzo inventato 404 con
+il corpo di `out/404.html`, su `/og.png` il `Content-Type` e il `Cache-Control` di
+`_headers`, `Accept: text/markdown` che restituisce la card, e la canonical che
+dichiara `http://127.0.0.1:8788` — cioè l'host che serve la pagina, che in locale è
+proprio quello.
+
+Qui è anche il posto in cui è stata **misurata** la scelta di `trailingSlash`:
+con le pagine come file (`out/thoughts/<slug>.html`) Pages risponde 200 su
+`/thoughts/<slug>` e fa 308 su `/thoughts/<slug>/`, cioè l'esatto contrario di ogni
+canonical del sito. Con `trailingSlash: true` (pagine come `index.html`) la forma
+canonica è quella che Pages serve da sé, senza reindirizzare.
 
 ---
 
@@ -449,8 +520,8 @@ corpo di `out/404.html`, e su `/og.png` il `Content-Type` e il `Cache-Control` d
 **Generico (l'impianto, si copia):**
 
 - registro → tutto il resto derivato; nessun artefatto generato scritto a mano;
-- il dominio come unica costante (`lib/site.ts`), letta da canonical, sitemap,
-  `robots.txt`, `llms.txt`, JSON-LD, RSS e card;
+- il dominio come **una sola stringa** (`lib/site-origin.ts`), letta da canonical,
+  sitemap, `robots.txt`, `llms.txt`, JSON-LD, RSS e card;
 - un documento per indirizzo, con la testata completa già dentro (un crawler non
   esegue JavaScript);
 - sitemap come **indice + figlie**, ricavato dalle pagine costruite;
@@ -462,8 +533,8 @@ corpo di `out/404.html`, e su `/og.png` il `Content-Type` e il `Cache-Control` d
 - controlli locali senza rete, in un file solo, che crescono di una riga per ogni
   regola che ha già morso.
 
-**Dato di questo sito (si sostituisce, non si copia):** dominio, email e social in
-`lib/site.ts`; la riga `en`; i 32 nomi dei bot (si aggiornano, l'elenco non è
+**Dato di questo sito (si sostituisce, non si copia):** il dominio in
+`lib/site-origin.ts` e in `NEXT_PUBLIC_SITE_URL`; email e social in `lib/site.ts`; la riga `en`; i 32 nomi dei bot (si aggiornano, l'elenco non è
 sacro); i contenuti e i loro keyword; le immagini OG; il testo di `llms.txt`.
 
 ### 6.2 L'ordine minimo (quello che serve davvero, in sette passi)
@@ -482,17 +553,25 @@ sacro); i contenuti e i loro keyword; le immagini OG; il testo di `llms.txt`.
 
 ### 6.3 Le tre trappole, già pagate
 
-- **Il dominio scritto in due posti.** Qui non succede per costruzione: le card
-  (`scripts/gen-cards.mjs`) leggono solo `out/`, che è già canonico, e nessuno
-  script Node ricopia il dominio. Se un giorno uno script dovesse farlo, va
-  controllato che coincida con `lib/site.ts`.
+- **Il dominio scritto in due posti.** Qui la stringa sta in un file solo
+  (`lib/site-origin.ts`), le card (`scripts/gen-cards.mjs`) leggono solo `out/`,
+  che è già canonico, e nessuno script Node ricopia il dominio. Il middleware ha
+  bisogno di sapere quale dominio sta **dentro** l'export per poterlo sostituire:
+  se quel file e l'export divergono, la sostituzione non trova niente — e`
+  `verify.js` lo pretende uguale, con un controllo che spiega cosa aggiornare.
 - **Un file generato che nessuno rigenera** dice una verità vecchia. Qui le card
   girano in `postbuild` **e** in `predev`, e `verify.js` controlla sia la copia
   di produzione sia quella di sviluppo: non esiste il caso «l'ho aggiornata a
   mano solo questa volta».
-- **`_redirects` di Cloudflare ignora in silenzio oltre la centesima regola**, e
-  sui Worker ignora anche le regole con un dominio dentro. Qui il file è vuoto; se
-  un giorno serviranno, vanno in uno script del Worker.
+- **Il dominio che nessuno raggiunge.** È la trappola di questa giornata, e non
+  la si vede da dentro: il build era verde, `verify.js` era verde, e il sito
+dichiarava un dominio inesistente (`mattiaciuni.xyz`, NXDOMAIN dal registro
+  `.xyz`) mentre rispondeva su un altro host. Le anteprime social erano l'unico
+  sintomo visibile, e sono arrivate dagli utenti. La cura è doppia: il dominio
+  segue l'host (§4.4) **e** `check-live.mjs` lo chiede al DNS (§5.2).
+- **`_redirects` di Cloudflare ignora in silenzio oltre la centesima regola** (e
+  su un Worker con static assets ignora anche le regole con un dominio dentro).
+  Qui il file è vuoto; se un giorno serviranno, vanno in `functions/_middleware.ts`.
 
 ---
 
@@ -506,7 +585,9 @@ Misurato adesso, non ricordato:
 sitemap: un indice + tre figlie · 8 URL in totale · lastmod che segue i contenuti
 robots.txt: 33 blocchi · 32 agenti AI per nome · Content-Signal dichiarato
 JSON-LD: Person + WebSite · BlogPosting + BreadcrumbList · Article + BreadcrumbList · Blog
-verify.js: 52 controlli, tutti verdi · homepage html+css 54.6KB raw · JS 749.6KB raw
+scoperta: Link su ogni pagina · api-catalog (1 linkset, 2 documenti) · 1 skill con digest
+verify.js: 57 controlli, tutti verdi · homepage html+css 55.2KB raw · JS 778.3KB raw
+pubblicazione: Cloudflare Pages · dominio dichiarato: https://mattiaciuni.pages.dev
 ```
 
 **Fuori dal repository, e quindi non finito:**
@@ -514,10 +595,12 @@ verify.js: 52 controlli, tutti verdi · homepage html+css 54.6KB raw · JS 749.6
 - **Search Console**: registrazione del sitemap (proprietà di dominio via DNS) —
   è un gesto umano, una volta;
 - **IndexNow**: nessuna chiave, nessun workflow (§2.5);
-- **controlli dal vivo**: nessuno (§5.2).
+- **DNSSEC**: va acceso sulla zona e confermato dal registrar (il record DS). Non
+  è una cosa da repository e nemmeno da questo lato: è l'unico pezzo della
+  scoperta che vive nel DNS.
 
 Correttamente **assenti**, per la regola del §4.2: OAuth/OIDC discovery, Web Bot
-Auth, x402/MPP/UCP/ACP, DNS-AID, server card MCP, agent skills, catalogo ARD.
+Auth, x402/MPP/UCP/ACP, DNS-AID, server card MCP, catalogo ARD, `openapi.json`.
 
 ---
 
@@ -537,9 +620,14 @@ app/robots.txt/route.ts        permessi dichiarati: agenti AI per nome + Content
 app/llms.txt/route.ts          il file che un motore generativo legge per primo
 app/feed.xml/route.ts          RSS
 scripts/gen-cards.mjs          le card markdown, dal costruito
-scripts/verify.js              i 52 controlli locali
-public/_headers                tipo e cache dei file noti, header di sicurezza
-wrangler.jsonc                 cosa pubblicare e come rispondere: out/, barra finale, 404
+scripts/verify.js              i 57 controlli locali (offline)
+scripts/check-live.mjs         i controlli sul sito pubblicato (DNS, sitemap, canonical, card)
+lib/site-origin.ts             l'unica stringa del dominio, letta da build, Function e controlli
+functions/_middleware.ts       l'unico codice: markdown a richiesta + il dominio che segue l'host
+public/_routes.json            quali rotte invocano la Function
+agent-skills/<nome>/SKILL.md   la fonte a mano delle skill per gli agenti (una sola)
+scripts/gen-agent-files.mjs    i documenti di scoperta, dai dati veri
+public/_headers                tipo e cache dei file noti, header di sicurezza, Link di scoperta
 docs/SEO.md                    il contratto di questo sito, file per file
 docs/AUTHORING.md              come si scrive un articolo, con le regole editoriali
 ```

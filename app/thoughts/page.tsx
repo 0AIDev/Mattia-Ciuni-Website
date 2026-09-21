@@ -4,6 +4,11 @@ import { ChevronRight } from "@/components/icons";
 import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
 import { site } from "@/lib/site";
 import { posts } from "@/lib/posts";
+import { socialImages } from "@/lib/social";
+
+// La card di questa sezione, dichiarata come su tutte le altre pagine: misure,
+// tipo e alt compresi (un'anteprima non indovina niente da sola).
+const card = socialImages("/thoughts/og.png", "Thoughts · Mattia Ciuni");
 
 export const metadata: Metadata = {
   title: "Thoughts",
@@ -19,14 +24,14 @@ export const metadata: Metadata = {
     title: "Thoughts · Mattia Ciuni",
     description:
       "Thoughts by Mattia Ciuni on AI agents, payments and building Payle.",
-    images: ["/thoughts/og.png"],
+    images: card.og,
   },
   twitter: {
     card: "summary_large_image",
     title: "Thoughts · Mattia Ciuni",
     description:
       "Thoughts by Mattia Ciuni on AI agents, payments and building Payle.",
-    images: ["/thoughts/og.png"],
+    images: card.twitter,
   },
 };
 

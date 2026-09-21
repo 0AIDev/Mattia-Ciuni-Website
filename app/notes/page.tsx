@@ -3,6 +3,11 @@ import Link from "next/link";
 import { ChevronRight } from "@/components/icons";
 import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
 import { notes } from "@/lib/notes";
+import { socialImages } from "@/lib/social";
+
+// La card di questa sezione, dichiarata come su tutte le altre pagine: misure,
+// tipo e alt compresi (un'anteprima non indovina niente da sola).
+const card = socialImages("/notes/og.png", "Notes · Mattia Ciuni");
 
 export const metadata: Metadata = {
   title: "Notes",
@@ -18,14 +23,14 @@ export const metadata: Metadata = {
     title: "Notes · Mattia Ciuni",
     description:
       "Long-form notes on AI agents, payments and the philosophy of building software.",
-    images: ["/notes/og.png"],
+    images: card.og,
   },
   twitter: {
     card: "summary_large_image",
     title: "Notes · Mattia Ciuni",
     description:
       "Long-form notes on AI agents, payments and the philosophy of building software.",
-    images: ["/notes/og.png"],
+    images: card.twitter,
   },
 };
 
