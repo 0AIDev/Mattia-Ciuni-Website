@@ -12,6 +12,9 @@ assert.match(component, /No spam, no growth hacks\. Just the log\./);
 assert.match(component, /placeholder="your@email\.com"/);
 assert.match(component, /name="company_website"/);
 assert.match(component, /aria-live="polite"/);
+assert.match(component, /localStorage\.getItem\(SUBSCRIBED_KEY\)/);
+assert.match(component, /localStorage\.setItem\(SUBSCRIBED_KEY, "1"\)/);
+assert.doesNotMatch(component, />Sundays<\/p>/);
 assert.match(component, /Subscribing\.\.\./);
 assert.match(component, /Check your inbox/);
 assert.match(component, /You're already on the list/);
@@ -42,7 +45,7 @@ walk(out);
 assert.ok(pages.length >= 9, "expected the exported site pages");
 for (const page of pages) {
   const html = readFileSync(page, "utf8");
-  const newsletter = html.indexOf("sundays-title");
+  const newsletter = html.indexOf("newsletter-title");
   const footer = html.indexOf("© 2026 Mattia Ciuni");
   assert.ok(newsletter >= 0, `${page} has no Sundays section`);
   assert.ok(footer >= 0 && newsletter < footer, `${page} does not place Sundays before footer`);

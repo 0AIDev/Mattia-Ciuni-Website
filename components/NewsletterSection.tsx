@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState } from "react";
+import { FormEvent, useState, useSyncExternalStore } from "react";
 
 const COPY = {
   success:
@@ -8,12 +8,22 @@ const COPY = {
   genericError: "Something broke on my side. Try again in a minute.",
   duplicate: "You're already on the list. See you Sunday.",
 };
+const SUBSCRIBED_KEY = "mattia-ciuni-newsletter-subscribed";
+const subscribeToStorage = (onChange: () => void) => {
+  window.addEventListener("storage", onChange);
+  return () => window.removeEventListener("storage", onChange);
+};
+const hasSubscribed = () => window.localStorage.getItem(SUBSCRIBED_KEY) === "1";
+const hasNotSubscribed = () => false;
 
 export function NewsletterSection() {
   const [email, setEmail] = useState("");
   const [companyWebsite, setCompanyWebsite] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "success" | "error" | "duplicate">("idle");
   const [error, setError] = useState("");
+  const [ignoreRemembered, setIgnoreRemembered] = useState(false);
+  const remembered = useSyncExternalStore(subscribeToStorage, hasSubscribed, hasNotSubscribed);
+  const displayState = !ignoreRemembered && remembered && state === "idle" ? "duplicate" : state;
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -34,8 +44,10 @@ export function NewsletterSection() {
       });
       const result = (await response.json().catch(() => ({}))) as { code?: string };
       if (response.ok) {
+        window.localStorage.setItem(SUBSCRIBED_KEY, "1");
         setState("success");
       } else if (response.status === 409 || result.code === "already_subscribed") {
+        window.localStorage.setItem(SUBSCRIBED_KEY, "1");
         setState("duplicate");
       } else {
         setState("error");
@@ -47,78 +59,86 @@ export function NewsletterSection() {
     }
   }
 
-  return (
-    <section
-      aria-labelledby="sundays-title"
-      className="mx-auto mb-16 max-w-[692px] px-6 sm:mb-24"
-    >
-      <div className="relative overflow-hidden rounded-3xl bg-gray-1200 px-5 py-9 text-white sm:px-10 sm:py-12">
-        <div
-          aria-hidden="true"
-          className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
-        />
-        <div className="relative mx-auto flex max-w-[560px] flex-col items-center text-center">
-          <p className="mb-4 text-[13px] uppercase tracking-[0.14em] text-white/40">Sundays</p>
-          <h2 id="sundays-title" className="text-balance font-serif text-2xl leading-tight text-white sm:text-3xl">
-            Every Sunday I send one email: what I shipped, what broke, what I decided and why.
-          </h2>
-          <p className="mt-4 max-w-[520px] text-sm leading-relaxed text-white/70 sm:text-base">
-            Building Payle in public, from Italy to San Francisco. No spam, no growth hacks. Just the log.
-          </p>
+  function useAnotherEmail() {
+    window.localStorage.removeItem(SUBSCRIBED_KEY);
+    setIgnoreRemembered(true);
+    setEmail("");
+    setState("idle");
+  }
 
-          {state === "success" ? (
-            <p role="status" aria-live="polite" className="mt-7 text-sm leading-relaxed text-white/85">
+  return (
+    <section aria-labelledby="newsletter-title" className="mx-auto mb-14 max-w-[692px] px-5 sm:mb-24 sm:px-6">
+      <div className="mx-auto max-w-[560px]">
+        <h2 id="newsletter-title" className="max-w-[30rem] text-balance font-serif text-xl leading-[1.18] text-gray-1200 sm:text-3xl sm:leading-tight">
+          Every Sunday I send one email: what I shipped, what broke, what I decided and why.
+        </h2>
+        <p className="mt-3 max-w-[520px] text-[15px] leading-[1.55] text-gray-1000 sm:text-base sm:leading-relaxed">
+          Building Payle in public, from Italy to San Francisco. No spam, no growth hacks. Just the log.
+        </p>
+
+        {displayState === "success" ? (
+          <div className="mt-7" role="status" aria-live="polite">
+            <p className="font-serif text-lg leading-relaxed text-gray-1200 sm:text-xl">
               Check your inbox — one click to <strong>confirm</strong>. Then you&apos;ll get the story so far while you wait for Sunday.
             </p>
-          ) : state === "duplicate" ? (
-            <p role="status" aria-live="polite" className="mt-7 text-sm leading-relaxed text-white/85">{COPY.duplicate}</p>
-          ) : (
-            <form onSubmit={submit} className="mt-7 w-full max-w-[520px]" noValidate>
-              <div className="relative flex flex-col gap-3 rounded-full border border-white/10 bg-white/[0.04] p-1.5 sm:flex-row sm:items-center">
-                <label htmlFor="sundays-email" className="sr-only">Email address</label>
-                <input
-                  id="sundays-email"
-                  name="email"
-                  type="email"
-                  value={email}
-                  onChange={(event) => setEmail(event.target.value)}
-                  placeholder="your@email.com"
-                  autoComplete="email"
-                  inputMode="email"
-                  aria-invalid={state === "error"}
-                  aria-describedby={state === "error" ? "sundays-status" : undefined}
-                  disabled={state === "loading"}
-                  className="min-h-11 w-full rounded-full border-0 border-b border-white/30 bg-transparent px-4 py-2.5 text-base text-[#F4F7FC] outline-none placeholder:text-white/40 focus:border-[#58A6FF] focus:ring-0 disabled:opacity-60 sm:min-h-[52px] sm:flex-1"
-                />
-                <input
-                  type="text"
-                  name="company_website"
-                  value={companyWebsite}
-                  onChange={(event) => setCompanyWebsite(event.target.value)}
-                  tabIndex={-1}
-                  autoComplete="off"
-                  aria-hidden="true"
-                  className="sr-only"
-                />
-                <button
-                  type="submit"
-                  disabled={state === "loading"}
-                  className="min-h-11 shrink-0 rounded-full px-5 text-sm font-semibold text-[#F4F7FC] transition-colors hover:bg-white/10 hover:underline focus-visible:outline-white disabled:cursor-wait disabled:opacity-60 sm:px-6"
-                >
-                  {state === "loading" ? "Subscribing..." : "Subscribe"}
-                </button>
-              </div>
-              <p id="sundays-status" role="status" aria-live="polite" className="mt-3 min-h-5 text-center text-sm text-white/60">
-                {state === "error" ? error : ""}
-              </p>
+          </div>
+        ) : displayState === "duplicate" ? (
+          <div className="mt-7" role="status" aria-live="polite">
+            <p className="font-serif text-lg leading-relaxed text-gray-1200 sm:text-xl">{COPY.duplicate}</p>
+            <button type="button" onClick={useAnotherEmail} className="mt-3 text-xs text-gray-1000 underline decoration-gray-400 underline-offset-4 hover:text-gray-1200">
+              Use another email
+            </button>
+          </div>
+        ) : (
+          <>
+            <form
+            onSubmit={submit}
+            className="mt-6 flex w-full max-w-[520px] min-w-0 flex-row items-center gap-1 rounded-full border border-gray-300 p-1 transition-colors focus-within:border-gray-1200 focus-within:ring-2 focus-within:ring-gray-1200/15 sm:mt-7 sm:gap-2"
+            noValidate
+          >
+              <label htmlFor="newsletter-email" className="sr-only">Email address</label>
+              <input
+                id="newsletter-email"
+                name="email"
+                type="email"
+                value={email}
+                onChange={(event) => setEmail(event.target.value)}
+                placeholder="your@email.com"
+                autoComplete="email"
+                inputMode="email"
+                aria-invalid={state === "error"}
+                aria-describedby={state === "error" ? "newsletter-status" : undefined}
+                disabled={state === "loading"}
+                className="newsletter-email min-h-11 min-w-0 flex-1 rounded-full border-0 bg-transparent px-3 py-2 text-[15px] text-gray-1200 outline-none placeholder:text-gray-1000/60 focus:outline-none focus:ring-0 disabled:opacity-60 sm:px-4 sm:text-base"
+              />
+              <input
+                type="text"
+                name="company_website"
+                value={companyWebsite}
+                onChange={(event) => setCompanyWebsite(event.target.value)}
+                tabIndex={-1}
+                autoComplete="off"
+                aria-hidden="true"
+                className="sr-only"
+              />
+              <button
+                type="submit"
+                disabled={state === "loading"}
+                className="min-h-11 shrink-0 whitespace-nowrap rounded-full bg-gray-1200 px-4 text-sm font-semibold text-white transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gray-1200 disabled:cursor-wait disabled:opacity-50 sm:px-5"
+              >
+                {state === "loading" ? "Subscribing..." : "Subscribe"}
+              </button>
             </form>
-          )}
+            <p id="newsletter-status" role="status" aria-live="polite" className="mt-3 min-h-5 text-sm text-gray-1000">
+              {state === "error" ? error : ""}
+            </p>
+          </>
+        )}
 
-          <p className="mt-5 text-[13px] leading-relaxed text-white/40">
-            One email a week. Unsubscribe anytime. No data sharing, ever. Your voice never leaves your phone either. {" "}
-            <a href="/privacy/" className="text-white/60 underline decoration-white/20 underline-offset-4 hover:text-white">privacy</a>
-          </p>
-        </div>
+        <p className="mt-4 max-w-[520px] text-[13px] leading-[1.55] text-gray-1000 sm:mt-5 sm:leading-relaxed">
+          One email a week. Unsubscribe anytime. No data sharing, ever. Your voice never leaves your phone either. {" "}
+          <a href="/privacy/" className="underline decoration-gray-400 underline-offset-4 hover:text-gray-1200">privacy</a>
+        </p>
       </div>
     </section>
   );

@@ -52,13 +52,13 @@ Il contenuto è una lista di blocchi tipizzati — nessun HTML, nessun markdown.
 | `{ type: "list", items }` | tre o quattro cose che non sono una frase |
 | `{ type: "code", lang, code }` | solo per gli articoli: un vero frammento da leggere |
 
-Dentro `p`, `quote` e `items` c'è una **sintassi minima**, e sono due sole cose:
+Dentro `p`, `quote` e `items` c'è una **sintassi minima**:
 
-- `*corsivo*` → corsivo (per un termine che stai definendo, o un'enfasi vera);
+- `**grassetto**` → grassetto per una conseguenza o un dato importante;
+- `*corsivo*` → corsivo per un termine che stai definendo, o un'enfasi vera;
 - `[etichetta](destinazione)` → un collegamento.
 
-Tutto il resto è testo puro. Niente grassetto (non esiste: se un concetto è
-importante, è importante la frase che lo contiene), niente titoli annidati oltre
+Tutto il resto è testo puro, senza titoli annidati oltre
 `h2`, niente immagini dentro il corpo.
 
 ## 3 · I collegamenti — la parte che rende il blog un blog

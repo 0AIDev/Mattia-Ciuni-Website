@@ -1,14 +1,17 @@
 import Link from "next/link";
 import { Fragment } from "react";
 
-// Sintassi nel testo degli articoli: *corsivo* e [etichetta](/percorso/ | #sezione | https://…)
-const TOKEN = /(\*[^*]+\*|\[[^\]]+\]\([^)]+\))/g;
+// Sintassi nel testo degli articoli: **grassetto**, *corsivo* e [etichetta](/percorso/ | #sezione | https://…)
+const TOKEN = /(\*\*[^*]+\*\*|\*[^*]+\*|\[[^\]]+\]\([^)]+\))/g;
 const LINK = /^\[([^\]]+)\]\(([^)]+)\)$/;
 
 export function InlineText({ text }: { text: string }) {
   return (
     <>
       {text.split(TOKEN).map((part, i) => {
+        if (part.length > 4 && part.startsWith("**") && part.endsWith("**")) {
+          return <strong key={i} className="font-medium">{part.slice(2, -2)}</strong>;
+        }
         if (part.length > 2 && part.startsWith("*") && part.endsWith("*")) {
           return (
             <em key={i} className="font-serif italic">

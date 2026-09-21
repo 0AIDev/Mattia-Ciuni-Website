@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { ForAICard } from "@/components/ForAICard";
 import { ArrowUpRightIcon } from "@/components/ui/arrow-up-right";
 
@@ -11,8 +12,12 @@ export function SiteFooter() {
         <span>© 2026 Mattia Ciuni</span>
         <ForAICard />
       </div>
-
-      {/* Signature: il logo riempito con la sfumatura (vedi `.site-signature`). */}
+      <nav aria-label="Legal" className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-1000">
+        <Link href="/privacy/">Privacy Policy</Link>
+        <Link href="/terms/">Terms of Service</Link>
+        <Link href="/cookies/">Cookies</Link>
+        <Link href="/legal/">Legal Center</Link>
+      </nav>
       <div aria-hidden="true" className="site-signature mx-auto mt-16" />
     </footer>
   );

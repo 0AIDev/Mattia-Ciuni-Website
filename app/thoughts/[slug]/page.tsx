@@ -4,6 +4,7 @@ import { Fragment } from "react";
 import { notFound } from "next/navigation";
 import CopyPostLink from "@/components/CopyPostLink";
 import { CoverImage } from "@/components/CoverImage";
+import { GhassenLinks } from "@/components/GhassenLinks";
 import { RelatedList } from "@/components/RelatedList";
 import { InlineText } from "@/components/RichText";
 import { ChevronRight } from "@/components/icons";
@@ -241,6 +242,7 @@ export default async function BlogPost({
           {post.title}
         </h1>
         <BlockFlow blocks={post.content} />
+        {post.slug === "finding-ghassen-the-co-founder-question-answered-in-three-weeks" ? <GhassenLinks /> : null}
         <p className="mt-12 w-full text-text-paragraph">
           Building the money layer for AI agents at{" "}
           <a href={site.payleUrl} rel="noopener noreferrer" className="article-underline">

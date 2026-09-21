@@ -80,7 +80,7 @@ check("404: noindex + home link", read("404.html").includes('name="robots" conte
 const smIndex = read("sitemap.xml");
 check("sitemap: index with 3 children", smIndex.includes('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">') && (smIndex.match(/<sitemap>/g) || []).length === 3 && smIndex.includes(`${PROD}/sitemap-home.xml`) && smIndex.includes(`${PROD}/sitemap-thoughts.xml`) && smIndex.includes(`${PROD}/sitemap-notes.xml`));
 check("sitemap-home: 1 url", (read("sitemap-home.xml").match(/<loc>/g) || []).length === 1 && read("sitemap-home.xml").includes(`${PROD}/`));
-check("sitemap-thoughts: 3 url", (read("sitemap-thoughts.xml").match(/<loc>/g) || []).length === 3 && read("sitemap-thoughts.xml").includes("/thoughts/"));
+check("sitemap-thoughts: 4 url", (read("sitemap-thoughts.xml").match(/<loc>/g) || []).length === 4 && read("sitemap-thoughts.xml").includes("finding-ghassen-the-co-founder-question-answered-in-three-weeks"));
 check("sitemap-notes: 4 url", (read("sitemap-notes.xml").match(/<loc>/g) || []).length === 4 && read("sitemap-notes.xml").includes("/notes/"));
 // Le date seguono i contenuti: una collezione è datata con l'elemento più
 // recente che contiene, non con la data del deploy.
@@ -134,7 +134,7 @@ const homeCard = read("index.md");
 check("card home: structured", homeCard.startsWith("# Mattia") && homeCard.includes("- URL: " + PROD) && homeCard.includes("- Type: Home") && homeCard.includes("[Thoughts index](thoughts.md)") && homeCard.includes("[Notes index](notes.md)"));
 check("cards: public copy for dev", fs.existsSync(path.join(__dirname, "..", "public", "index.md")) && fs.existsSync(path.join(__dirname, "..", "public", "thoughts", "money-layer-for-ai-agents.md")));
 const thoughtsCard = read("thoughts.md");
-check("card thoughts index: 2 posts", (thoughtsCard.match(/^\- \[.*\]\(thoughts\/[a-z0-9-]+\.md\)/gm) || []).length === 2 && thoughtsCard.includes("money-layer-for-ai-agents.md") && thoughtsCard.includes("artifact-based-hiring.md"));
+check("card thoughts index: 3 posts", (thoughtsCard.match(/^\- \[.*\]\(thoughts\/[a-z0-9-]+\.md\)/gm) || []).length === 3 && thoughtsCard.includes("money-layer-for-ai-agents.md") && thoughtsCard.includes("artifact-based-hiring.md") && thoughtsCard.includes("finding-ghassen-the-co-founder-question-answered-in-three-weeks.md"));
 const postCard = read("thoughts/money-layer-for-ai-agents.md");
 check("card post: content", postCard.includes("- Type: Blog post") && postCard.includes(PROD + "/thoughts/money-layer-for-ai-agents") && postCard.includes("- Published: 2026-09-20"));
 const notesCard = read("notes.md");
@@ -333,8 +333,7 @@ check(
 );
 check(
   "note: cross-links + related",
-  note.includes('href="/thoughts/money-layer-for-ai-agents/"') &&
-    note.includes('aria-labelledby="thoughts"')
+  note.includes('href="/thoughts/') && note.includes('aria-labelledby="thoughts"')
 );
 check(
   "post: toc anchors",

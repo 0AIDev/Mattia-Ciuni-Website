@@ -1,30 +1,42 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { LegalPage, type LegalSection } from "@/components/LegalPage";
 import { site } from "@/lib/site";
 
 export const metadata: Metadata = {
-  title: "Privacy",
-  description: "How Mattia Ciuni handles Sundays newsletter subscriptions.",
+  title: "Privacy Policy",
+  description: "How Mattia Ciuni handles newsletter subscriptions and personal data.",
   alternates: { canonical: "/privacy/" },
 };
 
+const sections: LegalSection[] = [
+  {
+    id: "what-we-collect",
+    title: "What we collect",
+    content: <p>For the Sundays newsletter, we collect your email address and the information needed to manage your subscription. We do not ask for your name.</p>,
+  },
+  {
+    id: "why-we-collect-it",
+    title: "Why we collect it",
+    content: <p>We use your email address to send the newsletter, confirm your subscription, and process unsubscribe requests. The legal basis is your consent, given through double opt-in.</p>,
+  },
+  {
+    id: "who-processes-it",
+    title: "Who processes it",
+    content: <p>Your email is processed by Buttondown as our newsletter delivery provider. We do not sell your data, use it for advertising, or build a profile about you. No data sharing, ever.</p>,
+  },
+  {
+    id: "your-rights",
+    title: "Your rights",
+    content: <p>You can unsubscribe at any time using the link in every email. You can also ask for access, correction, or deletion by emailing <a href={`mailto:${site.email}`} className="underline underline-offset-4">{site.email}</a>.</p>,
+  },
+  {
+    id: "contact",
+    title: "Contact",
+    content: <p>Questions about privacy can be sent to <a href={`mailto:${site.email}`} className="underline underline-offset-4">{site.email}</a>. For the other legal documents, visit the <Link href="/legal/" className="underline underline-offset-4">Legal Center</Link>.</p>,
+  },
+];
+
 export default function PrivacyPage() {
-  return (
-    <main id="content" className="mx-auto max-w-[692px] px-6 pb-24 pt-16 sm:pt-24">
-      <nav aria-label="Breadcrumb" className="mb-16 text-sm text-gray-1000">
-        <Link href="/">Home</Link> <span aria-hidden="true">·</span> <span aria-current="page">Privacy</span>
-      </nav>
-      <article>
-        <h1 className="mb-6 font-serif text-4xl font-medium leading-tight text-gray-1200">Privacy</h1>
-        <div className="space-y-5 text-text-paragraph">
-          <p>Sundays collects one thing: your email address.</p>
-          <p>Why: to send you one weekly email about what I shipped, what broke, what I decided and why.</p>
-          <p>Your email is handled by Buttondown to deliver the newsletter. No sale, profiling, or advertising data sharing. No data sharing, ever.</p>
-          <p>You can cancel through the unsubscribe link in every email, or email <a href={`mailto:${site.email}`}>{site.email}</a> and ask me to remove you.</p>
-          <p>Double opt-in is always on: your subscription is not active until you click the confirmation link.</p>
-        </div>
-        <p className="mt-12 text-sm text-gray-1000"><Link href="/">Back home</Link></p>
-      </article>
-    </main>
-  );
+  return <LegalPage title="Privacy Policy" intro="A short explanation of what I collect, why I collect it, and what you control." sections={sections} />;
 }

@@ -32,7 +32,7 @@ Tre file, e sono il contratto del sito — non si scrive un articolo senza il se
 - `public/mattia.webp`, avatar della home: **80×80 WebP, 0,8KB**, dal master `mattia.png` in root (1254×1254) con `node scripts/gen-avatar.mjs`. 80px è il doppio dei 40px a cui la pagina lo mostra (`h-10 w-10`), quindi è nitido sui display 2x senza servire pixel che nessuno vede: prima era un PNG 128×128 da 10,7KB, cioè ~10KB di risparmio che su mobile sono una richiesta che finisce prima
 - **Favicon**: `app/icon.png` (copia del logo raster `favicon.png` in root, 1572×1572). Rimuove `app/icon.svg`. Origin dell'icona nel manifest sta su `/icon.png`.
 - **Logo footer**: `public/logo.svg` = variante pulita di `Vector.svg` (in root): viewBox ritagliato sul tratto (il file originale ha canvas 1298×670 con il disegno che sborda e un filtro ombra sfocata) e color `#686868` (gray-1000). Generabile con `node scripts/gen-logo.mjs`.
-- `components/NewsletterSection.tsx` — sezione globale **Sundays**, sempre prima del footer: copy inglese fisso, form accessibile, honeypot e feedback inline; `/privacy/` descrive raccolta e cancellazione
+- `components/NewsletterSection.tsx` — sezione globale newsletter, sempre prima del footer: copy inglese fisso, form minimale senza sfondo, stato iscritto ricordato nel browser, honeypot e feedback inline; `/privacy/` descrive raccolta e cancellazione
 - `functions/api/subscribe.ts` — Pages Function per Buttondown: validazione e blocklist disposable, double opt-in delegato al provider, rate limit KV 3/min/IP e log senza PII. Configura `BUTTONDOWN_API_KEY` come secret e `RATE_LIMIT` come binding KV nel progetto Pages; il comando `npm run test:newsletter` copre il contratto offline e non simula la consegna di email
 - `app/sitemap.xml/route.ts` + `app/sitemap-home.xml/route.ts` + `app/sitemap-thoughts.xml/route.ts` + `app/sitemap-notes.xml/route.ts`, `app/robots.txt/route.ts`, `app/llms.txt/route.ts` — SEO: sitemap **indice** `/sitemap.xml` che divide in sotto-sitemap (home / thoughts / notes), tutte formattate (indentate, `lastmod` YYYY-MM-DD, changefreq, priority) e generate in automatico da posts+notes via helper `lib/sitemap.ts`; robots.txt che permette tutto (`Allow: /`) + riferimento all'indice; llms.txt standard per LLM (H1 + summary blockquote + sezioni Thoughts/Notes/Contact generati da dati reali). Poi: `app/manifest.ts` (theme `#FCFCFC`), `app/feed.xml/route.ts`, `app/not-found.tsx`
 - `functions/_middleware.ts` — Pages Function che fa due cose: `Accept: text/markdown` su una pagina restituisce la sua card `.md` (con `Content-Type: text/markdown`, `x-markdown-tokens` e `Vary: Accept`), e gli indirizzi assoluti che l'export dichiara (`canonical`, `og:image`, JSON-LD, `<loc>`, `Sitemap:`) vengono riscritti con **l'host che sta servendo la pagina** — così il dominio segue il deploy invece di dover essere indovinato, e le anteprime (Discord, X, Slack) chiedono la card a un dominio che esiste. Con `SITE_URL` impostata nel progetto il dominio si fissa invece di seguire l'host: è il caso del dominio custom. Tutto il resto passa agli asset. Vedi §Scoperta per gli agenti.
@@ -70,8 +70,7 @@ node scripts/check-live.mjs --site=https://mattiaciuni.pages.dev
 
 ### Newsletter Sundays / Buttondown
 
-La sezione globale **Sundays** è già inclusa nel layout: desktop usa il form
-pill inline, mobile lo impila, e `/privacy/` spiega raccolta e cancellazione.
+La sezione globale **Sundays** è già inclusa nel layout: desktop usa una riga minimale con input e bottone inline, mobile li impila, e `/privacy/` spiega raccolta e cancellazione.
 Per renderla operativa in produzione:
 
 1. Crea o usa un account Buttondown e attiva **double opt-in**. Configura il
