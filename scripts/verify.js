@@ -64,6 +64,7 @@ check("index: twitter large image", index.includes('twitter:card" content="summa
 check("index: rel=me x3", (index.match(/rel="me noopener"/g) || []).length === 3);
 check("index: mailto", index.includes("mailto:ceo@usepayle.com"));
 check("index: theme-color", index.includes('name="theme-color" content="#FFFFFF"'));
+check("index: Google Search Console verification", index.includes('name="google-site-verification" content="2Yp93wGXnpI1i5vhC09zwHdmGr1vY6rFCZIXptWOITI"'));
 
 const person = ldJson(index).find((j) => j["@type"] === "Person");
 check("index: Person JSON-LD valid", !!person && person.name === "Mattia Ciuni" && person.worksFor.name === "Payle" && person.sameAs.length === 5);

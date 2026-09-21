@@ -55,6 +55,9 @@ export const metadata: Metadata = {
   authors: [{ name: "Mattia Ciuni", url: site.url }],
   creator: "Mattia Ciuni",
   publisher: "Mattia Ciuni",
+  verification: {
+    google: "2Yp93wGXnpI1i5vhC09zwHdmGr1vY6rFCZIXptWOITI",
+  },
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },
   openGraph: {
