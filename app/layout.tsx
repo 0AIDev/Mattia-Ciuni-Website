@@ -7,6 +7,7 @@ import Script from "next/script";
 import { DeferredNewsletter } from "@/components/DeferredNewsletter";
 import { DeferredAnalytics } from "@/components/DeferredAnalytics";
 import { SiteFooter } from "@/components/SiteFooter";
+import { DeferredSiteRagChat } from "@/components/DeferredSiteRagChat";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -113,6 +114,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <DeferredNewsletter />
         </div>
         <SiteFooter />
+        <DeferredSiteRagChat />
       </body>
     </html>
   );

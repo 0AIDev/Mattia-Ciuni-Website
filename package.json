@@ -10,9 +10,10 @@
   ],
   "scripts": {
     "dev": "next dev",
-    "predev": "node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs",
+    "preview": "npm run build && npx wrangler pages dev out --port 8787",
+    "predev": "node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs && node scripts/gen-rag.mjs",
     "build": "next build",
-    "postbuild": "node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs && node scripts/ping-indexnow.mjs",
+    "postbuild": "node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs && node scripts/gen-rag.mjs && node scripts/ping-indexnow.mjs",
     "start": "next start",
     "lint": "eslint .",
     "test:newsletter": "node scripts/test-newsletter.mjs"

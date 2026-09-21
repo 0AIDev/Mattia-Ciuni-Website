@@ -440,7 +440,7 @@ console.log("homepage html+css: " + (bytes / 1024).toFixed(1) + "KB raw | all JS
 // markup aggiuntivo non forza il download delle immagini fuori viewport.
 // Il carousel include il testo completo delle note nell'archivio pubblico: la
 // nuova nota di audit aggiunge contenuto reale alla home, non JavaScript o
-// richieste critiche. Il guardrail sale a 110KB per lasciare spazio editoriale
-// senza nascondere regressioni strutturali.
-check("weight: homepage html+css < 110KB raw", bytes < 110 * 1024);
+// richieste critiche. Il guardrail sale a 115KB per includere la chat RAG sticky
+// globale e lasciare spazio editoriale senza nascondere regressioni strutturali.
+check("weight: homepage html+css < 115KB raw", bytes < 115 * 1024);
 process.exit(fail ? 1 : 0);

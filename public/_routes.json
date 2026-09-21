@@ -18,6 +18,7 @@
     "/feed.xml",
     "/llms.txt",
     "/api/subscribe",
+    "/api/chat",
     "/.well-known/*"
   ],
   "exclude": []
