@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
+import { AudioPlayer } from "@/components/MediaPlayers";
 import { voiceNotes } from "@/lib/voice-notes";
 import { site } from "@/lib/site";
 
@@ -39,7 +40,9 @@ export default function VoiceNotesPage() {
             <li key={note.slug} className="py-5">
               <h2 className="font-serif text-2xl">{note.title}</h2>
               <p className="mt-2 text-text-paragraph">{note.description}</p>
-              <audio className="mt-4 w-full" controls preload="none" src={note.audioSrc} />
+              <div className="mt-4">
+                <AudioPlayer src={note.audioSrc} title={note.title} />
+              </div>
             </li>
           ))}
         </ol>

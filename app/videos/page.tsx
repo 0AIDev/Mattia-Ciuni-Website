@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { founderVideos } from "@/lib/videos";
+import { VideoPlayer } from "@/components/MediaPlayers";
 import { site } from "@/lib/site";
 
 const pageTitle = "Videos · Mattia Ciuni";
@@ -103,14 +104,7 @@ export default function VideosPage() {
         <div className="space-y-12">
           {founderVideos.map((video) => (
             <article key={video.slug} id={video.slug}>
-              <video
-                className="w-full rounded-xl border border-gray-300"
-                controls
-                preload="metadata"
-                poster={video.poster}
-                src={video.videoSrc}
-                aria-label={video.title}
-              />
+              <VideoPlayer src={video.videoSrc} poster={video.poster} title={video.title} />
               <h2 className="mt-4 font-serif text-2xl">{video.title}</h2>
               <p className="mt-2 text-text-paragraph">{video.description}</p>
               <time dateTime={video.date} className="mt-2 block text-sm text-gray-1000">{video.date}</time>

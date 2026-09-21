@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
+import { AudioPlayer, VideoPlayer } from "@/components/MediaPlayers";
 
 export const metadata: Metadata = {
   title: "Media test",
@@ -11,12 +12,14 @@ const sampleVoiceNotes = [
   {
     title: "The thought before the decision",
     date: "2026-09-21",
-    duration: "04:18",
+    duration: "00:03",
+    audioSrc: "https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3",
   },
   {
     title: "What changed this week",
     date: "2026-09-18",
-    duration: "07:42",
+    duration: "00:03",
+    audioSrc: "https://interactive-examples.mdn.mozilla.net/media/cc0-audio/t-rex-roar.mp3",
   },
 ];
 
@@ -24,12 +27,14 @@ const sampleVideos = [
   {
     title: "Building the money layer",
     date: "2026-09-21",
-    duration: "08:24",
+    duration: "00:05",
+    videoSrc: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
   },
   {
     title: "A founder's desk, in progress",
     date: "2026-09-16",
-    duration: "12:06",
+    duration: "00:05",
+    videoSrc: "https://interactive-examples.mdn.mozilla.net/media/cc0-videos/flower.mp4",
   },
 ];
 
@@ -69,7 +74,9 @@ export default function MediaTestPage() {
                 </div>
                 <span aria-hidden="true" className="text-gray-1000">◉</span>
               </div>
-              <audio controls preload="none" className="mt-4 h-10 w-full" aria-label={`Play ${note.title}`} />
+              <div className="mt-4">
+                <AudioPlayer src={note.audioSrc} title={note.title} />
+              </div>
             </article>
           ))}
         </div>
@@ -83,9 +90,7 @@ export default function MediaTestPage() {
         <div className="space-y-12">
           {sampleVideos.map((video) => (
             <article key={video.title}>
-              <div className="relative aspect-video overflow-hidden rounded-xl border border-gray-300 bg-gray-200">
-                <video controls preload="none" className="h-full w-full" poster="/og.png" aria-label={video.title} />
-              </div>
+              <VideoPlayer src={video.videoSrc} poster="/og.png" title={video.title} />
               <h3 className="mt-4 font-serif text-xl leading-tight">{video.title}</h3>
               <p className="mt-1 text-xs text-gray-1000">{video.date} · {video.duration}</p>
             </article>
