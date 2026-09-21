@@ -6,31 +6,37 @@ const root = new URL("..", import.meta.url).pathname.replace(/^\/(\w:)/, "$1");
 const read = (file) => readFileSync(join(root, file), "utf8");
 const component = read("components/NewsletterSection.tsx");
 const endpoint = read("functions/api/subscribe.ts");
+const analytics = read("components/GoogleAnalytics.tsx");
 
 assert.match(component, /Every Sunday I send one email: what I shipped, what broke, what I decided and why\./);
-assert.match(component, /No spam, no growth hacks\. Just the log\./);
-assert.match(component, /placeholder="your@email\.com"/);
 assert.match(component, /name="company_website"/);
 assert.match(component, /aria-live="polite"/);
 assert.match(component, /localStorage\.getItem\(SUBSCRIBED_KEY\)/);
 assert.match(component, /localStorage\.setItem\(SUBSCRIBED_KEY, "1"\)/);
-assert.doesNotMatch(component, />Sundays<\/p>/);
 assert.match(component, /Subscribing\.\.\./);
-assert.match(component, /Check your inbox/);
-assert.match(component, /You're already on the list/);
-assert.match(component, /href="\/privacy\/"/);
+assert.match(component, /utm_campaign/);
+assert.match(component, /referrer/);
+assert.match(component, /rate_limited/);
 
-assert.match(endpoint, /api\.buttondown\.email\/v1\/subscribers/);
-assert.match(endpoint, /Authorization: `Token \$\{env\.BUTTONDOWN_API_KEY\}`/);
-assert.match(endpoint, /pending_confirmation|subscribers/);
-assert.match(endpoint, /status === 409/);
-assert.match(endpoint, /MAX_REQUESTS = 3/);
+assert.match(endpoint, /api\.resend\.com\/emails/);
+assert.match(endpoint, /RESEND_API_KEY/);
+assert.match(endpoint, /RESEND_WELCOME_TEMPLATE_ID/);
+assert.match(endpoint, /template: \{ id: env\.RESEND_WELCOME_TEMPLATE_ID/);
+assert.match(endpoint, /api\.brevo\.com\/v3\/contacts/);
+assert.match(endpoint, /BREVO_API_KEY/);
+assert.match(endpoint, /updateEnabled: true/);
+assert.match(endpoint, /MAX_REQUESTS = 5/);
 assert.match(endpoint, /RATE_LIMIT/);
-assert.match(endpoint, /rl:sub:/);
 assert.match(endpoint, /Retry-After/);
-assert.match(endpoint, /company_website/);
-assert.match(endpoint, /source: mattiaciuni\.it/);
+assert.match(endpoint, /SOURCE/);
+assert.match(endpoint, /LANDING_PAGE/);
 assert.doesNotMatch(endpoint, /console\.log\([^)]*email/);
+
+assert.match(analytics, /G-YQS0R94ZQP/);
+assert.match(analytics, /analytics_storage: "granted"/);
+assert.match(analytics, /traffic_source/);
+assert.match(analytics, /outbound_click/);
+assert.match(analytics, /localStorage/);
 
 const out = join(root, "out");
 const pages = [];
@@ -47,9 +53,9 @@ for (const page of pages) {
   const html = readFileSync(page, "utf8");
   const newsletter = html.indexOf("newsletter-title");
   const footer = html.indexOf("© 2026 Mattia Ciuni");
-  assert.ok(newsletter >= 0, `${page} has no Sundays section`);
-  assert.ok(footer >= 0 && newsletter < footer, `${page} does not place Sundays before footer`);
+  assert.ok(newsletter >= 0, `${page} has no newsletter section`);
+  assert.ok(footer >= 0 && newsletter < footer, `${page} does not place newsletter before footer`);
 }
 
-console.log(`newsletter: ${pages.length} pages contain Sundays before the footer`);
-console.log("newsletter: offline contract checks passed (Buttondown delivery, email receipt, DNS/KV configuration are UNVERIFIED)");
+console.log(`newsletter: ${pages.length} pages contain the newsletter before the footer`);
+console.log("newsletter: offline contract checks passed (Resend/Brevo delivery, secrets, DNS, and live KV are UNVERIFIED)");

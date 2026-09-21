@@ -4,6 +4,7 @@ import "./globals.css";
 import { site } from "@/lib/site";
 import { socialImages } from "@/lib/social";
 import { NewsletterSection } from "@/components/NewsletterSection";
+import { GoogleAnalytics } from "@/components/GoogleAnalytics";
 import { SiteFooter } from "@/components/SiteFooter";
 
 const inter = Inter({
@@ -86,6 +87,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       </head>
       <body className="bg-gray-background font-sans text-base leading-relaxed text-gray-1200">
         <script id="webmcp-tools" src="/webmcp.js" defer />
+        <GoogleAnalytics />
         <a
           href="#content"
           className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:bg-gray-1200 focus:text-white focus:px-3 focus:py-1"

@@ -33,7 +33,7 @@ Tre file, e sono il contratto del sito — non si scrive un articolo senza il se
 - **Favicon**: `app/icon.png` (copia del logo raster `favicon.png` in root, 1572×1572). Rimuove `app/icon.svg`. Origin dell'icona nel manifest sta su `/icon.png`.
 - **Logo footer**: `public/logo.svg` = variante pulita di `Vector.svg` (in root): viewBox ritagliato sul tratto (il file originale ha canvas 1298×670 con il disegno che sborda e un filtro ombra sfocata) e color `#686868` (gray-1000). Generabile con `node scripts/gen-logo.mjs`.
 - `components/NewsletterSection.tsx` — sezione globale newsletter, sempre prima del footer: copy inglese fisso, form minimale senza sfondo, stato iscritto ricordato nel browser, honeypot e feedback inline; `/privacy/` descrive raccolta e cancellazione
-- `functions/api/subscribe.ts` — Pages Function per Buttondown: validazione e blocklist disposable, double opt-in delegato al provider, rate limit KV 3/min/IP e log senza PII. Configura `BUTTONDOWN_API_KEY` come secret e `RATE_LIMIT` come binding KV nel progetto Pages; il comando `npm run test:newsletter` copre il contratto offline e non simula la consegna di email
+- `functions/api/subscribe.ts` — Pages Function per Resend + Brevo: validazione e blocklist disposable, rate limit KV per IP, attribuzione UTM/referrer e log senza PII. Configura le chiavi provider come Secret e `RATE_LIMIT` come binding KV nel progetto Pages; il comando `npm run test:newsletter` copre il contratto offline e non simula la consegna di email
 - `app/sitemap.xml/route.ts` + `app/sitemap-home.xml/route.ts` + `app/sitemap-thoughts.xml/route.ts` + `app/sitemap-notes.xml/route.ts`, `app/robots.txt/route.ts`, `app/llms.txt/route.ts` — SEO: sitemap **indice** `/sitemap.xml` che divide in sotto-sitemap (home / thoughts / notes), tutte formattate (indentate, `lastmod` YYYY-MM-DD, changefreq, priority) e generate in automatico da posts+notes via helper `lib/sitemap.ts`; robots.txt che permette tutto (`Allow: /`) + riferimento all'indice; llms.txt standard per LLM (H1 + summary blockquote + sezioni Thoughts/Notes/Contact generati da dati reali). Poi: `app/manifest.ts` (theme `#FCFCFC`), `app/feed.xml/route.ts`, `app/not-found.tsx`
 - `functions/_middleware.ts` — Pages Function che fa due cose: `Accept: text/markdown` su una pagina restituisce la sua card `.md` (con `Content-Type: text/markdown`, `x-markdown-tokens` e `Vary: Accept`), e gli indirizzi assoluti che l'export dichiara (`canonical`, `og:image`, JSON-LD, `<loc>`, `Sitemap:`) vengono riscritti con **l'host che sta servendo la pagina** — così il dominio segue il deploy invece di dover essere indovinato, e le anteprime (Discord, X, Slack) chiedono la card a un dominio che esiste. Con `SITE_URL` impostata nel progetto il dominio si fissa invece di seguire l'host: è il caso del dominio custom. Tutto il resto passa agli asset. Vedi §Scoperta per gli agenti.
 - `public/_routes.json` — la Function **non viene invocata** per immagini, CSS, font e JS: elenca solo le rotte in cui compaiono indirizzi assoluti (pagine, sitemap, robots, feed, llms.txt, card `.md`, `/.well-known/`). Senza questo file Pages la invocherebbe su ogni richiesta.
@@ -59,7 +59,7 @@ Il sito è un export statico: Pages pubblica la cartella `out/` e basta, più `f
 1. Cloudflare Dashboard → **Workers & Pages → Create → Pages → Connect to Git** → repo `0AIDev/Mattia-Ciuni-Website`, branch `main`.
 2. Build settings: **Build command** `npm run build`, **Build output directory** `out`. Nient'altro: `_headers`, `_redirects`, `_routes.json` e la pagina 404 stanno già nell'export, e li legge Pages da sé.
 3. **Environment variables** (Production): `NEXT_PUBLIC_SITE_URL` = `https://<progetto>.pages.dev` (per questo repo: `https://mattiaciuni.pages.dev`, lo stesso valore scritto in `lib/site-origin.ts`). Serve a far nascere l'export già col dominio giusto; senza, il build usa `lib/site-origin.ts` e va bene lo stesso.
-4. Deploy → `https://mattiaciuni.pages.dev`. Verifica rapida: `/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/feed.xml`, `/og.png`, `/thoughts/`, `/index.md` (card For AI). La funzione `/api/subscribe` richiede anche il secret `BUTTONDOWN_API_KEY` e il binding KV `RATE_LIMIT` nel progetto Pages.
+4. Deploy → `https://mattiaciuni.pages.dev`. Verifica rapida: `/sitemap.xml`, `/news-sitemap.xml`, `/robots.txt`, `/llms.txt`, `/feed.xml`, `/og.png`, `/thoughts/`, `/index.md` (card For AI). La funzione `/api/subscribe` richiede i Secret Resend/Brevo e il binding KV `RATE_LIMIT` nel progetto Pages.
 5. Il controllo che guarda **il sito pubblicato** e non l'export (è quello che avrebbe preso il guasto del 21/09, quando il dominio dichiarato non esisteva):
 
 ```bash
@@ -68,32 +68,16 @@ node scripts/check-live.mjs --site=https://mattiaciuni.pages.dev
 
 6. **Vecchio Worker**: il progetto Workers omonimo (`mattiaciuni.<account>.workers.dev`) non è più la sorgente. Va cancellato da **Workers & Pages → mattia-ciuni-website → Settings → Delete**, altrimenti resta lì a servire una copia vecchia su un indirizzo che qualcuno può ancora incollare in chat.
 
-### Newsletter Sundays / Buttondown
+### Newsletter, Resend e Brevo
 
-La sezione globale **Sundays** è già inclusa nel layout: desktop usa una riga minimale con input e bottone inline, mobile li impila, e `/privacy/` spiega raccolta e cancellazione.
-Per renderla operativa in produzione:
+La sezione globale della newsletter è inclusa nel layout con form minimale e attribuzione UTM/referrer. In produzione `/api/subscribe` aggiorna il CRM Brevo e invia il template Welcome tramite Resend.
 
-1. Crea o usa un account Buttondown e attiva **double opt-in**. Configura il
-   mittente `Mattia Ciuni <ceo@usepayle.com>` e il welcome email; il footer di
-   Buttondown aggiunge automaticamente il link unsubscribe.
-2. In Buttondown verifica il dominio di invio. Il pannello mostra i record
-   **SPF/DKIM** esatti da pubblicare nella zona DNS di `usepayle.com`: aggiungi
-   quei record senza modificarne nome o valore e aspetta che il pannello li
-   convalidi. Non ci sono valori universali da copiare: sono specifici del tuo
-   account.
-3. In Cloudflare Pages → Settings → Environment variables aggiungi
-   `BUTTONDOWN_API_KEY` come **Secret** in Production. Crea una KV namespace,
-   associa il binding al progetto con il nome `RATE_LIMIT`, quindi fai un nuovo
-   deploy. Il binding è obbligatorio: senza di esso `/api/subscribe` risponde
-   503 invece di accettare iscrizioni senza protezione.
-4. Prova con una casella reale: POST valido → messaggio `Check your inbox` →
-   click di conferma → welcome email. Non inserire mai l'API key nel client,
-   nel repository o negli screenshot.
+1. In Cloudflare Pages → Settings → Environment variables → Production configura come **Secret**: `RESEND_API_KEY`, `RESEND_WELCOME_TEMPLATE_ID`, `RESEND_FROM_EMAIL`, `BREVO_API_KEY`. Configura anche `BREVO_LIST_ID` come variabile normale se vuoi assegnare i contatti a una lista specifica.
+2. Verifica il mittente Resend e pubblica i record SPF/DKIM richiesti dal provider. Il template ID e il list ID sono specifici dei tuoi account e non vanno indovinati.
+3. Il binding KV `RATE_LIMIT` deve puntare alla namespace `mattiaciuni-newsletter-rate-limit`; limita i tentativi per IP e usa `Retry-After` quando il limite scatta. Non inserire mai API key nel client, nel repository o negli screenshot.
+4. Il Welcome viene inviato dopo l'aggiornamento Brevo. Se uno dei provider non è configurato, l'endpoint risponde 503 senza fingere che l'iscrizione sia riuscita.
 
-`npm run test:newsletter` controlla il contratto offline (copy, accessibilità,
-honeypot, rate limit e presenza prima del footer). Buttondown, DNS SPF/DKIM, KV,
-consegna email reale e Lighthouse sono **UNVERIFIED** finché non fai il test
-end-to-end sul progetto Pages.
+`npm run test:newsletter` controlla il contratto offline. Resend, Brevo, SPF/DKIM, la consegna reale e il test end-to-end restano **UNVERIFIED** finché non vengono provati con una casella reale.
 
 ### Dominio custom
 
@@ -105,11 +89,13 @@ Quando esiste un dominio vero (es. `mattiaciuni.xyz`) convivono due indirizzi: q
 4. **Redirect `www` → apex**: su Pages può stare in `public/_redirects` (a differenza dei Worker con static assets, che accettano solo percorsi relativi e scartano in silenzio le regole con un dominio dentro — è la build che è caduta il 20/09, non una svista). Va scritto quando il dominio esiste davvero, altrimenti è una regola che rimanda a un host che non risolve.
 5. HTTPS: automatico (Universal SSL). HSTS opzionale da SSL/TLS → Edge Certificates.
 
-### Search Console (10 min, fa indicizzare "Mattia Ciuni" in giorni)
+### Search Console, IndexNow e Google News
 
-1. Aggiungi proprietà dominio → verifica via record TXT.
-2. Sitemaps → invia `https://TUO-DOMINIO/sitemap.xml`.
-3. Valida un post con `validator.schema.org` (JSON-LD BlogPosting) e testa preview con `opengraph.xyz` o i debugger di X/LinkedIn.
+1. Aggiungi la proprietà del dominio a Google Search Console e verifica via record TXT.
+2. Invia una volta `https://TUO-DOMINIO/sitemap.xml`; il sito pubblica anche `/news-sitemap.xml`, RSS e `robots.txt` con entrambi gli indirizzi.
+3. Google non offre più un endpoint pubblico affidabile per il vecchio "ping" sitemap: la scoperta automatica avviene tramite `robots.txt` e sitemap. Search Console resta il posto corretto per ispezionare e richiedere una URL.
+4. Per Bing, Yandex, Seznam e altri motori compatibili, imposta `INDEXNOW_KEY` come Secret. Il postbuild genera automaticamente il file di verifica e invia le URL principali a IndexNow; se la chiave manca, il build continua senza inviare nulla.
+5. Gli articoli hanno JSON-LD `BlogPosting`, RSS e news sitemap. Questo rende il sito tecnicamente idoneo alla scansione, ma Google News decide autonomamente l'inclusione editoriale e non può essere garantita dal codice.
 
 ## Scrivere un articolo
 

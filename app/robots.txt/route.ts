@@ -55,6 +55,7 @@ export async function GET() {
     "",
     ...AI_AGENTS.flatMap((agent) => [`User-Agent: ${agent}`, "Allow: /", ""]),
     `Sitemap: ${base}/sitemap.xml`,
+    `Sitemap: ${base}/news-sitemap.xml`,
     `Agentmap: ${base}/.well-known/ai-catalog.json`,
     "",
   ].join("\n");

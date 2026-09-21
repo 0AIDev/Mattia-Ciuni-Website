@@ -23,7 +23,7 @@ const sections: LegalSection[] = [
   {
     id: "newsletter",
     title: "Newsletter",
-    content: <p>The Sundays newsletter uses double opt-in. You can unsubscribe at any time from the link in every email. See the <Link href="/privacy/" className="article-underline">Privacy Policy</Link> for details.</p>,
+    content: <p>The Sundays newsletter stores subscribers in Brevo and sends the Welcome email with Resend. You can unsubscribe at any time from the link in every email. See the <Link href="/privacy/" className="article-underline">Privacy Policy</Link> for details.</p>,
   },
   {
     id: "questions",

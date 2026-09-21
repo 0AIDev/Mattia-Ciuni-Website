@@ -109,7 +109,8 @@ check(
 );
 
 const robots = read("robots.txt");
-check("robots: allow everything", robots.includes("User-Agent: *") && robots.includes("Allow: /") && robots.includes(`Sitemap: ${PROD}/sitemap.xml`));
+check("robots: allow everything", robots.includes("User-Agent: *") && robots.includes("Allow: /") && robots.includes(`Sitemap: ${PROD}/sitemap.xml`) && robots.includes(`Sitemap: ${PROD}/news-sitemap.xml`));
+check("news sitemap: generated from articles", read("news-sitemap.xml").includes("xmlns:news=") && read("news-sitemap.xml").includes("<news:title>") && read("news-sitemap.xml").includes(`${PROD}/thoughts/`));
 check(
   "robots: AI agents by name",
   ["GPTBot", "ClaudeBot", "PerplexityBot", "Google-Extended", "CCBot", "Bytespider"].every((a) => robots.includes(`User-Agent: ${a}`)) &&
@@ -385,9 +386,9 @@ const css = staticTotal(path.join(out, "_next", "static"), ".css");
 bytes += css;
 const jsTotal = staticTotal(path.join(out, "_next", "static"), ".js");
 console.log("homepage html+css: " + (bytes / 1024).toFixed(1) + "KB raw | all JS chunks: " + (jsTotal / 1024).toFixed(1) + "KB raw");
-// Il budget comprende il CSS self-hosted (font inclusi) e la sezione Sundays
-// globale: la pagina resta sotto 68KB raw, mentre il browser non scarica più la
-// stylesheet Google né i ~249KB di font da gstatic.com. Il numero è un guardrail
-// per evitare regressioni, non un proxy del punteggio Lighthouse.
-check("weight: homepage html+css < 68KB raw", bytes < 68 * 1024);
+// Il budget comprende il CSS self-hosted (font inclusi), la sezione newsletter
+// globale e il consenso analytics opzionale. La pagina resta sotto 70KB raw,
+// mentre il browser non scarica font Google né GA finché non c'è consenso. Il
+// numero è un guardrail per evitare regressioni, non un proxy del punteggio Lighthouse.
+check("weight: homepage html+css < 70KB raw", bytes < 70 * 1024);
 process.exit(fail ? 1 : 0);

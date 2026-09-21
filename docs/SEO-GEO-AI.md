@@ -190,10 +190,11 @@ pur essendo un contenuto più semplice.
 
 | Strumento | Stato | Cosa servirebbe |
 | --- | --- | --- |
-| **IndexNow** (Bing, Yandex, Seznam, Naver) | assente | una chiave nel `.env`, un file `<chiave>.txt` generato nel build, uno script `scripts/indexnow.mjs` che confronta il live con il nuovo `out/` e manda **solo** le URL cambiate, e un workflow che lo lancia **dopo** il deploy (prima, il live non è ancora il nuovo build) |
-| **Search Console** (registrazione + API) | assente, ed è l'unico passo **umano** | proprietà di **dominio** verificata via DNS, `sitemap.xml` registrato a mano una volta; con un service account l'API può anche riportare cosa Google ha **scartato** |
-| **Ping a Google** | **non esiste più** | l'endpoint HTTP è deprecato (2023): una richiesta lì è un 404, cioè un verde sopra una richiesta rifiutata. Le due strade vere sono la riga `Sitemap:` in `robots.txt` (c'è) e l'API di Search Console |
-| **analytics** | assente di proposito | nessuno script di terze parti nel bundle; se si aggiunge, il consenso è il cancello (senza consenso non parte nessuno script) |
+| **IndexNow** (Bing, Yandex, Seznam, Naver) | implementato, opzionale | `scripts/ping-indexnow.mjs` genera il file `<chiave>.txt` nel build e invia le URL principali quando `INDEXNOW_KEY` è configurata; senza chiave non fa chiamate |
+| **Search Console** (registrazione + API) | registrazione umana necessaria | proprietà di dominio verificata via DNS e `sitemap.xml` inviato una volta; Google non espone più un ping pubblico affidabile |
+| **Google News** | supporto tecnico, inclusione non garantita | JSON-LD `BlogPosting`, RSS e `/news-sitemap.xml`; l'idoneità tecnica non equivale all'accettazione editoriale |
+| **analytics** | implementato con consenso | GA4 `G-YQS0R94ZQP` caricato solo dopo consenso, con attribuzione, page view, traffic source e click outbound |
+| **newsletter** | Resend + Brevo | `/api/subscribe` valida, limita per IP, aggiorna Brevo e invia il template Welcome via Resend; le chiavi restano Secret su Pages |
 
 `robots.txt` dichiara già `Sitemap:` ed è l'unico modo con cui Google scopre
 l'indice senza registrazione. La registrazione serve a **vedere gli errori**, che
@@ -580,18 +581,18 @@ dichiarava un dominio inesistente (`mattiaciuni.xyz`, NXDOMAIN dal registro
 Misurato adesso, non ricordato:
 
 ```text
-8 pagine pubblicate (2 articoli · 3 note · home · 2 indici) + 404
-8 card markdown in out/ (e copia in public/ per lo sviluppo)
-sitemap: un indice + tre figlie · 8 URL in totale · lastmod che segue i contenuti
+14 pagine pubblicate (3 articoli · 3 note · home · 4 legali · 2 indici) + 404 + news sitemap
+13 card markdown in out/ (e copia in public/ per lo sviluppo)
+sitemap: un indice + tre figlie + news sitemap · URL e lastmod generati dai contenuti
 robots.txt: 33 blocchi · 32 agenti AI per nome · Content-Signal dichiarato
 JSON-LD: Person + WebSite · BlogPosting + BreadcrumbList · Article + BreadcrumbList · Blog
 scoperta: Link su ogni pagina · api-catalog (1 linkset, 2 documenti) · 1 skill con digest
-verify.js: 58 controlli, tutti verdi · homepage html+css 65.2KB raw · JS 768.3KB raw · Sundays globale prima del footer
+verify.js: controlli SEO/OG/discovery/news tutti verdi · homepage html+css 68.3KB raw · newsletter globale prima del footer · GA4 opzionale con consenso
 font: self-hosted (Inter + Source Serif 4) · zero richieste a domini terzi · avatar 0,8KB WebP
 pubblicazione: Cloudflare Pages · dominio dichiarato: https://mattiaciuni.pages.dev
 ```
 
-**Fuori dal repository, e quindi non finito:**
+**Fuori dal repository, e quindi da verificare sul live:**
 
 - **Search Console**: registrazione del sitemap (proprietà di dominio via DNS) —
   è un gesto umano, una volta;

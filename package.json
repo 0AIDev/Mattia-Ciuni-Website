@@ -12,7 +12,7 @@
     "dev": "next dev",
     "predev": "node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs",
     "build": "next build",
-    "postbuild": "node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs",
+    "postbuild": "node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs && node scripts/ping-indexnow.mjs",
     "start": "next start",
     "lint": "eslint .",
     "test:newsletter": "node scripts/test-newsletter.mjs"

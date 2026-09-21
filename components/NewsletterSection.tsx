@@ -4,7 +4,7 @@ import { FormEvent, useState, useSyncExternalStore } from "react";
 
 const COPY = {
   success:
-    "Check your inbox — one click to confirm. Then you'll get the story so far while you wait for Sunday.",
+    "You're in. Check your inbox for the Welcome email, then you'll get the story so far while you wait for Sunday.",
   genericError: "Something broke on my side. Try again in a minute.",
   duplicate: "You're already on the list. See you Sunday.",
 };
@@ -37,10 +37,34 @@ export function NewsletterSection() {
     setState("loading");
     setError("");
     try {
+      const params = new URLSearchParams(window.location.search);
+      const referrer = document.referrer;
+      const clickId = ["gclid", "gbraid", "wbraid", "fbclid", "ttclid", "msclkid", "li_fat_id"].find((key) => params.has(key));
+      let source = params.get("utm_source") || "";
+      let medium = params.get("utm_medium") || "";
+      if (clickId && !medium) medium = "paid";
+      if (!source && referrer) {
+        try {
+          source = new URL(referrer).hostname.replace(/^www\\./, "");
+          medium = medium || (source.includes("google.") || source.includes("bing.") ? "organic_search" : "referral");
+        } catch {
+          source = "referral";
+        }
+      }
       const response = await fetch("/api/subscribe", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: normalized, company_website: companyWebsite }),
+        body: JSON.stringify({
+          email: normalized,
+          company_website: companyWebsite,
+          source: source || "direct",
+          medium: medium || "none",
+          campaign: params.get("utm_campaign") || "",
+          content: params.get("utm_content") || "",
+          term: params.get("utm_term") || "",
+          landing_page: `${window.location.pathname}${window.location.search}`,
+          referrer,
+        }),
       });
       const result = (await response.json().catch(() => ({}))) as { code?: string };
       if (response.ok) {
@@ -51,7 +75,7 @@ export function NewsletterSection() {
         setState("duplicate");
       } else {
         setState("error");
-        setError(COPY.genericError);
+        setError(result.code === "rate_limited" ? "Too many attempts. Try again in a minute." : COPY.genericError);
       }
     } catch {
       setState("error");
@@ -79,7 +103,7 @@ export function NewsletterSection() {
         {displayState === "success" ? (
           <div className="mt-7" role="status" aria-live="polite">
             <p className="font-serif text-lg leading-relaxed text-gray-1200 sm:text-xl">
-              Check your inbox — one click to <strong>confirm</strong>. Then you&apos;ll get the story so far while you wait for Sunday.
+              You&apos;re in. Check your inbox for the <strong>Welcome</strong> email, then you&apos;ll get the story so far while you wait for Sunday.
             </p>
           </div>
         ) : displayState === "duplicate" ? (

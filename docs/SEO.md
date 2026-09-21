@@ -119,11 +119,11 @@ la TOC con gli anchor che esistono davvero, l'**OG card di ogni articolo e nota*
 (l'elenco si ricava dai registri e il conteggio si confronta con le pagine che il
 build ha prodotto, così il controllo non può passare a vuoto; e nessuna card può
 restare orfana di un articolo che non esiste più), le card `.md` (struttura e
-copia per lo sviluppo), il 404 `noindex`, e il peso della homepage (HTML+CSS **raw** sotto i
-68KB: un tetto, non un desiderio; la sezione Sundays globale è inclusa nel budget. Era 56KB finché i due serif arrivavano da
-`fonts.googleapis.com`: le loro `@font-face` ora stanno nel CSS, +3,1KB raw che
-l'altro conto non faceva, e in cambio se ne vanno una richiesta che bloccava il
-rendering verso un altro dominio, due `preconnect` e ~249KB di woff2 da terzi).
+copia per lo sviluppo), il 404 `noindex`, il news sitemap, il contratto newsletter
+Resend/Brevo, il consenso analytics, e il peso della homepage (HTML+CSS **raw** sotto i
+70KB: un tetto, non un desiderio; newsletter e consenso sono inclusi nel budget).
+I font sono self-hosted e Google Analytics non viene caricato finché l'utente non
+sceglie di consentire la misurazione.
 
 **Niente suite di test unitari, per ora, e vale la pena dirlo**: non c'è logica
 pura da provare separatamente (`lib/related.ts` è l'unica candidata). Il giorno in
@@ -238,17 +238,17 @@ il suo annuncio in `<head>` e un controllo che dica la stessa pagina della card.
 
 La sezione **Sundays** viene inserita dal layout globale prima del footer, quindi
 compare sulla home, sugli indici, su ogni articolo, sulle note e sulla privacy.
-Il form invia solo l'email a `/api/subscribe` tramite la Pages Function: il
-secret Buttondown resta server-side, il campo honeypot non viene passato al
-provider e i log contengono solo evento, esito e latenza. In produzione il progetto Pages deve
-avere `BUTTONDOWN_API_KEY` come secret e `RATE_LIMIT` come binding KV; senza il
-binding il server rifiuta intenzionalmente le richieste, invece di fingere un
-rate limit sicuro.
+Il form invia email e attribuzione a `/api/subscribe` tramite la Pages Function: i
+Secret Resend e Brevo restano server-side, il campo honeypot non viene passato ai
+provider e i log contengono solo evento, esito e latenza. In produzione il progetto
+Pages deve avere `RESEND_API_KEY`, `RESEND_WELCOME_TEMPLATE_ID`,
+`RESEND_FROM_EMAIL`, `BREVO_API_KEY` come configurazione provider e `RATE_LIMIT`
+come binding KV; senza il binding il server rifiuta intenzionalmente le richieste,
+invece di fingere un rate limit sicuro.
 
-Il double opt-in resta una responsabilità di Buttondown: verificare nel
-pannello che la conferma sia attiva e che il welcome email parta solo dopo il
-click. `npm run test:newsletter` controlla il contratto offline; consegna reale,
-SPF/DKIM, KV e Lighthouse sono indicati come **UNVERIFIED** finché non vengono
+Il Welcome parte da Resend dopo l'upsert del contatto in Brevo. `npm run
+test:newsletter` controlla il contratto offline; consegna reale, SPF/DKIM, alias
+template, KV e Lighthouse sono indicati come **UNVERIFIED** finché non vengono
 provati sul progetto Pages e su una casella di test.
 
 ## 7 · La notifica, e quando parte

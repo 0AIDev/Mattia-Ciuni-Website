@@ -17,7 +17,7 @@ const sections: LegalSection[] = [
   {
     id: "newsletter",
     title: "Newsletter",
-    content: <p>The Sundays newsletter is optional and requires confirmation by email. You can unsubscribe at any time. We may pause or change the newsletter, but we will not use your address for unrelated marketing.</p>,
+    content: <p>The Sundays newsletter is optional. Your address is added to the newsletter CRM and a Welcome email is sent after signup. You can unsubscribe at any time. We may pause or change the newsletter, but we will not use your address for unrelated marketing.</p>,
   },
   {
     id: "content",

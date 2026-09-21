@@ -18,17 +18,22 @@ const sections: LegalSection[] = [
   {
     id: "why-we-collect-it",
     title: "Why we collect it",
-    content: <p>We use your email address to send the newsletter, confirm your subscription, and process unsubscribe requests. The legal basis is your consent, given through double opt-in.</p>,
+    content: <p>We use your email address to send the newsletter, deliver the Welcome email, and process unsubscribe requests. The legal basis is your consent, given when you submit the form.</p>,
   },
   {
     id: "who-processes-it",
     title: "Who processes it",
-    content: <p>Your email is processed by Buttondown as our newsletter delivery provider. We do not sell your data, use it for advertising, or build a profile about you. No data sharing, ever.</p>,
+    content: <p>Your email is stored in Brevo as the newsletter CRM and processed by Resend to send the Welcome email after signup. We do not sell your data or use it for unrelated advertising. Newsletter attribution such as campaign, referrer domain, and landing page is stored to understand which channels bring useful readers. No data sharing, ever.</p>,
   },
   {
     id: "your-rights",
     title: "Your rights",
-    content: <p>You can unsubscribe at any time using the link in every email. You can also ask for access, correction, or deletion by emailing <a href={`mailto:${site.email}`} className="article-underline">{site.email}</a>.</p>,
+    content: <p>You can unsubscribe at any time using the link in every email. You can also ask for access, correction, or deletion by emailing <a href={`mailto:${site.email}`} className="article-underline">{site.email}</a>. Google Analytics is optional and is loaded only after you choose “Allow” in the analytics notice; it uses anonymised measurement and does not receive the newsletter email address.</p>,
+  },
+  {
+    id: "analytics",
+    title: "Analytics and measurement",
+    content: <p>If you allow analytics, Google Analytics receives anonymous page, referrer, campaign, and interaction events. You can clear the analytics choice from your browser storage at any time. The site does not use advertising personalisation.</p>,
   },
   {
     id: "contact",
