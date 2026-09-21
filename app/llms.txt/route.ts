@@ -24,6 +24,7 @@ export async function GET() {
 
 ## Home
 - [Home](${base}/): bio, principles, now, projects, thoughts and notes.
+- [About Mattia Ciuni](${base}/about/): identity, work, Payle and the background behind the site.
 
 ## Thoughts
 - [Thoughts](${base}/thoughts/): short posts on AI agents, payments and building Payle.

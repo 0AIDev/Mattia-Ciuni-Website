@@ -68,10 +68,6 @@ const sections: LegalSection[] = [
             body: "remembers that you already subscribed, so the newsletter section shows the confirmation instead of the form again. Local storage, no expiry, removed when you use “Use another email” or clear site data.",
           },
           {
-            name: "mattia-ciuni-ai-chat",
-            body: "the conversation you have with Ask Mattia Ciuni AI, stored in your browser so you can come back to it. It never leaves your device; “New chat” deletes it.",
-          },
-          {
             name: "mattia-ciuni-analytics-consent",
             body: "your answer to the analytics notice. Local storage, no expiry, deleted when you clear site data, after which the notice appears again.",
           },

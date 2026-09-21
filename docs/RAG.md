@@ -20,7 +20,7 @@ For natural-language answers, add a Workers AI binding to the Pages project:
 - binding name: `AI`
 - model: `@cf/meta/llama-3.2-1b-instruct`
 
-The Pages Function is `functions/api/chat.ts`. Workers AI has a free allocation, subject to Cloudflare's current account limits. Without the binding, the site remains functional and answers from the best matching source using the local fallback.
+The RAG implementation remains in `functions/api/chat.ts` as a commented-out future feature. The public Ask Mattia Ciuni AI interface and route are currently disabled site-wide; re-enable them only after reviewing the privacy policy and production limits.
 
 The function never receives provider credentials, newsletter data, or arbitrary browsing requests. It limits questions to 500 characters, retrieves at most four sources, and asks the model to answer only from that context.
 

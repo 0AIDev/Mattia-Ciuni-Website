@@ -25,12 +25,13 @@ export const metadata: Metadata = {
 const personJsonLd = {
   "@context": "https://schema.org",
   "@type": "Person",
+  "@id": `${site.url.replace(/\/$/, "")}/#mattia-ciuni`,
   name: "Mattia Ciuni",
   alternateName: ["Mattia Ciuni, Payle founder", "Mattia Ciuni, CEO of Payle"],
   jobTitle: "Founder & CEO of Payle",
   worksFor: { "@type": "Organization", name: "Payle", url: site.payleUrl },
   url: site.url,
-  mainEntityOfPage: site.url,
+  mainEntityOfPage: { "@type": "WebPage", "@id": `${site.url.replace(/\/$/, "")}/#webpage` },
   knowsAbout: [
     "AI agents",
     "agentic commerce",

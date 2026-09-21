@@ -19,6 +19,7 @@ export function SiteFooter() {
         <ForAICard />
       </div>
       <nav aria-label="Site" className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-1000">
+        <Link href="/about/">About</Link>
         <Link href="/thoughts/">Thoughts</Link>
         <Link href="/notes/">Notes</Link>
         <Link href="/feedback/">Feedback</Link>

@@ -19,6 +19,12 @@ export async function GET() {
       priority: "1.0",
     },
     {
+      loc: `${base}/about/`,
+      lastmod: "2026-09-21",
+      changeFrequency: "monthly",
+      priority: "0.8",
+    },
+    {
       loc: `${base}/voice-notes/`,
       lastmod: "2026-09-21",
       changeFrequency: "monthly",

@@ -10,7 +10,7 @@ const card = socialImages("/og.png", "Privacy Policy | Mattia Ciuni");
 export const metadata: Metadata = {
   title: "Privacy Policy | What I collect and why",
   description:
-    "How Mattia Ciuni handles newsletter subscriptions, feedback submissions, the AI chat and analytics.",
+    "How Mattia Ciuni handles newsletter subscriptions, feedback submissions and analytics while the site AI chat is disabled.",
   alternates: { canonical: "/privacy/" },
   openGraph: {
     type: "website",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     siteName: "Mattia Ciuni",
     title: pageTitle,
     description:
-      "How Mattia Ciuni handles newsletter subscriptions, feedback submissions, the AI chat and analytics.",
+      "How Mattia Ciuni handles newsletter subscriptions, feedback submissions and analytics while the site AI chat is disabled.",
     images: card.og,
   },
   twitter: { card: "summary_large_image", title: pageTitle, images: card.twitter },
@@ -103,35 +103,13 @@ const sections: LegalSection[] = [
       </>
     ),
   },
+  /*
   {
     id: "ai-chat",
     title: "The AI chat",
-    content: (
-      <>
-        <p>
-          The <strong>Ask Mattia Ciuni AI</strong> chat answers questions about this site and about{" "}
-          <a href={site.payleUrl} className="article-underline">
-            usepayle.com
-          </a>
-          . What you type, the address of the page you are on, and the passages of this site that match your question
-          are sent to this site&apos;s own endpoint (<code>/api/chat</code>) so the answer can be assembled. If the
-          generative model is enabled on the deployment, that same text is processed by{" "}
-          <strong>Cloudflare Workers AI</strong>, running inside Cloudflare; no other provider receives it and nothing
-          you type is used to train a model.
-        </p>
-        <p>
-          Your conversation is <strong>not</strong> stored on the server. It lives in your browser only, as the
-          &ldquo;New chat&rdquo; history you can read after reloading the page, and it disappears when you press
-          &ldquo;New chat&rdquo; or clear your browser data. Please do not paste confidential information into the
-          chat: it is a convenience tool, not a private channel.
-        </p>
-        <p>
-          Answers are put together from what is published on this site and may be incomplete or wrong. They are not
-          advice and they are not statements of fact about Payle beyond what the pages themselves say.
-        </p>
-      </>
-    ),
+    content: <p>The site chat is currently disabled. This section remains commented as a record of the future feature.</p>,
   },
+  */
   {
     id: "analytics",
     title: "Analytics",

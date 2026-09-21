@@ -18,7 +18,6 @@
     "/feed.xml",
     "/llms.txt",
     "/api/subscribe",
-    "/api/chat",
     "/api/feedback",
     "/api/admin/feedback",
     "/admin/*",

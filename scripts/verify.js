@@ -83,7 +83,7 @@ check(
   "sitemap: index with 4 children",
   smIndex.includes('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">') && (smIndex.match(/<sitemap>/g) || []).length === 4 && smIndex.includes(`${PROD}/sitemap-home.xml`) && smIndex.includes(`${PROD}/sitemap-thoughts.xml`) && smIndex.includes(`${PROD}/sitemap-notes.xml`) && smIndex.includes(`${PROD}/sitemap-feedback.xml`)
 );
-check("sitemap-home: 3 urls", (read("sitemap-home.xml").match(/<loc>/g) || []).length === 3 && read("sitemap-home.xml").includes(`${PROD}/`) && read("sitemap-home.xml").includes(`${PROD}/voice-notes/`) && read("sitemap-home.xml").includes(`${PROD}/videos/`));
+check("sitemap-home: 4 urls", (read("sitemap-home.xml").match(/<loc>/g) || []).length === 4 && read("sitemap-home.xml").includes(`${PROD}/`) && read("sitemap-home.xml").includes(`${PROD}/about/`) && read("sitemap-home.xml").includes(`${PROD}/voice-notes/`) && read("sitemap-home.xml").includes(`${PROD}/videos/`));
 check("sitemap-thoughts: 4 url", (read("sitemap-thoughts.xml").match(/<loc>/g) || []).length === 4 && read("sitemap-thoughts.xml").includes("finding-ghassen-the-co-founder-question-answered-in-three-weeks"));
 check("sitemap-notes: 9 url", (read("sitemap-notes.xml").match(/<loc>/g) || []).length === 9 && read("sitemap-notes.xml").includes("/notes/"));
 // Le date seguono i contenuti: una collezione è datata con l'elemento più
@@ -248,10 +248,12 @@ check(
 // con `ssr: false`, quindi il pulsante non è mai stato nell'HTML costruito — un
 // check sui file passerebbe anche a guardia rimossa.
 const siteChat = readFileSync(path.join(__dirname, "..", "components", "SiteRagChat.tsx"), "utf8");
+const layoutSource = readFileSync(path.join(__dirname, "..", "app", "layout.tsx"), "utf8");
 check(
   "admin: the public chat is not rendered on the private dashboard",
   /if\s*\(path\.startsWith\("\/admin"\)\)\s*return null;/.test(siteChat)
 );
+check("chat: Ask Mattia Ciuni AI is disabled site-wide", !/^\s*import .*DeferredSiteRagChat/m.test(layoutSource) && !/^\s*<DeferredSiteRagChat\s*\/>/m.test(layoutSource) && !/^\s*<SiteRagChat\s*\/>/m.test(layoutSource));
 // Sotto `/admin/` non si serve nessuna card, cache o non cache: la Function
 // risponde 404 prima di guardare gli asset, e `_routes.json` deve instradare
 // tutto il ramo privato verso di lei (`/admin/feedback.md` non era instradato,
@@ -700,22 +702,22 @@ const privacy = read("privacy/index.html");
 const cookies = read("cookies/index.html");
 const terms = read("terms/index.html");
 check(
-  "legal: privacy covers newsletter, feedback, AI chat and analytics",
-  ["Brevo", "Beehiiv", "Resend", "Workers KV", "Workers AI", "Google Analytics 4", "first two numbers", "Garante"].every(
+  "legal: privacy covers newsletter, feedback and analytics while chat is disabled",
+  ["Brevo", "Beehiiv", "Resend", "Workers KV", "Google Analytics 4", "first two numbers", "Garante"].every(
     (needle) => privacy.includes(needle),
   )
 );
 check(
   "legal: cookies lists the real storage keys",
-  ["mattia-ciuni-analytics-consent", "mattia-ciuni-newsletter-subscribed", "mattia-ciuni-ai-chat", "mattia_feedback_admin", "_ga_G-YQS0R94ZQP"].every(
+  ["mattia-ciuni-analytics-consent", "mattia-ciuni-newsletter-subscribed", "mattia_feedback_admin", "_ga_G-YQS0R94ZQP"].every(
     (needle) => cookies.includes(needle),
   )
 );
 check(
-  "legal: terms cover publishing feedback and AI reading",
-  ["Content-Signal", "permission to publish", "initial", "Ask Mattia Ciuni AI"].every((needle) =>
+  "legal: terms cover publishing feedback while chat is disabled",
+  ["Content-Signal", "permission to publish", "initial"].every((needle) =>
     terms.includes(needle),
-  )
+  ) && !terms.includes("Ask Mattia Ciuni AI")
 );check("WebMCP: registration is present in the page",
   index.includes('rel="ai-catalog"') && index.includes("webmcp.js") &&
     fs.existsSync(path.join(out, "webmcp.js")) &&

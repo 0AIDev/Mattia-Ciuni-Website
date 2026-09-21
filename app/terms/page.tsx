@@ -10,7 +10,7 @@ const card = socialImages("/og.png", "Terms of Service | Mattia Ciuni");
 export const metadata: Metadata = {
   title: "Terms of Service | Reading and newsletter rules",
   description:
-    "Terms for using Mattia Ciuni's website: reading and citing the content, the newsletter, feedback submissions and the AI chat.",
+    "Terms for using Mattia Ciuni's website: reading and citing the content, the newsletter and feedback submissions.",
   alternates: { canonical: "/terms/" },
   openGraph: {
     type: "website",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     siteName: "Mattia Ciuni",
     title: pageTitle,
     description:
-      "Terms for using Mattia Ciuni's website: reading and citing the content, the newsletter, feedback submissions and the AI chat.",
+      "Terms for using Mattia Ciuni's website: reading and citing the content, the newsletter and feedback submissions.",
     images: card.og,
   },
   twitter: { card: "summary_large_image", title: pageTitle, images: card.twitter },
@@ -99,18 +99,13 @@ const sections: LegalSection[] = [
       </>
     ),
   },
+  /*
   {
     id: "ai-chat",
     title: "The AI chat",
-    content: (
-      <p>
-        Ask Mattia Ciuni AI answers questions about this site and about Payle using the published content, and it can be
-        wrong, incomplete or out of date. It is a reading aid, not a source of truth, not advice, and not a channel for
-        anything confidential. Its history stays in your browser. Use it as a starting point, then read the page it
-        points you to.
-      </p>
-    ),
+    content: <p>The site chat is currently disabled. This section remains commented as a record of the future feature.</p>,
   },
+  */
   {
     id: "no-advice",
     title: "No advice, and whose views these are",
