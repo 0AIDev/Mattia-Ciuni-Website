@@ -1,51 +1,172 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { LegalPage, type LegalSection } from "@/components/LegalPage";
+import { site } from "@/lib/site";
 
 const pageTitle = "Cookies Policy | Mattia Ciuni";
 
 export const metadata: Metadata = {
   title: "Cookies Policy | Browser storage on this site",
-  description: "A clear summary of cookies and local browser storage used on this site.",
+  description:
+    "Every cookie, local storage key and session value this site uses, what each one is for, and how to change your choice.",
   alternates: { canonical: "/cookies/" },
   openGraph: {
     type: "website",
     url: "/cookies/",
     siteName: "Mattia Ciuni",
     title: pageTitle,
-    description: "A clear summary of cookies and local browser storage used on this site.",
+    description:
+      "Every cookie, local storage key and session value this site uses, what each one is for, and how to change your choice.",
     images: [{ url: "/og.png", width: 1200, height: 630, alt: "Mattia Ciuni" }],
   },
   twitter: { card: "summary_large_image", title: pageTitle, images: ["/og.png"] },
 };
 
+function StorageList({ items }: { items: { name: string; body: string }[] }) {
+  return (
+    <ul className="m-0 list-none space-y-3 p-0">
+      {items.map((item) => (
+        <li key={item.name}>
+          <span className="font-mono text-[13px] text-gray-1200">{item.name}</span>{" "}
+          <span className="text-gray-1000">— {item.body}</span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
 const sections: LegalSection[] = [
   {
-    id: "what-we-use",
-    title: "What we use",
-    content: <p>This site does not use advertising cookies. The newsletter form uses local browser storage to remember that you have subscribed. Google Analytics is an optional third-party measurement service and is loaded only after you choose “Allow”.</p>,
+    id: "the-short-version",
+    title: "The short version",
+    content: (
+      <>
+        <p>
+          This site sets no advertising cookies and no tracking cookies from social platforms. There is no cookie
+          banner because there is nothing to sell you: the notice you see once asks permission for optional analytics
+          only.
+        </p>
+        <p>
+          What the site does store is small and functional: your own choices, kept in your own browser, so the site
+          stops asking. Everything is listed below by its real name, so you can find it and delete it.
+        </p>
+      </>
+    ),
   },
   {
-    id: "why-it-is-used",
-    title: "Why it is used",
-    content: <p>The newsletter preference prevents the form from asking for the same subscription again on a later visit. Analytics consent remembers your choice in this browser. These values are not used to identify you personally.</p>,
+    id: "always-on",
+    title: "Storage that works without analytics",
+    content: (
+      <StorageList
+        items={[
+          {
+            name: "mattia-ciuni-newsletter-subscribed",
+            body: "remembers that you already subscribed, so the newsletter section shows the confirmation instead of the form again. Local storage, no expiry, removed when you use “Use another email” or clear site data.",
+          },
+          {
+            name: "mattia-ciuni-ai-chat",
+            body: "the conversation you have with Ask Mattia Ciuni AI, stored in your browser so you can come back to it. It never leaves your device; “New chat” deletes it.",
+          },
+          {
+            name: "mattia-ciuni-analytics-consent",
+            body: "your answer to the analytics notice. Local storage, no expiry, deleted when you clear site data, after which the notice appears again.",
+          },
+        ]}
+      />
+    ),
+  },
+  {
+    id: "analytics-only",
+    title: "Only if you allow analytics",
+    content: (
+      <>
+        <p>
+          These appear after you choose “Allow” and disappear if you clear your choice. Declining means none of them is
+          ever created and no analytics script is loaded.
+        </p>
+        <StorageList
+          items={[
+            {
+              name: "_ga, _ga_G-YQS0R94ZQP",
+              body: "Google Analytics cookies, set by Google, used to tell a returning visit from a new one. Up to 13 months.",
+            },
+            {
+              name: "mattia-ciuni-first-touch",
+              body: "the source, medium and campaign of your first visit to this site, kept locally so later visits can be attributed honestly. No expiry.",
+            },
+            {
+              name: "mattia-ciuni-traffic-source-sent",
+              body: "a session value that stops the same source event from being counted twice while you browse. Deleted when you close the tab.",
+            },
+          ]}
+        />
+      </>
+    ),
+  },
+  {
+    id: "admin",
+    title: "The private dashboard",
+    content: (
+      <p>
+        The feedback review dashboard at{" "}
+        <code className="font-mono text-[13px]">/admin/feedback/</code> is mine, not a public page. When I log in
+        there, Cloudflare sets one session cookie,{" "}
+        <code className="font-mono text-[13px]">__Host-mattia_feedback_admin</code> — HttpOnly, Secure, SameSite=Strict,
+        and it carries a random session id, not the long-lived admin secret. It
+        expires after 4 hours and logging out deletes it on the server. Normal
+        visitors never receive it.
+      </p>
+    ),
   },
   {
     id: "your-choice",
-    title: "Your choice",
-    content: <p>You can remove this preference by clearing site data in your browser or choosing “Use another email” in the newsletter section. The site remains usable without it.</p>,
+    title: "Changing your choice",
+    content: (
+      <p>
+        Analytics consent lives in this browser: clear this site&apos;s local storage (in every major browser: site
+        settings → cookies and site data → delete) and reload the page, and the notice will ask again. The same
+        clearing removes the newsletter state, the chat history and the first-touch record. The site works perfectly
+        without any of them.
+      </p>
+    ),
   },
   {
-    id: "analytics-choice",
-    title: "Changing your choice",
-    content: <p>To change the analytics choice, clear this site&apos;s local storage in your browser and reload the page. The optional notice will appear again.</p>,
+    id: "third-parties",
+    title: "Third parties",
+    content: (
+      <p>
+        The only third-party code that can set anything is Google Analytics, and only with your consent. Everything
+        else runs on this site&apos;s own domain or on Cloudflare, which serves the pages. There are no pixels, no
+        social embeds, no advertising identifiers. What each provider does with the data is described in the{" "}
+        <Link href="/privacy/" className="article-underline">
+          Privacy Policy
+        </Link>
+        .
+      </p>
+    ),
   },
   {
     id: "changes",
     title: "Changes",
-    content: <p>If the technologies used by this site change, this page will be updated with a clear explanation.</p>,
+    content: (
+      <p>
+        If a new technology is added, it appears on this page first, with its real name and its purpose. Questions can
+        go to{" "}
+        <a href={`mailto:${site.email}`} className="article-underline">
+          {site.email}
+        </a>
+        .
+      </p>
+    ),
   },
 ];
 
 export default function CookiesPage() {
-  return <LegalPage title="Cookies" intro="A plain-language summary of the small amount of browser storage this site uses." sections={sections} />;
+  return (
+    <LegalPage
+      title="Cookies"
+      intro="Every value this site stores in your browser, listed by name, with what it is for and how to remove it."
+      sections={sections}
+    />
+  );
 }

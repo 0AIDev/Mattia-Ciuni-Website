@@ -1,6 +1,7 @@
 // I documenti di scoperta per gli agenti, generati da fonti vere.
 //
 //   /.well-known/api-catalog            linkset RFC 9727: cosa c'e' di leggibile da una macchina
+//   /.well-known/oauth-protected-resource  RFC 9728: il sito e' una risorsa pubblica, senza issuer
 //   /.well-known/agent-skills/index.json indice delle skill, con il digest di ogni artefatto
 //   /.well-known/agent-skills/<name>/SKILL.md  la skill (copia dell'originale in agent-skills/)
 //
@@ -129,6 +130,28 @@ const ard = {
 };
 write(".well-known/ai-catalog.json", JSON.stringify(ard, null, 2) + "\n");
 
+// --- OAuth protected resource ------------------------------------------------
+// RFC 9728, e la regola del sito vale anche qui: si pubblica quello che esiste.
+// Questa origine non ha un authorization server e non accetta token. Il documento
+// lo dice nel modo piu' leggibile da una macchina: `authorization_servers`,
+// `scopes_supported` e `bearer_methods_supported` sono liste **vuote**, che e' una
+// risposta (nessun issuer puo' emettere token per questa risorsa), invece di un
+// campo assente, che un agente leggerebbe come "forse guarda altrove".
+//
+// I due documenti che un authorization server pubblicherebbe —
+// `/.well-known/oauth-authorization-server` e `/.well-known/openid-configuration` —
+// restano volutamente assenti: riempirli con un `issuer` inventato significherebbe
+// dichiarare endpoint che non esistono, il guasto peggiore per chi ci crede.
+const protectedResource = {
+  resource: base + "/",
+  authorization_servers: [],
+  scopes_supported: [],
+  bearer_methods_supported: [],
+  resource_documentation: base + "/auth.md",
+  resource_policy_uri: base + "/terms/",
+};
+write(".well-known/oauth-protected-resource", JSON.stringify(protectedResource, null, 2) + "\n");
+
 // --- le skill ---------------------------------------------------------------
 // Solo artefatti che esistono: la cartella `agent-skills/` in root e' la fonte,
 // e ogni voce dell'indice porta il digest del file pubblicato.
@@ -147,12 +170,18 @@ if (skills.length === 0) {
 const index = {
   $schema: "https://schemas.agentskills.io/discovery/0.2.0/schema.json",
   skills: skills.map((name) => {
-    const body = readFileSync(join(srcDir, name, "SKILL.md"));
+    // Il dominio non si scrive a mano dentro la skill: `{{SITE}}` viene
+    // sostituito con l'indirizzo dichiarato dall'export. Era l'unico punto in cui
+    // il vecchio dominio poteva sopravvivere a un cambio di host - e infatti era
+    // sopravvissuto: la skill nominava `mattia-ciuni.xyz`, che non esiste in DNS,
+    // mentre il sito rispondeva altrove. Il digest si calcola **dopo** la
+    // sostituzione, sui byte che finiscono pubblicati.
+    const source = readFileSync(join(srcDir, name, "SKILL.md"), "utf8");
     const rel = `.well-known/agent-skills/${name}/SKILL.md`;
-    const written = write(rel, body);
+    const written = write(rel, Buffer.from(source.replaceAll("{{SITE}}", base), "utf8"));
     // `description`: il primo paragrafo del documento, che e' il riassunto
     // scritto a mano per l'agente - non una riga inventata dall'indice.
-    const description = (body
+    const description = (written
       .toString("utf8")
       .replace(/^#\s.*$/m, "")
       .split(/\n\s*\n/)
@@ -179,5 +208,5 @@ const index = {
 write(".well-known/agent-skills/index.json", JSON.stringify(index, null, 2) + "\n");
 
 console.log(
-  `agent files: api-catalog + ${skills.length} skill (${skills.join(", ")}) in out/ + public/`,
+  `agent files: api-catalog + oauth-protected-resource + ${skills.length} skill (${skills.join(", ")}) in out/ + public/`,
 );

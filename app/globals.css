@@ -35,10 +35,17 @@ body > footer {
   background: rgba(22, 22, 22, 0.14);
 }
 
+/* Il focus da tastiera: solo il contorno, mai la forma.
+ *
+ * Qui c'era anche `border-radius: 2px`, e siccome questa regola sta **dopo**
+ * `@tailwind utilities` nello stesso foglio, vinceva sui campi del form: al
+ * focus (e i campi di testo prendono `:focus-visible` anche col mouse) l'input
+ * `rounded-full` si raddrizzava a 2px, cioè diventava quadrato proprio mentre
+ * lo si usava. La forma la decide il componente; qui si disegna soltanto il
+ * contorno, che nei browser moderni segue il raggio dell'elemento. */
 :focus-visible {
   outline: 2px solid #161616;
   outline-offset: 3px;
-  border-radius: 2px;
 }
 
 a {

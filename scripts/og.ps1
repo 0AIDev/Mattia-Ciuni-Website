@@ -253,6 +253,11 @@ $noCtaSlugs = @("finding-ghassen-the-co-founder-question-answered-in-three-weeks
 #   og.png     la card social, col logo in alto (quella che dichiara og:image);
 #   cover.png  l'immagine che sta in pagina sopra il titolo: senza logo, quindi
 #              col testo centrato nel riquadro (non nella fascia sotto il logo).
+#
+# I post di **Feedback** hanno solo la `og.png`: la loro pagina non ha copertina
+# (la card in pagina mostrerebbe dentro l'articolo la sua stessa call to action,
+# «Read feedback»), quindi generare una cover significherebbe spedire un file che
+# nessuna pagina nomina.
 $bgCover = Join-Path $Root "og-sfondo-cover.png"
 if (!(Test-Path $bgCover)) {
   Write-Error 'og-sfondo-cover.png assente: lancialo prima con  node scripts/gen-og-bg.mjs'
@@ -274,7 +279,9 @@ foreach ($a in $articles) {
     New-ArticleCard $bgCard $a.Title $subText $ogPath 230 604 $cta
   }
 
-  New-ArticleCard $bgCover $a.Title $subText $coverPath 60 570 $cta
+  if ($a.Kind -ne "Feedback") {
+    New-ArticleCard $bgCover $a.Title $subText $coverPath 60 570 $cta
+  }
 }
 
 # --- OG delle pagine indice (/thoughts/ e /notes/) -----

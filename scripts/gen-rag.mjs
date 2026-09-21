@@ -34,7 +34,14 @@ function clean(markdown) {
     .trim();
 }
 
+// Le pagine di servizio non entrano nell'indice: `/admin/` è una porta con un
+// login, e la chat non deve poter nominare la dashboard privata (né suggerirla).
+// `gen-cards.mjs` non scrive già più la card, questo è il secondo lucchetto: se
+// un file comparisse lo stesso, l'indice lo ignora invece di pubblicarlo.
+const isPrivate = (relative) => relative === "admin" || relative.startsWith("admin/");
+
 const entries = files(outDir)
+  .filter((file) => !isPrivate(file.slice(outDir.length + 1).replaceAll("\\", "/")))
   .map((file) => {
     const relative = file.slice(outDir.length + 1).replaceAll("\\", "/");
     const markdown = readFileSync(file, "utf8");

@@ -96,12 +96,17 @@ export default function FeedbackIndex() {
           <h2 className="font-serif text-xl font-medium">What people are saying</h2>
           <span className="text-sm text-gray-1000">{feedback.length} published</span>
         </div>
+        {/* La card non è più un unico `<a>`: conteneva il link al GitHub
+            dell'autore, e un `<a>` dentro un `<a>` è HTML non valido — React lo
+            segnalava come "cannot be a descendant of" e buttava via l'idratazione
+            dell'intera pagina. Ora il contenitore è un `<div>` e il titolo porta
+            un link "stirato" (`after:absolute after:inset-0`), così la card resta
+            cliccabile tutta **e** il GitHub resta un link suo, sopra l'overlay. */}
         <div className="grid gap-3">
           {feedback.map((f) => (
-            <Link
+            <div
               key={f.slug}
-              href={`/feedback/${f.slug}/`}
-              className="group rounded-2xl border border-gray-300 px-5 py-4"
+              className="group relative rounded-2xl border border-gray-300 px-5 py-4"
             >
               <div className="flex flex-wrap items-center gap-x-2.5 gap-y-1 text-sm">
                 <span className="font-medium text-gray-1200">{f.author}</span>
@@ -120,13 +125,16 @@ export default function FeedbackIndex() {
                 <span aria-hidden="true" className="text-gray-1000">·</span>
                 <span className="text-gray-1000">{f.date}</span>
               </div>
-              <span className="mt-1.5 block font-serif text-lg font-medium leading-snug text-gray-1200 underline decoration-transparent underline-offset-4 transition-colors group-hover:decoration-gray-1200">
+              <Link
+                href={`/feedback/${f.slug}/`}
+                className="mt-1.5 block font-serif text-lg font-medium leading-snug text-gray-1200 underline decoration-transparent underline-offset-4 transition-colors after:absolute after:inset-0 after:rounded-2xl group-hover:decoration-gray-1200"
+              >
                 {f.title}
-              </span>
+              </Link>
               <p className="mt-1 m-0 line-clamp-2 text-sm leading-relaxed text-gray-1000">
                 {f.description}
               </p>
-            </Link>
+            </div>
           ))}
         </div>
       </section>

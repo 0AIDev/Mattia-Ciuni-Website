@@ -1,6 +1,6 @@
 # Cookies Policy | Browser storage on this site | Mattia Ciuni
 
-> A clear summary of cookies and local browser storage used on this site.
+> Every cookie, local storage key and session value this site uses, what each one is for, and how to change your choice.
 
 - URL: https://mattiaciuni.pages.dev/cookies
 - Type: Page

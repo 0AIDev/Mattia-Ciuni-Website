@@ -20,3 +20,5 @@ public/.well-known/
 # copia dell'export servita da `wrangler pages dev` e prove a mano
 .pages-preview/
 .scratch/
+# metadati dell'agent (id del progetto): stato locale, non contenuto del sito
+.freebuff/

@@ -6,8 +6,11 @@
 // dell'indice e non uno scan. Senza binding la richiesta risponde 503: un
 // feedback che si perde è peggio di un form che dice la verità.
 //
-// La notifica email a Mattia resta volutamente fuori: la review avviene
-// leggendo KV (wrangler kv key get / dashboard), non a colpi di inbox.
+// La notifica email a Mattia parte dopo il salvataggio (Resend, con chiave
+// idempotente sul record) e non è mai la cosa da cui dipende il feedback: se
+// fallisce, il record resta in coda con `notification_status: "failed"` e la
+// review lo legge in KV o dalla dashboard. Il link dentro la notifica si compone
+// dall'host che sta servendo la pagina, non da una costante.
 
 interface RateLimitStore {
   get(key: string): Promise<string | null>;
@@ -24,6 +27,7 @@ interface Env {
   RESEND_API_KEY?: string;
   RESEND_FROM_EMAIL?: string;
   FEEDBACK_NOTIFY_TO?: string;
+  SITE_URL?: string;
 }
 
 interface PagesContext {
@@ -41,6 +45,10 @@ interface FeedbackBody {
 
 const WINDOW_SECONDS = 600;
 const MAX_REQUESTS = 3;
+// Un feedback vero sta in qualche KB. Il tetto si applica ai byte letti, non a
+// quelli dichiarati: l'endpoint è pubblico e non ha motivo di leggere un corpo
+// grande per poi scartarlo.
+const MAX_BODY_BYTES = 16384;
 const MAX_NAME = 80;
 const MAX_EMAIL = 254;
 const MAX_MESSAGE = 4000;
@@ -75,6 +83,25 @@ async function allowed(store: RateLimitStore | undefined, ip: string): Promise<b
   return true;
 }
 
+/**
+ * Quale dominio serve la pagina, per il link nella notifica.
+ *
+ * `SITE_URL` se il progetto la imposta (dominio custom), altrimenti l'host della
+ * richiesta. Non una costante: il link deve portare alla dashboard **del deploy
+ * che ha ricevuto il feedback**, e un dominio scritto a mano è esattamente il
+ * guasto che questo sito ha già pagato una volta (indirizzi dichiarati su un host
+ * e sito vivo su un altro).
+ */
+function siteOrigin(request: Request, env: Env): string {
+  const configured = (env.SITE_URL || "").trim().replace(/\/+$/, "");
+  if (configured) return configured;
+  try {
+    return new URL(request.url).origin;
+  } catch {
+    return "";
+  }
+}
+
 function text(value: unknown, max: number): string {
   return typeof value === "string" ? value.trim().slice(0, max) : "";
 }
@@ -89,7 +116,11 @@ function escapeHtml(value: string): string {
   })[character] || character);
 }
 
-async function notifyMattia(env: Env, record: { id: string; name: string; email: string; message: string; page_url: string; submitted_at: string }): Promise<"sent" | "failed" | "not_configured"> {
+async function notifyMattia(
+  env: Env,
+  record: { id: string; name: string; email: string; message: string; page_url: string; submitted_at: string },
+  queueUrl: string,
+): Promise<"sent" | "failed" | "not_configured"> {
   if (!env.RESEND_API_KEY || !env.RESEND_FROM_EMAIL) return "not_configured";
   const to = env.FEEDBACK_NOTIFY_TO || "ceo@usepayle.com";
   try {
@@ -105,7 +136,7 @@ async function notifyMattia(env: Env, record: { id: string; name: string; email:
         from: env.RESEND_FROM_EMAIL,
         to: [to],
         subject: `New Payle feedback${record.name ? ` from ${record.name}` : ""}`,
-        html: `<p><strong>New feedback is waiting for review.</strong></p><p><strong>From:</strong> ${escapeHtml(record.name || "Anonymous")}${record.email ? ` (${escapeHtml(record.email)})` : ""}</p><p><strong>Page:</strong> ${escapeHtml(record.page_url)}</p><p><strong>Submitted:</strong> ${escapeHtml(record.submitted_at)}</p><blockquote style="white-space:pre-wrap">${escapeHtml(record.message)}</blockquote><p><a href="https://mattiaciuni.pages.dev/admin/feedback/">Open the review queue</a></p>`,
+        html: `<p><strong>New feedback is waiting for review.</strong></p><p><strong>From:</strong> ${escapeHtml(record.name || "Anonymous")}${record.email ? ` (${escapeHtml(record.email)})` : ""}</p><p><strong>Page:</strong> ${escapeHtml(record.page_url)}</p><p><strong>Submitted:</strong> ${escapeHtml(record.submitted_at)}</p><blockquote style="white-space:pre-wrap">${escapeHtml(record.message)}</blockquote>${queueUrl ? `<p><a href="${escapeHtml(queueUrl + "/admin/feedback/")}">Open the review queue</a></p>` : ""}`,
       }),
     });
     return response.ok ? "sent" : "failed";
@@ -126,9 +157,21 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
     return finish(json({ code: "invalid_request" }, 415), "invalid_content_type");
   }
 
+  // Si legge e si misura: `Content-Length` manca del tutto in chunked, quindi il
+  // tetto non può dipendere da quello che il client dichiara.
+  let raw: string;
+  try {
+    raw = await request.text();
+  } catch {
+    return finish(json({ code: "invalid_request" }, 400), "invalid_json");
+  }
+  if (raw.length > MAX_BODY_BYTES) {
+    return finish(json({ code: "invalid_request" }, 413), "body_too_large");
+  }
+
   let body: FeedbackBody;
   try {
-    body = (await request.json()) as FeedbackBody;
+    body = JSON.parse(raw) as FeedbackBody;
   } catch {
     return finish(json({ code: "invalid_request" }, 400), "invalid_json");
   }
@@ -182,7 +225,7 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
     await env.FEEDBACK.put("fb:index", ids.join("\n"));
     // Una notifica fallita non deve far perdere il feedback: il record resta
     // in coda e conserva lo stato, così può essere rilevato dalla dashboard.
-    record.notification_status = await notifyMattia(env, record);
+    record.notification_status = await notifyMattia(env, record, siteOrigin(request, env));
     await env.FEEDBACK.put(id, JSON.stringify(record));
   } catch {
     return finish(json({ code: "provider_error" }, 502), "kv_write_error");

@@ -5,6 +5,14 @@ export const dynamic = "force-static";
 // Il sito è pubblico: qui si dichiara il permesso, non lo si limita. Il motivo
 // per cui gli agenti AI sono elencati per nome è che molti non seguono `*`, e
 // chi non trova il proprio nome decide da sé.
+//
+// L'unica eccezione sono le due porte della dashboard privata: non sono
+// contenuto, sono uno strumento con un login, e non c'è niente da indicizzare.
+// Il `Disallow` si ripete in **ogni** blocco perché un crawler applica il gruppo
+// più specifico che lo nomina: lasciarlo solo sotto `*` lo renderebbe invisibile
+// proprio agli agenti nominati qui sotto, che è il contrario di quello che serve.
+// Restano fuori da ogni sitemap e da `llms.txt` (vedi `verify.js`).
+const PRIVATE_PATHS = ["/admin/", "/api/admin/"];
 const AI_AGENTS = [
   "GPTBot",
   "OAI-SearchBot",
@@ -55,8 +63,14 @@ export async function GET() {
     "# resta dichiarata negli header e in /.well-known/, non qui.",
     "Content-Signal: ai-train=yes, search=yes, ai-input=yes",
     "Allow: /",
+    ...PRIVATE_PATHS.map((path) => `Disallow: ${path}`),
     "",
-    ...AI_AGENTS.flatMap((agent) => [`User-Agent: ${agent}`, "Allow: /", ""]),
+    ...AI_AGENTS.flatMap((agent) => [
+      `User-Agent: ${agent}`,
+      "Allow: /",
+      ...PRIVATE_PATHS.map((path) => `Disallow: ${path}`),
+      "",
+    ]),
     `Sitemap: ${base}/sitemap.xml`,
     `Sitemap: ${base}/news-sitemap.xml`,
     "",

@@ -26,6 +26,16 @@
   Cache-Control: public, max-age=3600, s-maxage=3600
   Access-Control-Allow-Origin: *
 
+# RFC 9728: il sito e' una risorsa pubblica, e questo documento lo dice con tre
+# liste vuote (nessun issuer, nessuno scope, nessun metodo bearer). I due file che
+# pubblicherebbe un authorization server (`/.well-known/oauth-authorization-server`
+# e `/.well-known/openid-configuration`) **non** ci sono di proposito: senza issuer
+# vero sarebbero endpoint inventati. Vedi `scripts/gen-agent-files.mjs`.
+/.well-known/oauth-protected-resource
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: public, max-age=3600, s-maxage=3600
+  Access-Control-Allow-Origin: *
+
 /.well-known/agent-skills/index.json
   Content-Type: application/json; charset=utf-8
   Cache-Control: public, max-age=3600, s-maxage=3600
@@ -40,6 +50,15 @@
   Content-Type: text/markdown; charset=utf-8
   Cache-Control: public, max-age=3600, s-maxage=3600
   Access-Control-Allow-Origin: *
+
+# La dashboard privata non si indicizza e non si mette in cache, nemmeno come
+# pagina: il `noindex` nella `<head>` lo leggono i motori, questo header lo
+# leggono anche i crawler che non eseguono il markup, e `no-store` tiene fuori
+# qualunque deposito intermedio. Le risposte dell'API hanno gli stessi header,
+# messi dalla Function (`functions/api/admin/feedback.ts`).
+/admin/*
+  X-Robots-Tag: noindex, nofollow
+  Cache-Control: no-store
 
 /og.png
   Content-Type: image/png
@@ -74,6 +93,10 @@
   Cache-Control: public, max-age=3600, s-maxage=3600
 
 /sitemap-notes.xml
+  Content-Type: application/xml; charset=utf-8
+  Cache-Control: public, max-age=3600, s-maxage=3600
+
+/sitemap-feedback.xml
   Content-Type: application/xml; charset=utf-8
   Cache-Control: public, max-age=3600, s-maxage=3600
 

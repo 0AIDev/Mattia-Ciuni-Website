@@ -2,18 +2,41 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
-import { CoverImage } from "@/components/CoverImage";
+import { GithubIcon } from "@/components/ui/github";
 import { InlineText } from "@/components/RichText";
 import SectionCopyLink from "@/components/SectionCopyLink";
-import TableOfContents, {
-  MobileTableOfContents,
-  type TocItem,
-} from "@/components/TableOfContents";
 import { site } from "@/lib/site";
-import { feedback, getFeedback, type FeedbackBlock } from "@/lib/feedback";
+import {
+  feedback,
+  feedbackExchange,
+  feedbackMinutes,
+  getFeedback,
+  type FeedbackBlock,
+} from "@/lib/feedback";
 import { slugify } from "@/lib/slug";
 import { socialImages } from "@/lib/social";
 import { FeedbackModalButton } from "@/components/FeedbackForm";
+
+/**
+ * La pagina di un feedback non è un post del blog, e non deve sembrarlo.
+ *
+ * Un articolo si apre con la sua copertina e un filetto nero sopra: qui non c'è
+ * né l'una né l'altro, perché questo non è un pezzo scritto da Mattia con una
+ * sua immagine, è il **verbale di uno scambio**. Perciò:
+ *
+ *   - prima il credito di chi ha scritto (nome, eventuale GitHub, data, numero
+ *     dello scambio), poi il titolo: l'ordine è quello della card in `/feedback/`;
+ *   - nessuna copertina: la OG card in pagina mostrerebbe dentro l'articolo la
+ *     sua stessa call to action («Read feedback»), cioè una pagina che chiede di
+ *     leggere sé stessa;
+ *   - nessun indice laterale: uno scambio si legge dall'inizio, e la TOC lo
+ *     faceva somigliare a un documento;
+ *   - colonna più stretta (652px invece di 692px) e spazi diversi: si vede prima
+ *     del testo che si è in un'altra sezione.
+ *
+ * Il resto è la stessa grammatica del sito: serif per i titoli, corpo a 15-16px,
+ * il virgolettato del contributo con la barra a sinistra.
+ */
 
 export function generateStaticParams() {
   return feedback.map((f) => ({ slug: f.slug }));
@@ -103,10 +126,8 @@ export default async function FeedbackPost({
 
   const base = site.url.replace(/\/$/, "");
   const url = `${base}/feedback/${post.slug}/`;
-
-  const toc: TocItem[] = post.content.flatMap((block) =>
-    block.type === "h2" ? [{ anchor: slugify(block.text), label: block.text }] : [],
-  );
+  const exchange = feedbackExchange(post.slug);
+  const readTime = feedbackMinutes(post);
 
   const articleJsonLd = {
     "@context": "https://schema.org",
@@ -120,6 +141,13 @@ export default async function FeedbackPost({
     image: `${base}/feedback/${post.slug}/og.png`,
     keywords: post.keywords.join(", "),
     inLanguage: "en",
+    // Il contributo è citato come tale: la pagina è di Mattia, il feedback è di
+    // chi l'ha scritto, e questo è il posto in cui dirlo a una macchina.
+    contributor: {
+      "@type": "Person",
+      name: post.author,
+      ...(post.github ? { url: post.github } : {}),
+    },
   };
 
   const breadcrumbJsonLd = {
@@ -135,7 +163,7 @@ export default async function FeedbackPost({
   return (
     <main
       id="content"
-      className="mx-auto max-w-[692px] px-6 py-12 leading-relaxed sm:py-24"
+      className="mx-auto max-w-[652px] px-6 py-12 leading-relaxed sm:py-24"
     >
       <script
         type="application/ld+json"
@@ -167,7 +195,8 @@ export default async function FeedbackPost({
           </li>
         </ol>
       </nav>
-      <header className="mb-16 flex items-center justify-between sm:mb-24">
+
+      <header className="mb-10 flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link
             href="/"
@@ -181,21 +210,47 @@ export default async function FeedbackPost({
           </Link>
         </div>
         <span className="text-sm text-gray-1000">
-          <time dateTime={post.date}>{post.date}</time>
+          Exchange {exchange} · {readTime}
         </span>
       </header>
 
-      <article className="border-t-2 border-gray-1200 pt-10">
-        {toc.length > 0 ? <TableOfContents items={toc} /> : null}
-        <MobileTableOfContents items={toc} />
+      {/* Niente filetto nero in cima e niente copertina: il primo blocco è il
+          credito di chi ha scritto, come nella card dell'elenco. */}
+      <article>
         <div data-article-content>
-          <CoverImage src={`/feedback/${post.slug}/cover.png`} />
-          <p className="mb-3 text-[13px] uppercase tracking-wide text-gray-1000">
-            Feedback series · {post.author}
-          </p>
-          <h1
-            className="mb-5 scroll-mt-20 font-serif text-3xl font-medium leading-tight text-gray-1200 sm:text-4xl"
-          >
+          {/* Riga di credito su una riga di testo, non in un flex: i `{" "}`
+              espliciti servono a due lettori diversi. Il browser li usa come
+              spazi normali (e la riga va a capo da sola su mobile), mentre la card
+              markdown li conserva — in un flex gli elementi finivano incollati
+              (`Liam Murphy[aka7880-721](…)·2026-09-21`), perché il generatore
+              toglie i tag e non vede i `gap` del CSS. */}
+          <div className="rounded-2xl border border-gray-300 px-5 py-4">
+            <p className="m-0 text-sm leading-relaxed">
+              <span className="font-medium text-gray-1200">{post.author}</span>{" "}
+              {post.github ? (
+                <a
+                  href={post.github}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={`${post.author} on GitHub`}
+                  className="inline-flex items-center gap-1.5 text-gray-1000 transition-colors hover:text-gray-1200"
+                >
+                  <GithubIcon size={14} className="inline-flex shrink-0" />
+                  <span className="text-xs">
+                    {post.github.replace("https://github.com/", "")}
+                  </span>
+                </a>
+              ) : null}{" "}
+              <span aria-hidden="true" className="text-gray-1000">
+                ·
+              </span>{" "}
+              <span className="text-gray-1000">
+                <time dateTime={post.date}>{post.date}</time>
+              </span>
+            </p>
+          </div>
+
+          <h1 className="mt-7 mb-6 scroll-mt-20 font-serif text-3xl font-medium leading-tight text-gray-1200 sm:text-4xl">
             {post.title}
           </h1>
           <div className="flex flex-col">
@@ -206,7 +261,7 @@ export default async function FeedbackPost({
         </div>
       </article>
 
-      <section aria-labelledby="send-feedback" className="mt-16 border-t border-gray-300">
+      <section aria-labelledby="send-feedback" className="mt-16 border-t border-gray-300 pt-8">
         <h2 id="send-feedback" className="mb-3 font-serif text-xl font-medium">
           Send your feedback
         </h2>
@@ -216,10 +271,7 @@ export default async function FeedbackPost({
           next Feedback post might be about your comment.
         </p>
         <div className="mt-6">
-          <FeedbackModalButton
-            variant="outline"
-            label="Send your feedback"
-          />
+          <FeedbackModalButton variant="outline" label="Send your feedback" />
         </div>
         <p className="mt-4 text-sm text-gray-1000">
           Reviewed by Mattia before publication; credited your way or not at all.

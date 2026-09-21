@@ -271,14 +271,21 @@ export default function Home() {
         <p className="mb-6 max-w-[600px] text-text-paragraph">
           Engineers attack Payle&apos;s architecture in public. I publish what their attacks changed, corrections included.
         </p>
-        <ul className="m-0 list-none divide-y divide-gray-300 border-t-2 border-gray-1200 p-0">
+        {/* I contributi non sono un altro elenco di pezzi miei: è un pannello
+            grigio, senza bordo e **senza filetto in cima** (il `border-t-2` nero
+            di prima la faceva sembrare la prosecuzione dei Thoughts). Le voci si
+            distinguono per spazio, non per una linea, e l'hover resta quello del
+            sito: la sottolineatura del titolo e il chevron che scorre. */}
+        <ul className="m-0 list-none rounded-3xl bg-gray-100 p-0">
           {feedback.map((f) => (
             <li key={f.slug}>
               <Link
                 href={`/feedback/${f.slug}/`}
-                className="group flex items-baseline justify-between gap-4 py-3.5"
+                className="group flex items-baseline justify-between gap-4 px-5 py-4 sm:px-6"
               >
-                <span className="font-serif font-[450]">{f.title}</span>
+                <span className="font-serif font-[450] underline decoration-transparent underline-offset-4 transition-colors group-hover:decoration-gray-1200">
+                  {f.title}
+                </span>
                 <span className="flex items-center gap-2 whitespace-nowrap text-gray-1000">
                   {f.author}
                   <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />

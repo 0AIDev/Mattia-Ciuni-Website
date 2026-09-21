@@ -16,7 +16,9 @@
     "postbuild": "node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs && node scripts/gen-rag.mjs && node scripts/ping-indexnow.mjs",
     "start": "next start",
     "lint": "eslint .",
-    "test:newsletter": "node scripts/test-newsletter.mjs"
+    "test:newsletter": "node scripts/test-newsletter.mjs",
+    "test:admin": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-admin.mjs",
+    "test:feedback": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-feedback.mjs"
   },
   "dependencies": {
     "@animateicons/react": "^0.5.0",

@@ -27,6 +27,22 @@ export function feedbackMinutes(post: FeedbackPost): string {
   return `${minutesOf(post.content)} min read`;
 }
 
+/**
+ * Il numero dello scambio nella serie: `01`, `02`, …
+ *
+ * L'ordine è **cronologico** (la data, non la posizione in questo file):
+ * aggiungere un feedback più vecchio in cima non deve rinumerare quelli già
+ * pubblicati, perché il numero che compare in pagina è quello che resta in un
+ * link condiviso.
+ */
+export function feedbackExchange(slug: string): string {
+  const ordered = [...feedback].sort(
+    (a, b) => a.date.localeCompare(b.date) || a.slug.localeCompare(b.slug),
+  );
+  const position = ordered.findIndex((post) => post.slug === slug);
+  return String(position + 1).padStart(2, "0");
+}
+
 const raw: FeedbackPost[] = [
   {
     slug: "a-stranger-redesigned-my-pitch-in-one-comment",

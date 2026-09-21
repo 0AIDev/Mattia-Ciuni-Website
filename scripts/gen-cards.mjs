@@ -101,8 +101,16 @@ function markdownArticle(html) {
     .trim();
 }
 
+// `/admin/` non è contenuto: è una porta con un login. Non ha una card, non entra
+// nel RAG, non entra in nessun indice. `admin/feedback.md` era servito come file
+// statico (quel percorso non passa dalla Function, quindi Pages consegnava
+// l'asset), e la card descriveva la dashboard privata a chiunque la chiedesse:
+// togliere la pagina dagli indici non basta se poi le si scrive intorno un file.
+const isPrivate = (pagePath) => pagePath === "admin" || pagePath.startsWith("admin/");
+
 const pages = listPages(outDir)
   .filter(({ rel }) => !["404", "_not-found"].includes(pagePathOf(rel)))
+  .filter(({ rel }) => !isPrivate(pagePathOf(rel)))
   .map(({ file, rel }) => {
     const pagePath = pagePathOf(rel);
     const segments = pagePath ? pagePath.split("/") : [];

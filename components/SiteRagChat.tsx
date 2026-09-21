@@ -108,6 +108,14 @@ export function SiteRagChat() {
     try { window.localStorage.removeItem(STORAGE_KEY); } catch { /* private browsing */ }
   }
 
+  // La dashboard privata non porta addosso la chat pubblica: è uno strumento del
+  // sito, e in una pagina con un login diventa un ornamento che parla ai
+  // visitatori. La guardia sta **qui** e non in un controllo sull'export perché
+  // questo componente arriva da un import dinamico con `ssr: false`: il pulsante
+  // non è mai stato nell'HTML costruito, esiste solo quando React lo monta nel
+  // browser — quindi l'unico posto in cui si può spegnere è il render.
+  if (path.startsWith("/admin")) return null;
+
   return (
     <aside className="fixed bottom-4 right-4 z-40 flex flex-col items-end sm:bottom-6 sm:right-6" aria-label="Ask Mattia Ciuni AI">
       {open && (

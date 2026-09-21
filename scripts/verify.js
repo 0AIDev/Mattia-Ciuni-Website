@@ -171,6 +171,14 @@ const feedbackPostPage = read("feedback/a-stranger-redesigned-my-pitch-in-one-co
 check("feedback: index + post built", feedbackIndexPage.includes("What people are saying") && feedbackPostPage.includes("A stranger redesigned my pitch in one comment"));
 check("feedback: card with full article", read("feedback/a-stranger-redesigned-my-pitch-in-one-comment.md").includes("## Full article"));
 check("index: feedback section", index.includes("Feedback") && index.includes("/feedback/"));
+// Il pannello dei contributi in home non ha più il filetto nero doppio
+// (`border-t-2`), quello che nella sezione faceva sembrare i feedback la
+// prosecuzione dei Thoughts: un elenco con una linea nera in cima. Il check è sul
+// file costruito, così un copia-incolla dalla lista sopra non lo riporta dentro.
+check(
+  "index: the feedback panel has no heavy rule",
+  index.includes("rounded-3xl bg-gray-100") && !index.includes("border-t-2 border-gray-1200")
+);
 const adminPage = read("admin/feedback/index.html");
 check(
   "feedback admin: private dashboard scaffold",
@@ -185,6 +193,156 @@ check(
     readFileSync(path.join(__dirname, "..", "functions", "api", "feedback.ts"), "utf8").includes("api.resend.com/emails") &&
     readFileSync(path.join(__dirname, "..", "functions", "api", "feedback.ts"), "utf8").includes("ceo@usepayle.com")
 );
+// Il link dentro la notifica si compone dall'host che sta servendo la pagina: un
+// dominio scritto a mano in una Function è il guasto che questo sito ha già pagato
+// una volta (indirizzi dichiarati su un host e sito vivo su un altro), e in una
+// notifica significa un link che porta al deploy sbagliato. `SITE_URL` (quando il
+// progetto la imposta) e l'host della richiesta sono le uniche due fonti ammesse.
+const feedbackFunction = readFileSync(
+  path.join(__dirname, "..", "functions", "api", "feedback.ts"),
+  "utf8"
+);
+check(
+  "feedback: the notification link follows the serving host, never a constant",
+  !feedbackFunction.includes("mattiaciuni.pages.dev") &&
+    feedbackFunction.includes("siteOrigin(request, env)")
+);
+// La moderazione di `/api/admin/feedback` scrive su una chiave presa dal corpo:
+// se il controllo sulla forma dell'id sparisse, una sessione potrebbe nominare
+// `fb:index` o una `adm:<sessione>` — cioè scrivere fuori dai propri feedback.
+const adminFunction = readFileSync(
+  path.join(__dirname, "..", "functions", "api", "admin", "feedback.ts"),
+  "utf8"
+);
+check(
+  "feedback admin: moderation ids are scoped to feedback records",
+  /RECORD_ID\s*=\s*\/\^fb:/.test(adminFunction) &&
+    adminFunction.includes("RECORD_ID.test(id)") &&
+    /request\.text\(\)/.test(adminFunction)
+);
+
+// La dashboard privata non finisce in nessun indice macchina: né nelle sitemap,
+// né in llms.txt né nel feed. Una pagina di login in un indice è una pagina di
+// login nei risultati di ricerca, e `noindex` da solo non basta: chi legge il
+// sitemap.xml non guarda i meta.
+const machineReadable = [
+  "sitemap.xml",
+  "sitemap-home.xml",
+  "sitemap-thoughts.xml",
+  "sitemap-notes.xml",
+  "sitemap-feedback.xml",
+  "news-sitemap.xml",
+  "llms.txt",
+  "feed.xml",
+  // L'indice della chat: la dashboard non deve comparire nemmeno qui, perché la
+  // chat risponde anche dicendo dove sta una cosa.
+  "rag/index.json",
+];
+const leakedAdmin = machineReadable.filter((file) => read(file).toLowerCase().includes("admin"));
+check(
+  `admin: absent from every machine-readable index (${machineReadable.length} files)`,
+  leakedAdmin.length === 0,
+);
+// La chat pubblica non compare sulla dashboard. Il controllo legge il
+// **sorgente**, ed è l'unico onesto: il componente arriva da un import dinamico
+// con `ssr: false`, quindi il pulsante non è mai stato nell'HTML costruito — un
+// check sui file passerebbe anche a guardia rimossa.
+const siteChat = readFileSync(path.join(__dirname, "..", "components", "SiteRagChat.tsx"), "utf8");
+check(
+  "admin: the public chat is not rendered on the private dashboard",
+  /if\s*\(path\.startsWith\("\/admin"\)\)\s*return null;/.test(siteChat)
+);
+if (leakedAdmin.length) console.log("     nominano admin: " + leakedAdmin.join(", "));
+// Nessun file si scrive **intorno** alla dashboard: `admin/feedback.md` era una
+// card servita come asset statico (quel percorso non passa dalla Function), e
+// raccontava la pagina privata a chi la chiedeva. Il controllo è sui file, non
+// sulle intenzioni: se la card torna, il check cade.
+const strays = [];
+// L'HTML della dashboard deve esserci (è la pagina): quello che non deve esserci
+// è un file **scritto intorno** alla pagina, cioè una card markdown. Si guardano i
+// soli file `.md`, in `out/` e in `public/` (che è ciò che Pages serve davvero).
+for (const dir of ["out/admin", "public/admin"]) {
+  const start = path.join(__dirname, "..", dir);
+  if (!fs.existsSync(start)) continue;
+  const walk = (current) => {
+    for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+      const p = path.join(current, entry.name);
+      if (entry.isDirectory()) walk(p);
+      else if (entry.name.endsWith(".md")) strays.push(p);
+    }
+  };
+  walk(start);
+}
+check(
+  "admin: no file is written around the dashboard (no admin card, no admin asset)",
+  strays.length === 0,
+);
+if (strays.length) console.log("     file da rimuovere: " + strays.join(", "));
+check(
+  "admin: the dashboard is disallowed in every robots group",
+  // Un crawler applica il gruppo più specifico che lo nomina: il Disallow deve
+  // stare in tutti i blocchi, non solo sotto `*`.
+  (robots.match(/^User-Agent:/gm) || []).length ===
+    (robots.match(/^Disallow: \/admin\/$/gm) || []).length &&
+    robots.includes("Disallow: /api/admin/")
+);
+
+// L'audit del 21/09: le proprietà del login che non devono regredire. Sono
+// controlli sul **sorgente** perché queste cose non si vedono nell'export — un
+// cookie col segreto dentro o un confronto che esce prima non lasciano traccia
+// nell'HTML, e si scoprono leggendo il codice solo se qualcuno si ricorda di
+// leggere il codice.
+const adminFn = readFileSync(
+  path.join(__dirname, "..", "functions", "api", "admin", "feedback.ts"),
+  "utf8",
+);
+// I cookie possono uscire in due forme: `{ "Set-Cookie": `...` }` oppure la
+// coppia `[ "Set-Cookie", `...` ]`, che è quella che serve quando in una risposta
+// ci sono **due** cookie (un oggetto con la stessa chiave due volte ne tiene
+// uno). Il controllo deve leggere entrambe, altrimenti smette di guardare proprie
+// nel momento in cui la forma cambia — che è esattamente quello che era appena
+// successo.
+const setCookies = [...adminFn.matchAll(/"Set-Cookie"[\s:,]+`([^`]*)`/g)].map((m) => m[1]);
+check(
+  `admin: the master secret never travels in a cookie (${setCookies.length} Set-Cookie)`,
+  setCookies.length > 0 && setCookies.every((value) => !/\$\{[^}]*ADMIN_TOKEN/.test(value)),
+);
+check(
+  "admin: token compared in constant time, sessions in KV, real logout",
+  /crypto\.subtle\.digest\("SHA-256"/.test(adminFn) &&
+    /SESSION_PREFIX/.test(adminFn) &&
+    /expirationTtl: SESSION_SECONDS/.test(adminFn) &&
+    /action === "logout"/.test(adminFn) &&
+    /\.delete\(SESSION_PREFIX/.test(adminFn) &&
+    /__Host-/.test(adminFn),
+);
+check(
+  "admin: login is rate limited and never cached",
+  /loginAllowed/.test(adminFn) &&
+    /rl:admin:/.test(adminFn) &&
+    /"Cache-Control": "no-store"/.test(adminFn) &&
+    /"X-Robots-Tag": "noindex, nofollow"/.test(adminFn) &&
+    !/tokenFrom/.test(adminFn),
+);
+// Il token non deve comparire da nessuna parte nell'export: né nel JS del
+// browser, né in una card markdown, né nei documenti di scoperta.
+const adminTokenInRepo = [];
+for (const dir of ["app", "components", "lib", "public", "functions", "scripts"]) {
+  for (const entry of readdirSync(path.join(__dirname, "..", dir), { recursive: true })) {
+    const name = String(entry);
+    if (!/\.(js|mjs|ts|tsx|json|md|txt)$/.test(name)) continue;
+    const full = path.join(__dirname, "..", dir, name);
+    // La scansione ricorsiva elenca anche le cartelle, e `app/llms.txt/` è una
+    // cartella che finisce in `.txt`: senza questo controllo si legge una
+    // directory e il file di verifica muore (EISDIR).
+    if (!fs.statSync(full).isFile()) continue;
+    if (/ADMIN_TOKEN\s*[:=]\s*["'`][0-9a-f]{32,}/.test(readFileSync(full, "utf8"))) {
+      adminTokenInRepo.push(`${dir}/${name}`);
+    }
+  }
+}
+check("admin: no hard-coded token anywhere in the tree", adminTokenInRepo.length === 0);
+if (adminTokenInRepo.length) console.log("     " + adminTokenInRepo.join(", "));
 // Il form di submission sostituisce il link email: la Function deve essere
 // nell'elenco delle route dinamiche di Pages, altrimenti l'export statico
 // risponderebbe 405 al POST. L'endpoint vive nei chunk JS del form (component
@@ -261,12 +419,72 @@ check(
     noteSlugs.every((slug) => fs.existsSync(cardPath("notes", slug))) &&
     feedbackSlugs.every((slug) => fs.existsSync(cardPath("feedback", slug)))
 );
+// Un articolo e una nota hanno la copertina in pagina; un **feedback no**, e non
+// è una dimenticanza: la sua pagina è il verbale di uno scambio, e la card in
+// pagina mostrerebbe dentro l'articolo la sua stessa call to action
+// («Read feedback»). Quindi qui si controlla che Thoughts e Notes l'abbiano, e
+// che i Feedback **non** ne abbiano una: se qualcuno la rigenera e la rimette,
+// il controllo cade invece di approvare una cartella con un file che nessuno
+// nomina.
+const feedbackHasCover = feedbackSlugs.filter((slug) =>
+  fs.existsSync(path.join(out, "feedback", slug, "cover.png")),
+);
 check(
-  "covers: every article, note and feedback post has its in-page image",
+  "covers: every article and note has its in-page image, no orphan feedback cover",
   postSlugs.every((slug) => fs.existsSync(path.join(out, "thoughts", slug, "cover.png"))) &&
     noteSlugs.every((slug) => fs.existsSync(path.join(out, "notes", slug, "cover.png"))) &&
-    feedbackSlugs.every((slug) => fs.existsSync(path.join(out, "feedback", slug, "cover.png")))
+    feedbackHasCover.length === 0,
 );
+if (feedbackHasCover.length) console.log("     cover orfana: " + feedbackHasCover.join(", "));
+
+// La pagina di un feedback è diversa da un post del blog, e questo è il controllo
+// che lo tiene vero: niente copertina in pagina, niente filetto nero in cima,
+// niente indice laterale, e invece il credito di chi ha scritto (nome + GitHub,
+// come nella card dell'elenco) e il numero dello scambio.
+const feedbackPages = feedbackSlugs.filter((slug) =>
+  fs.existsSync(path.join(out, "feedback", slug, "index.html")),
+);
+const feedbackLayout = feedbackPages.map((slug) => {
+  // React separa il testo con i marcatori di commento (`Exchange <!-- -->01`),
+  // quindi si legge l'HTML senza commenti: il numero dello scambio è testo, non
+  // markup, e confrontarlo sull'HTML grezzo fallirebbe per un motivo che non
+  // c'entra con la pagina.
+  const html = readFileSync(path.join(out, "feedback", slug, "index.html"), "utf8").replace(
+    /<!--[\s\S]*?-->/g,
+    "",
+  );
+  const author = /<span class="font-medium text-gray-1200">([^<]+)<\/span>/.exec(html)?.[1] || "";
+  return {
+    slug,
+    hasCoverImage: html.includes(`/feedback/${slug}/cover.png`),
+    hasBlackRule: /<article class="border-t-2/.test(html),
+    hasToc: html.includes('aria-label="Table of contents"'),
+    exchange: /Exchange\s+\d\d/.test(html),
+    credit: !!author && html.includes('aria-label="' + author + ' on GitHub"'),
+  };
+});
+check(
+  `feedback: exchange layout, not a blog post (${feedbackLayout.length} page)`,
+  feedbackLayout.length > 0 &&
+    feedbackLayout.every(
+      (page) =>
+        !page.hasCoverImage &&
+        !page.hasBlackRule &&
+        !page.hasToc &&
+        page.exchange &&
+        page.credit,
+    ),
+);
+for (const page of feedbackLayout) {
+  const problems = [
+    page.hasCoverImage && "cover",
+    page.hasBlackRule && "filetto nero",
+    page.hasToc && "TOC",
+    !page.exchange && "numero scambio",
+    !page.credit && "credito autore",
+  ].filter(Boolean);
+  if (problems.length) console.log(`     ${page.slug}: ${problems.join(", ")}`);
+}
 check(
   "og: no card without an article",
   cardsIn("thoughts").every((slug) => postSlugs.includes(slug)) &&
@@ -380,10 +598,80 @@ check(
     ardCatalog.host?.identifier === `did:web:${new URL(PROD).hostname}` && ardEntriesValid &&
     headersFile.includes("/.well-known/ai-catalog.json") && headersFile.includes("Content-Type: application/json")
 );
+// auth.md: il controllo che gira sui lettori di agenti cerca un H1 che *nomini*
+// auth.md, e il documento deve dire la verità (niente API protette, niente
+// credenziali da mandare). Era l'unico dei file di scoperta che nessuno
+// verificava nel merito.
 check(
-  "auth.md: honest unauthenticated policy",
-  fs.existsSync(path.join(out, "auth.md")) && read("auth.md").includes("does not currently expose protected APIs") &&
+  "auth.md: H1 names the file, honest unauthenticated policy",
+  fs.existsSync(path.join(out, "auth.md")) &&
+    /^#\s.*auth\.md.*$/m.test(read("auth.md")) &&
+    read("auth.md").includes("no credential to obtain") &&
     headersFile.includes("/auth.md") && headersFile.includes("Content-Type: text/markdown")
+);
+
+// RFC 9728: il documento esiste, è JSON vero, e le tre liste vuote **sono** la
+// risposta (nessun issuer può emettere token per questa origine). I due file che
+// pubblicherebbe un authorization server restano assenti: se qualcuno ci mettesse
+// un `issuer` inventato, il sito dichiarerebbe endpoint che non esistono, e questo
+// controllo è lì per fermarlo.
+const protectedResource = JSON.parse(fs.readFileSync(wellKnown("oauth-protected-resource"), "utf8"));
+const emptyList = (value) => Array.isArray(value) && value.length === 0;
+check(
+  "well-known: oauth-protected-resource, public resource with no issuer",
+  protectedResource.resource === PROD + "/" &&
+    emptyList(protectedResource.authorization_servers) &&
+    emptyList(protectedResource.scopes_supported) &&
+    emptyList(protectedResource.bearer_methods_supported) &&
+    protectedResource.resource_documentation === PROD + "/auth.md" &&
+    protectedResource.resource_policy_uri === PROD + "/terms/" &&
+    fs.existsSync(path.join(out, "terms", "index.html")) &&
+    headersFile.includes("/.well-known/oauth-protected-resource") &&
+    !fs.existsSync(wellKnown("oauth-authorization-server")) &&
+    !fs.existsSync(wellKnown("openid-configuration"))
+);
+
+// La skill pubblicata non deve nominare un dominio diverso da quello che serve le
+// pagine: era il modo in cui il vecchio host sopravviveva a un cambio di dominio
+// (la skill diceva `mattia-ciuni.xyz`, che non esiste in DNS). Ora il dominio
+// arriva da `{{SITE}}`, sostituito alla generazione, e il digest copre il file
+// finale — se la sostituzione non avvenisse, questo check cade.
+const publishedSkill = readFileSync(
+  path.join(out, ".well-known", "agent-skills", "read-and-cite-mattia-ciuni", "SKILL.md"),
+  "utf8",
+);
+check(
+  "well-known: the skill follows the real domain",
+  publishedSkill.includes(PROD + "/thoughts/") &&
+    !publishedSkill.includes("{{SITE}}") &&
+    !/https?:\/\/(?!www\.)[a-z0-9.-]*mattia[-.]?ciuni\.xyz/i.test(publishedSkill)
+);
+
+// Le pagine legali devono descrivere quello che il sito fa davvero, non quello che
+// faceva due funzioni fa: newsletter (Resend + Brevo + Beehiiv), form di feedback
+// (KV + notifica), chat AI (Workers AI, storia nel browser) e analytics (Google,
+// solo con consenso). Il controllo legge l'export, quindi una policy scritta e mai
+// costruita non passa.
+const privacy = read("privacy/index.html");
+const cookies = read("cookies/index.html");
+const terms = read("terms/index.html");
+check(
+  "legal: privacy covers newsletter, feedback, AI chat and analytics",
+  ["Brevo", "Beehiiv", "Resend", "Workers KV", "Workers AI", "Google Analytics 4", "first two numbers", "Garante"].every(
+    (needle) => privacy.includes(needle),
+  )
+);
+check(
+  "legal: cookies lists the real storage keys",
+  ["mattia-ciuni-analytics-consent", "mattia-ciuni-newsletter-subscribed", "mattia-ciuni-ai-chat", "mattia_feedback_admin", "_ga_G-YQS0R94ZQP"].every(
+    (needle) => cookies.includes(needle),
+  )
+);
+check(
+  "legal: terms cover publishing feedback and AI reading",
+  ["Content-Signal", "permission to publish", "initial", "Ask Mattia Ciuni AI"].every((needle) =>
+    terms.includes(needle),
+  )
 );check("WebMCP: registration is present in the page",
   index.includes('rel="ai-catalog"') && index.includes("webmcp.js") &&
     fs.existsSync(path.join(out, "webmcp.js")) &&
@@ -445,6 +733,59 @@ check(
     index.includes('class="site-signature') &&
     fs.existsSync(path.join(__dirname, "..", "public", "logo.svg"))
 );
+
+// Due guasti che nessun tipo TypeScript vede e che l'HTML non perdona: un `<a>`
+// dentro un `<a>` (React lo segnala come "cannot be a descendant of" e butta via
+// l'idratazione, quindi la pagina si ricostruisce sul client) e un link interno
+// che punta a una pagina non esportata. Girano su **tutto** l'export, non su una
+// pagina campione: la card del feedback conteneva il link al GitHub dell'autore
+// dentro il link della card, ed era l'unica pagina con quel difetto.
+// (`pages` è la stessa lista di pagine che controlla gli `og:image` qui sopra.)
+const nestedAnchors = [];
+const unresolvedLinks = [];
+for (const file of pages) {
+  const html = readFileSync(file, "utf8");
+  const where =
+    "/" + path.relative(out, file).replace(/index\.html$/, "").split(path.sep).join("/");
+  let open = 0;
+  for (const tag of html.match(/<a\b[^>]*>|<\/a>/gi) || []) {
+    if (/^<a\b/i.test(tag)) {
+      if (open > 0) nestedAnchors.push(`${where} → ${tag.slice(0, 70)}`);
+      open += 1;
+    } else open = Math.max(0, open - 1);
+  }
+  for (const match of html.matchAll(/href="(\/[^"#?]*)"/g)) {
+    const href = match[1];
+    if (href.startsWith("/_next/") || href.startsWith("//")) continue;
+    const target = path.join(out, href.replace(/^\//, ""));
+    const candidates = [target, `${target}.html`, path.join(target, "index.html")];
+    if (!candidates.some((candidate) => fs.existsSync(candidate))) {
+      unresolvedLinks.push(`${where} → ${href}`);
+    }
+  }
+}
+check(`links: no nested <a> across ${pages.length} exported pages`, nestedAnchors.length === 0);
+if (nestedAnchors.length) console.log("     " + nestedAnchors.slice(0, 5).join(", "));
+check("links: every internal href resolves in the export", unresolvedLinks.length === 0);
+if (unresolvedLinks.length) console.log("     " + unresolvedLinks.slice(0, 5).join(", "));
+
+// La forma di un controllo non si decide col focus. `:focus-visible` in
+// `app/globals.css` sta **dopo** `@tailwind utilities` nello stesso foglio,
+// quindi una `border-radius` scritta lì dentro vince sulle utility: era così che
+// gli input `rounded-full` del form di feedback diventavano quadrati (2px) nel
+// momento esatto in cui li si usava, e i campi di testo prendono `:focus-visible`
+// anche col mouse. Il contorno sì, la forma no.
+const globalsCss = readFileSync(path.join(__dirname, "..", "app", "globals.css"), "utf8");
+const focusRules = [...globalsCss.matchAll(/(:focus[^{]*)\{([^}]*)\}/g)].map((m) => ({
+  selector: m[1].trim(),
+  body: m[2],
+}));
+const focusReshapes = focusRules.filter((rule) => /border-radius/.test(rule.body));
+check(
+  `css: a focus ring never reshapes its control (${focusRules.length} focus rules)`,
+  focusRules.length > 0 && focusReshapes.length === 0,
+);
+if (focusReshapes.length) console.log("     " + focusReshapes.map((r) => r.selector).join(", "));
 
 // Collegamenti interni (blog): testo → note/altri articoli, sezioni, correlati
 // I link interni hanno la barra finale, come la canonical: con
