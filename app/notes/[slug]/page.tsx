@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
+import { CoverImage } from "@/components/CoverImage";
 import { RelatedList } from "@/components/RelatedList";
 import { InlineText } from "@/components/RichText";
 import SectionCopyLink from "@/components/SectionCopyLink";
@@ -174,6 +175,7 @@ export default async function Note({
       <MobileTableOfContents items={toc} />
 
       <article>
+        <CoverImage src={`/notes/${note.slug}/cover.png`} />
         <h1
           className="mb-5 scroll-mt-20 font-serif text-3xl font-medium leading-tight text-gray-1200 sm:text-4xl"
         >

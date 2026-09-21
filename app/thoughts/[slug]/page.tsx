@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Fragment } from "react";
 import { notFound } from "next/navigation";
 import CopyPostLink from "@/components/CopyPostLink";
+import { CoverImage } from "@/components/CoverImage";
 import { RelatedList } from "@/components/RelatedList";
 import { InlineText } from "@/components/RichText";
 import { ChevronRight } from "@/components/icons";
@@ -237,6 +238,7 @@ export default async function BlogPost({
       <MobileTableOfContents items={toc} />
 
       <article>
+        <CoverImage src={`/thoughts/${post.slug}/cover.png`} />
         <h1
           id={post.slug}
           className="mb-5 scroll-mt-20 font-serif text-3xl font-medium leading-tight text-gray-1200 sm:text-4xl"

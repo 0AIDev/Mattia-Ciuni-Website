@@ -1,0 +1,33 @@
+{
+  // Questo sito è un **export statico** (`output: "export"` in next.config.mjs):
+  // non esiste un server da eseguire, e il Worker qui sotto non ha codice — è
+  // solo il modo di pubblicare `out/` con le regole giuste.
+  //
+  // Il file serve anche a un secondo scopo, ed è quello che ha fatto cadere la
+  // build del 2026-09-20. Finché non c'è un file di configurazione, `wrangler
+  // deploy` prova a configurare il progetto da sé: riconosce Next.js e lancia
+  // `@opennextjs/cloudflare migrate`, che costruisce con l'adapter OpenNext.
+  // Quell'adapter pretende un build Next **standalone** (`.next/standalone/…`);
+  // su un export statico quella cartella non esiste, e la build muore con
+  // `ENOENT: .next/standalone/.next/server/pages-manifest.json`. Con un file di
+  // configurazione presente, la configurazione automatica non parte più.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "mattia-ciuni-website",
+  "compatibility_date": "2026-09-20",
+  "assets": {
+    "directory": "./out",
+    // Gli indirizzi canonici del sito finiscono con la barra (`/thoughts/<slug>/`:
+    // lo dicono `<link rel="canonical">`, il sitemap e ogni link interno). Con il
+    // comportamento di serie (`auto-trailing-slash`) ognuno di quelli sarebbe un
+    // 307 verso la versione senza barra, cioè una canonical che rimanda altrove —
+    // e due indirizzi per la stessa pagina. Così la barra è la forma giusta e la
+    // versione senza barra è lei a rimandare.
+    "html_handling": "force-trailing-slash",
+    // Un indirizzo che non esiste riceve `out/404.html` con lo stato 404 vero,
+    // non l'homepage (che è quello che farebbe `single-page-application`).
+    "not_found_handling": "404-page"
+  },
+  "observability": {
+    "enabled": true
+  }
+}

@@ -1,2 +1,14 @@
-# www -> apex redirect. Aggiorna il dominio quando lo scegli (devono matchare lib/site.ts).
-https://www.mattiaciuni.xyz/* https://mattiaciuni.xyz/:splat 301
+# Qui non c'e' nessuna regola, ed e' voluto.
+#
+# Il redirect www -> apex c'era, con un dominio dentro la regola, e i Worker con
+# static assets l'hanno scartato in silenzio: accettano solo percorsi relativi.
+# L'avviso e' finito nei log e basta.
+#
+#     Only relative URLs are allowed. Skipping absolute URL https://www.mattiaciuni.xyz/*.
+#
+# Il redirect sta quindi a livello di zona (Cloudflare -> Rules -> Redirect Rules:
+# www.mattiaciuni.xyz/* verso https://mattiaciuni.xyz/${1}, 301), che e' anche il
+# posto in cui Cloudflare lo documenta.
+#
+# Se un giorno servisse un'altra regola: percorso relativo, e occhio al limite di
+# 100 regole (oltre quella soglia vengono ignorate senza dire niente).

@@ -128,7 +128,7 @@ function New-HomeCard($outPath) {
 # in Instrument Serif + sottotitolo in Inter Light, subito sotto. Il blocco dei due
 # testi e' centrato verticalmente nella fascia sotto il logo, cosi' un titolo corto
 # e uno lungo occupano lo stesso posto.
-function New-ArticleCard($bgPath, $title, $subText, $outPath) {
+function New-ArticleCard($bgPath, $title, $subText, $outPath, $zoneTop = 230, $zoneBottom = 604) {
   $bgImg = [System.Drawing.Image]::FromFile($bgPath)
   $bmp = New-Object System.Drawing.Bitmap(1200, 630, [System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
   $g = [System.Drawing.Graphics]::FromImage($bmp)
@@ -153,7 +153,6 @@ function New-ArticleCard($bgPath, $title, $subText, $outPath) {
   $titleW = 960; $titleX = 120
   $subW   = 820; $subX   = 190
   $gap    = 26
-  $zoneTop = 230; $zoneBottom = 604
 
   $bigBox = New-Object System.Drawing.SizeF($titleW, 4000)
   $titleSize = $g.MeasureString($title, $titleFont, $bigBox, $fmt)
@@ -211,11 +210,21 @@ $articles += Get-Articles "lib/notes.ts" "Notes"
 if ($Only) { $articles = $articles | Where-Object { $_.Slug -eq $Only } }
 if (!$articles) { Write-Error "nessun articolo trovato con slug '$Only'"; exit 1 }
 
+# Due immagini per ogni articolo, dallo stesso disegno:
+#   og.png     la card social, col logo in alto (quella che dichiara og:image);
+#   cover.png  l'immagine che sta in pagina sopra il titolo: senza logo, quindi
+#              col testo centrato nel riquadro (non nella fascia sotto il logo).
+$bgCover = Join-Path $Root "og-sfondo-cover.png"
+if (!(Test-Path $bgCover)) {
+  Write-Error 'og-sfondo-cover.png assente: lancialo prima con  node scripts/gen-og-bg.mjs'
+  exit 1
+}
+
 foreach ($a in $articles) {
   $dir = if ($a.Kind -eq "Thoughts") { "thoughts" } else { "notes" }
   $subText = if ($Subtitle -eq "meta") { $a.Meta } else { $a.Description }
-  $out = Join-Path $OutRoot ($dir + "\" + $a.Slug + "\og.png")
-  New-ArticleCard $bgCard $a.Title $subText $out
+  New-ArticleCard $bgCard  $a.Title $subText (Join-Path $OutRoot ($dir + "\" + $a.Slug + "\og.png"))
+  New-ArticleCard $bgCover $a.Title $subText (Join-Path $OutRoot ($dir + "\" + $a.Slug + "\cover.png")) 60 570
 }
 
 # --- OG delle pagine indice (/thoughts/ e /notes/) -----

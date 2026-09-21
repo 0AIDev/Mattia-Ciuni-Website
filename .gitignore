@@ -12,3 +12,7 @@ public/thoughts/*.md
 public/notes/*.md
 # artefatti di build (tsc --noEmit / next dev)
 *.tsbuildinfo
+# wrangler (stato locale di `wrangler dev`, segreti locali, bundle dell'adapter)
+.wrangler/
+.dev.vars
+.open-next/

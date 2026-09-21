@@ -12,7 +12,7 @@ le provano, e la lista di cosa è generico e cosa è dato di questo sito.
 
 Differenza importante rispetto all'impianto da cui questo documento deriva: là
 c'era un'applicazione con **server** (middleware, API, MCP, database). Qui c'è un
-**sito statico** (`output: "export"` → `out/`, servito da Cloudflare Pages): non
+**sito statico** (`output: "export"` → `out/`, servito da un Worker Cloudflare con static assets: `wrangler.jsonc`): non
 esiste una richiesta da negoziare, quindi un pezzo di quel sistema qui *non può
 esistere* — e la regola (§4.2) è dichiararlo invece di fingere.
 
@@ -81,7 +81,8 @@ voce in lib/posts.ts ──►  rotta /thoughts/<slug>/
 | `out/feed.xml` | `app/feed.xml/route.ts` |
 | `out/manifest.webmanifest` | `app/manifest.ts` |
 | la `<head>` di ogni pagina | `generateMetadata` nella pagina, dai campi del registro |
-| `public/_headers`, `public/_redirects` | **a mano**: riguardano il dominio, non la pagina |
+| `public/_headers`, `public/_redirects` | **a mano**: li legge l'host (Worker con static assets), non la pagina |
+| `wrangler.jsonc` | **a mano**: cosa pubblicare (`out/`), quale forma hanno gli indirizzi e cosa risponde agli indirizzi che non esistono |
 | `public/og.png`, `public/thoughts/og.png`, `public/notes/og.png` | `scripts/og.ps1` | i tre master disegnati a mano in root (`og.png`, `thoughts-og.png`, `notesog.png`), solo ridotti a 1200×630 |
 | `public/thoughts/<slug>/og.png`, `public/notes/<slug>/og.png` | `scripts/og.ps1` | dal template: `og-sfondo.png` (da `sfondo.svg`) + Instrument Serif + Inter Light |
 | `public/logo.svg` | `scripts/gen-logo.mjs` (dal `Vector.svg` in root) |
@@ -197,13 +198,27 @@ senza un account non si vedono.
 
 ### 2.6 Gli indirizzi del sito di prima
 
-Non ci sono: il dominio è nuovo e non esiste un sito precedente da salvare. In
-`public/_redirects` c'è una sola regola, `www` → apex.
+Non ci sono: il dominio è nuovo e non esiste un sito precedente da salvare, quindi
+`public/_redirects` è vuoto (ci sta solo il commento che spiega perché).
 
-**La trappola, già nota per quando servirà:** Cloudflare Pages applica **solo le
-prime 100 regole** di `_redirects` e ignora le altre **in silenzio**. Se un giorno
-gli indirizzi da riscrivere saranno più di cento, quelle regole vanno in una
-funzione Pages (`functions/_middleware.js`), non nel file.
+L'unico redirect che serviva, `www` → apex, **non si può scrivere lì**, ed è una
+differenza che è costata una build: i Worker con static assets accettano solo
+percorsi relativi e **scartano in silenzio** le regole con un dominio dentro.
+Provato, non dedotto:
+
+```text
+▶︎ Only relative URLs are allowed. Skipping absolute URL https://www.mattiaciuni.xyz/*.
+```
+
+Sta quindi a livello di zona (Cloudflare → **Rules → Redirect Rules**), che è
+anche il posto in cui Cloudflare lo documenta.
+
+**La trappola, già nota per quando servirà:** Cloudflare applica **solo le prime
+100 regole** di `_redirects` e ignora le altre **in silenzio** (è così su Pages, ed
+è la ragione per cui un sito di prima con mille indirizzi finisce in un Worker con
+la tabella nel codice, non in quel file). Se un giorno gli indirizzi da riscrivere
+saranno più di cento, quelle regole vanno in uno script (`main` in
+`wrangler.jsonc`), non nel file.
 
 ---
 
@@ -367,13 +382,14 @@ Il sistema da cui questo documento deriva mette in `functions/_middleware.js` i
   un agente li cerca comunque;
 - non c'è niente da negoziare: la card ha il suo indirizzo, non serve chiederla
   con una testata `Accept:`;
-- gli unici file che Cloudflare configura **per noi** sono `public/_headers`
-  (tipo e cache dei file noti) e `public/_redirects` (una sola regola `www`).
+- gli unici file che Cloudflare legge **per noi** sono `public/_headers` (tipo e
+  cache dei file noti e header di sicurezza) e `wrangler.jsonc` (gli indirizzi:
+  barra finale, pagina 404).
 
 Il giorno in cui servisse qualcosa di dinamico (indexnow server-side, un
-`/mcp`, la negoziazione), il posto è `functions/_middleware.js` e il comando per
-provarlo è `npx wrangler pages dev out` — perché né `next dev` né un server
-statico fanno girare quel pezzo.
+`/mcp`, la negoziazione), il posto è uno script nel Worker (`main` in
+`wrangler.jsonc`, con `assets`) e il comando per provarlo è `npx wrangler dev` —
+perch\u00e9 n\u00e9 `next dev` n\u00e9 un server statico fanno girare quel pezzo.
 
 ---
 
@@ -386,7 +402,7 @@ statico fanno girare quel pezzo.
 | `npm run lint` | ESLint flat config (fra cui: link interni con `next/link`) |
 | `npx tsc --noEmit` | i tipi |
 | `npm run build` | `next build` + `scripts/gen-cards.mjs` (8 pagine, 8 card) |
-| `node scripts/verify.js` | **46 controlli** sul costruito: un solo `h1` per pagina, canonical, OG, JSON-LD parseabile (Person, WebSite, BlogPosting, Article, `BreadcrumbList` **anche per le note**), breadcrumb visibile, `robots.txt` (agenti AI per nome + `Content-Signal`), sitemap (indice + figlie, **date che seguono i contenuti**, indice datato come le figlie), `lastmod`, annuncio della card nella `<head>` **e** nel piè di pagina, link interni fra articoli e sezioni, TOC con gli anchor giusti, card `.md` (struttura e copia in `public/`), 404 `noindex`, peso dell'homepage (html+css < 56KB raw) |
+| `node scripts/verify.js` | **52 controlli** sul costruito: un solo `h1` per pagina, canonical, OG, JSON-LD parseabile (Person, WebSite, BlogPosting, Article, `BreadcrumbList` **anche per le note**), breadcrumb visibile, `robots.txt` (agenti AI per nome + `Content-Signal`), sitemap (indice + figlie, **date che seguono i contenuti**, indice datato come le figlie), `lastmod`, l'**OG card di ogni articolo e nota** (ricavata dai registri, con il conteggio confrontato con le pagine costruite, e nessuna card orfana) e l'**`og:image` che ogni pagina dichiara** (letto dall'`<head>` di tutte le pagine costruite, e deve esistere: quando cade stampa il file mancante), annuncio della card markdown nella `<head>` **e** nel piè di pagina, link interni fra articoli e sezioni, TOC con gli anchor giusti, card `.md` (struttura e copia in `public/`), 404 `noindex`, peso dell'homepage (html+css < 56KB raw) |
 
 `verify.js` è deliberatamente **una cosa sola**: non è una suite, è un file che si
 legge in un minuto e che aggiunge una riga per ogni regola che ci è già costata
@@ -410,12 +426,19 @@ uno script, e con un `--wait` diventano il passo che aspetta il deploy.
 
 ### 5.3 Provare il pezzo che esiste solo su Cloudflare
 
-`public/_headers` e `public/_redirects` **non girano** né in `next dev` né su un
-server statico: li applica l'host.
+`public/_headers`, `public/_redirects` e il comportamento degli indirizzi (la
+barra finale, la 404) **non girano** né in `next dev` né su un server statico: li
+applica l'host, secondo ciò che dice `wrangler.jsonc`.
 
 ```bash
-npm run build && npx wrangler pages dev out    # workerd vero, applica _headers e _redirects
+npm run build && npx wrangler dev    # workerd vero: _headers, _redirects, trailing slash, 404
 ```
+
+\u00c8 la prova che vale, perché è la stessa strada della produzione: `/` 200,
+`/thoughts/<slug>/` **200 senza redirect** (\u00e8 la forma canonica),
+`/thoughts/<slug>` 307 verso quella con la barra, un indirizzo inventato 404 con il
+corpo di `out/404.html`, e su `/og.png` il `Content-Type` e il `Cache-Control` di
+`_headers`.
 
 ---
 
@@ -467,8 +490,9 @@ sacro); i contenuti e i loro keyword; le immagini OG; il testo di `llms.txt`.
   girano in `postbuild` **e** in `predev`, e `verify.js` controlla sia la copia
   di produzione sia quella di sviluppo: non esiste il caso «l'ho aggiornata a
   mano solo questa volta».
-- **`_redirects` di Cloudflare ignora in silenzio oltre la centesima regola.**
-  Qui ce n'è una; se un giorno saranno più di cento, vanno in `functions/`.
+- **`_redirects` di Cloudflare ignora in silenzio oltre la centesima regola**, e
+  sui Worker ignora anche le regole con un dominio dentro. Qui il file è vuoto; se
+  un giorno serviranno, vanno in uno script del Worker.
 
 ---
 
@@ -482,7 +506,7 @@ Misurato adesso, non ricordato:
 sitemap: un indice + tre figlie · 8 URL in totale · lastmod che segue i contenuti
 robots.txt: 33 blocchi · 32 agenti AI per nome · Content-Signal dichiarato
 JSON-LD: Person + WebSite · BlogPosting + BreadcrumbList · Article + BreadcrumbList · Blog
-verify.js: 46 controlli, tutti verdi · homepage html+css 54.6KB raw · JS 749.6KB raw
+verify.js: 52 controlli, tutti verdi · homepage html+css 54.6KB raw · JS 749.6KB raw
 ```
 
 **Fuori dal repository, e quindi non finito:**
@@ -513,9 +537,9 @@ app/robots.txt/route.ts        permessi dichiarati: agenti AI per nome + Content
 app/llms.txt/route.ts          il file che un motore generativo legge per primo
 app/feed.xml/route.ts          RSS
 scripts/gen-cards.mjs          le card markdown, dal costruito
-scripts/verify.js              i 46 controlli locali
+scripts/verify.js              i 52 controlli locali
 public/_headers                tipo e cache dei file noti, header di sicurezza
-public/_redirects              una regola: www → apex
+wrangler.jsonc                 cosa pubblicare e come rispondere: out/, barra finale, 404
 docs/SEO.md                    il contratto di questo sito, file per file
 docs/AUTHORING.md              come si scrive un articolo, con le regole editoriali
 ```

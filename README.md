@@ -1,6 +1,6 @@
 # Mattia Ciuni — personal website
 
-Minimal developer site (stile jakub.kr), tema chiaro fisso `#FCFCFC`, colonna 692px, font Inter (variabile) + Source Serif 4 italic self-hosted via `next/font`. **Next.js 16 App Router (Turbopack) + React 19** con **static export** → deploy nativo su **Cloudflare Pages**. Librerie aggiuntive: `motion` (runtime delle icone animate) + `@animateicons/react` + Tailwind in build.
+Minimal developer site (stile jakub.kr), tema chiaro fisso `#FCFCFC`, colonna 692px, font Inter (variabile) + Source Serif 4 italic self-hosted via `next/font`. **Next.js 16 App Router (Turbopack) + React 19** con **static export** → deploy nativo su **Cloudflare** (Worker con static assets: `wrangler.jsonc`). Librerie aggiuntive: `motion` (runtime delle icone animate) + `@animateicons/react` + Tailwind in build.
 
 ## Documentazione
 
@@ -27,12 +27,13 @@ Tre file, e sono il contratto del sito — non si scrive un articolo senza il se
 - `lib/posts.ts` — **unico file dove scrivere articoli** (niente MDX, niente dipendenze). Campo `category` mostrato come tag; `*testo*` renderizzato come `em` in Source Serif 4
 - `lib/notes.ts` — **unico file dove scrivere le note** (niente MDX): `slug`, `title`, `description`, `date`, `keywords`, `content` (paragrafi + h2 con `*em*`)
 - `lib/site.ts` — **unico file per dominio + social** (cambia qui quando hai dominio/handle reali; include `social.crunchbase`)
-- `public/og.png`, `public/thoughts/og.png`, `public/notes/og.png`, `public/thoughts/<slug>/og.png` e `public/notes/<slug>/og.png`: OG 1200×630 statiche (tema chiaro), generate con `scripts/og.ps1` (niente runtime, niente dipendenze; `next/og` evitato di proposito: crasha il build su Windows e richiede Node runtime, incompatibile con static export puro). Homepage, indice Thoughts e indice Notes partono da **master disegnati a mano in root, 1920×1008** — `og.png`, `thoughts-og.png`, `notesog.png` (come `Vector.svg` e `mattia.png`): lo script li porta a 1200×630 con `HighQualityBicubic` e li ricodifica, senza disegnare niente (stesso rapporto d'aspetto, quindi nessun ritaglio). Le OG di **post e note** le compone lo script dal template: `og-sfondo.png` (il tuo `sfondo.svg` rasterizzato con `node scripts/gen-og-bg.mjs`) + **titolo in Instrument Serif Regular** e **sottotitolo in Inter Light**, centrati sotto il logo, con i TTF in `scripts/fonts/` caricati da disco (nessuna installazione). Il sottotitolo è la riga di contesto (`Thoughts · 20 September 2026`, o `Notes · 12 September 2026`); con `-Subtitle description` al suo posto va la description dell'articolo. Titoli, slug e date si leggono da `lib/posts.ts` e `lib/notes.ts`: zero duplicazioni. Utili: `-Only <slug>` (un solo articolo), `-Preview` (scrive in `out/_tmp/og` per approvarlo prima), `-HomeOnly` (solo la homepage)
+- `public/og.png`, `public/thoughts/og.png`, `public/notes/og.png`, `public/thoughts/<slug>/og.png` e `public/notes/<slug>/og.png`: OG 1200×630 statiche (tema chiaro), generate con `scripts/og.ps1` (niente runtime, niente dipendenze; `next/og` evitato di proposito: crasha il build su Windows e richiede Node runtime, incompatibile con static export puro). Homepage, indice Thoughts e indice Notes partono da **master disegnati a mano in root, 1920×1008** — `og.png`, `thoughts-og.png`, `notesog.png` (come `Vector.svg` e `mattia.png`): lo script li porta a 1200×630 con `HighQualityBicubic` e li ricodifica, senza disegnare niente (stesso rapporto d'aspetto, quindi nessun ritaglio). Le OG di **post e note** le compone lo script dal template: `og-sfondo.png` (il tuo `sfondo.svg` rasterizzato con `node scripts/gen-og-bg.mjs`) + **titolo in Instrument Serif Regular** e **sottotitolo in Inter Light**, centrati sotto il logo, con i TTF in `scripts/fonts/` caricati da disco (nessuna installazione). Lo stesso giro scrive anche **`cover.png`** accanto a ogni `og.png`: la stessa card **senza il logo**, ed è quella che la pagina mostra **sopra il `h1`** (`components/CoverImage.tsx` — colonna intera, riquadro con bordo e ombra leggera), perché nella `<head>` va la card con il logo e dentro il sito quella senza. Il sottotitolo è la riga di contesto (`Thoughts · 20 September 2026`, o `Notes · 12 September 2026`); con `-Subtitle description` al suo posto va la description dell'articolo. Titoli, slug e date si leggono da `lib/posts.ts` e `lib/notes.ts`: zero duplicazioni. Utili: `-Only <slug>` (un solo articolo), `-Preview` (scrive in `out/_tmp/og` per approvarlo prima), `-HomeOnly` (solo la homepage)
 - `public/mattia.png`, avatar della home (128×128 **B&W** ottimizzato ~11KB, da `mattia.png` 1254×1254 in root): grayscale + resize HighQualityBicubic via System.Drawing (comando PowerShell una tantum)
 - **Favicon**: `app/icon.png` (copia del logo raster `favicon.png` in root, 1572×1572). Rimuove `app/icon.svg`. Origin dell'icona nel manifest sta su `/icon.png`.
 - **Logo footer**: `public/logo.svg` = variante pulita di `Vector.svg` (in root): viewBox ritagliato sul tratto (il file originale ha canvas 1298×670 con il disegno che sborda e un filtro ombra sfocata) e color `#686868` (gray-1000). Generabile con `node scripts/gen-logo.mjs`.
 - `app/sitemap.xml/route.ts` + `app/sitemap-home.xml/route.ts` + `app/sitemap-thoughts.xml/route.ts` + `app/sitemap-notes.xml/route.ts`, `app/robots.txt/route.ts`, `app/llms.txt/route.ts` — SEO: sitemap **indice** `/sitemap.xml` che divide in sotto-sitemap (home / thoughts / notes), tutte formattate (indentate, `lastmod` YYYY-MM-DD, changefreq, priority) e generate in automatico da posts+notes via helper `lib/sitemap.ts`; robots.txt che permette tutto (`Allow: /`) + riferimento all'indice; llms.txt standard per LLM (H1 + summary blockquote + sezioni Thoughts/Notes/Contact generati da dati reali). Poi: `app/manifest.ts` (theme `#FCFCFC`), `app/feed.xml/route.ts`, `app/not-found.tsx`
-- `public/_headers`, `public/_redirects` (config Cloudflare Pages)
+- `wrangler.jsonc` — **il file che pubblica il sito**: Worker con static assets, `directory: "./out"`, `html_handling: "force-trailing-slash"` (gli indirizzi canonici finiscono con `/`), `not_found_handling: "404-page"` (`out/404.html`). Senza questo file `wrangler deploy` si configura da sé e lancia l'adapter OpenNext, che su un export statico fallisce: vedi §Deploy.
+- `public/_headers` (tipo e cache dei file noti, header di sicurezza) e `public/_redirects` — letti dal Worker static-assets. Il redirect `www` → apex **non** sta qui: i Worker accettano solo percorsi relativi e scartano le regole con un dominio dentro (vedi §Dominio custom).
 
 ## Sviluppo
 
@@ -41,23 +42,25 @@ npm install
 npm run dev     # http://localhost:3000
 npm run build   # static export in ./out
 npm run lint    # ESLint flat config (eslint.config.mjs)
-node scripts/verify.js  # 46 controlli SEO/GEO (meta, JSON-LD, canonical, sitemap, robots, card For AI, link interni, TOC, peso)
+node scripts/verify.js  # 52 controlli SEO/GEO (meta, JSON-LD, canonical, sitemap, robots, card For AI, OG card per ogni articolo, ogni `og:image` dichiarata che esiste davvero, link interni, TOC, peso)
 ```
 
-## Deploy su Cloudflare Pages
+## Deploy su Cloudflare (Worker con static assets)
+
+Il sito è un export statico, quindi il Worker che lo pubblica **non ha codice**: serve `out/`. A dirlo è **`wrangler.jsonc`** — cartella degli asset, trailing slash, pagina 404 — ed è il file da non togliere. Senza, `wrangler deploy` prova a configurarsi da sé, riconosce Next.js e costruisce con l'adapter **OpenNext**, che pretende un build Next *standalone* (`.next/standalone/…`): su un export statico quella cartella non esiste e la build cade con `ENOENT … .next/server/pages-manifest.json`. Con un file di configurazione presente, la configurazione automatica non parte.
 
 1. Pusha il repo su GitHub.
-2. Cloudflare Dashboard → **Workers & Pages → Create → Pages → Connect to Git**.
-3. Build settings: **Framework preset: Next.js (Static HTML Export)**, Build command `npm run build`, Output directory `out`. (Il `output: "export"` in `next.config.mjs` fa già tutto.)
-4. Deploy → ottieni `*.pages.dev`. Verifica: `/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/feed.xml`, `/og.png`, `/thoughts/`, `/index.md` (card For AI).
-5. **Dominio di produzione**: in Pages → **Settings → Environment variables** imposta `NEXT_PUBLIC_SITE_URL` (es. `https://mattiaciuni.xyz`) con un nuovo deploy. Se non la imposti, il build usa il fallback in `lib/site.ts`. `verify.js` e le OG rispettano la stessa variabile.
+2. Cloudflare Dashboard → **Workers & Pages → Create → Workers → Connect to Git** (nome del Worker: `mattia-ciuni-website`, come `name` in `wrangler.jsonc`).
+3. Build settings: Build command `npm run build`, Deploy command `npx wrangler deploy`. **Nient'altro da impostare**: la cartella pubblicata e il comportamento degli indirizzi li dice `wrangler.jsonc`.
+4. Deploy → `mattia-ciuni-website.<account>.workers.dev`. Verifica: `/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/feed.xml`, `/og.png`, `/thoughts/`, `/index.md` (card For AI).
+5. **Dominio di produzione**: nel Worker → **Settings → Variables and Secrets** imposta `NEXT_PUBLIC_SITE_URL` (es. `https://mattiaciuni.xyz`) e rilancia un deploy. Se non la imposti, il build usa il fallback in `lib/site.ts`. `verify.js` e le OG rispettano la stessa variabile.
 
 ### Dominio custom
 
-1. Pages → progetto → **Custom domains → Set up a custom domain** → inserisci `mattiaciuni.xyz` (o il dominio finale).
-2. Se il DNS è su Cloudflare: record creato in automatico. Se è su registrar esterno: aggiungi il CNAME indicato da Cloudflare, oppure sposta i nameserver su Cloudflare (consigliato).
-3. Aggiorna `NEXT_PUBLIC_SITE_URL` nelle env di Pages (oppure `lib/site.ts` → `url`), `public/_redirects` (riga www→apex), e rigenera le OG col dominio giusto: `powershell -File scripts/og.ps1 -Domain "tuodominio.com"`, rebuild.
-4. Redirect www→apex: la riga in `public/_redirects` è già attiva. Alternativa: Cloudflare **Rules → Redirect Rules** `www.* → apex 301`.
+1. Worker → **Settings → Domains & Routes → Add → Custom domain** → inserisci `mattiaciuni.xyz`.
+2. Se il DNS è su Cloudflare: record creato in automatico. Se è su registrar esterno: aggiungi il record indicato da Cloudflare, oppure sposta i nameserver su Cloudflare (consigliato).
+3. Aggiorna `NEXT_PUBLIC_SITE_URL` (oppure `lib/site.ts` → `url`) e rigenera le OG col dominio giusto: `powershell -File scripts/og.ps1 -Domain "tuodominio.com"`, rebuild.
+4. **Redirect `www` → apex**, a livello di zona: Cloudflare → **Rules → Redirect Rules** → `www.mattiaciuni.xyz/*` verso `https://mattiaciuni.xyz/${1}` (301). Non si può scrivere in `_redirects`: i Worker con static assets accettano **solo percorsi relativi** e scartano le regole con un dominio dentro, con un avviso che finisce nei log e nient'altro (`Only relative URLs are allowed. Skipping absolute URL …`).
 5. HTTPS: automatico (Universal SSL). HSTS opzionale da SSL/TLS → Edge Certificates.
 
 ### Search Console (10 min, fa indicizzare "Mattia Ciuni" in giorni)

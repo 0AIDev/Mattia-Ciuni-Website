@@ -61,9 +61,11 @@ sitemap è la riga che fa smettere Chrome di disegnarlo come albero dei tag).
 | `out/feed.xml` | `app/feed.xml/route.ts` | RSS |
 | `out/manifest.webmanifest` | `app/manifest.ts` | |
 | la `<head>` di ogni pagina | `generateMetadata` nella pagina, dai campi del registro | titolo, description, canonical, OG, JSON-LD, annuncio della card |
-| `public/_headers`, `public/_redirects` | **a mano** | le regole di Cloudflare Pages (header di sicurezza, riscritture): riguardano il dominio, non la pagina, e sono l'unica cosa qui che nessuno rigenera |
+| `public/_headers`, `public/_redirects` | **a mano** | le regole che legge l'host (header di sicurezza, redirect, riscritture): riguardano il dominio, non la pagina, e sono l'unica cosa qui che nessuno rigenera. Sui Worker con static assets il redirect `www` → apex non può stare qui (solo percorsi relativi) e vive in una Redirect Rule di zona |
+| `wrangler.jsonc` | **a mano** | la pubblicazione: `out/` come cartella degli asset, `force-trailing-slash` (la forma canonica ha la barra), `404-page` (`out/404.html`). Senza questo file `wrangler deploy` si autoconfigura con l'adapter OpenNext e la build cade |
 | `public/og.png`, `public/thoughts/og.png`, `public/notes/og.png` | `scripts/og.ps1` | i master disegnati in root (`og.png`, `thoughts-og.png`, `notesog.png`) ridotti a 1200×630 |
 | `public/thoughts/<slug>/og.png`, `public/notes/<slug>/og.png` | `scripts/og.ps1` | articoli e note dal template: `og-sfondo.png` + Instrument Serif + Inter Light (font in `scripts/fonts/`) |
+| `public/thoughts/<slug>/cover.png`, `public/notes/<slug>/cover.png` | `scripts/og.ps1` (stesso giro) | la stessa card **senza il logo**, ed è quella che la pagina mostra sopra il `h1` (`components/CoverImage.tsx`): dentro il sito, non nella `<head>` |
 | `public/logo.svg` | `scripts/gen-logo.mjs` | dal `Vector.svg` in root |
 | le card in `public/` (sviluppo) | `scripts/gen-cards.mjs` (`predev`) | la stessa card che finisce in `out/`, servita da `next dev` |
 
@@ -95,7 +97,7 @@ Tutto quello che si può controllare senza rete, in un comando:
 npm run lint          # ESLint
 npx tsc --noEmit      # i tipi
 npm run build         # next build + le card
-node scripts/verify.js   # 46 controlli sul costruito
+node scripts/verify.js   # 52 controlli sul costruito
 ```
 
 `verify.js` è deliberatamente **una cosa sola**: un file che si legge in un
@@ -107,8 +109,11 @@ coerente con il dato, `robots.txt` (agenti AI per nome, `Content-Signal`, riga
 `Sitemap:`), sitemap (indice che nomina le figlie, nessun URL fuori posto, **date
 che seguono i contenuti**, indice datato come le figlie), i **due annunci** della
 card (piè di pagina e `<head>`), i link interni fra articoli e verso le sezioni,
-la TOC con gli anchor che esistono davvero, le card `.md` (struttura e copia per lo
-sviluppo), il 404 `noindex`, e il peso della homepage (HTML+CSS **raw** sotto i
+la TOC con gli anchor che esistono davvero, l'**OG card di ogni articolo e nota**
+(l'elenco si ricava dai registri e il conteggio si confronta con le pagine che il
+build ha prodotto, così il controllo non può passare a vuoto; e nessuna card può
+restare orfana di un articolo che non esiste più), le card `.md` (struttura e
+copia per lo sviluppo), il 404 `noindex`, e il peso della homepage (HTML+CSS **raw** sotto i
 56KB: un tetto, non un desiderio).
 
 **Niente suite di test unitari, per ora, e vale la pena dirlo**: non c'è logica
@@ -130,8 +135,9 @@ curl -s  https://<dominio>/index.md | head -1       # "# Mattia …", non "<!doc
 Con un `--site=` diventano uno script; con un `--wait` diventano il passo che
 aspetta il deploy, che è **l'unico momento** in cui la domanda «il sito è a
 posto?» ha una risposta vera. E il pezzo che esiste solo su Cloudflare
-(`_headers`, `_redirects`) si prova con `npx wrangler pages dev out`, perché né
-`next dev` né un server statico li fanno girare.
+(`_headers`, `_redirects`, la barra finale, la 404) si prova con `npx wrangler dev`,
+perché né `next dev` né un server statico li fanno girare: workerd legge
+`wrangler.jsonc` ed è la stessa strada della produzione.
 
 ## 4 · I crawler AI, e perché sono dichiarati per nome
 

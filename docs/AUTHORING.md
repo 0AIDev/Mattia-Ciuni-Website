@@ -140,7 +140,7 @@ Le regole sono poche perché il registro parla da sé:
 
 ```bash
 npm run build            # next build + le card markdown
-node scripts/verify.js   # 46 controlli sul costruito
+node scripts/verify.js   # 52 controlli sul costruito
 npm run lint
 ```
 
@@ -159,17 +159,33 @@ Se una pagina ha un peso che sale o un controllo che cade, la risposta non è
 allentare il controllo: è capire cosa è cambiato. `verify.js` cresce di una riga
 solo per una regola che **ha già morso** almeno una volta.
 
-**E la card social.** Ogni articolo e ogni nota ha la sua immagine 1200×630, e la
+**E la card social.** Ogni articolo e ogni nota ha **due** immagini 1200×630, e le
 compone `scripts/og.ps1` dalla voce che hai appena scritto: sfondo, titolo in
 Instrument Serif, riga di contesto (`Thoughts · 20 September 2026`) in Inter
-Light, letti da `lib/posts.ts` / `lib/notes.ts`. Per rilanciarla solo su questo
-articolo, e vedere il risultato prima di scriverlo in `public/`:
+Light, letti da `lib/posts.ts` / `lib/notes.ts`. Sono lo stesso disegno in due
+varianti, e la differenza è dove finiscono:
+
+| File | Dove si vede |
+| --- | --- |
+| `og.png` | **fuori dal sito**: la card che un motore di ricerca, un social o un agente usano quando citano la pagina. Logo in alto, testo centrato nella fascia sotto. |
+| `cover.png` | **dentro il sito**: l'immagine che la pagina mostra sopra il `h1` (`components/CoverImage.tsx`, dentro la colonna da 692px, riquadro con bordo e ombra leggera). Senza logo — lì sarebbe di troppo due centimetri sopra il titolo scritto — e col testo centrato nel riquadro intero. |
+
+Per rilanciarle solo su questo articolo, e vedere il risultato prima di scriverlo
+in `public/`:
 
 ```bash
 node scripts/gen-og-bg.mjs                                        # solo se cambia sfondo.svg
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/og.ps1 -Only <slug> -Preview
 powershell -NoProfile -ExecutionPolicy Bypass -File scripts/og.ps1 -Only <slug>
 ```
+
+E non si può dimenticare: `verify.js` ricava dai registri l'elenco delle card
+attese, lo confronta con le pagine che il build ha prodotto e cade se una manca —
+articolo pubblicato senza immagine = controllo rosso, non una condivisione muta.
+Lo stesso controllo vale al contrario, sulla pagina: qualunque `og:image`
+dichiarata in `<head>` deve puntare a un file che nell'export c'è davvero
+(`og: every page's declared og:image exists`, e quando cade **stampa il nome del
+file mancante**).
 
 ## 7 · La lista, in breve
 

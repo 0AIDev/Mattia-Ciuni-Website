@@ -7,6 +7,7 @@ function check(name, cond) {
   if (!cond) fail++;
 }
 function read(p) { return fs.readFileSync(path.join(out, p), "utf8"); }
+const { readFileSync, readdirSync } = fs;
 function ldJson(html) {
   const blocks = [...html.matchAll(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/g)];
   return blocks.map((m) => JSON.parse(m[1]));
@@ -114,12 +115,47 @@ check("page: For AI link on post", post.includes("For AI:") && post.includes('hr
 // OG images: ogni pagina che ne dichiara una deve averla davvero, nel suo formato
 // 1200x630 (le card le scrive scripts/og.ps1: qui si controlla solo che esistano).
 check(
-  "og: card files exist (home, indexes, post, note)",
+  "og: card files exist (home, indexes)",
   fs.existsSync(path.join(out, "og.png")) &&
     fs.existsSync(path.join(out, "thoughts", "og.png")) &&
-    fs.existsSync(path.join(out, "notes", "og.png")) &&
-    fs.existsSync(path.join(out, "thoughts", "money-layer-for-ai-agents", "og.png")) &&
-    fs.existsSync(path.join(out, "notes", "on-boring-systems", "og.png"))
+    fs.existsSync(path.join(out, "notes", "og.png"))
+);
+
+// Le card degli articoli non si scrivono a mano (le compone scripts/og.ps1 dai
+// registri), quindi un articolo pubblicato senza immagine non lo vedrebbe
+// nessuno: l'elenco atteso si ricava da lib/posts.ts e lib/notes.ts, e il
+// conteggio si confronta con le pagine che il build ha prodotto davvero, così il
+// controllo non può passare a vuoto se il registro cambia forma.
+const slugsIn = (file) =>
+  [...readFileSync(path.join(__dirname, "..", file), "utf8").matchAll(/slug:\s*"([^"]+)"/g)].map(
+    (m) => m[1]
+  );
+const cardPath = (dir, slug) => path.join(out, dir, slug, "og.png");
+// Le pagine costruite: nell'export sono file (`thoughts/<slug>.html`), mentre le
+// card stanno in cartelle (`thoughts/<slug>/og.png`).
+const pagesIn = (dir) =>
+  readdirSync(path.join(out, dir))
+    .filter((n) => n.endsWith(".html"))
+    .map((n) => n.replace(/\.html$/, ""));
+const cardsIn = (dir) =>
+  readdirSync(path.join(out, dir), { withFileTypes: true })
+    .filter((e) => e.isDirectory() && fs.existsSync(path.join(out, dir, e.name, "og.png")))
+    .map((e) => e.name);
+const postSlugs = slugsIn("lib/posts.ts");
+const noteSlugs = slugsIn("lib/notes.ts");
+check(
+  "og: every article and note has its card",
+  postSlugs.length > 0 &&
+    noteSlugs.length > 0 &&
+    postSlugs.length === pagesIn("thoughts").length &&
+    noteSlugs.length === pagesIn("notes").length &&
+    postSlugs.every((slug) => fs.existsSync(cardPath("thoughts", slug))) &&
+    noteSlugs.every((slug) => fs.existsSync(cardPath("notes", slug)))
+);
+check(
+  "og: no card without an article",
+  cardsIn("thoughts").every((slug) => postSlugs.includes(slug)) &&
+    cardsIn("notes").every((slug) => noteSlugs.includes(slug))
 );
 check(
   "og: each section declares its own card",
@@ -130,6 +166,42 @@ check(
   "note: own og image declared",
   note.includes(`og:image" content="${PROD}/notes/on-boring-systems/og.png"`)
 );
+
+// Il controllo che chiude il cerchio: **ogni** pagina costruita dichiara un
+// `og:image`, e quel file esiste davvero nell'export. I controlli qui sopra
+// guardano le card che conoscono (articoli e sezioni); questo guarda ciò che le
+// pagine dicono, quindi copre anche la home e le pagine che verranno. Un
+// `og:image` che risponde 404 non si vede mai navigando il sito: si vede quando
+// la pagina viene incollata da qualche parte, cioè quando è tardi.
+const htmlPages = (dir, acc = []) => {
+  for (const e of readdirSync(dir, { withFileTypes: true })) {
+    const full = path.join(dir, e.name);
+    if (e.isDirectory()) {
+      if (!e.name.startsWith("_") && !e.name.startsWith(".")) htmlPages(full, acc);
+    } else if (e.name.endsWith(".html")) acc.push(full);
+  }
+  return acc;
+};
+const pages = htmlPages(out);
+const declared = pages.map((file) => {
+  const html = readFileSync(file, "utf8");
+  // Tutte le occorrenze: `og:image` ne ammette più di una, e ognuna deve esistere.
+  const urls = [...html.matchAll(/property="og:image" content="([^"]+)"/g)].map((m) => m[1]);
+  return { file: path.relative(out, file), urls };
+});
+const relative = (url) => (url.startsWith(PROD) ? url.slice(PROD.length) : null);
+const broken = declared.flatMap((p) =>
+  p.urls.length === 0 || p.urls.some((u) => !u.startsWith(PROD))
+    ? [p.file]
+    : p.urls
+        .filter((u) => !fs.existsSync(path.join(out, relative(u).replace(/^\//, ""))))
+        .map((u) => `${p.file} -> ${u}`)
+);
+check(
+  `og: every page's declared og:image exists (${declared.length} pages, ${declared.reduce((n, p) => n + p.urls.length, 0)} declarations)`,
+  declared.length > 0 && broken.length === 0
+);
+if (broken.length) console.log("     manca: " + broken.join(", "));
 
 // Favicon e logo nuovo
 check("index: favicon icon.png", index.includes('rel="icon"') && index.includes("icon.png") && !index.includes("icon.svg"));
