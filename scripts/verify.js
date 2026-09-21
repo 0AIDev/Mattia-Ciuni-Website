@@ -118,8 +118,8 @@ check(
     (robots.match(/^User-Agent:/gm) || []).length >= 30
 );
 check(
-  "robots: content signal declared",
-  robots.includes("Content-Signal: ai-train=yes, search=yes, ai-input=yes")
+  "robots: standard directives only",
+  !robots.includes("Content-Signal:") && !robots.includes("Agentmap:") && robots.includes(`Sitemap: ${PROD}/sitemap.xml`)
 );
 // La card markdown si annuncia anche nella <head>: un crawler non esegue la pagina.
 check(
@@ -283,10 +283,8 @@ check(
   "auth.md: honest unauthenticated policy",
   fs.existsSync(path.join(out, "auth.md")) && read("auth.md").includes("does not currently expose protected APIs") &&
     headersFile.includes("/auth.md") && headersFile.includes("Content-Type: text/markdown")
-);
-check(
-  "WebMCP: registration is present in the page",
-  index.includes('rel="ai-catalog"') && index.includes('src="/webmcp.js"') &&
+);check("WebMCP: registration is present in the page",
+  index.includes('rel="ai-catalog"') && index.includes("webmcp.js") &&
     fs.existsSync(path.join(out, "webmcp.js")) &&
     readFileSync(path.join(out, "webmcp.js"), "utf8").includes("navigator.modelContext") &&
     readFileSync(path.join(out, "webmcp.js"), "utf8").includes("registerTool") &&

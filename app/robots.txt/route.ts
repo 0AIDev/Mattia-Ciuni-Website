@@ -48,15 +48,13 @@ export async function GET() {
     `# (es. ${base}/thoughts/money-layer-for-ai-agents.md), vedi anche ${base}/llms.txt`,
     "",
     "User-Agent: *",
-    "# Politica dichiarata in modo esplicito: e' l'unico posto in cui robots.txt",
-    "# puo' contraddire se stesso, quindi i tre valori stanno qui per intero.",
-    "Content-Signal: ai-train=yes, search=yes, ai-input=yes",
+    "# Standard robots.txt directives only: discovery metadata is linked separately",
+    "# through the site headers and /.well-known/ai-catalog.json.",
     "Allow: /",
     "",
     ...AI_AGENTS.flatMap((agent) => [`User-Agent: ${agent}`, "Allow: /", ""]),
     `Sitemap: ${base}/sitemap.xml`,
     `Sitemap: ${base}/news-sitemap.xml`,
-    `Agentmap: ${base}/.well-known/ai-catalog.json`,
     "",
   ].join("\n");
 

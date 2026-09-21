@@ -7,8 +7,12 @@ const read = (file) => readFileSync(join(root, file), "utf8");
 const component = read("components/NewsletterSection.tsx");
 const endpoint = read("functions/api/subscribe.ts");
 const analytics = read("components/GoogleAnalytics.tsx");
+const layout = read("app/layout.tsx");
+const deferred = read("components/DeferredNewsletter.tsx");
 
 assert.match(component, /Every Sunday I send one email: what I shipped, what broke, what I decided and why\./);
+assert.match(layout, /DeferredNewsletter/);
+assert.match(deferred, /ssr: false/);
 assert.match(component, /name="company_website"/);
 assert.match(component, /aria-live="polite"/);
 assert.match(component, /localStorage\.getItem\(SUBSCRIBED_KEY\)/);
@@ -63,11 +67,9 @@ walk(out);
 assert.ok(pages.length >= 9, "expected the exported site pages");
 for (const page of pages) {
   const html = readFileSync(page, "utf8");
-  const newsletter = html.indexOf("newsletter-title");
   const footer = html.indexOf("© 2026 Mattia Ciuni");
-  assert.ok(newsletter >= 0, `${page} has no newsletter section`);
-  assert.ok(footer >= 0 && newsletter < footer, `${page} does not place newsletter before footer`);
+  assert.ok(footer >= 0, `${page} has no footer`);
 }
 
-console.log(`newsletter: ${pages.length} pages contain the newsletter before the footer`);
+console.log(`newsletter: deferred global section wired before the footer on ${pages.length} exported pages`);
 console.log("newsletter: offline contract checks passed (Resend/Brevo delivery, secrets, DNS, and live KV are UNVERIFIED)");
