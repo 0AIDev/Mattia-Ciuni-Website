@@ -4,6 +4,7 @@ import Link from "next/link";
 import CopyEmail from "@/components/CopyEmail";
 import MilanClock from "@/components/MilanClock";
 import NowSection from "@/components/NowSection";
+import { NotesCarousel } from "@/components/NotesCarousel";
 import { ChevronRight } from "@/components/icons";
 import { GithubIcon } from "@/components/ui/github";
 import { LinkedinIcon } from "@/components/ui/linkedin";
@@ -238,19 +239,7 @@ export default function Home() {
         <p className="mb-6 max-w-[600px] text-text-paragraph">
           Longer, slower pieces on the systems, people and ideas behind the work.
         </p>
-        <ul className="m-0 list-none divide-y divide-gray-300 p-0">
-          {notes.slice(0, 3).map((note) => (
-            <li key={note.slug}>
-              <Link href={`/notes/${note.slug}/`} className="group flex items-baseline justify-between gap-4 py-3.5">
-                <span className="min-w-0 font-serif font-medium transition-colors group-hover:text-gray-1000">{note.title}</span>
-                <span className="flex shrink-0 items-center gap-2 text-sm text-gray-1000">
-                  {note.date}
-                  <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-                </span>
-              </Link>
-            </li>
-          ))}
-        </ul>
+        <NotesCarousel notes={notes.slice(0, 3)} />
       </section>
 
       <section aria-labelledby="field-notes" className="mb-16 sm:mb-24">

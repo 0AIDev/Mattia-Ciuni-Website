@@ -5,6 +5,7 @@ export type FounderVideo = {
   date: string;
   videoSrc: string;
   poster?: string;
+  duration?: string;
 };
 
 // Add published videos here when the first cut is ready.
