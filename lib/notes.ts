@@ -120,6 +120,130 @@ const raw: Note[] = [
       },
     ],
   },
+  {
+    slug: "what-interviews-teach-me-about-people-and-my-own-company",
+    title: "What interviews teach me about people (and my own company)",
+    description:
+      "What written technical work reveals that a conversation can hide, and why every interview has become an audit of my own company.",
+    date: "2026-09-21",
+    keywords: [
+      "technical interviews",
+      "engineering hiring",
+      "written assessment",
+      "artifact-based hiring",
+      "Payle",
+    ],
+    content: [
+      {
+        type: "p",
+        text: "I've been running interviews differently this month. Not the usual \"tell me about yourself and your five-year plan.\" Every candidate gets a real technical task first, then a structured questionnaire with questions born from my own audit: how they'd fix an [idempotency race](/notes/idempotent-payments-for-ai-agents/), how they'd handle two concurrent payments against the same budget, what they validate at boot.",
+      },
+      {
+        type: "p",
+        text: "The questionnaire is written, not verbal. And that choice taught me more than I expected.",
+      },
+      {
+        type: "p",
+        text: "Same person, two formats: in a call, one candidate gave me shallow answers. In writing, with time to think, the same candidate handed me a floating-point analysis of 10.10 × 100, caught a race condition I had hidden in my own question, and mapped every possible shape of a double-charge incident before touching anything. The call undersold him. The text proved him.",
+      },
+      {
+        type: "p",
+        text: "That's now a principle in how I hire: measure people in the format where they think best. Voice-strong and write-strong are both valid engineers, but you'll only see it if you ask both ways.",
+      },
+      {
+        type: "p",
+        text: "The other thing interviews give me, which nobody talks about: my own questions get sharper with every candidate. Each answer shows me a gap in how I explain our architecture, or a new edge case I hadn't considered. I've redesigned parts of our onboarding and our docs from things candidates asked. The interview is not a filter. It's a mirror.",
+      },
+      {
+        type: "p",
+        text: "So yes, I'll keep interviewing. For the team, for the practice, for the mirror. If you're an engineer who does your best thinking in writing, my inbox is open. The first step is always the same: ship something real, then we talk.",
+      },
+    ],
+  },
+  {
+    slug: "honestly-im-excited",
+    title: "Honestly? I'm excited.",
+    description:
+      "Why every hard question about Payle has made me believe more in the problem, the solution and the timing.",
+    date: "2026-09-21",
+    keywords: [
+      "founder excitement",
+      "building in public",
+      "AI agents payments",
+      "Payle",
+      "startup building",
+    ],
+    content: [
+      {
+        type: "p",
+        text: "I've built things before. Small projects, experiments, the browser. But this is the first time I'm building something where every single week makes me believe more, not less. Let me explain, because it surprised me too.",
+      },
+      {
+        type: "p",
+        text: "A few weeks ago I posted Payle's architecture publicly and asked strangers to attack it. They did. Fintech engineers I'd never met tore into the BNPL model, questioned the delegation model, found the exact spot where my design was weakest. And instead of discouraging me, every objection made the product sharper. The best parts of Payle's architecture today exist because strangers took the time to argue with me.",
+      },
+      {
+        type: "p",
+        text: "That did something to me I didn't expect. When people who owe you nothing take your idea seriously enough to challenge it, it stops being \"your idea\" and starts being something real. Something worth defending with code, not words.",
+      },
+      {
+        type: "p",
+        text: "So now, every day, I believe more. In the problem: agents can do everything except pay, and that's genuinely broken. In the solution: controlled wallets, deterministic authorization, verifiable receipts. In the timing: every big player is announcing agentic commerce while the control layer is still unowned. The concrete version is [the money layer for AI agents](/thoughts/money-layer-for-ai-agents/).",
+      },
+      {
+        type: "p",
+        text: "I know excitement is cheap in this industry. Everyone is excited at the start. What I'm chasing is the version of excitement that survives the boring weeks, the failed deploys, the compliance emails. So far, three months in, it's not surviving. It's growing.",
+      },
+      {
+        type: "p",
+        text: "Building in public, as always. More soon.",
+      },
+    ],
+  },
+  {
+    slug: "about-the-name",
+    title: "About the name",
+    description:
+      "How Payle stopped feeling like a rough draft and became the name of the company we are building.",
+    date: "2026-09-21",
+    keywords: [
+      "Payle",
+      "startup naming",
+      "founder story",
+      "building a company",
+      "company identity",
+    ],
+    content: [
+      {
+        type: "p",
+        text: "Confession: when I first said \"Payle\" out loud, I didn't like it.",
+      },
+      {
+        type: "p",
+        text: "It felt awkward. Not fintech enough, not serious enough, not... anything enough. I kept comparing it to names like Stripe and Mercury, names that arrived perfect, like they'd been carved by a branding agency before the product even existed. Mine felt like a rough draft that had accidentally become real.",
+      },
+      {
+        type: "p",
+        text: "So I kept building. And something strange happened.",
+      },
+      {
+        type: "p",
+        text: "Somewhere between the first test passing and the first stranger using the name correctly in a sentence, \"are you the Payle guy?\" the name started to fit. Not because it changed. Because the thing behind it grew into it. Now when I say Payle, I don't hear an awkward draft. I hear the engine approving a payment. I hear the ledger. I hear the approval tap. I hear the company my co-founder and I just signed our names to.",
+      },
+      {
+        type: "p",
+        text: "There's a lesson in there I didn't expect: names don't make products. Products make names. Stripe probably sounded weird on day one too. Every name that now sounds inevitable once sounded strange to the person who chose it, right before the work gave it weight.",
+      },
+      {
+        type: "p",
+        text: "Today Payle is on my company documents, my app, my email address, and in the last message of every day when I close the laptop. It's no longer a name I picked. It's a name I earned the right to like.",
+      },
+      {
+        type: "p",
+        text: "And honestly? I love it now.",
+      },
+    ],
+  },
 ];
 
 export const notes: Note[] = raw

@@ -8,8 +8,27 @@ html {
 }
 
 body {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+}
+
+/* Keep the deferred newsletter visually below the page content even while its
+   client boundary streams in. This also protects older cached shells. */
+body > main,
+body > #content {
+  order: 1;
+}
+
+body > #newsletter-slot,
+body > section[aria-labelledby="newsletter-title"] {
+  order: 2;
+}
+
+body > footer {
+  order: 3;
 }
 
 ::selection {

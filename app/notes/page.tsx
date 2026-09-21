@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "@/components/icons";
 import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
@@ -66,13 +67,24 @@ export default function NotesIndex() {
           <li key={n.slug}>
             <Link
               href={`/notes/${n.slug}/`}
-              className="group flex items-baseline justify-between gap-4 py-3.5"
+              className="group block py-5"
             >
-              <span className="font-serif font-medium">{n.title}</span>
-              <span className="flex items-center gap-2 whitespace-nowrap text-gray-1000">
-                {n.date}
-                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </span>
+              <div className="overflow-hidden rounded-xl border border-gray-300 bg-preview-bg">
+                <Image
+                  src={`/notes/${n.slug}/cover.png`}
+                  alt=""
+                  width={1200}
+                  height={630}
+                  className="h-auto w-full transition-transform duration-500 group-hover:scale-[1.01] motion-reduce:transition-none"
+                />
+              </div>
+              <div className="mt-3 flex items-baseline justify-between gap-4">
+                <span className="font-serif font-medium">{n.title}</span>
+                <span className="flex shrink-0 items-center gap-2 whitespace-nowrap text-gray-1000">
+                  {n.date}
+                  <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </span>
+              </div>
             </Link>
           </li>
         ))}

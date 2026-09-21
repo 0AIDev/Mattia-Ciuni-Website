@@ -12,6 +12,7 @@ import { InstagramIcon } from "@/components/ui/instagram";
 import { TwitterIcon } from "@/components/ui/twitter";
 import { site } from "@/lib/site";
 import { posts } from "@/lib/posts";
+import { notes } from "@/lib/notes";
 
 export const metadata: Metadata = {
   // La card markdown della pagina si annuncia nella <head>, non solo nel piè di
@@ -227,6 +228,51 @@ export default function Home() {
             </li>
           ))}
         </ul>
+      </section>
+
+      <section aria-labelledby="notes" className="mb-16 sm:mb-24">
+        <div className="mb-2 flex items-baseline justify-between gap-4">
+          <h2 id="notes" className="font-serif font-medium">Notes</h2>
+          <Link href="/notes/" className="text-sm text-gray-1000 article-underline">All notes</Link>
+        </div>
+        <p className="mb-6 max-w-[600px] text-text-paragraph">
+          Longer, slower pieces on the systems, people and ideas behind the work.
+        </p>
+        <ul className="m-0 list-none divide-y divide-gray-300 p-0">
+          {notes.slice(0, 3).map((note) => (
+            <li key={note.slug}>
+              <Link href={`/notes/${note.slug}/`} className="group flex items-baseline justify-between gap-4 py-3.5">
+                <span className="min-w-0 font-serif font-medium transition-colors group-hover:text-gray-1000">{note.title}</span>
+                <span className="flex shrink-0 items-center gap-2 text-sm text-gray-1000">
+                  {note.date}
+                  <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
+      </section>
+
+      <section aria-labelledby="field-notes" className="mb-16 sm:mb-24">
+        <div className="mb-2 flex items-baseline justify-between gap-4">
+          <h2 id="field-notes" className="font-serif font-medium">Field notes</h2>
+          <span className="text-sm text-gray-1000">in progress</span>
+        </div>
+        <p className="mb-6 max-w-[600px] text-text-paragraph">
+          Some things are better heard. Some are better seen. I am making room for both.
+        </p>
+        <div className="grid gap-4 sm:grid-cols-2">
+          <Link href="/voice-notes/" className="group border-t border-gray-300 pt-4">
+            <span className="font-serif text-2xl">Voice Notes</span>
+            <p className="mt-2 text-sm leading-relaxed text-gray-1000">Unedited thoughts, spoken before they become essays.</p>
+            <span className="mt-4 inline-flex items-center gap-2 text-sm text-gray-1000">Listen when ready <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></span>
+          </Link>
+          <Link href="/videos/" className="group border-t border-gray-300 pt-4">
+            <span className="font-serif text-2xl">Videos</span>
+            <p className="mt-2 text-sm leading-relaxed text-gray-1000">A visual log of building, thinking and changing my mind.</p>
+            <span className="mt-4 inline-flex items-center gap-2 text-sm text-gray-1000">Watch when ready <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></span>
+          </Link>
+        </div>
       </section>
     </main>
   );

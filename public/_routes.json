@@ -6,6 +6,8 @@
     "/thoughts/*",
     "/notes",
     "/notes/*",
+    "/voice-notes",
+    "/videos",
     "/index.md",
     "/sitemap.xml",
     "/sitemap-home.xml",

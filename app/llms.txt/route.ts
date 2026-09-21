@@ -28,6 +28,10 @@ ${thoughtLinks}
 - [Notes](${base}/notes/): longer, slower pieces on the philosophy of building software.
 ${noteLinks}
 
+## Field notes
+- [Voice Notes](${base}/voice-notes/): spoken thoughts, to be published when they are ready.
+- [Videos](${base}/videos/): a visual log of building Payle, also published when ready.
+
 ## Cards
 Every page has a concise machine-readable card in markdown at the same path with .md: [home](${base}/index.md), [thoughts](${base}/thoughts.md), [notes](${base}/notes.md), e.g. [this post](${base}/thoughts/money-layer-for-ai-agents.md).
 

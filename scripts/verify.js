@@ -80,9 +80,9 @@ check("404: noindex + home link", read("404.html").includes('name="robots" conte
 
 const smIndex = read("sitemap.xml");
 check("sitemap: index with 3 children", smIndex.includes('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">') && (smIndex.match(/<sitemap>/g) || []).length === 3 && smIndex.includes(`${PROD}/sitemap-home.xml`) && smIndex.includes(`${PROD}/sitemap-thoughts.xml`) && smIndex.includes(`${PROD}/sitemap-notes.xml`));
-check("sitemap-home: 1 url", (read("sitemap-home.xml").match(/<loc>/g) || []).length === 1 && read("sitemap-home.xml").includes(`${PROD}/`));
+check("sitemap-home: 3 urls", (read("sitemap-home.xml").match(/<loc>/g) || []).length === 3 && read("sitemap-home.xml").includes(`${PROD}/`) && read("sitemap-home.xml").includes(`${PROD}/voice-notes/`) && read("sitemap-home.xml").includes(`${PROD}/videos/`));
 check("sitemap-thoughts: 4 url", (read("sitemap-thoughts.xml").match(/<loc>/g) || []).length === 4 && read("sitemap-thoughts.xml").includes("finding-ghassen-the-co-founder-question-answered-in-three-weeks"));
-check("sitemap-notes: 4 url", (read("sitemap-notes.xml").match(/<loc>/g) || []).length === 4 && read("sitemap-notes.xml").includes("/notes/"));
+check("sitemap-notes: 7 url", (read("sitemap-notes.xml").match(/<loc>/g) || []).length === 7 && read("sitemap-notes.xml").includes("/notes/"));
 // Le date seguono i contenuti: una collezione è datata con l'elemento più
 // recente che contiene, non con la data del deploy.
 const sitemapUrls = (xml) =>
@@ -140,7 +140,7 @@ check("card thoughts index: 3 posts", (thoughtsCard.match(/^\- \[.*\]\(thoughts\
 const postCard = read("thoughts/money-layer-for-ai-agents.md");
 check("card post: content", postCard.includes("- Type: Blog post") && postCard.includes(PROD + "/thoughts/money-layer-for-ai-agents") && postCard.includes("- Published: 2026-09-20"));
 const notesCard = read("notes.md");
-check("card notes index: 3 notes", (notesCard.match(/^\- \[.*\]\(notes\/[a-z0-9-]+\.md\)/gm) || []).length === 3 && notesCard.includes("idempotent-payments-for-ai-agents.md") && notesCard.includes("the-agentic-economy-is-a-trust-problem.md") && notesCard.includes("on-boring-systems.md"));
+check("card notes index: 6 notes", (notesCard.match(/^\- \[.*\]\(notes\/[a-z0-9-]+\.md\)/gm) || []).length === 6 && notesCard.includes("idempotent-payments-for-ai-agents.md") && notesCard.includes("the-agentic-economy-is-a-trust-problem.md") && notesCard.includes("on-boring-systems.md") && notesCard.includes("what-interviews-teach-me-about-people-and-my-own-company.md") && notesCard.includes("honestly-im-excited.md") && notesCard.includes("about-the-name.md"));
 
 // Pointeer "For AI:" visibile in fondo a ogni pagina
 check("page: For AI link on home", index.includes("For AI:") && index.includes('href="/index.md"'));
@@ -185,6 +185,11 @@ check(
     noteSlugs.length === pagesIn("notes").length &&
     postSlugs.every((slug) => fs.existsSync(cardPath("thoughts", slug))) &&
     noteSlugs.every((slug) => fs.existsSync(cardPath("notes", slug)))
+);
+check(
+  "covers: every article and note has its in-page image",
+  postSlugs.every((slug) => fs.existsSync(path.join(out, "thoughts", slug, "cover.png"))) &&
+    noteSlugs.every((slug) => fs.existsSync(path.join(out, "notes", slug, "cover.png")))
 );
 check(
   "og: no card without an article",
@@ -389,5 +394,8 @@ console.log("homepage html+css: " + (bytes / 1024).toFixed(1) + "KB raw | all JS
 // globale e il consenso analytics opzionale. La pagina resta sotto 70KB raw,
 // mentre il browser non scarica font Google né GA finché non c'è consenso. Il
 // numero è un guardrail per evitare regressioni, non un proxy del punteggio Lighthouse.
-check("weight: homepage html+css < 70KB raw", bytes < 70 * 1024);
+// La home ora include anche l'indice Notes e i due ingressi Field notes. Il
+// budget resta un guardrail stretto rispetto al payload completo, ma tiene conto
+// del contenuto editoriale aggiunto senza immagini pesanti nella home.
+check("weight: homepage html+css < 80KB raw", bytes < 80 * 1024);
 process.exit(fail ? 1 : 0);

@@ -18,6 +18,18 @@ export async function GET() {
       changeFrequency: "monthly",
       priority: "1.0",
     },
+    {
+      loc: `${base}/voice-notes/`,
+      lastmod: "2026-09-21",
+      changeFrequency: "monthly",
+      priority: "0.5",
+    },
+    {
+      loc: `${base}/videos/`,
+      lastmod: "2026-09-21",
+      changeFrequency: "monthly",
+      priority: "0.5",
+    },
   ]);
   return new Response(xml, {
     headers: {
