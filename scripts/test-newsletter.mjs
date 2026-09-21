@@ -17,6 +17,8 @@ assert.match(component, /Subscribing\.\.\./);
 assert.match(component, /utm_campaign/);
 assert.match(component, /referrer/);
 assert.match(component, /rate_limited/);
+assert.match(component, /grid-cols-\[minmax\(0,1fr\)_auto\]/);
+assert.match(component, /overflow-hidden/);
 
 assert.match(endpoint, /api\.resend\.com\/emails/);
 assert.match(endpoint, /RESEND_API_KEY/);

@@ -115,10 +115,10 @@ export function NewsletterSection() {
           </div>
         ) : (
           <>
-            <div className="mt-6 w-full max-w-[520px] rounded-full border border-gray-300 p-1 transition-colors focus-within:border-gray-1200 focus-within:ring-2 focus-within:ring-gray-1200/15 sm:mt-7">
+            <div className="mt-6 box-border w-full max-w-[520px] overflow-hidden rounded-full border border-gray-400 p-1 transition-colors focus-within:border-gray-1200 focus-within:ring-2 focus-within:ring-gray-1200/15 sm:mt-7">
               <form
                 onSubmit={submit}
-                className="flex w-full min-w-0 flex-row items-center gap-1 sm:gap-2"
+                className="grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1 sm:gap-2"
                 noValidate
               >
               <label htmlFor="newsletter-email" className="sr-only">Email address</label>
@@ -134,7 +134,7 @@ export function NewsletterSection() {
                 aria-invalid={state === "error"}
                 aria-describedby={state === "error" ? "newsletter-status" : undefined}
                 disabled={state === "loading"}
-                className="newsletter-email min-h-11 min-w-0 flex-1 rounded-full border-0 bg-transparent px-3 py-2 text-[15px] text-gray-1200 outline-none placeholder:text-gray-1000/60 focus:outline-none focus:ring-0 disabled:opacity-60 sm:px-4 sm:text-base"
+                className="newsletter-email min-h-11 min-w-0 rounded-full border-0 bg-transparent px-3 py-2 text-[15px] text-gray-1200 !outline-none placeholder:text-gray-1000/60 focus:!outline-none focus:ring-0 focus-visible:!outline-none disabled:opacity-60 sm:px-4 sm:text-base"
               />
               <input
                 type="text"
@@ -149,7 +149,7 @@ export function NewsletterSection() {
               <button
                 type="submit"
                 disabled={state === "loading"}
-                className="min-h-11 shrink-0 whitespace-nowrap rounded-full bg-gray-1200 px-4 text-sm font-semibold text-white transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gray-1200 disabled:cursor-wait disabled:opacity-50 sm:px-5"
+                className="min-h-11 min-w-0 shrink-0 whitespace-nowrap rounded-full bg-gray-1200 px-3 text-[13px] font-semibold text-white transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gray-1200 disabled:cursor-wait disabled:opacity-50 sm:px-5 sm:text-sm"
               >
                 {state === "loading" ? "Subscribing..." : "Subscribe"}
               </button>
