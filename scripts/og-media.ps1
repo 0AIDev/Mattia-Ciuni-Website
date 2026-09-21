@@ -166,7 +166,7 @@ if (!$Video -and !$Audio) {
   # Senza parametri: due anteprime di esempio in out/_tmp (non toccano public/).
   $Preview = $true
   $OutRoot = Join-Path $Root "out\_tmp\og-media"
-  New-VideoCard "The money layer for AI agents" "Thoughts $Dot 1 October 2026" "og.png" (Join-Path $OutRoot "sample-video.png")
+  New-VideoCard "The money layer for AI agents" "Thoughts $Dot 21 September 2026" "og.png" (Join-Path $OutRoot "sample-video.png")
   New-AudioCard "The thought before the decision" "Voice note $Dot 21 September 2026" "4:18" (Join-Path $OutRoot "sample-audio.png")
   Write-Output "anteprime di esempio in $OutRoot (usa -Video o -Audio per una card vera)"
   exit 0
