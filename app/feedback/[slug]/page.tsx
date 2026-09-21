@@ -13,6 +13,7 @@ import { site } from "@/lib/site";
 import { feedback, getFeedback, type FeedbackBlock } from "@/lib/feedback";
 import { slugify } from "@/lib/slug";
 import { socialImages } from "@/lib/social";
+import { FeedbackForm } from "@/components/FeedbackForm";
 
 export function generateStaticParams() {
   return feedback.map((f) => ({ slug: f.slug }));
@@ -214,12 +215,7 @@ export default async function FeedbackPost({
           published here, with your name or just an initial, your choice. The
           next Feedback post might be about your comment.
         </p>
-        <a
-          href={`mailto:${site.email}?subject=Feedback%20on%20Payle`}
-          className="mt-4 inline-flex items-center rounded-full bg-gray-1200 px-5 py-2 text-sm font-medium text-white transition-opacity hover:opacity-80"
-        >
-          Email your feedback
-        </a>
+        <FeedbackForm />
       </section>
 
       <nav aria-label="All feedback" className="mt-8 border-t border-gray-300">

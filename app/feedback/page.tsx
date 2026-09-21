@@ -4,6 +4,7 @@ import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
 import { site } from "@/lib/site";
 import { feedback } from "@/lib/feedback";
 import { socialImages } from "@/lib/social";
+import { FeedbackForm } from "@/components/FeedbackForm";
 
 // Il master di sezione è disegnato a mano come per Thoughts e Notes; finché non
 // esiste la OG della home fa da immagine provvisoria dichiarata (verify.js
@@ -76,16 +77,10 @@ export default function FeedbackIndex() {
           the wins.
         </p>
         <p className="mt-4 m-0 max-w-[600px] text-sm leading-relaxed text-gray-1000">
-          Want yours here?{" "}
-          <a
-            href={`mailto:${site.email}?subject=Feedback%20on%20Payle`}
-            className="article-underline"
-          >
-            Send it by email
-          </a>
-          . Every submission is read and reviewed; if it holds up, it gets
-          published with your name or just an initial, your choice.
+          Send yours below. Every submission is read and reviewed; if it holds
+          up, it gets published with your name or just an initial, your choice.
         </p>
+        <FeedbackForm />
       </div>
 
       <ul className="m-0 list-none divide-y divide-gray-300 border-t-2 border-gray-1200 p-0">

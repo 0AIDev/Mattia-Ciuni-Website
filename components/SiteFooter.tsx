@@ -12,6 +12,11 @@ export function SiteFooter() {
         <span>© 2026 Mattia Ciuni</span>
         <ForAICard />
       </div>
+      <nav aria-label="Site" className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-1000">
+        <Link href="/thoughts/">Thoughts</Link>
+        <Link href="/notes/">Notes</Link>
+        <Link href="/feedback/">Feedback</Link>
+      </nav>
       <nav aria-label="Legal" className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-1000">
         <Link href="/privacy/">Privacy Policy</Link>
         <Link href="/terms/">Terms of Service</Link>
