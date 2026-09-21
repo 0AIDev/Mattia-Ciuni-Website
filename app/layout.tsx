@@ -29,6 +29,9 @@ const sourceSerif = Source_Serif_4({
   axes: ["opsz"],
   variable: "--font-source-serif",
   display: "swap",
+  // The above-the-fold copy uses Inter. Let the serif load on demand so mobile
+  // does not block the first paint on a second large font request.
+  preload: false,
 });
 
 // La card della home, dichiarata una volta e usata da Open Graph e Twitter.

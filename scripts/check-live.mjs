@@ -87,6 +87,11 @@ check(
 // 2 · La sitemap pubblicata non nomina un dominio diverso da quello che risponde.
 const index = await fetchText(`${site}/sitemap.xml`);
 check(`live: /sitemap.xml answers 200 (${index.status})`, index.ok, index.error);
+check(
+  "live: /sitemap.xml has an XML content type",
+  /^application\/xml(?:;|$)/i.test(index.type),
+  index.type,
+);
 const children = [...index.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]);
 const foreign = children.filter((u) => !u.startsWith(site + "/") && u !== site);
 check(
@@ -99,6 +104,11 @@ const urls = [];
 for (const child of children) {
   const res = await fetchText(child);
   check(`live: child sitemap ${child.replace(site, "")} answers 200 (${res.status})`, res.ok, res.error);
+  check(
+    `live: child sitemap ${child.replace(site, "")} has an XML content type`,
+    /^application\/xml(?:;|$)/i.test(res.type),
+    res.type,
+  );
   urls.push(...[...res.body.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1]));
 }
 
