@@ -8,7 +8,7 @@
 
 ## Full article
 
-Feedback series · A.
+Feedback series · Liam Murphy
 
 # A stranger redesigned my pitch in one comment
 
@@ -16,7 +16,7 @@ This is the first post in a series I'm calling Feedback: public exchanges where 
 
 ## The message
 
-An engineer I'll call A., because he can claim his name if he wants it, read my public post about Payle and replied with what he thought, with no introductions:
+An engineer read my public post about Payle and replied with what he thought, with no introductions. At the time he hadn't even shared his name; he has since: he is Liam Murphy ([@aka7880-721](https://github.com/aka7880-721) on GitHub). His reply was this:
 
 > The problem is real, but the payment API itself is only a small part of the problem. The harder problem is authorization and liability.
 
@@ -54,7 +54,7 @@ My answer is the company's answer: deterministic policy instead of model judgmen
 
 ## The selection effect
 
-A. ended his message with "I can help you if you want." So I asked him where he'd want to own: the policy engine edge cases, the dispute automation, or the revocation-latency guarantees, the three places where a sharp engineer matters most right now.
+Liam ended his message with "I can help you if you want." So I asked him where he'd want to own: the policy engine edge cases, the dispute automation, or the revocation-latency guarantees, the three places where a sharp engineer matters most right now.
 
 That's how this company hires, and it's why these posts exist. I don't screen candidates on resumes; I screen them on what they notice. The engineers I want are the ones who read a public architecture and can't sleep until they've told you exactly where it will break.
 
