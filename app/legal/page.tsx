@@ -14,21 +14,21 @@ const sections: LegalSection[] = [
     title: "Documents",
     content: (
       <ul className="m-0 list-none space-y-3 p-0">
-        <li><Link href="/privacy/" className="underline underline-offset-4">Privacy Policy</Link><span className="text-gray-1000"> · how personal data is handled</span></li>
-        <li><Link href="/terms/" className="underline underline-offset-4">Terms of Service</Link><span className="text-gray-1000"> · the rules for using the site</span></li>
-        <li><Link href="/cookies/" className="underline underline-offset-4">Cookies</Link><span className="text-gray-1000"> · browser storage and preferences</span></li>
+        <li><Link href="/privacy/" className="article-underline">Privacy Policy</Link><span className="text-gray-1000"> · how personal data is handled</span></li>
+        <li><Link href="/terms/" className="article-underline">Terms of Service</Link><span className="text-gray-1000"> · the rules for using the site</span></li>
+        <li><Link href="/cookies/" className="article-underline">Cookies</Link><span className="text-gray-1000"> · browser storage and preferences</span></li>
       </ul>
     ),
   },
   {
     id: "newsletter",
     title: "Newsletter",
-    content: <p>The Sundays newsletter uses double opt-in. You can unsubscribe at any time from the link in every email. See the <Link href="/privacy/" className="underline underline-offset-4">Privacy Policy</Link> for details.</p>,
+    content: <p>The Sundays newsletter uses double opt-in. You can unsubscribe at any time from the link in every email. See the <Link href="/privacy/" className="article-underline">Privacy Policy</Link> for details.</p>,
   },
   {
     id: "questions",
     title: "Questions",
-    content: <p>If something is unclear, email <a href="mailto:ceo@usepayle.com" className="underline underline-offset-4">ceo@usepayle.com</a>.</p>,
+    content: <p>If something is unclear, email <a href="mailto:ceo@usepayle.com" className="article-underline">ceo@usepayle.com</a>.</p>,
   },
 ];
 

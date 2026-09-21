@@ -45,7 +45,7 @@ export function LegalPage({ title, intro, sections }: LegalPageProps) {
       </article>
 
       <p className="mt-16 border-t border-gray-300 pt-5 text-sm text-gray-1000">
-        <Link href="/legal/">Legal Center</Link>
+        <Link href="/legal/" className="article-underline">Legal Center</Link>
       </p>
     </main>
   );

@@ -32,7 +32,7 @@ const sections: LegalSection[] = [
   {
     id: "contact",
     title: "Contact",
-    content: <p>Questions about these terms can be sent to <a href={`mailto:${site.email}`} className="underline underline-offset-4">{site.email}</a>.</p>,
+    content: <p>Questions about these terms can be sent to <a href={`mailto:${site.email}`} className="article-underline">{site.email}</a>.</p>,
   },
 ];
 

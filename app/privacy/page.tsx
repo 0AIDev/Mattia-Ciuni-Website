@@ -28,12 +28,12 @@ const sections: LegalSection[] = [
   {
     id: "your-rights",
     title: "Your rights",
-    content: <p>You can unsubscribe at any time using the link in every email. You can also ask for access, correction, or deletion by emailing <a href={`mailto:${site.email}`} className="underline underline-offset-4">{site.email}</a>.</p>,
+    content: <p>You can unsubscribe at any time using the link in every email. You can also ask for access, correction, or deletion by emailing <a href={`mailto:${site.email}`} className="article-underline">{site.email}</a>.</p>,
   },
   {
     id: "contact",
     title: "Contact",
-    content: <p>Questions about privacy can be sent to <a href={`mailto:${site.email}`} className="underline underline-offset-4">{site.email}</a>. For the other legal documents, visit the <Link href="/legal/" className="underline underline-offset-4">Legal Center</Link>.</p>,
+    content: <p>Questions about privacy can be sent to <a href={`mailto:${site.email}`} className="article-underline">{site.email}</a>. For the other legal documents, visit the <Link href="/legal/" className="article-underline">Legal Center</Link>.</p>,
   },
 ];
 
