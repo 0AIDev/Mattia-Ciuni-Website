@@ -115,11 +115,12 @@ export function NewsletterSection() {
           </div>
         ) : (
           <>
-            <form
-            onSubmit={submit}
-            className="mt-6 flex w-full max-w-[520px] min-w-0 flex-row items-center gap-1 rounded-full border border-gray-300 p-1 transition-colors focus-within:border-gray-1200 focus-within:ring-2 focus-within:ring-gray-1200/15 sm:mt-7 sm:gap-2"
-            noValidate
-          >
+            <div className="mt-6 w-full max-w-[520px] rounded-full border border-gray-300 p-1 transition-colors focus-within:border-gray-1200 focus-within:ring-2 focus-within:ring-gray-1200/15 sm:mt-7">
+              <form
+                onSubmit={submit}
+                className="flex w-full min-w-0 flex-row items-center gap-1 sm:gap-2"
+                noValidate
+              >
               <label htmlFor="newsletter-email" className="sr-only">Email address</label>
               <input
                 id="newsletter-email"
@@ -152,7 +153,8 @@ export function NewsletterSection() {
               >
                 {state === "loading" ? "Subscribing..." : "Subscribe"}
               </button>
-            </form>
+              </form>
+            </div>
             <p id="newsletter-status" role="status" aria-live="polite" className="mt-3 min-h-5 text-sm text-gray-1000">
               {state === "error" ? error : ""}
             </p>

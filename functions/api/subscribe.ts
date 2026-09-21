@@ -11,6 +11,8 @@ interface Env {
   RESEND_FROM_EMAIL?: string;
   BREVO_API_KEY?: string;
   BREVO_LIST_ID?: string;
+  BEEHIIV_API_KEY?: string;
+  BEEHIIV_PUBLICATION_ID?: string;
   RATE_LIMIT?: RateLimitStore;
 }
 
@@ -125,6 +127,28 @@ async function upsertBrevo(env: Env, email: string, attributes: Record<string, s
   if (!response.ok && response.status !== 204) throw new Error(`brevo_${response.status}`);
 }
 
+async function upsertBeehiiv(env: Env, email: string, attributes: Record<string, string>) {
+  if (!env.BEEHIIV_API_KEY || !env.BEEHIIV_PUBLICATION_ID) throw new Error("missing_beehiiv_config");
+  const response = await fetch(`https://api.beehiiv.com/v2/publications/${env.BEEHIIV_PUBLICATION_ID}/subscriptions`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${env.BEEHIIV_API_KEY}`,
+      "Content-Type": "application/json",
+      Accept: "application/json",
+    },
+    body: JSON.stringify({
+      email,
+      reactivate_existing: true,
+      send_welcome_email: false,
+      utm_source: attributes.SOURCE,
+      utm_medium: attributes.MEDIUM,
+      utm_campaign: attributes.CAMPAIGN || undefined,
+      referring_site: attributes.REFERRER || undefined,
+    }),
+  });
+  if (!response.ok && response.status !== 409) throw new Error(`beehiiv_${response.status}`);
+}
+
 export const onRequestPost = async ({ request, env }: PagesContext): Promise<Response> => {
   const started = Date.now();
   const finish = (response: Response, outcome: string) => {
@@ -157,14 +181,15 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
     return finish(json({ code: "rate_limited" }, 429, { "Retry-After": String(WINDOW_SECONDS) }), "rate_limited");
   }
 
-  if (!env.RESEND_API_KEY || !env.RESEND_WELCOME_TEMPLATE_ID || !env.RESEND_FROM_EMAIL || !env.BREVO_API_KEY) {
+  if (!env.RESEND_API_KEY || !env.RESEND_WELCOME_TEMPLATE_ID || !env.RESEND_FROM_EMAIL || !env.BREVO_API_KEY || !env.BEEHIIV_API_KEY || !env.BEEHIIV_PUBLICATION_ID) {
     return finish(json({ code: "unavailable" }, 503), "missing_provider_config");
   }
 
   const fields = attribution(request, body);
   try {
-    await upsertBrevo(env, email, fields);
     await sendWelcome(env, email, fields);
+    await upsertBrevo(env, email, fields);
+    await upsertBeehiiv(env, email, fields);
     return finish(json({ ok: true }, 200, { "X-Robots-Tag": "noindex" }), "subscribed");
   } catch (error) {
     const outcome = error instanceof Error ? error.message.split("_")[0] : "provider_error";
