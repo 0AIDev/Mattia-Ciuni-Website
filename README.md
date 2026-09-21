@@ -1,6 +1,6 @@
 # Mattia Ciuni — personal website
 
-Minimal developer site (stile jakub.kr), tema chiaro fisso `#FCFCFC`, colonna 692px, font Inter (variabile) + Source Serif 4 italic self-hosted via `next/font`. **Next.js 16 App Router (Turbopack) + React 19** con **static export** → deploy su **Cloudflare Pages** (progetto collegato a GitHub, cartella `out/`, più una Pages Function per la negoziazione markdown: `functions/_middleware.ts`). Librerie aggiuntive: `motion` (runtime delle icone animate) + `@animateicons/react` + Tailwind in build.
+Minimal developer site (stile jakub.kr), tema chiaro fisso `#FCFCFC`, colonna 692px, font Inter + Source Serif 4 (entrambi variabili, self-hosted via `next/font`). **Next.js 16 App Router (Turbopack) + React 19** con **static export** → deploy su **Cloudflare Pages** (progetto collegato a GitHub, cartella `out/`, più una Pages Function per la negoziazione markdown: `functions/_middleware.ts`). Librerie aggiuntive: `motion` (runtime delle icone animate) + `@animateicons/react` + Tailwind in build.
 
 ## Documentazione
 
@@ -29,11 +29,13 @@ Tre file, e sono il contratto del sito — non si scrive un articolo senza il se
 - `lib/site-origin.ts` — **l'unica stringa del dominio di produzione** (`https://mattiaciuni.pages.dev`): la leggono il build (`lib/site.ts` → canonical, sitemap, feed, JSON-LD, OG), la Pages Function (che sa quale dominio sta dentro l'export per poterlo sostituire con quello che serve la pagina) e `scripts/verify.js`. Un file a parte perché fossero tre copie tornerebbe il guasto del 21/09 (sito live su un host, indirizzi dichiarati su un altro)
 - `lib/site.ts` — **dominio + social**: il dominio lo prende da `NEXT_PUBLIC_SITE_URL` (variabile del progetto Pages) o da `lib/site-origin.ts`; qui stanno gli handle social (`social.crunchbase` incluso)
 - `public/og.png`, `public/thoughts/og.png`, `public/notes/og.png`, `public/thoughts/<slug>/og.png` e `public/notes/<slug>/og.png`: OG 1200×630 statiche (tema chiaro), generate con `scripts/og.ps1` (niente runtime, niente dipendenze; `next/og` evitato di proposito: crasha il build su Windows e richiede Node runtime, incompatibile con static export puro). Homepage, indice Thoughts e indice Notes partono da **master disegnati a mano in root, 1920×1008** — `og.png`, `thoughts-og.png`, `notesog.png` (come `Vector.svg` e `mattia.png`): lo script li porta a 1200×630 con `HighQualityBicubic` e li ricodifica, senza disegnare niente (stesso rapporto d'aspetto, quindi nessun ritaglio). Le OG di **post e note** le compone lo script dal template: `og-sfondo.png` (il tuo `sfondo.svg` rasterizzato con `node scripts/gen-og-bg.mjs`) + **titolo in Instrument Serif Regular** e **sottotitolo in Inter Light**, centrati sotto il logo, con i TTF in `scripts/fonts/` caricati da disco (nessuna installazione). Lo stesso giro scrive anche **`cover.png`** accanto a ogni `og.png`: la stessa card **senza il logo**, ed è quella che la pagina mostra **sopra il `h1`** (`components/CoverImage.tsx` — colonna intera, riquadro con bordo e ombra leggera), perché nella `<head>` va la card con il logo e dentro il sito quella senza. Il sottotitolo è la riga di contesto (`Thoughts · 20 September 2026`, o `Notes · 12 September 2026`); con `-Subtitle description` al suo posto va la description dell'articolo. Titoli, slug e date si leggono da `lib/posts.ts` e `lib/notes.ts`: zero duplicazioni. Utili: `-Only <slug>` (un solo articolo), `-Preview` (scrive in `out/_tmp/og` per approvarlo prima), `-HomeOnly` (solo la homepage)
-- `public/mattia.png`, avatar della home (128×128 **B&W** ottimizzato ~11KB, da `mattia.png` 1254×1254 in root): grayscale + resize HighQualityBicubic via System.Drawing (comando PowerShell una tantum)
+- `public/mattia.webp`, avatar della home: **80×80 WebP, 0,8KB**, dal master `mattia.png` in root (1254×1254) con `node scripts/gen-avatar.mjs`. 80px è il doppio dei 40px a cui la pagina lo mostra (`h-10 w-10`), quindi è nitido sui display 2x senza servire pixel che nessuno vede: prima era un PNG 128×128 da 10,7KB, cioè ~10KB di risparmio che su mobile sono una richiesta che finisce prima
 - **Favicon**: `app/icon.png` (copia del logo raster `favicon.png` in root, 1572×1572). Rimuove `app/icon.svg`. Origin dell'icona nel manifest sta su `/icon.png`.
 - **Logo footer**: `public/logo.svg` = variante pulita di `Vector.svg` (in root): viewBox ritagliato sul tratto (il file originale ha canvas 1298×670 con il disegno che sborda e un filtro ombra sfocata) e color `#686868` (gray-1000). Generabile con `node scripts/gen-logo.mjs`.
+- `components/NewsletterSection.tsx` — sezione globale **Sundays**, sempre prima del footer: copy inglese fisso, form accessibile, honeypot e feedback inline; `/privacy/` descrive raccolta e cancellazione
+- `functions/api/subscribe.ts` — Pages Function per Buttondown: validazione e blocklist disposable, double opt-in delegato al provider, rate limit KV 3/min/IP e log senza PII. Configura `BUTTONDOWN_API_KEY` come secret e `RATE_LIMIT` come binding KV nel progetto Pages; il comando `npm run test:newsletter` copre il contratto offline e non simula la consegna di email
 - `app/sitemap.xml/route.ts` + `app/sitemap-home.xml/route.ts` + `app/sitemap-thoughts.xml/route.ts` + `app/sitemap-notes.xml/route.ts`, `app/robots.txt/route.ts`, `app/llms.txt/route.ts` — SEO: sitemap **indice** `/sitemap.xml` che divide in sotto-sitemap (home / thoughts / notes), tutte formattate (indentate, `lastmod` YYYY-MM-DD, changefreq, priority) e generate in automatico da posts+notes via helper `lib/sitemap.ts`; robots.txt che permette tutto (`Allow: /`) + riferimento all'indice; llms.txt standard per LLM (H1 + summary blockquote + sezioni Thoughts/Notes/Contact generati da dati reali). Poi: `app/manifest.ts` (theme `#FCFCFC`), `app/feed.xml/route.ts`, `app/not-found.tsx`
-- `functions/_middleware.ts` — **l'unico codice del sito**, una Pages Function che fa due cose: `Accept: text/markdown` su una pagina restituisce la sua card `.md` (con `Content-Type: text/markdown`, `x-markdown-tokens` e `Vary: Accept`), e gli indirizzi assoluti che l'export dichiara (`canonical`, `og:image`, JSON-LD, `<loc>`, `Sitemap:`) vengono riscritti con **l'host che sta servendo la pagina** — così il dominio segue il deploy invece di dover essere indovinato, e le anteprime (Discord, X, Slack) chiedono la card a un dominio che esiste. Con `SITE_URL` impostata nel progetto il dominio si fissa invece di seguire l'host: è il caso del dominio custom. Tutto il resto passa agli asset. Vedi §Scoperta per gli agenti.
+- `functions/_middleware.ts` — Pages Function che fa due cose: `Accept: text/markdown` su una pagina restituisce la sua card `.md` (con `Content-Type: text/markdown`, `x-markdown-tokens` e `Vary: Accept`), e gli indirizzi assoluti che l'export dichiara (`canonical`, `og:image`, JSON-LD, `<loc>`, `Sitemap:`) vengono riscritti con **l'host che sta servendo la pagina** — così il dominio segue il deploy invece di dover essere indovinato, e le anteprime (Discord, X, Slack) chiedono la card a un dominio che esiste. Con `SITE_URL` impostata nel progetto il dominio si fissa invece di seguire l'host: è il caso del dominio custom. Tutto il resto passa agli asset. Vedi §Scoperta per gli agenti.
 - `public/_routes.json` — la Function **non viene invocata** per immagini, CSS, font e JS: elenca solo le rotte in cui compaiono indirizzi assoluti (pagine, sitemap, robots, feed, llms.txt, card `.md`, `/.well-known/`). Senza questo file Pages la invocherebbe su ogni richiesta.
 - `agent-skills/<nome>/SKILL.md` — la fonte a mano delle skill per gli agenti (una: come leggere e citare il sito). Da qui `scripts/gen-agent-files.mjs` ricava in `postbuild` `/.well-known/agent-skills/index.json` e la copia pubblicata, col digest sha256 calcolato sugli stessi byte.
 - `public/_headers` (tipo e cache dei file noti, header di sicurezza, `Link` di scoperta) e `public/_redirects` — letti da Cloudflare Pages. Le regole di `_redirects` **non** si possono provare in locale con `next dev`: girano solo nel runtime di Pages (`npx wrangler pages dev out`), come `_headers`.
@@ -45,18 +47,19 @@ npm install
 npm run dev     # http://localhost:3000
 npm run build   # static export in ./out
 npm run lint    # ESLint flat config (eslint.config.mjs)
-node scripts/verify.js  # 57 controlli SEO/GEO (meta, JSON-LD, canonical, sitemap, robots, card For AI, OG card per ogni articolo, ogni `og:image` dichiarata che esiste davvero, documenti di scoperta, link interni, TOC, dominio coerente con l'export, peso)
+node scripts/verify.js  # controlli SEO/GEO (meta, JSON-LD, canonical, sitemap, robots, card For AI, OG card per ogni articolo, ogni `og:image` dichiarata che esiste davvero, documenti di scoperta, link interni, TOC, dominio coerente con l'export, peso)
+npm run test:newsletter  # copy, accessibilità, honeypot/rate-limit contract e presenza su ogni pagina
 node scripts/check-live.mjs --site=https://mattiaciuni.pages.dev  # gli stessi controlli **sul sito pubblicato** (il dominio risolve? ogni pagina elencata risponde e dichiara la propria card?)
 ```
 
 ## Deploy su Cloudflare Pages
 
-Il sito è un export statico: Pages pubblica la cartella `out/` e basta, più `functions/` se c'è (qui c'è, ed è la negoziazione markdown). Nessun server da eseguire, nessun adapter.
+Il sito è un export statico: Pages pubblica la cartella `out/` e basta, più `functions/` se c'è (qui ci sono la negoziazione markdown e `/api/subscribe`). Nessun server da eseguire, nessun adapter.
 
 1. Cloudflare Dashboard → **Workers & Pages → Create → Pages → Connect to Git** → repo `0AIDev/Mattia-Ciuni-Website`, branch `main`.
 2. Build settings: **Build command** `npm run build`, **Build output directory** `out`. Nient'altro: `_headers`, `_redirects`, `_routes.json` e la pagina 404 stanno già nell'export, e li legge Pages da sé.
 3. **Environment variables** (Production): `NEXT_PUBLIC_SITE_URL` = `https://<progetto>.pages.dev` (per questo repo: `https://mattiaciuni.pages.dev`, lo stesso valore scritto in `lib/site-origin.ts`). Serve a far nascere l'export già col dominio giusto; senza, il build usa `lib/site-origin.ts` e va bene lo stesso.
-4. Deploy → `https://mattiaciuni.pages.dev`. Verifica rapida: `/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/feed.xml`, `/og.png`, `/thoughts/`, `/index.md` (card For AI).
+4. Deploy → `https://mattiaciuni.pages.dev`. Verifica rapida: `/sitemap.xml`, `/robots.txt`, `/llms.txt`, `/feed.xml`, `/og.png`, `/thoughts/`, `/index.md` (card For AI). La funzione `/api/subscribe` richiede anche il secret `BUTTONDOWN_API_KEY` e il binding KV `RATE_LIMIT` nel progetto Pages.
 5. Il controllo che guarda **il sito pubblicato** e non l'export (è quello che avrebbe preso il guasto del 21/09, quando il dominio dichiarato non esisteva):
 
 ```bash
@@ -64,6 +67,34 @@ node scripts/check-live.mjs --site=https://mattiaciuni.pages.dev
 ```
 
 6. **Vecchio Worker**: il progetto Workers omonimo (`mattiaciuni.<account>.workers.dev`) non è più la sorgente. Va cancellato da **Workers & Pages → mattia-ciuni-website → Settings → Delete**, altrimenti resta lì a servire una copia vecchia su un indirizzo che qualcuno può ancora incollare in chat.
+
+### Newsletter Sundays / Buttondown
+
+La sezione globale **Sundays** è già inclusa nel layout: desktop usa il form
+pill inline, mobile lo impila, e `/privacy/` spiega raccolta e cancellazione.
+Per renderla operativa in produzione:
+
+1. Crea o usa un account Buttondown e attiva **double opt-in**. Configura il
+   mittente `Mattia Ciuni <ceo@usepayle.com>` e il welcome email; il footer di
+   Buttondown aggiunge automaticamente il link unsubscribe.
+2. In Buttondown verifica il dominio di invio. Il pannello mostra i record
+   **SPF/DKIM** esatti da pubblicare nella zona DNS di `usepayle.com`: aggiungi
+   quei record senza modificarne nome o valore e aspetta che il pannello li
+   convalidi. Non ci sono valori universali da copiare: sono specifici del tuo
+   account.
+3. In Cloudflare Pages → Settings → Environment variables aggiungi
+   `BUTTONDOWN_API_KEY` come **Secret** in Production. Crea una KV namespace,
+   associa il binding al progetto con il nome `RATE_LIMIT`, quindi fai un nuovo
+   deploy. Il binding è obbligatorio: senza di esso `/api/subscribe` risponde
+   503 invece di accettare iscrizioni senza protezione.
+4. Prova con una casella reale: POST valido → messaggio `Check your inbox` →
+   click di conferma → welcome email. Non inserire mai l'API key nel client,
+   nel repository o negli screenshot.
+
+`npm run test:newsletter` controlla il contratto offline (copy, accessibilità,
+honeypot, rate limit e presenza prima del footer). Buttondown, DNS SPF/DKIM, KV,
+consegna email reale e Lighthouse sono **UNVERIFIED** finché non fai il test
+end-to-end sul progetto Pages.
 
 ### Dominio custom
 
@@ -144,7 +175,8 @@ Non pubblicati, e non per dimenticanza: `openapi.json` (non c'è un'API), server
 
 ## Note SEO/performance
 
-- Font: solo **Inter + Source Serif 4** in tutto il progetto (stack `font-sans`/`font-serif` senza altri fallback); il titolo della pagina Thoughts è in Source Serif 4. JS client: click-to-copy + icone animate (`motion`, ~45KB gzip in più sul First Load: 88KB→~133KB). Font self-hosted (zero request esterne a runtime); zero immagini decorative.
+- Font: solo **Inter + Source Serif 4** in tutto il progetto (stack `font-sans`/`font-serif`), entrambi **self-hosted** con `next/font`. La sezione globale **Sundays** usa una sola form client-side, con form inline su desktop e stacked su mobile, senza dipendenze esterne. Il serif arrivava da `fonts.googleapis.com` con un `<link rel="stylesheet">` nella `<head>`: una richiesta che **blocca il rendering** verso un altro dominio (~200ms prima di disegnare il testo), due `preconnect` e ~249KB di woff2 da `fonts.gstatic.com`. Ora è servito dallo stesso host della pagina: verificato in browser, **zero richieste a domini terzi** e `document.fonts.check('16px "Source Serif 4"')` vero. JS client: click-to-copy + icone animate (`motion`, con `LazyMotion`/`domMin`: solo le feature che servono). Zero immagini decorative, e l'unica immagine vera (l'avatar) è 0,8KB.
+- `browserslist` in `package.json` dichiara il target (**chrome/edge/firefox 111, safari 16.4**): è il motivo per cui il codice del progetto non viene retro-compilato oltre il necessario. Il blocco di polyfill che resta in `_next/` è dentro guardie `||` (si neutra su un browser moderno) e il chunk `nomodule` da 110KB non viene **nemmeno scaricato** dai browser attuali.
 - `rel="me"` sui social per verifica identità; canonical + OG `article:*` su ogni post; `theme-color` #FCFCFC.
 
 ## Note Next.js 16 (upgrade da 14)

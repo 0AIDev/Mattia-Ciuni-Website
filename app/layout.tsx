@@ -1,14 +1,32 @@
 import type { Metadata, Viewport } from "next";
-import { Inter } from "next/font/google";
+import { Inter, Source_Serif_4 } from "next/font/google";
 import "./globals.css";
 import { site } from "@/lib/site";
 import { socialImages } from "@/lib/social";
+import { NewsletterSection } from "@/components/NewsletterSection";
 import { SiteFooter } from "@/components/SiteFooter";
 import { LenisProvider } from "@/components/lenis-provider";
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
+  display: "swap",
+});
+
+// I due serif del sito, self-hosted come Inter.
+//
+// Prima arrivavano da `fonts.googleapis.com` con un `<link rel="stylesheet">`
+// nella `<head>`: una richiesta **che blocca il rendering** verso un dominio
+// terzo (~200 ms di attesa prima ancora di disegnare il testo) più due
+// `preconnect` e ~249 KiB di woff2 da `fonts.gstatic.com`. Self-hostati sono
+// serviti dallo stesso host della pagina: nessun DNS, nessuna connessione nuova,
+// niente da precollegare. `opsz` è l'asse ottico che il CDN usava, quindi la
+// resa non cambia.
+const sourceSerif = Source_Serif_4({
+  subsets: ["latin"],
+  style: ["normal", "italic"],
+  axes: ["opsz"],
+  variable: "--font-source-serif",
   display: "swap",
 });
 
@@ -59,16 +77,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang={site.language} className={inter.variable}>
-      <head>
-        <link rel="preconnect" href="https://fonts.googleapis.com" />
-        <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="anonymous" />
-        {/* eslint-disable-next-line @next/next/no-page-custom-font -- App Router: link Google Fonts globale */}
-        <link
-          href="https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,opsz,wght@0,8..60,200..900;1,8..60,200..900&display=swap"
-          rel="stylesheet"
-        />
-      </head>
+    <html lang={site.language} className={`${inter.variable} ${sourceSerif.variable}`}>
       <body className="bg-gray-background font-sans text-base leading-relaxed text-gray-1200">
         <a
           href="#content"
@@ -78,6 +87,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         </a>
         <LenisProvider>
           {children}
+          <NewsletterSection />
           <SiteFooter />
         </LenisProvider>
       </body>

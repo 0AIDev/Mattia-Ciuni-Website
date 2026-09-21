@@ -120,7 +120,10 @@ la TOC con gli anchor che esistono davvero, l'**OG card di ogni articolo e nota*
 build ha prodotto, così il controllo non può passare a vuoto; e nessuna card può
 restare orfana di un articolo che non esiste più), le card `.md` (struttura e
 copia per lo sviluppo), il 404 `noindex`, e il peso della homepage (HTML+CSS **raw** sotto i
-56KB: un tetto, non un desiderio).
+68KB: un tetto, non un desiderio; la sezione Sundays globale è inclusa nel budget. Era 56KB finché i due serif arrivavano da
+`fonts.googleapis.com`: le loro `@font-face` ora stanno nel CSS, +3,1KB raw che
+l'altro conto non faceva, e in cambio se ne vanno una richiesta che bloccava il
+rendering verso un altro dominio, due `preconnect` e ~249KB di woff2 da terzi).
 
 **Niente suite di test unitari, per ora, e vale la pena dirlo**: non c'è logica
 pura da provare separatamente (`lib/related.ts` è l'unica candidata). Il giorno in
@@ -231,7 +234,24 @@ trascrizione completa è un'altra cosa e serve solo a chi ha già deciso di legg
 quella pagina. Il giorno in cui serve, si costruisce dal documento esportato, con
 il suo annuncio in `<head>` e un controllo che dica la stessa pagina della card.
 
-## 6 · La notifica, e quando parte
+## 6 · Newsletter globale e performance
+
+La sezione **Sundays** viene inserita dal layout globale prima del footer, quindi
+compare sulla home, sugli indici, su ogni articolo, sulle note e sulla privacy.
+Il form invia solo l'email a `/api/subscribe` tramite la Pages Function: il
+secret Buttondown resta server-side, il campo honeypot non viene passato al
+provider e i log contengono solo evento, esito e latenza. In produzione il progetto Pages deve
+avere `BUTTONDOWN_API_KEY` come secret e `RATE_LIMIT` come binding KV; senza il
+binding il server rifiuta intenzionalmente le richieste, invece di fingere un
+rate limit sicuro.
+
+Il double opt-in resta una responsabilità di Buttondown: verificare nel
+pannello che la conferma sia attiva e che il welcome email parta solo dopo il
+click. `npm run test:newsletter` controlla il contratto offline; consegna reale,
+SPF/DKIM, KV e Lighthouse sono indicati come **UNVERIFIED** finché non vengono
+provati sul progetto Pages e su una casella di test.
+
+## 7 · La notifica, e quando parte
 
 **Oggi non parte.** Il sitemap è dichiarato in `robots.txt` (la riga `Sitemap:`),
 che è **scoperta** e non notifica: il motore la legge quando ripassa, non quando
@@ -257,7 +277,7 @@ una sessione si persiste solo dopo. Aggiungere analytics non è una decisione di
 marketing, è una decisione sulla CSP, sui tempi del primo schermo e sulla
 privacy di chi legge: va presa sapendo cosa si paga.
 
-## 7 · La pagina nuova, in ordine
+## 8 · La pagina nuova, in ordine
 
 1. Voce nel registro giusto (`lib/posts.ts` per un articolo, `lib/notes.ts` per
    una nota), con `title`, `description`, `date` e `keywords`.

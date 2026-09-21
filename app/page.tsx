@@ -59,11 +59,14 @@ export default function Home() {
       />
 
       <header className="mb-16 flex items-center gap-4 sm:mb-24">
+        {/* 80×80 nel file (WebP, ~2KB) per i 40px a cui è mostrato: `next/image`
+            è `unoptimized` (static export), quindi la dimensione giusta la Decide
+            il file, e la fa `scripts/gen-avatar.mjs`. */}
         <Image
-          src="/mattia.png"
+          src="/mattia.webp"
           alt=""
-          width={128}
-          height={128}
+          width={80}
+          height={80}
           className="h-10 w-10 shrink-0 rounded-full object-cover"
         />
         <h1 className="m-0 font-serif text-lg font-semibold">Mattia Ciuni</h1>

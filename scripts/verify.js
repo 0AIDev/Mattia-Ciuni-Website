@@ -299,6 +299,16 @@ check(
 
 // Favicon e logo nuovo
 check("index: favicon icon.png", index.includes('rel="icon"') && index.includes("icon.png") && !index.includes("icon.svg"));
+
+// L'avatar, alla dimensione in cui è mostrato. Il controllo nasce dal giorno in
+// cui la home serviva un PNG 128×128 da 10,7KB per un quadrato di 40px — su
+// mobile una richiesta che finisce prima, e Lighthouse stimava ~10KB di
+// risparmio. Serve a non rimettere un'immagine più grande del suo riquadro.
+const avatar = path.join(out, "mattia.webp");
+check(
+  "index: avatar WebP, sotto i 4KB",
+  index.includes('src="/mattia.webp"') && fs.existsSync(avatar) && fs.statSync(avatar).size < 4 * 1024,
+);
 check(
   "index: footer + logo signature",
   index.includes("© 2026 Mattia Ciuni") &&
@@ -347,5 +357,9 @@ const css = staticTotal(path.join(out, "_next", "static"), ".css");
 bytes += css;
 const jsTotal = staticTotal(path.join(out, "_next", "static"), ".js");
 console.log("homepage html+css: " + (bytes / 1024).toFixed(1) + "KB raw | all JS chunks: " + (jsTotal / 1024).toFixed(1) + "KB raw");
-check("weight: homepage html+css < 56KB raw", bytes < 56 * 1024);
+// Il budget comprende il CSS self-hosted (font inclusi) e la sezione Sundays
+// globale: la pagina resta sotto 68KB raw, mentre il browser non scarica più la
+// stylesheet Google né i ~249KB di font da gstatic.com. Il numero è un guardrail
+// per evitare regressioni, non un proxy del punteggio Lighthouse.
+check("weight: homepage html+css < 68KB raw", bytes < 68 * 1024);
 process.exit(fail ? 1 : 0);

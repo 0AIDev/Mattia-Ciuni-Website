@@ -2,13 +2,20 @@
   "name": "mattiaciuni-website",
   "version": "1.0.0",
   "private": true,
+  "browserslist": [
+    "chrome 111",
+    "edge 111",
+    "firefox 111",
+    "safari 16.4"
+  ],
   "scripts": {
     "dev": "next dev",
     "predev": "node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs",
     "build": "next build",
     "postbuild": "node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs",
     "start": "next start",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "test:newsletter": "node scripts/test-newsletter.mjs"
   },
   "dependencies": {
     "@animateicons/react": "^0.5.0",

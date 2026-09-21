@@ -460,7 +460,7 @@ perché né `next dev` né un server statico fanno girare quel pezzo.
 | `npm run lint` | ESLint flat config (fra cui: link interni con `next/link`) |
 | `npx tsc --noEmit` | i tipi |
 | `npm run build` | `next build` + `scripts/gen-cards.mjs` (8 pagine, 8 card) |
-| `node scripts/verify.js` | **57 controlli** sul costruito: un solo `h1` per pagina, canonical, OG, JSON-LD parseabile (Person, WebSite, BlogPosting, Article, `BreadcrumbList` **anche per le note**), breadcrumb visibile, `robots.txt` (agenti AI per nome + `Content-Signal`), sitemap (indice + figlie, **date che seguono i contenuti**, indice datato come le figlie), `lastmod`, l'**OG card di ogni articolo e nota** (ricavata dai registri, con il conteggio confrontato con le pagine costruite, e nessuna card orfana) e l'**`og:image` che ogni pagina dichiara** (letto dall'`<head>` di tutte le pagine costruite, e deve esistere: quando cade stampa il file mancante), annuncio della card markdown nella `<head>` **e** nel piè di pagina, link interni fra articoli e sezioni, TOC con gli anchor giusti, card `.md` (struttura e copia in `public/`), i **documenti di scoperta** (il `Link` di ogni pagina che punta a file che esistono, il linkset dell'`api-catalog`, il **digest ricalcolato** della skill), 404 `noindex`, peso dell'homepage (html+css < 56KB raw) |
+| `node scripts/verify.js` | **58 controlli** sul costruito: un solo `h1` per pagina, canonical, OG, JSON-LD parseabile (Person, WebSite, BlogPosting, Article, `BreadcrumbList` **anche per le note**), breadcrumb visibile, `robots.txt` (agenti AI per nome + `Content-Signal`), sitemap (indice + figlie, **date che seguono i contenuti**, indice datato come le figlie), `lastmod`, l'**OG card di ogni articolo e nota** (ricavata dai registri, con il conteggio confrontato con le pagine costruite, e nessuna card orfana) e l'**`og:image` che ogni pagina dichiara** (letto dall'`<head>` di tutte le pagine costruite, e deve esistere: quando cade stampa il file mancante), annuncio della card markdown nella `<head>` **e** nel piè di pagina, link interni fra articoli e sezioni, TOC con gli anchor giusti, card `.md` (struttura e copia in `public/`), i **documenti di scoperta** (il `Link` di ogni pagina che punta a file che esistono, il linkset dell'`api-catalog`, il **digest ricalcolato** della skill), 404 `noindex`, peso dell'homepage (html+css < 60KB raw — alzato il 21/09 quando le `@font-face` del serif sono entrate nel CSS al posto del foglio di Google, che il conto non faceva) |
 
 `verify.js` è deliberatamente **una cosa sola**: non è una suite, è un file che si
 legge in un minuto e che aggiunge una riga per ogni regola che ci è già costata
@@ -586,7 +586,8 @@ sitemap: un indice + tre figlie · 8 URL in totale · lastmod che segue i conten
 robots.txt: 33 blocchi · 32 agenti AI per nome · Content-Signal dichiarato
 JSON-LD: Person + WebSite · BlogPosting + BreadcrumbList · Article + BreadcrumbList · Blog
 scoperta: Link su ogni pagina · api-catalog (1 linkset, 2 documenti) · 1 skill con digest
-verify.js: 57 controlli, tutti verdi · homepage html+css 55.2KB raw · JS 778.3KB raw
+verify.js: 58 controlli, tutti verdi · homepage html+css 65.2KB raw · JS 768.3KB raw · Sundays globale prima del footer
+font: self-hosted (Inter + Source Serif 4) · zero richieste a domini terzi · avatar 0,8KB WebP
 pubblicazione: Cloudflare Pages · dominio dichiarato: https://mattiaciuni.pages.dev
 ```
 
@@ -620,7 +621,7 @@ app/robots.txt/route.ts        permessi dichiarati: agenti AI per nome + Content
 app/llms.txt/route.ts          il file che un motore generativo legge per primo
 app/feed.xml/route.ts          RSS
 scripts/gen-cards.mjs          le card markdown, dal costruito
-scripts/verify.js              i 57 controlli locali (offline)
+scripts/verify.js              i 58 controlli locali (offline)
 scripts/check-live.mjs         i controlli sul sito pubblicato (DNS, sitemap, canonical, card)
 lib/site-origin.ts             l'unica stringa del dominio, letta da build, Function e controlli
 functions/_middleware.ts       l'unico codice: markdown a richiesta + il dominio che segue l'host
