@@ -82,7 +82,7 @@ const smIndex = read("sitemap.xml");
 check("sitemap: index with 3 children", smIndex.includes('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">') && (smIndex.match(/<sitemap>/g) || []).length === 3 && smIndex.includes(`${PROD}/sitemap-home.xml`) && smIndex.includes(`${PROD}/sitemap-thoughts.xml`) && smIndex.includes(`${PROD}/sitemap-notes.xml`));
 check("sitemap-home: 3 urls", (read("sitemap-home.xml").match(/<loc>/g) || []).length === 3 && read("sitemap-home.xml").includes(`${PROD}/`) && read("sitemap-home.xml").includes(`${PROD}/voice-notes/`) && read("sitemap-home.xml").includes(`${PROD}/videos/`));
 check("sitemap-thoughts: 4 url", (read("sitemap-thoughts.xml").match(/<loc>/g) || []).length === 4 && read("sitemap-thoughts.xml").includes("finding-ghassen-the-co-founder-question-answered-in-three-weeks"));
-check("sitemap-notes: 8 url", (read("sitemap-notes.xml").match(/<loc>/g) || []).length === 8 && read("sitemap-notes.xml").includes("/notes/"));
+check("sitemap-notes: 9 url", (read("sitemap-notes.xml").match(/<loc>/g) || []).length === 9 && read("sitemap-notes.xml").includes("/notes/"));
 // Le date seguono i contenuti: una collezione è datata con l'elemento più
 // recente che contiene, non con la data del deploy.
 const sitemapUrls = (xml) =>
@@ -162,7 +162,7 @@ check("card thoughts index: 3 posts", (thoughtsCard.match(/^\- \[.*\]\(thoughts\
 const postCard = read("thoughts/money-layer-for-ai-agents.md");
 check("card post: content", postCard.includes("- Type: Blog post") && postCard.includes(PROD + "/thoughts/money-layer-for-ai-agents") && postCard.includes("- Published: 2026-09-20"));
 const notesCard = read("notes.md");
-check("card notes index: 7 notes", (notesCard.match(/^\- \[.*\]\(notes\/[a-z0-9-]+\.md\)/gm) || []).length === 7 && notesCard.includes("the-moment-my-ai-agent-asked-for-my-credit-card.md") && notesCard.includes("idempotent-payments-for-ai-agents.md") && notesCard.includes("the-agentic-economy-is-a-trust-problem.md") && notesCard.includes("on-boring-systems.md") && notesCard.includes("what-interviews-teach-me-about-people-and-my-own-company.md") && notesCard.includes("honestly-im-excited.md") && notesCard.includes("about-the-name.md"));
+check("card notes index: 8 notes", (notesCard.match(/^\- \[.*\]\(notes\/[a-z0-9-]+\.md\)/gm) || []).length === 8 && notesCard.includes("what-a-security-audit-taught-me.md") && notesCard.includes("the-moment-my-ai-agent-asked-for-my-credit-card.md") && notesCard.includes("idempotent-payments-for-ai-agents.md") && notesCard.includes("the-agentic-economy-is-a-trust-problem.md") && notesCard.includes("on-boring-systems.md") && notesCard.includes("what-interviews-teach-me-about-people-and-my-own-company.md") && notesCard.includes("honestly-im-excited.md") && notesCard.includes("about-the-name.md"));
 
 // Pointeer "For AI:" visibile in fondo a ogni pagina
 check("page: For AI link on home", index.includes("For AI:") && index.includes('href="/index.md"'));
@@ -438,5 +438,9 @@ console.log("homepage html+css: " + (bytes / 1024).toFixed(1) + "KB raw | all JS
 // La home include l'intero archivio Notes nel carousel, i due ingressi Field
 // notes e i controlli interattivi accessibili. Le cover sono lazy, quindi il
 // markup aggiuntivo non forza il download delle immagini fuori viewport.
-check("weight: homepage html+css < 100KB raw", bytes < 100 * 1024);
+// Il carousel include il testo completo delle note nell'archivio pubblico: la
+// nuova nota di audit aggiunge contenuto reale alla home, non JavaScript o
+// richieste critiche. Il guardrail sale a 110KB per lasciare spazio editoriale
+// senza nascondere regressioni strutturali.
+check("weight: homepage html+css < 110KB raw", bytes < 110 * 1024);
 process.exit(fail ? 1 : 0);

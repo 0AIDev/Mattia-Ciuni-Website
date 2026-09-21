@@ -13,6 +13,154 @@ export interface Note {
 
 const raw: Note[] = [
   {
+    slug: "what-a-security-audit-taught-me",
+    title: "What a security audit taught me that no bootcamp will",
+    description:
+      "I paid strangers to attack my payments engine. The race conditions, the ledger that lied to itself, and the deletion that would have erased every customer.",
+    date: "2026-10-12",
+    keywords: [
+      "security audit",
+      "payments security",
+      "fintech engineering",
+      "race conditions",
+      "Payle",
+    ],
+    content: [
+      {
+        type: "h2",
+        text: "I shipped it, and then I paid strangers to attack it",
+      },
+      {
+        type: "p",
+        text: "Eight weeks into building Payle, I did something most pre-seed founders don't do: I hired someone to find everything wrong with my code.",
+      },
+      {
+        type: "p",
+        text: "Not a code review from a friend. Not a \"looks good to me\" from a cofounder. A full external audit of the money path: the authorization engine, the ledger, every place where a euro could move without a human understanding why.",
+      },
+      {
+        type: "p",
+        text: "I want to tell you what it found, because the list humbled me, taught me more than any tutorial ever has, and contains lessons that no bootcamp in the world includes in its curriculum.",
+      },
+      {
+        type: "h2",
+        text: "Finding one: the race that could double-charge",
+      },
+      {
+        type: "p",
+        text: "My authorization endpoint checked the budget, then wrote the decision, then recorded the idempotency key. Three steps. Linear. Obvious.",
+      },
+      {
+        type: "p",
+        text: "Except that HTTP doesn't care about my sense of order. Two identical requests arriving at the same millisecond, and agents retry aggressively because that is their nature, could both pass the check, both write a decision, and both authorize a payment. Double charge. Same user. Same second.",
+      },
+      {
+        type: "p",
+        text: "The fix sounds boring and is beautiful: the idempotency claim and the decision must live in the same database transaction. Insert the key first. If another request got there first, return its stored response. If not, this request owns the key and the decision. One transaction. One truth.",
+      },
+      {
+        type: "p",
+        text: "In payments, correctness isn't about what your code does. It is about what your code does when two copies of it run at the same time.",
+      },
+      {
+        type: "p",
+        text: "Concurrency is where junior code and production code diverge.",
+      },
+      {
+        type: "h2",
+        text: "Finding two: the ledger that lied to itself",
+      },
+      {
+        type: "p",
+        text: "I was proud of my hash-chained ledger. Every entry linked to the previous one with sha256. Tamper-evident, like a blockchain, but honest about being a database.",
+      },
+      {
+        type: "p",
+        text: "The audit found two holes in it. First: I read the previous hash outside the transaction that appended the new entry, meaning two concurrent writes could fork the chain. Second: one lifecycle path wrote a literal string as a hash instead of computing one. My own verification tool, pointed at my own healthy system, would have cried \"TAMPERED.\"",
+      },
+      {
+        type: "p",
+        text: "Both fixed. Both now covered by tests that fail if anyone ever regresses them.",
+      },
+      {
+        type: "p",
+        text: "A security property you haven't tested is a decoration, not a property.",
+      },
+      {
+        type: "p",
+        text: "\"The ledger is immutable\" is a sentence. \"This test proves the chain verifies after 10,000 mixed-lifecycle operations\" is a fact.",
+      },
+      {
+        type: "h2",
+        text: "Finding three: the deletion that would have erased everyone",
+      },
+      {
+        type: "p",
+        text: "This one still keeps me up at night, a little.",
+      },
+      {
+        type: "p",
+        text: "My account-deletion endpoint deleted ledger entries. With no WHERE clause. Meaning: one user tapping \"delete my account\" would have wiped the audit trail of every customer in the system. The audit called it what it was: a global data destruction bug hiding behind a routine feature.",
+      },
+      {
+        type: "p",
+        text: "The fix: the ledger is never deleted, ever. Account deletion pseudonymizes the user's identity while preserving the financial chain. Roles at the database level now enforce what the application used to promise.",
+      },
+      {
+        type: "p",
+        text: "Destructive operations need to be scoped at the database level, not by application discipline.",
+      },
+      {
+        type: "p",
+        text: "Application code changes. Privileges don't, unless you make them.",
+      },
+      {
+        type: "h2",
+        text: "Finding four: fail-safe vs fail-open",
+      },
+      {
+        type: "p",
+        text: "When the risk service is down, what should the payment system do? Block everything, or approve everything?",
+      },
+      {
+        type: "p",
+        text: "I had built neither, because I hadn't built the risk service yet, so the question was theoretical. The audit forced it to become practical: it wired the fail-safe path, made \"risk service unreachable\" a first-class state, and added the rule I now consider sacred: when uncertain, a human approves. Machines don't guess with money.",
+      },
+      {
+        type: "h2",
+        text: "The full list was longer",
+      },
+      {
+        type: "p",
+        text: "Missing rate limiting. PII in logs. A config that boots happy when malformed and dies on first request. An ID verification flow that a 2023-era attacker would laugh at. Each finding was a conversation between me and my own assumptions.",
+      },
+      {
+        type: "p",
+        text: "And the reason I'm writing this isn't humility. It's arithmetic: every one of these bugs, found after launch, costs ten times more, in money, in trust, in YC interviews where a partner asks \"how do you know your ledger doesn't fork?\" and you don't have an answer with a test in it.",
+      },
+      {
+        type: "h2",
+        text: "What I'd tell every builder now",
+      },
+      {
+        type: "p",
+        text: "If you're building anything that touches money, do this before your next feature:\n1. Get someone whose job is breaking your assumptions.\n2. Fix what they find with tests that fail before the fix.\n3. Keep those tests in CI forever, so the lesson can't be unlearned.",
+      },
+      {
+        type: "p",
+        text: "The audit didn't just find bugs. It taught me the difference between code that works and code that deserves to hold someone's money. That difference is the entire fintech industry, compressed.",
+      },
+      {
+        type: "p",
+        text: "No bootcamp covers it. You get it by paying strangers to attack the thing you love.",
+      },
+      {
+        type: "p",
+        text: "Worth every cent.",
+      },
+    ],
+  },
+  {
     slug: "the-moment-my-ai-agent-asked-for-my-credit-card",
     title: "The moment my AI agent asked for my credit card",
     description:

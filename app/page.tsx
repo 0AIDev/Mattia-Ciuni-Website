@@ -25,9 +25,19 @@ const personJsonLd = {
   "@context": "https://schema.org",
   "@type": "Person",
   name: "Mattia Ciuni",
-  jobTitle: "Founder & CEO",
+  alternateName: ["Mattia Ciuni, Payle founder", "Mattia Ciuni, CEO of Payle"],
+  jobTitle: "Founder & CEO of Payle",
   worksFor: { "@type": "Organization", name: "Payle", url: site.payleUrl },
   url: site.url,
+  mainEntityOfPage: site.url,
+  knowsAbout: [
+    "AI agents",
+    "agentic commerce",
+    "payments infrastructure",
+    "fintech",
+    "software engineering",
+    "founder-led companies",
+  ],
   sameAs: [site.social.github, site.social.linkedin, site.social.x, site.social.instagram, site.social.crunchbase],
   email: `mailto:${site.email}`,
   description: "Founder & CEO of Payle, the money layer for AI agents",
@@ -145,6 +155,16 @@ export default function Home() {
           .
         </p>
       </div>
+
+      <section aria-labelledby="about-mattia-ciuni" className="mb-16 sm:mb-24">
+        <h2 id="about-mattia-ciuni" className="mb-4 font-serif font-medium">Who is Mattia Ciuni?</h2>
+        <p className="m-0 text-text-paragraph">
+          Mattia Ciuni is an Italian founder and the founder and CEO of Payle, a company building the money layer for AI agents. He works on the rules, authorization and receipts that let software spend money safely on behalf of people.
+        </p>
+        <p className="mt-4 m-0 text-text-paragraph">
+          What does Mattia Ciuni do? Before Payle, he built Celeste, an AI browser. Today his work sits at the intersection of AI agents, payments infrastructure, fintech and software engineering.
+        </p>
+      </section>
 
       <section aria-labelledby="principles" className="mb-16 sm:mb-24">
         <h2 id="principles" className="mb-4 font-serif font-medium">Principles</h2>

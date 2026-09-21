@@ -244,6 +244,10 @@ $articles += Get-Articles "lib/notes.ts" "Notes"
 if ($Only) { $articles = $articles | Where-Object { $_.Slug -eq $Only } }
 if (!$articles) { Write-Error "nessun articolo trovato con slug '$Only'"; exit 1 }
 
+# Card senza CTA pill: per questi articoli vale il disegno di prima (testo
+# centrato, nessuna pillola). Il commit che le ha approvate: b93b553.
+$noCtaSlugs = @("finding-ghassen-the-co-founder-question-answered-in-three-weeks")
+
 # Due immagini per ogni articolo, dallo stesso disegno:
 #   og.png     la card social, col logo in alto (quella che dichiara og:image);
 #   cover.png  l'immagine che sta in pagina sopra il titolo: senza logo, quindi
@@ -257,7 +261,7 @@ if (!(Test-Path $bgCover)) {
 foreach ($a in $articles) {
   $dir = if ($a.Kind -eq "Thoughts") { "thoughts" } else { "notes" }
   $subText = if ($Subtitle -eq "meta") { $a.Meta } else { $a.Description }
-  $cta = if ($a.Kind -eq "Thoughts") { "Read thought" } else { "Read note" }
+  $cta = if ($noCtaSlugs -contains $a.Slug) { "" } elseif ($a.Kind -eq "Thoughts") { "Read thought" } else { "Read note" }
   New-ArticleCard $bgCard  $a.Title $subText (Join-Path $OutRoot ($dir + "\" + $a.Slug + "\og.png")) 230 604 $cta
   New-ArticleCard $bgCover $a.Title $subText (Join-Path $OutRoot ($dir + "\" + $a.Slug + "\cover.png")) 60 570 $cta
 }

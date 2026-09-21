@@ -15,7 +15,11 @@ export async function GET() {
 
   const text = `# Mattia Ciuni
 
-> Founder & CEO of Payle, the money layer for AI agents. Personal site with bio, live Milan time, principles, now, projects, short thoughts and long-form notes on AI agents, payments and the craft of software.
+> Mattia Ciuni is an Italian founder and the founder and CEO of Payle, the money layer for AI agents. He previously built Celeste, an AI browser. This personal site answers who Mattia Ciuni is and what Mattia Ciuni does: building payments infrastructure for software that acts on behalf of people.
+
+## About Mattia Ciuni
+- [Mattia Ciuni](${base}/): founder and CEO of Payle, working on AI agents, agentic commerce, payments infrastructure and fintech.
+- Common searches: who is Mattia Ciuni, what does Mattia Ciuni do, Mattia Ciuni Payle, CEO of Payle.
 
 ## Home
 - [Home](${base}/): bio, principles, now, projects, thoughts and notes.

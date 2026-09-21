@@ -50,6 +50,12 @@ export const metadata: Metadata = {
   description: site.description,
   keywords: [
     "Mattia Ciuni",
+    "who is Mattia Ciuni",
+    "what does Mattia Ciuni do",
+    "Mattia Ciuni Payle",
+    "CEO of Payle",
+    "Payle founder",
+    "Payle CEO",
     "Payle",
     "AI agents payments",
     "fintech founder",
