@@ -14,6 +14,7 @@ import { TwitterIcon } from "@/components/ui/twitter";
 import { site } from "@/lib/site";
 import { posts } from "@/lib/posts";
 import { notes } from "@/lib/notes";
+import { feedback } from "@/lib/feedback";
 
 export const metadata: Metadata = {
   // La card markdown della pagina si annuncia nella <head>, non solo nel piè di
@@ -260,6 +261,32 @@ export default function Home() {
           Longer, slower pieces on the systems, people and ideas behind the work.
         </p>
         <NotesCarousel notes={notes} />
+      </section>
+
+      <section aria-labelledby="feedback" className="mb-16 sm:mb-24">
+        <div className="mb-2 flex items-baseline justify-between gap-4">
+          <h2 id="feedback" className="font-serif font-medium">Feedback</h2>
+          <Link href="/feedback/" className="text-sm text-gray-1000 article-underline">All feedback</Link>
+        </div>
+        <p className="mb-6 max-w-[600px] text-text-paragraph">
+          Engineers attack Payle&apos;s architecture in public. I publish what their attacks changed, corrections included.
+        </p>
+        <ul className="m-0 list-none divide-y divide-gray-300 border-t-2 border-gray-1200 p-0">
+          {feedback.map((f) => (
+            <li key={f.slug}>
+              <Link
+                href={`/feedback/${f.slug}/`}
+                className="group flex items-baseline justify-between gap-4 py-3.5"
+              >
+                <span className="font-serif font-[450]">{f.title}</span>
+                <span className="flex items-center gap-2 whitespace-nowrap text-gray-1000">
+                  {f.author}
+                  <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+                </span>
+              </Link>
+            </li>
+          ))}
+        </ul>
       </section>
 
       <section aria-labelledby="field-notes" className="mb-16 sm:mb-24">

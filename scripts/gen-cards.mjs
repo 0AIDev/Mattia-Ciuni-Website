@@ -110,8 +110,10 @@ const pages = listPages(outDir)
     if (!pagePath) type = "Home";
     else if (pagePath === "thoughts") type = "Thoughts index";
     else if (pagePath === "notes") type = "Notes index";
+    else if (pagePath === "feedback") type = "Feedback index";
     else if (segments[0] === "thoughts") type = "Blog post";
     else if (segments[0] === "notes") type = "Note";
+    else if (segments[0] === "feedback") type = "Feedback post";
     else type = "Page";
     return { pagePath, segments, type, meta: parse(readFileSync(file, "utf8")) };
   });
@@ -127,7 +129,7 @@ const byKind = (kind) =>
           ? 1
           : -1
     );
-const kinds = { thoughts: "Thoughts", notes: "Notes" };
+const kinds = { thoughts: "Thoughts", notes: "Notes", feedback: "Feedback" };
 const relLink = (from, to) =>
   posix.relative(posix.dirname(from + ".md"), (to || "index") + ".md");
 
@@ -136,7 +138,7 @@ function cardBody(p) {
   if (p.meta.description) lines.push("", "> " + p.meta.description);
   lines.push("", "- URL: " + p.meta.url, "- Type: " + p.type);
   if (p.meta.published) lines.push("- Published: " + p.meta.published);
-  if (p.type === "Blog post" || p.type === "Note") {
+  if (p.type === "Blog post" || p.type === "Note" || p.type === "Feedback post") {
     const article = markdownArticle(p.meta.html);
     if (article) lines.push("", "## Full article", "", article);
   }

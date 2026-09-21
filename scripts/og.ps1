@@ -241,6 +241,7 @@ if ((Get-Item (Join-Path $Root "sfondo.svg")).LastWriteTime -gt (Get-Item $bgCar
 $articles = @()
 $articles += Get-Articles "lib/posts.ts" "Thoughts"
 $articles += Get-Articles "lib/notes.ts" "Notes"
+$articles += Get-Articles "lib/feedback.ts" "Feedback"
 if ($Only) { $articles = $articles | Where-Object { $_.Slug -eq $Only } }
 if (!$articles) { Write-Error "nessun articolo trovato con slug '$Only'"; exit 1 }
 
@@ -259,11 +260,11 @@ if (!(Test-Path $bgCover)) {
 }
 
 foreach ($a in $articles) {
-  $dir = if ($a.Kind -eq "Thoughts") { "thoughts" } else { "notes" }
+  $dir = if ($a.Kind -eq "Thoughts") { "thoughts" } elseif ($a.Kind -eq "Feedback") { "feedback" } else { "notes" }
   $ogPath = Join-Path $OutRoot ($dir + "\" + $a.Slug + "\og.png")
   $coverPath = Join-Path $OutRoot ($dir + "\" + $a.Slug + "\cover.png")
   $subText = if ($Subtitle -eq "meta") { $a.Meta } else { $a.Description }
-  $cta = if ($noCtaSlugs -contains $a.Slug) { "" } elseif ($a.Kind -eq "Thoughts") { "Read thought" } else { "Read note" }
+  $cta = if ($noCtaSlugs -contains $a.Slug) { "" } elseif ($a.Kind -eq "Thoughts") { "Read thought" } elseif ($a.Kind -eq "Feedback") { "Read feedback" } else { "Read note" }
 
   # Ghassen ha un master editoriale dedicato, fornito per questa pagina:
   # non va ricomposto con il template delle altre Thoughts.

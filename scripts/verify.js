@@ -79,7 +79,10 @@ check("note: BreadcrumbList valid", !!noteCrumb && noteCrumb.itemListElement.len
 check("404: noindex + home link", read("404.html").includes('name="robots" content="noindex"') && read("404.html").includes("Go back home"));
 
 const smIndex = read("sitemap.xml");
-check("sitemap: index with 3 children", smIndex.includes('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">') && (smIndex.match(/<sitemap>/g) || []).length === 3 && smIndex.includes(`${PROD}/sitemap-home.xml`) && smIndex.includes(`${PROD}/sitemap-thoughts.xml`) && smIndex.includes(`${PROD}/sitemap-notes.xml`));
+check(
+  "sitemap: index with 4 children",
+  smIndex.includes('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">') && (smIndex.match(/<sitemap>/g) || []).length === 4 && smIndex.includes(`${PROD}/sitemap-home.xml`) && smIndex.includes(`${PROD}/sitemap-thoughts.xml`) && smIndex.includes(`${PROD}/sitemap-notes.xml`) && smIndex.includes(`${PROD}/sitemap-feedback.xml`)
+);
 check("sitemap-home: 3 urls", (read("sitemap-home.xml").match(/<loc>/g) || []).length === 3 && read("sitemap-home.xml").includes(`${PROD}/`) && read("sitemap-home.xml").includes(`${PROD}/voice-notes/`) && read("sitemap-home.xml").includes(`${PROD}/videos/`));
 check("sitemap-thoughts: 4 url", (read("sitemap-thoughts.xml").match(/<loc>/g) || []).length === 4 && read("sitemap-thoughts.xml").includes("finding-ghassen-the-co-founder-question-answered-in-three-weeks"));
 check("sitemap-notes: 9 url", (read("sitemap-notes.xml").match(/<loc>/g) || []).length === 9 && read("sitemap-notes.xml").includes("/notes/"));
@@ -151,7 +154,7 @@ check(
     note.includes("rel=\"alternate\" type=\"text/markdown\"")
 );
 const llmtxt = read("llms.txt");
-check("llms.txt: valid", llmtxt.startsWith("# Mattia Ciuni") && llmtxt.includes("## Thoughts") && llmtxt.includes("## Notes") && llmtxt.includes("/thoughts/") && llmtxt.includes("/notes/") && llmtxt.includes("mailto:") && llmtxt.includes(".md"));
+check("llms.txt: valid", llmtxt.startsWith("# Mattia Ciuni") && llmtxt.includes("## Thoughts") && llmtxt.includes("## Notes") && llmtxt.includes("## Feedback") && llmtxt.includes("/thoughts/") && llmtxt.includes("/notes/") && llmtxt.includes("/feedback/") && llmtxt.includes("mailto:") && llmtxt.includes(".md"));
 
 // Card For AI: file .md generati in postbuild da scripts/gen-cards.mjs
 const homeCard = read("index.md");
@@ -163,6 +166,11 @@ const postCard = read("thoughts/money-layer-for-ai-agents.md");
 check("card post: content", postCard.includes("- Type: Blog post") && postCard.includes(PROD + "/thoughts/money-layer-for-ai-agents") && postCard.includes("- Published: 2026-09-20"));
 const notesCard = read("notes.md");
 check("card notes index: 8 notes", (notesCard.match(/^\- \[.*\]\(notes\/[a-z0-9-]+\.md\)/gm) || []).length === 8 && notesCard.includes("what-a-security-audit-taught-me.md") && notesCard.includes("the-moment-my-ai-agent-asked-for-my-credit-card.md") && notesCard.includes("idempotent-payments-for-ai-agents.md") && notesCard.includes("the-agentic-economy-is-a-trust-problem.md") && notesCard.includes("on-boring-systems.md") && notesCard.includes("what-interviews-teach-me-about-people-and-my-own-company.md") && notesCard.includes("honestly-im-excited.md") && notesCard.includes("about-the-name.md"));
+const feedbackIndexPage = read("feedback/index.html");
+const feedbackPostPage = read("feedback/a-stranger-redesigned-my-pitch-in-one-comment/index.html");
+check("feedback: index + post built", feedbackIndexPage.includes("Feedback series") && feedbackPostPage.includes("A stranger redesigned my pitch in one comment"));
+check("feedback: card with full article", read("feedback/a-stranger-redesigned-my-pitch-in-one-comment.md").includes("## Full article"));
+check("index: feedback section", index.includes("Feedback") && index.includes("/feedback/"));
 
 // Pointeer "For AI:" visibile in fondo a ogni pagina
 check("page: For AI link on home", index.includes("For AI:") && index.includes('href="/index.md"'));
@@ -199,24 +207,30 @@ const cardsIn = (dir) =>
     .map((e) => e.name);
 const postSlugs = slugsIn("lib/posts.ts");
 const noteSlugs = slugsIn("lib/notes.ts");
+const feedbackSlugs = slugsIn("lib/feedback.ts");
 check(
-  "og: every article and note has its card",
+  "og: every article, note and feedback post has its card",
   postSlugs.length > 0 &&
     noteSlugs.length > 0 &&
+    feedbackSlugs.length > 0 &&
     postSlugs.length === pagesIn("thoughts").length &&
     noteSlugs.length === pagesIn("notes").length &&
+    feedbackSlugs.length === pagesIn("feedback").length &&
     postSlugs.every((slug) => fs.existsSync(cardPath("thoughts", slug))) &&
-    noteSlugs.every((slug) => fs.existsSync(cardPath("notes", slug)))
+    noteSlugs.every((slug) => fs.existsSync(cardPath("notes", slug))) &&
+    feedbackSlugs.every((slug) => fs.existsSync(cardPath("feedback", slug)))
 );
 check(
-  "covers: every article and note has its in-page image",
+  "covers: every article, note and feedback post has its in-page image",
   postSlugs.every((slug) => fs.existsSync(path.join(out, "thoughts", slug, "cover.png"))) &&
-    noteSlugs.every((slug) => fs.existsSync(path.join(out, "notes", slug, "cover.png")))
+    noteSlugs.every((slug) => fs.existsSync(path.join(out, "notes", slug, "cover.png"))) &&
+    feedbackSlugs.every((slug) => fs.existsSync(path.join(out, "feedback", slug, "cover.png")))
 );
 check(
   "og: no card without an article",
   cardsIn("thoughts").every((slug) => postSlugs.includes(slug)) &&
-    cardsIn("notes").every((slug) => noteSlugs.includes(slug))
+    cardsIn("notes").every((slug) => noteSlugs.includes(slug)) &&
+    cardsIn("feedback").every((slug) => feedbackSlugs.includes(slug))
 );
 check(
   "og: each section declares its own card",

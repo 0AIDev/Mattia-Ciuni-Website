@@ -1,6 +1,7 @@
 import { site } from "@/lib/site";
 import { posts } from "@/lib/posts";
 import { notes } from "@/lib/notes";
+import { feedback } from "@/lib/feedback";
 
 export const dynamic = "force-static";
 
@@ -31,6 +32,10 @@ ${thoughtLinks}
 ## Notes
 - [Notes](${base}/notes/): longer, slower pieces on the philosophy of building software.
 ${noteLinks}
+
+## Feedback
+- [Feedback](${base}/feedback/): public exchanges where engineers attacked Payle's architecture, and what the attacks changed. Readers can send their own feedback by email; it gets reviewed, and if it holds, it gets published.
+${feedback.map((f) => `- [${f.title}](${base}/feedback/${f.slug}/)`).join("\n")}
 
 ## Field notes
 - [Voice Notes](${base}/voice-notes/): spoken thoughts, to be published when they are ready.
