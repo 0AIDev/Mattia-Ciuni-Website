@@ -14,7 +14,7 @@ export interface Note {
 const raw: Note[] = [
   {
     slug: "what-a-security-audit-taught-me",
-    title: "What a security audit taught me that no bootcamp will",
+    title: "The wall in my code: what a security audit taught me that no bootcamp will",
     description:
       "I paid strangers to attack my payments engine. The race conditions, the ledger that lied to itself, and the deletion that would have erased every customer.",
     date: "2026-09-21",
