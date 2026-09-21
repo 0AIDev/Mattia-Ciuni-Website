@@ -93,17 +93,13 @@ export function NewsletterSection() {
   return (
     <section aria-labelledby="newsletter-title" className="mx-auto mb-14 max-w-[692px] px-5 sm:mb-24 sm:px-6">
       <div className="mx-auto max-w-[560px]">
-        <h2 id="newsletter-title" className="max-w-[30rem] text-balance font-serif text-xl leading-[1.18] text-gray-1200 sm:text-3xl sm:leading-tight">
-          Every Sunday I send one email: what I shipped, what broke, what I decided and why.
-        </h2>
-        <p className="mt-3 max-w-[520px] text-[15px] leading-[1.55] text-gray-1000 sm:text-base sm:leading-relaxed">
-          Building Payle in public, from Italy to San Francisco. No spam, no growth hacks. Just the log.
-        </p>
-
         {displayState === "success" ? (
-          <div className="mt-7" role="status" aria-live="polite">
-            <p className="font-serif text-lg leading-relaxed text-gray-1200 sm:text-xl">
-              You&apos;re in. Check your inbox for the <strong>Welcome</strong> email, then you&apos;ll get the story so far while you wait for Sunday.
+          <div className="mt-2 text-center" role="status" aria-live="polite">
+            <p className="font-serif text-3xl leading-tight text-gray-1200 sm:text-4xl">
+              You&apos;re in.
+            </p>
+            <p className="mx-auto mt-5 max-w-[34rem] font-sans text-lg leading-relaxed text-gray-1000 sm:text-xl">
+              Every Sunday, I&apos;ll send the honest version of building Payle: the decisions, the hard parts, and the moments that change what I&apos;m building. See you in the first one.
             </p>
           </div>
         ) : displayState === "duplicate" ? (
@@ -115,6 +111,13 @@ export function NewsletterSection() {
           </div>
         ) : (
           <>
+            <h2 id="newsletter-title" className="max-w-[30rem] text-balance font-serif text-xl leading-[1.18] text-gray-1200 sm:text-3xl sm:leading-tight">
+              Every Sunday I send one email: what I shipped, what broke, what I decided and why.
+            </h2>
+            <p className="mt-3 max-w-[520px] text-[15px] leading-[1.55] text-gray-1000 sm:text-base sm:leading-relaxed">
+              Building Payle in public, from Italy to San Francisco. No spam, no growth hacks. Just the log.
+            </p>
+
             <form
               onSubmit={submit}
               className="mt-6 box-border grid w-full max-w-[520px] min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1 overflow-hidden rounded-full border border-gray-400 p-1 transition-colors focus-within:border-gray-1200 focus-within:ring-2 focus-within:ring-gray-1200/15 sm:mt-7 sm:gap-2"
@@ -156,13 +159,12 @@ export function NewsletterSection() {
             <p id="newsletter-status" role="status" aria-live="polite" className="mt-3 min-h-5 text-sm text-gray-1000">
               {state === "error" ? error : ""}
             </p>
+            <p className="mt-4 max-w-[520px] text-[13px] leading-[1.55] text-gray-1000 sm:mt-5 sm:leading-relaxed">
+              One email a week. Unsubscribe anytime. No data sharing, ever. Your voice never leaves your phone either. {" "}
+              <a href="/privacy/" className="underline decoration-gray-400 underline-offset-4 hover:text-gray-1200">privacy</a>
+            </p>
           </>
         )}
-
-        <p className="mt-4 max-w-[520px] text-[13px] leading-[1.55] text-gray-1000 sm:mt-5 sm:leading-relaxed">
-          One email a week. Unsubscribe anytime. No data sharing, ever. Your voice never leaves your phone either. {" "}
-          <a href="/privacy/" className="underline decoration-gray-400 underline-offset-4 hover:text-gray-1200">privacy</a>
-        </p>
       </div>
     </section>
   );

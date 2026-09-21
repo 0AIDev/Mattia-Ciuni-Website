@@ -17,6 +17,8 @@ assert.match(component, /Subscribing\.\.\./);
 assert.match(component, /utm_campaign/);
 assert.match(component, /referrer/);
 assert.match(component, /rate_limited/);
+assert.match(component, /Every Sunday, I&apos;ll send the honest version/);
+assert.doesNotMatch(component, /Check your inbox for the <strong>Welcome<\/strong> email/);
 assert.match(component, /grid-cols-\[minmax\(0,1fr\)_auto\]/);
 assert.match(component, /overflow-hidden/);
 
