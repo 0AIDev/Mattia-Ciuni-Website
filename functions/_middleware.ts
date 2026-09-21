@@ -87,14 +87,21 @@ export const onRequest = async (context: Context): Promise<Response> => {
   const origin = servingOrigin(url, env);
 
   // Sotto un percorso privato non esiste nessuna card, e va detto **qui**, non
-  // solo nel generatore. Il file è sparito dall'export, ma la copia che l'edge
+  // solo nel generatore: il file è sparito dall'export, ma la copia che l'edge
   // aveva già in cache continua a rispondere per il resto della sua scadenza
-  // (`admin/feedback.md` ha continuato a servire il markdown della dashboard
-  // per mezz'ora dopo il deploy): una richiesta servita da una copia in cache non
-  // arriva mai a questa Function, mentre una che ci arriva non si serve dalla
-  // cache degli asset — quindi la riga chiude la finestra invece di aspettarla.
-  // E vale per ogni card futura, non solo per quella cancellata oggi.
-  if (/^\/admin\/.*\.md$/i.test(url.pathname)) {
+  // (`admin/feedback.md` ha servito il markdown della dashboard per mezz'ora dopo
+  // il deploy), e `env.ASSETS.fetch()` la ritrovava anche dopo.
+  //
+  // Quindi due regole, non una. La prima: il file si nega, anche con la barra
+  // finale, e la risposta arriva prima di guardare gli asset. La seconda, che
+  // conta di più: su un percorso privato la **negoziazione markdown non si fa
+  // proprio** — senza, `/admin/feedback/` con `Accept: text/markdown` serviva
+  // ancora la card via `ASSETS`, cioè lo stesso contenuto da un altro indirizzo.
+  // Vale per ogni card futura, non solo per quella cancellata oggi.
+  const privatePath = url.pathname.replace(/\/+$/, "").toLowerCase();
+  const isPrivate = privatePath === "/admin" || privatePath.startsWith("/admin/");
+
+  if (isPrivate && privatePath.endsWith(".md")) {
     return new Response("Not found", {
       status: 404,
       headers: {
@@ -105,7 +112,7 @@ export const onRequest = async (context: Context): Promise<Response> => {
     });
   }
 
-  if (prefersMarkdown(request.headers.get("Accept") || "")) {
+  if (!isPrivate && prefersMarkdown(request.headers.get("Accept") || "")) {
     const card = await env.ASSETS.fetch(
       new Request(new URL(cardOf(url.pathname), url), { headers: { Accept: "*/*" } }),
     );

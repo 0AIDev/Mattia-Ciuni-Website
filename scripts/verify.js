@@ -261,7 +261,9 @@ const middleware = readFileSync(path.join(__dirname, "..", "functions", "_middle
 const routes = JSON.parse(readFileSync(path.join(__dirname, "..", "public", "_routes.json"), "utf8"));
 check(
   "admin: no markdown card under a private path, cached or not",
-  middleware.includes("/^\\/admin\\/.*\\.md$/i") && routes.include.includes("/admin/*")
+  middleware.includes("const isPrivate") &&
+    middleware.includes('!isPrivate && prefersMarkdown(request.headers.get("Accept")') &&
+    routes.include.includes("/admin/*")
 );
 if (leakedAdmin.length) console.log("     nominano admin: " + leakedAdmin.join(", "));
 // Nessun file si scrive **intorno** alla dashboard: `admin/feedback.md` era una
