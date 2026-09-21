@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Check } from "./icons";
-import { LinkIcon } from "@/components/ui/link";
+import { LinkIcon } from "@/components/ui/static-icons";
 import { copyText, sectionUrl } from "@/lib/copy";
 import { cn } from "@/lib/utils";
 

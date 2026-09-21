@@ -63,7 +63,7 @@ check("blog: twitter title fixed", blog.includes('twitter:title" content="Though
 check("index: twitter large image", index.includes('twitter:card" content="summary_large_image"'));
 check("index: rel=me x3", (index.match(/rel="me noopener"/g) || []).length === 3);
 check("index: mailto", index.includes("mailto:ceo@usepayle.com"));
-check("index: theme-color", index.includes('name="theme-color" content="#FCFCFC"'));
+check("index: theme-color", index.includes('name="theme-color" content="#FFFFFF"'));
 
 const person = ldJson(index).find((j) => j["@type"] === "Person");
 check("index: Person JSON-LD valid", !!person && person.name === "Mattia Ciuni" && person.worksFor.name === "Payle" && person.sameAs.length === 5);
@@ -261,6 +261,35 @@ check(
   /\/\.well-known\/api-catalog[\s\S]{0,200}Content-Type: application\/linkset\+json/.test(
     headersFile,
   )
+);
+const ardCatalog = JSON.parse(fs.readFileSync(wellKnown("ai-catalog.json"), "utf8"));
+const ardEntriesValid = Array.isArray(ardCatalog.entries) && ardCatalog.entries.length > 0 && ardCatalog.entries.every((entry) => {
+  const hasUrl = typeof entry.url === "string";
+  const hasData = Object.prototype.hasOwnProperty.call(entry, "data");
+  return /^urn:air:[^:]+:[^:]+:[^:]+$/.test(entry.identifier) &&
+    !!entry.displayName && typeof entry.type === "string" && (hasUrl !== hasData) &&
+    Array.isArray(entry.representativeQueries) && entry.representativeQueries.length >= 2 &&
+    hasUrl && entry.url.startsWith(PROD + "/");
+});
+check(
+  `well-known: ARD catalog, real public entries (${ardCatalog.entries?.length || 0})`,
+  ardCatalog.specVersion === "1.0" && ardCatalog.host?.displayName === "Mattia Ciuni" &&
+    ardCatalog.host?.identifier === `did:web:${new URL(PROD).hostname}` && ardEntriesValid &&
+    headersFile.includes("/.well-known/ai-catalog.json") && headersFile.includes("Content-Type: application/json")
+);
+check(
+  "auth.md: honest unauthenticated policy",
+  fs.existsSync(path.join(out, "auth.md")) && read("auth.md").includes("does not currently expose protected APIs") &&
+    headersFile.includes("/auth.md") && headersFile.includes("Content-Type: text/markdown")
+);
+check(
+  "WebMCP: registration is present in the page",
+  index.includes('rel="ai-catalog"') && index.includes('src="/webmcp.js"') &&
+    fs.existsSync(path.join(out, "webmcp.js")) &&
+    readFileSync(path.join(out, "webmcp.js"), "utf8").includes("navigator.modelContext") &&
+    readFileSync(path.join(out, "webmcp.js"), "utf8").includes("registerTool") &&
+    readFileSync(path.join(out, "webmcp.js"), "utf8").includes("read_current_page") &&
+    readFileSync(path.join(out, "webmcp.js"), "utf8").includes("find_site_content")
 );
 
 // L'indice delle skill si verifica **ricalcolando il digest** sul file pubblicato:

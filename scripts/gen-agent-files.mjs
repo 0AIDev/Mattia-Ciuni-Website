@@ -83,6 +83,52 @@ const catalog = {
 };
 write(".well-known/api-catalog", JSON.stringify(catalog, null, 2) + "\n");
 
+// --- ARD / ai-catalog -------------------------------------------------------
+// Il sito non ospita un server MCP, un agente A2A o un'API autenticata. Il
+// catalogo quindi descrive solo risorse pubbliche che esistono davvero: le card
+// markdown curate e la skill pubblicata. Non si dichiarano endpoint finti.
+const hostname = new URL(base).hostname;
+const ard = {
+  specVersion: "1.0",
+  host: {
+    displayName: "Mattia Ciuni",
+    identifier: `did:web:${hostname}`,
+  },
+  entries: [
+    {
+      identifier: `urn:air:${hostname}:content:thoughts`,
+      displayName: "Mattia Ciuni Thoughts",
+      type: "text/markdown",
+      url: `${base}/thoughts.md`,
+      representativeQueries: [
+        "What is Mattia Ciuni building for AI agent payments?",
+        "Find Mattia's essays about Payle and agentic commerce",
+      ],
+    },
+    {
+      identifier: `urn:air:${hostname}:content:notes`,
+      displayName: "Mattia Ciuni Notes",
+      type: "text/markdown",
+      url: `${base}/notes.md`,
+      representativeQueries: [
+        "Find short notes about AI agents and payment infrastructure",
+        "What does Mattia write about reliable agentic systems?",
+      ],
+    },
+    {
+      identifier: `urn:air:${hostname}:skill:read-and-cite`,
+      displayName: "Read and cite Mattia Ciuni",
+      type: "text/markdown",
+      url: `${base}/.well-known/agent-skills/read-and-cite-mattia-ciuni/SKILL.md`,
+      representativeQueries: [
+        "How should an agent read and cite this website?",
+        "What sources should an agent use when answering about Mattia Ciuni?",
+      ],
+    },
+  ],
+};
+write(".well-known/ai-catalog.json", JSON.stringify(ard, null, 2) + "\n");
+
 // --- le skill ---------------------------------------------------------------
 // Solo artefatti che esistono: la cartella `agent-skills/` in root e' la fonte,
 // e ogni voce dell'indice porta il digest del file pubblicato.

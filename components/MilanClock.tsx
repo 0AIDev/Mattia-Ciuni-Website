@@ -1,8 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ClockIcon } from "@/components/ui/clock";
-import { GlobeIcon } from "@/components/ui/globe";
+import { ClockIcon } from "@/components/ui/static-icons";
+import { GlobeIcon } from "@/components/ui/static-icons";
 
 export default function MilanClock({ className = "" }: { className?: string }) {
   const [t, setT] = useState<{ fmt: string; iso: string } | null>(null);

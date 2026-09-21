@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { ForAICard } from "@/components/ForAICard";
-import { ArrowUpRightIcon } from "@/components/ui/arrow-up-right";
+import { ArrowUpRightIcon } from "@/components/ui/static-icons";
 
 export function SiteFooter() {
   return (

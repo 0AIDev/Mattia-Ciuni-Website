@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
+import { ArrowUpLeftIcon } from "@/components/ui/static-icons";
 import { CoverImage } from "@/components/CoverImage";
 import { RelatedList } from "@/components/RelatedList";
 import { InlineText } from "@/components/RichText";

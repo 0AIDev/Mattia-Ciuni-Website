@@ -23,7 +23,7 @@ function purgeMd(dir) {
     const p = join(dir, e.name);
     if (e.isDirectory()) {
       if (e.name !== "_next") purgeMd(p);
-    } else if (e.name.endsWith(".md")) rmSync(p);
+    } else if (e.name.endsWith(".md") && e.name !== "auth.md") rmSync(p);
   }
 }
 purgeMd(outDir);

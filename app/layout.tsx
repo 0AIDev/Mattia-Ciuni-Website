@@ -5,7 +5,6 @@ import { site } from "@/lib/site";
 import { socialImages } from "@/lib/social";
 import { NewsletterSection } from "@/components/NewsletterSection";
 import { SiteFooter } from "@/components/SiteFooter";
-import { LenisProvider } from "@/components/lenis-provider";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -32,6 +31,9 @@ const sourceSerif = Source_Serif_4({
 
 // La card della home, dichiarata una volta e usata da Open Graph e Twitter.
 const homeCard = socialImages("/og.png", "Mattia Ciuni | Founder & CEO @ Payle");
+
+// WebMCP è una capability opzionale del browser. Lo script è deferred e
+// statico, così gli agenti trovano strumenti reali senza bloccare l'LCP.
 
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
@@ -79,18 +81,20 @@ export const viewport: Viewport = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang={site.language} className={`${inter.variable} ${sourceSerif.variable}`}>
+      <head>
+        <link rel="ai-catalog" href="/.well-known/ai-catalog.json" />
+      </head>
       <body className="bg-gray-background font-sans text-base leading-relaxed text-gray-1200">
+        <script id="webmcp-tools" src="/webmcp.js" defer />
         <a
           href="#content"
           className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:bg-gray-1200 focus:text-white focus:px-3 focus:py-1"
         >
           Skip to content
         </a>
-        <LenisProvider>
-          {children}
-          <NewsletterSection />
-          <SiteFooter />
-        </LenisProvider>
+        {children}
+        <NewsletterSection />
+        <SiteFooter />
       </body>
     </html>
   );

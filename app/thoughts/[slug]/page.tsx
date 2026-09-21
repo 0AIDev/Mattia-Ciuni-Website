@@ -8,8 +8,8 @@ import { GhassenLinks } from "@/components/GhassenLinks";
 import { RelatedList } from "@/components/RelatedList";
 import { InlineText } from "@/components/RichText";
 import { ChevronRight } from "@/components/icons";
-import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
-import { MailCheckIcon } from "@/components/ui/mail-check";
+import { ArrowUpLeftIcon } from "@/components/ui/static-icons";
+import { MailCheckIcon } from "@/components/ui/static-icons";
 import SectionCopyLink from "@/components/SectionCopyLink";
 import TableOfContents, {
   MobileTableOfContents,
