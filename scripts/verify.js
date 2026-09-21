@@ -252,6 +252,17 @@ check(
   "admin: the public chat is not rendered on the private dashboard",
   /if\s*\(path\.startsWith\("\/admin"\)\)\s*return null;/.test(siteChat)
 );
+// Sotto `/admin/` non si serve nessuna card, cache o non cache: la Function
+// risponde 404 prima di guardare gli asset, e `_routes.json` deve instradare
+// tutto il ramo privato verso di lei (`/admin/feedback.md` non era instradato,
+// quindi Pages lo serviva come file statico — e dopo la cancellazione l'edge ha
+// continuato a servirne la copia in cache per tutta la sua scadenza).
+const middleware = readFileSync(path.join(__dirname, "..", "functions", "_middleware.ts"), "utf8");
+const routes = JSON.parse(readFileSync(path.join(__dirname, "..", "public", "_routes.json"), "utf8"));
+check(
+  "admin: no markdown card under a private path, cached or not",
+  middleware.includes("/^\\/admin\\/.*\\.md$/i") && routes.include.includes("/admin/*")
+);
 if (leakedAdmin.length) console.log("     nominano admin: " + leakedAdmin.join(", "));
 // Nessun file si scrive **intorno** alla dashboard: `admin/feedback.md` era una
 // card servita come asset statico (quel percorso non passa dalla Function), e

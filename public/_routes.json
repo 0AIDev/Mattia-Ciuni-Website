@@ -21,7 +21,7 @@
     "/api/chat",
     "/api/feedback",
     "/api/admin/feedback",
-    "/admin/feedback",
+    "/admin/*",
     "/.well-known/*"
   ],
   "exclude": []

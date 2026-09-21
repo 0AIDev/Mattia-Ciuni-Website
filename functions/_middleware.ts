@@ -86,6 +86,25 @@ export const onRequest = async (context: Context): Promise<Response> => {
   const url = new URL(request.url);
   const origin = servingOrigin(url, env);
 
+  // Sotto un percorso privato non esiste nessuna card, e va detto **qui**, non
+  // solo nel generatore. Il file è sparito dall'export, ma la copia che l'edge
+  // aveva già in cache continua a rispondere per il resto della sua scadenza
+  // (`admin/feedback.md` ha continuato a servire il markdown della dashboard
+  // per mezz'ora dopo il deploy): una richiesta servita da una copia in cache non
+  // arriva mai a questa Function, mentre una che ci arriva non si serve dalla
+  // cache degli asset — quindi la riga chiude la finestra invece di aspettarla.
+  // E vale per ogni card futura, non solo per quella cancellata oggi.
+  if (/^\/admin\/.*\.md$/i.test(url.pathname)) {
+    return new Response("Not found", {
+      status: 404,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+        "X-Robots-Tag": "noindex, nofollow",
+      },
+    });
+  }
+
   if (prefersMarkdown(request.headers.get("Accept") || "")) {
     const card = await env.ASSETS.fetch(
       new Request(new URL(cardOf(url.pathname), url), { headers: { Accept: "*/*" } }),
