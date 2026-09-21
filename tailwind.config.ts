@@ -23,7 +23,7 @@ const config: Config = {
         // Self-hosted da next/font (app/layout.tsx): nessuna richiesta alla CDN
         // di Google a runtime. Il nome resta come ripiego per chi ha il font
         // installato.
-        serif: ["var(--font-source-serif)", "'Source Serif 4'", "serif"],
+        serif: ["'Instrument Serif'", "serif"],
       },
       boxShadow: {
         custom: "0 2px 4px rgba(0, 0, 0, 0.08)",

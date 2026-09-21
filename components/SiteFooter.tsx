@@ -1,8 +1,14 @@
+"use client";
+
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { ForAICard } from "@/components/ForAICard";
 import { ArrowUpRightIcon } from "@/components/ui/arrow-up-right";
 
 export function SiteFooter() {
+  const pathname = usePathname();
+  if (pathname?.startsWith("/admin")) return null;
+
   return (
     <footer className="mx-auto max-w-[692px] px-6 pb-10">
       <div className="flex flex-wrap items-center gap-x-6 gap-y-3 border-t border-gray-300 pt-8 text-gray-1000">

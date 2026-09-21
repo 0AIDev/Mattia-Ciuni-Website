@@ -67,6 +67,9 @@ walk(out);
 assert.ok(pages.length >= 9, "expected the exported site pages");
 for (const page of pages) {
   const html = readFileSync(page, "utf8");
+  // The private feedback dashboard deliberately has no public newsletter or
+  // footer, and is excluded from all public indexes.
+  if (/[\\/]out[\\/]admin[\\/]/.test(page)) continue;
   const footer = html.indexOf("© 2026 Mattia Ciuni");
   assert.ok(footer >= 0, `${page} has no footer`);
 }

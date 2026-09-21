@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Inter, Source_Serif_4 } from "next/font/google";
+import { Instrument_Serif, Inter } from "next/font/google";
 import "./globals.css";
 import { site } from "@/lib/site";
 import { socialImages } from "@/lib/social";
@@ -15,20 +15,18 @@ const inter = Inter({
   display: "swap",
 });
 
-// I due serif del sito, self-hosted come Inter.
+// Il serif del sito, self-hosted come Inter.
 //
 // Prima arrivavano da `fonts.googleapis.com` con un `<link rel="stylesheet">`
 // nella `<head>`: una richiesta **che blocca il rendering** verso un dominio
 // terzo (~200 ms di attesa prima ancora di disegnare il testo) più due
 // `preconnect` e ~249 KiB di woff2 da `fonts.gstatic.com`. Self-hostati sono
 // serviti dallo stesso host della pagina: nessun DNS, nessuna connessione nuova,
-// niente da precollegare. `opsz` è l'asse ottico che il CDN usava, quindi la
-// resa non cambia.
-const sourceSerif = Source_Serif_4({
+// niente da precollegare. Instrument Serif è il serif editoriale unico del sito,
+// compreso il corsivo sintetico usato dalle emphasis inline.
+const instrumentSerif = Instrument_Serif({
+  weight: "400",
   subsets: ["latin"],
-  style: ["normal", "italic"],
-  axes: ["opsz"],
-  variable: "--font-source-serif",
   display: "swap",
   // The above-the-fold copy uses Inter. Let the serif load on demand so mobile
   // does not block the first paint on a second large font request.
@@ -96,7 +94,7 @@ export const viewport: Viewport = {
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang={site.language} className={`${inter.variable} ${sourceSerif.variable}`}>
+    <html lang={site.language} className={`${inter.variable} ${instrumentSerif.className}`}>
       <head>
         <link rel="ai-catalog" href="/.well-known/ai-catalog.json" />
       </head>

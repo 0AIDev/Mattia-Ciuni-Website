@@ -1,3 +1,6 @@
+// @ts-expect-error Cloudflare bundles extensionless TS imports; Node's native strip loader needs `.ts` for the offline test.
+import { newTotpSecret, otpauthUri, verifyTotp } from "../../../lib/totp.ts";
+
 // GET/POST /api/admin/feedback — la coda di review dei feedback.
 //
 // Cosa è cambiato dopo l'audit del 21/09 (e perché conta):
@@ -15,8 +18,9 @@
 //      due valori hanno lunghezza diversa: è un canale laterale, piccolo ma
 //      gratuito da chiudere. Ora si confrontano due digest SHA-256 (stessa
 //      lunghezza, xor accumulato, nessun `return` anticipato).
-//   4. **Rate limit sul login.** Il token è lungo, ma niente vieta a qualcuno di
-//      provarci per mesi: 10 tentativi ogni 10 minuti per indirizzo.
+//   4. **Rate limit separati.** Il token e il codice TOTP hanno porte diverse:
+//      10 tentativi di token ogni 10 minuti e 5 tentativi di codice ogni 10
+//      minuti per indirizzo.
 //   5. **Solo richieste same-origin** (quando l'`Origin` c'è) e **corpo piccolo**:
 //      un endpoint che accetta qualunque origine e qualunque dimensione è
 //      superficie regalata.
@@ -33,9 +37,9 @@
 // identico per "token mancante" e "token sbagliato" (non dice quale), `no-store` e
 // `noindex` su ogni risposta, nessun contenuto nei log.
 //
-// Il percorso da riga di comando resta disponibile: `Authorization: Bearer <token>`
-// continua a funzionare, così la dashboard si può interrogare con curl senza
-// aprire il browser.
+// Il percorso da riga di comando resta disponibile, ma ora richiede entrambi i
+// fattori: `Authorization: Bearer <token>` + `X-Admin-TOTP: 123456`. Un bearer
+// token da solo non apre più la coda.
 
 interface Store {
   get(key: string): Promise<string | null>;
@@ -47,6 +51,7 @@ interface Env {
   FEEDBACK?: Store;
   RATE_LIMIT?: Store;
   ADMIN_TOKEN?: string;
+  LOCAL_ADMIN?: string;
 }
 
 interface PagesContext {
@@ -70,6 +75,12 @@ interface FeedbackRecord {
 
 const INDEX_KEY = "fb:index";
 const SESSION_PREFIX = "adm:";
+const TOTP_CONFIG_KEY = "auth:totp:config";
+const TOTP_BOOTSTRAP_KEY = "auth:totp:bootstrap-used";
+const TOTP_PENDING_PREFIX = "auth:totp:pending:";
+const TOTP_SETUP_SECONDS = 900; // 15 minutes to scan and confirm the first code
+const TOTP_WINDOW_SECONDS = 600;
+const TOTP_MAX_ATTEMPTS = 5;
 // La forma di una chiave di feedback (`fb:<timestamp>:<random>`, vedi
 // `functions/api/feedback.ts`). Serve a **delimitare il raggio d'azione della
 // moderazione**: publish/reject scrivono su una chiave presa dal corpo della
@@ -85,6 +96,33 @@ const MAX_INDEX = 500;
 // `__Host-`: il cookie vale solo per questo host, mai per un sottodominio, e solo
 // su HTTPS con Path=/ — così nessuno può "lanciarlo" da un dominio figlio.
 const COOKIE = "__Host-mattia_feedback_admin";
+
+type TotpConfig = { secret: string; enabled_at: string };
+type PendingSetup = { secret: string; created_at: string };
+
+// `next dev` is only the static page renderer and never runs Pages Functions.
+// `npm run dev:pages` uses this bounded in-memory store so the full token + TOTP
+// flow can be exercised locally without putting a fake KV credential in git.
+const localStore = new Map<string, { value: string; expiresAt: number | null }>();
+const localFeedback: Store = {
+  async get(key) {
+    const item = localStore.get(key);
+    if (!item) return null;
+    if (item.expiresAt !== null && item.expiresAt < Date.now()) {
+      localStore.delete(key);
+      return null;
+    }
+    return item.value;
+  },
+  async put(key, value, options = {}) {
+    localStore.set(key, { value, expiresAt: options.expirationTtl ? Date.now() + options.expirationTtl * 1000 : null });
+  },
+  async delete(key) { localStore.delete(key); },
+};
+
+function withLocalStore(env: Env): Env {
+  return env.FEEDBACK || env.LOCAL_ADMIN === "1" ? { ...env, FEEDBACK: env.FEEDBACK || localFeedback } : env;
+}
 // Il nome usato prima dell'audit del 21/09, quando il cookie conteneva il token.
 // Si cancella al login per non lasciare in giro una copia del segreto.
 const LEGACY_COOKIE = "mattia_feedback_admin";
@@ -163,28 +201,45 @@ function newSessionId(): string {
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
+async function configOf(env: Env): Promise<TotpConfig | null> {
+  if (!env.FEEDBACK) return null;
+  const raw = await env.FEEDBACK.get(TOTP_CONFIG_KEY);
+  if (!raw) return null;
+  try {
+    const value = JSON.parse(raw) as TotpConfig;
+    return value.secret && value.enabled_at ? value : null;
+  } catch {
+    return null;
+  }
+}
+
+async function setupUsed(env: Env): Promise<boolean> {
+  return env.FEEDBACK ? (await env.FEEDBACK.get(TOTP_BOOTSTRAP_KEY)) === "1" : false;
+}
+
+async function authRateAllowed(env: Env, ip: string, kind: string, max: number): Promise<boolean> {
+  if (!env.RATE_LIMIT) return true;
+  const key = `rl:admin:${kind}:${ip}`;
+  const current = Number.parseInt((await env.RATE_LIMIT.get(key)) || "0", 10);
+  if (current >= max) return false;
+  await env.RATE_LIMIT.put(key, String(current + 1), { expirationTtl: kind === "totp" ? TOTP_WINDOW_SECONDS : LOGIN_WINDOW_SECONDS });
+  return true;
+}
+
 async function sessionValid(request: Request, env: Env): Promise<boolean> {
   const id = cookieOf(request, COOKIE);
   if (!id || !env.FEEDBACK) return false;
   return (await env.FEEDBACK.get(SESSION_PREFIX + id)) !== null;
 }
 
-/** Sessione valida **oppure** il token vero (riga di comando). */
+/** Sessione valida oppure token + TOTP per automazioni CLI. */
 async function isAuthorized(request: Request, env: Env): Promise<boolean> {
   if (await sessionValid(request, env)) return true;
   const bearer = request.headers.get("Authorization");
   const given = bearer?.startsWith("Bearer ") ? bearer.slice(7).trim() : "";
-  return sameSecret(given, env.ADMIN_TOKEN || "");
-}
-
-/** Il rate limit si applica solo al login: è l'unica porta che si può bussare. */
-async function loginAllowed(env: Env, ip: string): Promise<boolean> {
-  if (!env.RATE_LIMIT) return true;
-  const key = `rl:admin:${ip}`;
-  const current = Number.parseInt((await env.RATE_LIMIT.get(key)) || "0", 10);
-  if (current >= LOGIN_MAX_ATTEMPTS) return false;
-  await env.RATE_LIMIT.put(key, String(current + 1), { expirationTtl: LOGIN_WINDOW_SECONDS });
-  return true;
+  const code = request.headers.get("X-Admin-TOTP") || "";
+  const config = await configOf(env);
+  return Boolean(config) && (await sameSecret(given, env.ADMIN_TOKEN || "")) && (await verifyTotp(config!.secret, code));
 }
 
 async function queue(env: Env): Promise<FeedbackRecord[]> {
@@ -209,14 +264,43 @@ async function saveQueue(env: Env, records: FeedbackRecord[]) {
   await env.FEEDBACK.put(INDEX_KEY, records.map((record) => record.id).join("\n"));
 }
 
-export const onRequestGet = async ({ request, env }: PagesContext): Promise<Response> => {
-  if (!(await isAuthorized(request, env))) return json({ code: "unauthorized" }, 401);
+function sessionCookies(session: string): Array<[string, string]> {
+  return [
+    [
+      "Set-Cookie",
+      `${COOKIE}=${session}; Path=/; Max-Age=${SESSION_SECONDS}; HttpOnly; Secure; SameSite=Strict`,
+    ],
+    [
+      "Set-Cookie",
+      `${LEGACY_COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Strict`,
+    ],
+  ];
+}
+
+async function createSession(env: Env): Promise<string> {
+  const session = newSessionId();
+  await env.FEEDBACK!.put(SESSION_PREFIX + session, new Date().toISOString(), {
+    expirationTtl: SESSION_SECONDS,
+  });
+  return session;
+}
+
+export const onRequestGet = async ({ request, env: incomingEnv }: PagesContext): Promise<Response> => {
+  const env = withLocalStore(incomingEnv);
+  // A production deployment without the FEEDBACK binding is unavailable, not
+  // an unconfigured administrator. Keep this distinct from the one-time TOTP
+  // setup state so the UI and monitoring can diagnose the deployment correctly.
+  if (!env.FEEDBACK) return json({ code: "unavailable" }, 503);
+  if (!(await isAuthorized(request, env))) {
+    return json({ code: "unauthorized", setup_required: !(await configOf(env)) }, 401);
+  }
   if (!env.FEEDBACK) return json({ code: "unavailable" }, 503);
   const records = await queue(env);
   return json({ records });
 };
 
-export const onRequestPost = async ({ request, env }: PagesContext): Promise<Response> => {
+export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext): Promise<Response> => {
+  const env = withLocalStore(incomingEnv);
   const length = Number.parseInt(request.headers.get("Content-Length") || "0", 10);
   if (Number.isFinite(length) && length > MAX_BODY_BYTES) {
     return json({ code: "invalid_request" }, 413);
@@ -241,44 +325,110 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
   }
   if (payload.length > MAX_BODY_BYTES) return json({ code: "invalid_request" }, 413);
 
-  let body: { action?: unknown; token?: unknown; id?: unknown; reason?: unknown };
+  let body: {
+    action?: unknown;
+    token?: unknown;
+    code?: unknown;
+    setup_id?: unknown;
+    id?: unknown;
+    reason?: unknown;
+  };
   try {
     body = JSON.parse(payload) as typeof body;
   } catch {
     return json({ code: "invalid_request" }, 400);
   }
+  if (!body || typeof body !== "object" || Array.isArray(body)) {
+    return json({ code: "invalid_request" }, 400);
+  }
 
-  if (body.action === "login") {
-    if (!(await loginAllowed(env, ipOf(request)))) {
+  const ip = ipOf(request);
+
+  // Il token è un bootstrap **monouso**: il primo uso crea il secret TOTP e lo
+  // blocca subito in KV, prima ancora che l'utente confermi il primo codice.
+  // Così un token intercettato non può rigenerare QR diversi all'infinito.
+  if (body.action === "setup") {
+    if (!env.FEEDBACK) return json({ code: "unavailable" }, 503);
+    if (!(await authRateAllowed(env, ip, "login", LOGIN_MAX_ATTEMPTS))) {
+      return json({ code: "rate_limited" }, 429, [["Retry-After", String(LOGIN_WINDOW_SECONDS)]]);
+    }
+    if (await configOf(env) || await setupUsed(env)) return json({ code: "setup_locked" }, 409);
+    const given = typeof body.token === "string" ? body.token : "";
+    if (!(await sameSecret(given, env.ADMIN_TOKEN || ""))) {
+      console.log(JSON.stringify({ event: "admin_setup", outcome: "unauthorized" }));
+      return json({ code: "unauthorized" }, 401);
+    }
+    const secret = newTotpSecret();
+    const setupId = newSessionId();
+    await env.FEEDBACK.put(TOTP_BOOTSTRAP_KEY, "1");
+    await env.FEEDBACK.put(
+      TOTP_PENDING_PREFIX + setupId,
+      JSON.stringify({ secret, created_at: new Date().toISOString() } satisfies PendingSetup),
+      { expirationTtl: TOTP_SETUP_SECONDS },
+    );
+    console.log(JSON.stringify({ event: "admin_setup", outcome: "issued" }));
+    // Secret e otpauth URI escono solo in questa risposta di bootstrap. Dopo la
+    // conferma GET non li restituisce più e il QR non viene rigenerato.
+    return json({
+      setup_id: setupId,
+      otpauth_uri: otpauthUri(secret),
+      manual_key: secret,
+      expires_in: TOTP_SETUP_SECONDS,
+    });
+  }
+
+  if (body.action === "confirm_setup") {
+    if (!env.FEEDBACK) return json({ code: "unavailable" }, 503);
+    if (!(await authRateAllowed(env, ip, "totp", TOTP_MAX_ATTEMPTS))) {
+      return json({ code: "rate_limited" }, 429, [["Retry-After", String(TOTP_WINDOW_SECONDS)]]);
+    }
+    const setupId = typeof body.setup_id === "string" ? body.setup_id : "";
+    const code = typeof body.code === "string" ? body.code : "";
+    if (!/^[0-9a-f]{64}$/.test(setupId)) return json({ code: "invalid_setup" }, 400);
+    const pendingRaw = await env.FEEDBACK.get(TOTP_PENDING_PREFIX + setupId);
+    if (!pendingRaw) return json({ code: "setup_expired" }, 410);
+    let pending: PendingSetup;
+    try { pending = JSON.parse(pendingRaw) as PendingSetup; } catch { return json({ code: "setup_expired" }, 410); }
+    if (!(await verifyTotp(pending.secret, code))) {
+      console.log(JSON.stringify({ event: "admin_setup", outcome: "invalid_code" }));
+      return json({ code: "invalid_code" }, 401);
+    }
+    await env.FEEDBACK.put(TOTP_CONFIG_KEY, JSON.stringify({ secret: pending.secret, enabled_at: new Date().toISOString() } satisfies TotpConfig));
+    if (env.FEEDBACK.delete) await env.FEEDBACK.delete(TOTP_PENDING_PREFIX + setupId);
+    const session = await createSession(env);
+    console.log(JSON.stringify({ event: "admin_setup", outcome: "confirmed" }));
+    return json({ ok: true, two_factor_enabled: true }, 200, sessionCookies(session));
+  }
+
+  if (body.action === "token_check" || body.action === "login") {
+    const config = await configOf(env);
+    if (!config) return json({ code: "setup_required", setup_required: true }, 409);
+    if (!(await authRateAllowed(env, ip, "login", LOGIN_MAX_ATTEMPTS))) {
       console.log(JSON.stringify({ event: "admin_login", outcome: "rate_limited" }));
       return json({ code: "rate_limited" }, 429, [["Retry-After", String(LOGIN_WINDOW_SECONDS)]]);
     }
     const given = typeof body.token === "string" ? body.token : "";
     if (!(await sameSecret(given, env.ADMIN_TOKEN || ""))) {
-      // Nessun dettaglio: non si distingue "manca il token" da "token sbagliato",
-      // e nei log non finisce né il valore provato né l'indirizzo.
       console.log(JSON.stringify({ event: "admin_login", outcome: "unauthorized" }));
       return json({ code: "unauthorized" }, 401);
     }
+    // The browser reveals the second field only after this server-side check.
+    // This is a UX gate, not a substitute for verifying the TOTP below.
+    if (body.action === "token_check") {
+      return json({ ok: true, token_verified: true });
+    }
+    if (!(await authRateAllowed(env, ip, "totp", TOTP_MAX_ATTEMPTS))) {
+      return json({ code: "rate_limited" }, 429, [["Retry-After", String(TOTP_WINDOW_SECONDS)]]);
+    }
+    const code = typeof body.code === "string" ? body.code : "";
+    if (!(await verifyTotp(config.secret, code))) {
+      console.log(JSON.stringify({ event: "admin_login", outcome: "invalid_totp" }));
+      return json({ code: "unauthorized" }, 401);
+    }
     if (!env.FEEDBACK) return json({ code: "unavailable" }, 503);
-    const session = newSessionId();
-    await env.FEEDBACK.put(SESSION_PREFIX + session, new Date().toISOString(), {
-      expirationTtl: SESSION_SECONDS,
-    });
+    const session = await createSession(env);
     console.log(JSON.stringify({ event: "admin_login", outcome: "ok" }));
-    // Il secondo `Set-Cookie` cancella il cookie del formato vecchio, quello che
-    // conteneva il token stesso: chi si era già autenticato prima dell'audit se lo
-    // porta dietro nel browser, e non deve restarci.
-    return json({ ok: true }, 200, [
-      [
-        "Set-Cookie",
-        `${COOKIE}=${session}; Path=/; Max-Age=${SESSION_SECONDS}; HttpOnly; Secure; SameSite=Strict`,
-      ],
-      [
-        "Set-Cookie",
-        `${LEGACY_COOKIE}=; Path=/; Max-Age=0; HttpOnly; Secure; SameSite=Strict`,
-      ],
-    ]);
+    return json({ ok: true, two_factor: true }, 200, sessionCookies(session));
   }
 
   if (!(await isAuthorized(request, env))) return json({ code: "unauthorized" }, 401);

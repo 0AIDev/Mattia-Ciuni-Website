@@ -31,6 +31,14 @@ body > footer {
   order: 3;
 }
 
+/* The admin route is a private workspace, not a public article. Hide the
+   globally mounted newsletter and footer from the first paint as well as from
+   the client guards, so they never flash while the route hydrates. */
+body:has(#admin-feedback-page) > #newsletter-slot,
+body:has(#admin-feedback-page) > footer {
+  display: none;
+}
+
 ::selection {
   background: rgba(22, 22, 22, 0.14);
 }

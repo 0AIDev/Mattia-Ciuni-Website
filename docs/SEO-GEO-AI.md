@@ -590,7 +590,7 @@ robots.txt: 33 blocchi · 32 agenti AI per nome · Content-Signal dichiarato
 JSON-LD: Person + WebSite · BlogPosting + BreadcrumbList · Article + BreadcrumbList · Blog
 scoperta: Link su ogni pagina · api-catalog (1 linkset, 2 documenti) · 1 skill con digest
 verify.js: controlli SEO/OG/discovery/news tutti verdi · homepage html+css 68.3KB raw · newsletter globale prima del footer · GA4 opzionale con consenso
-font: self-hosted (Inter + Source Serif 4) · zero richieste a domini terzi · avatar 0,8KB WebP
+font: self-hosted (Inter + Instrument Serif) · zero richieste a domini terzi · avatar 0,8KB WebP
 pubblicazione: Cloudflare Pages · dominio dichiarato: https://mattiaciuni.pages.dev
 ```
 

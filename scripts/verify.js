@@ -330,8 +330,11 @@ check(
     /__Host-/.test(adminFn),
 );
 check(
-  "admin: login is rate limited and never cached",
-  /loginAllowed/.test(adminFn) &&
+  "admin: token+TOTP bootstrap is one-time, rate limited and never cached",
+  /TOTP_BOOTSTRAP_KEY/.test(adminFn) &&
+    /TOTP_PENDING_PREFIX/.test(adminFn) &&
+    /verifyTotp/.test(adminFn) &&
+    /authRateAllowed/.test(adminFn) &&
     /rl:admin:/.test(adminFn) &&
     /"Cache-Control": "no-store"/.test(adminFn) &&
     /"X-Robots-Tag": "noindex, nofollow"/.test(adminFn) &&
