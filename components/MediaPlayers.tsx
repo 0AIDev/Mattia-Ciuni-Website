@@ -149,7 +149,7 @@ export function AudioPlayer({ src, title }: PlayerProps) {
           type="button"
           onClick={state.togglePlay}
           aria-label={state.playing ? `Pause ${title}` : `Play ${title}`}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-1200 text-white transition-opacity hover:opacity-75 focus-visible:outline"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-1200 text-white transition-opacity hover:opacity-80 focus-visible:outline"
         >
           <PlayIcon playing={state.playing} />
         </button>
@@ -200,7 +200,7 @@ export function VideoPlayer({ src, title, poster }: PlayerProps) {
           type="button"
           onClick={state.togglePlay}
           aria-label={`Play ${title}`}
-          className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-gray-1200 shadow-sm transition-transform hover:scale-105 focus-visible:outline focus-visible:outline-white"
+          className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-gray-1200 shadow-sm transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-white"
         >
           <PlayIcon playing={false} />
         </button>

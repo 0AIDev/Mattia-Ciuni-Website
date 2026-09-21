@@ -118,8 +118,8 @@ export function SiteRagChat() {
               <p className="mt-1 text-xs text-gray-1000">Only this site and Payle</p>
             </div>
             <div className="flex items-center gap-1">
-              {messages.length > 0 && <button type="button" onClick={clearConversation} className="rounded-full px-2.5 py-1.5 text-xs text-gray-1000 hover:bg-gray-200" aria-label="Start a new chat">New chat</button>}
-              <button type="button" onClick={() => setOpen(false)} className="rounded-full px-2.5 py-1.5 text-xl leading-none text-gray-1000 hover:bg-gray-200" aria-label="Close chat">×</button>
+              {messages.length > 0 && <button type="button" onClick={clearConversation} className="rounded-full px-2.5 py-1.5 text-xs text-gray-1000 transition-colors hover:text-gray-1200" aria-label="Start a new chat">New chat</button>}
+              <button type="button" onClick={() => setOpen(false)} className="rounded-full px-2.5 py-1.5 text-xl leading-none text-gray-1000 transition-colors hover:text-gray-1200" aria-label="Close chat">×</button>
             </div>
           </header>
 
@@ -154,7 +154,7 @@ export function SiteRagChat() {
           </div>
         </section>
       )}
-      <button type="button" onClick={() => setOpen((value) => !value)} className="flex h-11 items-center gap-2 rounded-full bg-gray-1200 px-4 text-sm text-white shadow-[0_5px_25px_rgba(0,0,0,0.16)] transition-opacity hover:opacity-85" aria-expanded={open} aria-controls="site-guide">
+      <button type="button" onClick={() => setOpen((value) => !value)} className="flex h-11 items-center gap-2 rounded-full bg-gray-1200 px-4 text-sm text-white shadow-[0_5px_25px_rgba(0,0,0,0.16)] transition-opacity hover:opacity-80" aria-expanded={open} aria-controls="site-guide">
         <span>Ask Mattia Ciuni AI</span><span aria-hidden="true">↗</span>
       </button>
     </aside>
