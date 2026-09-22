@@ -137,6 +137,12 @@ export function FeedbackModalButton({
       const result = (await response.json().catch(() => ({}))) as { code?: string };
       if (response.ok) {
         setState("success");
+        // Il numero che conta non è quanti aprono la pagina, ma quanti
+        // scrivono: senza questo evento le conversioni vere restano invisibili.
+        window.gtag?.("event", "feedback_submitted", {
+          page_url: window.location.pathname,
+          has_email: email.trim() ? "yes" : "no",
+        });
       } else if (response.status === 429) {
         setState("error");
         setError(COPY.rateLimited);

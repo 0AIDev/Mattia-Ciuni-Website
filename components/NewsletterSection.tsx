@@ -70,6 +70,13 @@ export function NewsletterSection() {
       if (response.ok) {
         window.localStorage.setItem(SUBSCRIBED_KEY, "1");
         setState("success");
+        // Conversione vera, non un page view: sapere quante persone arrivano
+        // dal traffico invece di quante si iscrivono sono due numeri diversi.
+        window.gtag?.("event", "newsletter_signup", {
+          source: source || "direct",
+          medium: medium || "none",
+          campaign: params.get("utm_campaign") || "",
+        });
       } else if (response.status === 409 || result.code === "already_subscribed") {
         window.localStorage.setItem(SUBSCRIBED_KEY, "1");
         setState("duplicate");
