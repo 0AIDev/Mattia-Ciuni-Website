@@ -41,9 +41,8 @@ import { supabaseKv } from "../../lib/supabase-kv.ts";
 // identico per "token mancante" e "token sbagliato" (non dice quale), `no-store` e
 // `noindex` su ogni risposta, nessun contenuto nei log.
 //
-// Il percorso da riga di comando resta disponibile, ma ora richiede entrambi i
-// fattori: `Authorization: Bearer <token>` + `X-Admin-TOTP: 123456`. Un bearer
-// token da solo non apre più la coda.
+// Il percorso da riga di comando, se usato, richiede `X-Admin-Email: ceo@usepayle.com`
+// e `X-Admin-TOTP: 123456`. Il token di bootstrap non è una credenziale di login.
 
 interface Store {
   get(key: string): Promise<string | null>;
@@ -66,7 +65,8 @@ interface PagesContext {
   env: Env;
 }
 
-type AdminRole = "ceo" | "cofounder";
+type AdminRole = "ceo";
+const ADMIN_EMAIL = "ceo@usepayle.com" as const;
 
 type StoredSession = { created_at: string; role: AdminRole };
 
@@ -225,10 +225,8 @@ function newFeedbackId(): string {
   return `fb:${Date.now().toString(36)}:${newSessionId().slice(0, 16)}`;
 }
 
-async function roleForToken(token: string, env: Env): Promise<AdminRole | null> {
-  if (await sameSecret(token, env.ADMIN_TOKEN || "")) return "ceo";
-  if (await sameSecret(token, env.COFOUNDER_TOKEN || "")) return "cofounder";
-  return null;
+async function roleForEmail(email: string): Promise<AdminRole | null> {
+  return email.trim().toLowerCase() === ADMIN_EMAIL ? "ceo" : null;
 }
 
 async function configOf(env: Env): Promise<TotpConfig | null> {
@@ -264,7 +262,7 @@ async function sessionRole(request: Request, env: Env): Promise<AdminRole | null
   if (!raw) return null;
   try {
     const session = JSON.parse(raw) as StoredSession;
-    return session.role === "cofounder" ? "cofounder" : "ceo";
+    return session.role === "ceo" ? "ceo" : null;
   } catch {
     // Sessions created before role support belonged to the CEO account.
     return "ceo";
@@ -275,11 +273,10 @@ async function sessionRole(request: Request, env: Env): Promise<AdminRole | null
 async function isAuthorized(request: Request, env: Env): Promise<AdminRole | null> {
   const existingRole = await sessionRole(request, env);
   if (existingRole) return existingRole;
-  const bearer = request.headers.get("Authorization");
-  const given = bearer?.startsWith("Bearer ") ? bearer.slice(7).trim() : "";
+  const email = request.headers.get("X-Admin-Email") || "";
   const code = request.headers.get("X-Admin-TOTP") || "";
   const config = await configOf(env);
-  const role = await roleForToken(given, env);
+  const role = await roleForEmail(email);
   if (!config || !role) return null;
   return (await verifyTotp(config.secret, code)) ? role : null;
 }
@@ -412,6 +409,7 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
   let body: {
     action?: unknown;
     token?: unknown;
+    email?: unknown;
     code?: unknown;
     setup_id?: unknown;
     id?: unknown;
@@ -484,23 +482,18 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
     return json({ ok: true, two_factor_enabled: true }, 200, sessionCookies(session));
   }
 
-  if (body.action === "token_check" || body.action === "login") {
+  if (body.action === "login") {
     const config = await configOf(env);
     if (!config) return json({ code: "setup_required", setup_required: true }, 409);
     if (!(await authRateAllowed(env, ip, "login", LOGIN_MAX_ATTEMPTS))) {
       console.log(JSON.stringify({ event: "admin_login", outcome: "rate_limited" }));
       return json({ code: "rate_limited" }, 429, [["Retry-After", String(LOGIN_WINDOW_SECONDS)]]);
     }
-    const given = typeof body.token === "string" ? body.token : "";
-    const role = await roleForToken(given, env);
+    const email = typeof body.email === "string" ? body.email : "";
+    const role = await roleForEmail(email);
     if (!role) {
       console.log(JSON.stringify({ event: "admin_login", outcome: "unauthorized" }));
       return json({ code: "unauthorized" }, 401);
-    }
-    // The browser reveals the second field only after this server-side check.
-    // This is a UX gate, not a substitute for verifying the TOTP below.
-    if (body.action === "token_check") {
-      return json({ ok: true, token_verified: true, role });
     }
     if (!(await authRateAllowed(env, ip, "totp", TOTP_RATE_MAX_ATTEMPTS))) {
       return json({ code: "rate_limited" }, 429, [["Retry-After", String(TOTP_WINDOW_SECONDS)]]);

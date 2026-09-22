@@ -24,6 +24,7 @@
     "/api/feedback",
     "/api/admin/feedback",
     "/api/locale",
+    "/api/macbook/rehearsal-log",
     "/admin/*",
     "/.well-known/*"
   ],

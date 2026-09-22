@@ -25,7 +25,9 @@
     "email:preview": "tsx emails/render-preview.tsx",
     "email:template": "tsx emails/gen-template.tsx",
     "test:analytics": "node scripts/test-analytics.mjs",
-    "test:collect": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-collect.mjs"
+    "test:collect": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-collect.mjs",
+    "test:macbook-gate": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-macbook-gate.mjs",
+    "test:macbook-search": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-macbook-search.mjs"
   },
   "dependencies": {
     "@animateicons/react": "^0.5.0",

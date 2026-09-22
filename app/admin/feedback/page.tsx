@@ -23,7 +23,7 @@ type Setup = {
 };
 
 type ApiError = { code?: string; setup_required?: boolean };
-type AdminRole = "ceo" | "cofounder";
+type AdminRole = "ceo";
 type AdminIdentity = { name: string; role: string; title: string };
 
 type AnalyticsRow = Record<string, unknown>;
@@ -48,13 +48,13 @@ function dateLabel(value: unknown) {
 
 const IDENTITIES: Record<AdminRole, AdminIdentity> = {
   ceo: { name: "Mattia Ciuni", role: "Chief Executive Officer", title: "CEO" },
-  cofounder: { name: "Ghassen", role: "Co-Founder & CTO", title: "Co-founder" },
 };
 
 const API = "/api/admin/feedback";
 
 export default function FeedbackAdminPage() {
   const [token, setToken] = useState("");
+  const [email, setEmail] = useState("ceo@usepayle.com");
   const [code, setCode] = useState("");
   const [setup, setSetup] = useState<Setup | null>(null);
   const [mode, setMode] = useState<"loading" | "setup" | "login">("loading");
@@ -65,7 +65,6 @@ export default function FeedbackAdminPage() {
   const [authenticated, setAuthenticated] = useState(false);
   const [identity, setIdentity] = useState<AdminIdentity | null>(null);
   const [sessionChecked, setSessionChecked] = useState(false);
-  const [tokenVerified, setTokenVerified] = useState(false);
 
   const readError = async (response: Response): Promise<ApiError> =>
     (await response.json().catch(() => ({}))) as ApiError;
@@ -92,7 +91,7 @@ export default function FeedbackAdminPage() {
       const data = (await response.json()) as { records?: FeedbackRecord[]; role?: AdminRole; analytics?: AnalyticsData };
       setRecords(data.records || []);
       setAnalytics(data.analytics || null);
-      setIdentity(IDENTITIES[data.role === "cofounder" ? "cofounder" : "ceo"]);
+      setIdentity(IDENTITIES.ceo);
       setAuthenticated(true);
       setMode("login");
       setError("");
@@ -160,37 +159,11 @@ export default function FeedbackAdminPage() {
       }
       setSetup(null);
       setToken("");
+      setEmail("ceo@usepayle.com");
       setCode("");
-      setTokenVerified(false);
       await load();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Two-factor setup failed.");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function verifyToken(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    setLoading(true);
-    setError("");
-    try {
-      const response = await fetch(API, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "token_check", token }),
-      });
-      const data = await readError(response);
-      if (!response.ok) {
-        if (data.code === "setup_required") setMode("setup");
-        throw new Error(response.status === 429 ? "Too many attempts. Try again later." : response.status === 404 ? localApiMessage(response) : "That admin token is not valid.");
-      }
-      setTokenVerified(true);
-      setCode("");
-    } catch (caught) {
-      setTokenVerified(false);
-      setCode("");
-      setError(caught instanceof Error ? caught.message : "Token verification failed.");
     } finally {
       setLoading(false);
     }
@@ -204,7 +177,7 @@ export default function FeedbackAdminPage() {
       const response = await fetch(API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ action: "login", token, code }),
+        body: JSON.stringify({ action: "login", email, code }),
       });
       if (!response.ok) {
         const data = await readError(response);
@@ -212,11 +185,11 @@ export default function FeedbackAdminPage() {
           setMode("setup");
           throw new Error("Set up the authenticator before signing in.");
         }
-        throw new Error(response.status === 429 ? "Too many attempts. Try again later." : response.status === 401 ? "That admin token or authenticator code is not valid." : localApiMessage(response));
+        throw new Error(response.status === 429 ? "Too many attempts. Try again later." : response.status === 401 ? "That admin email or authenticator code is not valid." : localApiMessage(response));
       }
       setToken("");
+      setEmail("ceo@usepayle.com");
       setCode("");
-      setTokenVerified(false);
       await load();
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "Login failed.");
@@ -234,9 +207,9 @@ export default function FeedbackAdminPage() {
         body: JSON.stringify({ action: "logout" }),
       });
     } finally {
-      setToken("");
+      setEmail("ceo@usepayle.com");
       setCode("");
-      setTokenVerified(false);
+      setToken("");
       setRecords([]);
       setAnalytics(null);
       setAuthenticated(false);
@@ -331,11 +304,11 @@ export default function FeedbackAdminPage() {
             <>
               <h1 className="font-serif text-3xl text-gray-1200">Set up your authenticator</h1>
               <p className="mt-3 text-sm leading-relaxed text-gray-1000">
-                This one-time setup uses the admin token to create the only TOTP secret. Scan the QR code, then confirm one six-digit code.
+                This one-time setup uses the bootstrap secret configured for this deployment to create your authenticator. Scan the QR code, then confirm one six-digit code.
               </p>
               <form onSubmit={beginSetup} className="mt-6 flex flex-col gap-3">
                 <label htmlFor="admin-token" className="sr-only">Admin token</label>
-                <input id="admin-token" type="password" value={token} onChange={(event) => setToken(event.target.value)} placeholder="Admin token" autoComplete="current-password" className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 text-sm text-gray-1200 outline-none shadow-none focus:border-gray-1200 focus:outline-none" required />
+                <input id="admin-token" type="password" value={token} onChange={(event) => setToken(event.target.value)} placeholder="One-time setup secret" autoComplete="current-password" className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 text-sm text-gray-1200 outline-none shadow-none focus:border-gray-1200 focus:outline-none" required />
                 <button type="submit" disabled={loading} className="rounded-full bg-gray-1200 px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-80 disabled:opacity-50">{loading ? "Generating" : "Generate QR code"}</button>
               </form>
             </>
@@ -357,24 +330,17 @@ export default function FeedbackAdminPage() {
           ) : (
             <>
               <h1 className="font-serif text-3xl text-gray-1200">Feedback review</h1>
-              <p className="mt-3 text-sm leading-relaxed text-gray-1000">Enter the admin token first. Your authenticator code appears only after the token is verified.</p>
-              {!tokenVerified ? (
-                <form onSubmit={verifyToken} className="mt-6 flex flex-col gap-3">
-                  <label htmlFor="admin-token" className="sr-only">Admin token</label>
-                  <input id="admin-token" type="password" value={token} onChange={(event) => { setToken(event.target.value); setTokenVerified(false); setCode(""); }} placeholder="Admin token" autoComplete="current-password" className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 font-sans text-sm text-gray-1200 outline-none shadow-none focus:border-gray-1200 focus:outline-none" required />
-                  <button type="submit" disabled={loading || !token} className="rounded-full bg-gray-1200 px-5 py-3 font-sans text-sm font-semibold text-white transition-opacity hover:opacity-80 disabled:opacity-50">{loading ? "Verifying" : "Continue"}</button>
-                </form>
-              ) : (
-                <form onSubmit={login} className="mt-6 flex flex-col gap-3">
-                  <div className="flex items-center justify-between gap-3 rounded-full bg-gray-100 px-4 py-2 font-sans text-xs text-gray-1000"><span>Admin token verified</span><button type="button" onClick={() => { setTokenVerified(false); setCode(""); }} className="underline underline-offset-4 hover:text-gray-1200">Change</button></div>
-                  <label htmlFor="admin-code" className="sr-only">Authenticator code</label>
-                  <div className="relative">
-                    <input id="admin-code" aria-label="Authenticator code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} autoComplete="one-time-code" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 admin-code-input text-center font-sans text-base font-medium tabular-nums tracking-normal text-gray-1200 outline-none shadow-none focus:border-gray-1200 focus:outline-none" required autoFocus />
-                    {!code ? <span aria-hidden="true" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="pointer-events-none absolute inset-0 flex items-center justify-center px-5 font-sans text-base text-gray-400">Authenticator code</span> : null}
-                  </div>
-                  <button type="submit" disabled={loading || code.length !== 6} className="rounded-full bg-gray-1200 px-5 py-3 font-sans text-sm font-semibold text-white transition-opacity hover:opacity-80 disabled:opacity-50">{loading ? "Checking" : "Open queue"}</button>
-                </form>
-              )}
+              <p className="mt-3 text-sm leading-relaxed text-gray-1000">Sign in with the authorized admin email and your current authenticator code.</p>
+              <form onSubmit={login} className="mt-6 flex flex-col gap-3">
+                <label htmlFor="admin-email" className="sr-only">Admin email</label>
+                <input id="admin-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Admin email" autoComplete="username" className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 font-sans text-sm text-gray-1200 outline-none shadow-none focus:border-gray-1200 focus:outline-none" required />
+                <label htmlFor="admin-code" className="sr-only">Authenticator code</label>
+                <div className="relative">
+                  <input id="admin-code" aria-label="Authenticator code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} autoComplete="one-time-code" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 admin-code-input text-center font-sans text-base font-medium tabular-nums tracking-normal text-gray-1200 outline-none shadow-none focus:border-gray-1200 focus:outline-none" required autoFocus />
+                  {!code ? <span aria-hidden="true" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="pointer-events-none absolute inset-0 flex items-center justify-center px-5 font-sans text-base text-gray-400">Authenticator code</span> : null}
+                </div>
+                <button type="submit" disabled={loading || code.length !== 6 || !email} className="rounded-full bg-gray-1200 px-5 py-3 font-sans text-sm font-semibold text-white transition-opacity hover:opacity-80 disabled:opacity-50">{loading ? "Checking" : "Open queue"}</button>
+              </form>
             </>
           )}
           {error ? <p role="alert" className="mt-3 text-sm text-gray-1000">{error}</p> : null}

@@ -30,17 +30,30 @@ export function LanguageSuggestion() {
 
   useEffect(() => {
     if (window.location.pathname.startsWith("/admin")) return;
-    if (window.localStorage.getItem(STORAGE_KEY)) return;
+
+    const savedChoice = window.localStorage.getItem(STORAGE_KEY);
+    const savedLocale = savedChoice && LOCALES.includes(savedChoice as Locale) ? (savedChoice as Locale) : null;
+    if (savedLocale && savedLocale !== "en" && localeFromPath(window.location.pathname) === "en") {
+      window.location.replace(pathForLocale(savedLocale, window.location.pathname, window.location.search));
+      return;
+    }
+    if (savedLocale) return;
 
     const browserLocale = LANGUAGE_TO_LOCALE[navigator.language.slice(0, 2).toLowerCase()];
     const fallback = browserLocale || "en";
-    Promise.resolve().then(() => setSuggested(fallback));
-
     fetch("/api/locale", { cache: "no-store" })
       .then((response) => (response.ok ? response.json() : null))
       .then((data: { country?: string } | null) => {
         const countryLocale = data?.country ? COUNTRY_TO_LOCALE[data.country.toUpperCase()] : undefined;
-        setSuggested(countryLocale || browserLocale || "en");
+        const detected = countryLocale || browserLocale || "en";
+        // On the bare English site, an Italian/European visitor is redirected
+        // immediately. Other language changes remain an explicit suggestion.
+        if (detected !== "en" && localeFromPath(window.location.pathname) === "en") {
+          const destination = pathForLocale(detected, window.location.pathname, window.location.search);
+          window.location.replace(destination);
+          return;
+        }
+        setSuggested(detected);
       })
       .catch(() => setSuggested(fallback));
   }, []);

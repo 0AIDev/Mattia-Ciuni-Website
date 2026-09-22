@@ -311,16 +311,19 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
     return finish(json({ code: "invalid_message" }, 400), "invalid_message");
   }
 
-  const storage = supabaseKv(env) || env.FEEDBACK;
-  if (!storage) {
+  // Cloudflare KV è la coda primaria quando è configurata. Deve essere la stessa
+  // coda che legge la dashboard admin: se Supabase venisse scelto prima del
+  // binding FEEDBACK, il form potrebbe rispondere correttamente ma /admin/feedback
+  // leggerebbe un altro namespace e sembrerebbe vuoto o non funzionante.
+  const primaryStorage = env.FEEDBACK || supabaseKv(env);
+  if (!primaryStorage) {
     return finish(json({ code: "unavailable" }, 503), "missing_feedback_storage");
   }
+  const usingSupabaseFallback = !env.FEEDBACK;
 
-  // RATE_LIMIT è il binding dedicato in produzione. La stessa coda è un fallback
-  // sicuro per preview/local e per un deploy in cui il binding opzionale non è
-  // ancora stato aggiunto: meglio una coda funzionante con chiavi temporanee
-  // separate che bloccare ogni invio con un falso rate limit.
-  const rateLimitStore = env.RATE_LIMIT || storage;
+  // RATE_LIMIT è il binding dedicato in produzione. La coda primaria resta un
+  // fallback solo per preview/local: non sostituisce mai FEEDBACK.
+  const rateLimitStore = env.RATE_LIMIT || primaryStorage;
   if (!rateLimitStore) {
     return finish(json({ code: "rate_limit_unavailable" }, 503), "missing_rate_limit_binding");
   }
@@ -353,31 +356,35 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
   };
 
   try {
-    await storage.put(id, JSON.stringify(record));
+    await primaryStorage.put(id, JSON.stringify(record));
     // L'indice tiene gli ultimi MAX_INDEX id: è la coda di review. Un test non
     // entra qui: la coda serve a decidere cosa pubblicare, non a leggere prove.
     if (!isTest) {
-      const currentIndex = (await storage.get("fb:index")) || "";
+      const currentIndex = (await primaryStorage.get("fb:index")) || "";
       const ids = [id, ...currentIndex.split("\n").filter(Boolean)].slice(0, MAX_INDEX);
-      await storage.put("fb:index", ids.join("\n"));
+      await primaryStorage.put("fb:index", ids.join("\n"));
     }
 
     if (!isTest && supabaseConfigured(env)) {
-      const { response } = await supabaseRequest(env, "feedback_submissions?on_conflict=legacy_id", {
-        method: "POST",
-        headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
-        body: JSON.stringify({
-          legacy_id: record.id,
-          submitted_at: record.submitted_at,
-          status: record.status,
-          name: record.name,
-          email: record.email,
-          message: record.message,
-          page_url: record.page_url,
-          notification_status: record.notification_status,
-        }),
-      });
-      if (!response.ok) throw new Error(`supabase_feedback_${response.status}`);
+      try {
+        const { response } = await supabaseRequest(env, "feedback_submissions?on_conflict=legacy_id", {
+          method: "POST",
+          headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+          body: JSON.stringify({
+            legacy_id: record.id,
+            submitted_at: record.submitted_at,
+            status: record.status,
+            name: record.name,
+            email: record.email,
+            message: record.message,
+            page_url: record.page_url,
+            notification_status: record.notification_status,
+          }),
+        });
+        if (!response.ok) console.error(JSON.stringify({ event: "feedback_supabase_mirror", outcome: "failed", status: response.status }));
+      } catch {
+        console.error(JSON.stringify({ event: "feedback_supabase_mirror", outcome: "unreachable" }));
+      }
     }
 
     // Una notifica fallita non deve far perdere il feedback: il record resta
@@ -387,7 +394,7 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
       ? "not_configured"
       : await notifyMattia(env, record, siteOrigin(request, env));
     record.confirmation_status = await confirmToAuthor(env, record);
-    await storage.put(id, JSON.stringify(record));
+    await primaryStorage.put(id, JSON.stringify(record));
     if (!isTest && supabaseConfigured(env)) {
       const { response } = await supabaseRequest(env, `feedback_submissions?legacy_id=eq.${encodeURIComponent(record.id)}`, {
         method: "PATCH",
@@ -397,7 +404,7 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
       if (!response.ok) console.error(JSON.stringify({ event: "feedback_supabase_update", outcome: "failed", status: response.status }));
     }
   } catch {
-    return finish(json({ code: "provider_error" }, 502), "kv_write_error");
+    return finish(json({ code: usingSupabaseFallback ? "unavailable" : "provider_error" }, usingSupabaseFallback ? 503 : 502), usingSupabaseFallback ? "storage_write_error" : "kv_write_error");
   }
 
   return finish(
