@@ -261,7 +261,7 @@ export default function FeedbackAdminPage() {
 
   if (!sessionChecked) {
     return (
-      <main id="admin-feedback-page" className="mx-auto max-w-[760px] px-6 py-12 sm:py-20 font-sans">
+      <main id="admin-feedback-page" className="mx-auto w-full max-w-[760px] min-w-0 px-5 py-8 font-sans sm:px-6 sm:py-20">
         <section aria-busy="true" aria-label="Checking admin session" className="animate-pulse">
           <header className="flex items-start justify-between gap-6">
             <div className="space-y-3">
@@ -301,7 +301,7 @@ export default function FeedbackAdminPage() {
 
   if (!authenticated) {
     return (
-      <main id="admin-feedback-page" className="mx-auto flex min-h-screen max-w-[460px] items-center px-6 py-12 font-sans">
+      <main id="admin-feedback-page" className="mx-auto flex min-h-[100dvh] max-w-[460px] items-center px-5 py-8 font-sans sm:px-6 sm:py-12">
         <section className="w-full rounded-3xl border border-gray-300 bg-white p-6 sm:p-8">
           {mode === "setup" && !setup ? (
             <>
@@ -360,7 +360,7 @@ export default function FeedbackAdminPage() {
   }
 
   return (
-    <main id="admin-feedback-page" className="mx-auto max-w-[760px] px-6 py-12 sm:py-20">
+    <main id="admin-feedback-page" className="mx-auto w-full max-w-[760px] min-w-0 px-5 py-8 sm:px-6 sm:py-20">
       <header className="flex items-start justify-between gap-6">
         <div>
           <h1 className="font-serif text-3xl text-gray-1200">Feedback review</h1>
@@ -381,7 +381,7 @@ export default function FeedbackAdminPage() {
           <article key={record.id} className="rounded-2xl border border-gray-300 px-5 py-5 sm:px-6">
             <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-1000"><span className="font-medium text-gray-1200">{record.name || "Anonymous"}</span>{record.email ? <span>{record.email}</span> : null}<span>·</span><time dateTime={record.submitted_at}>{new Date(record.submitted_at).toLocaleString()}</time></div>
             <p className="mt-4 whitespace-pre-wrap text-[15px] leading-relaxed text-gray-1200">{record.message}</p>
-            <div className="mt-5 flex flex-wrap items-center gap-2"><button type="button" onClick={() => void moderate(record.id, "publish")} disabled={loading} className="rounded-full bg-gray-1200 px-4 py-2 text-sm font-semibold text-white hover:opacity-80 disabled:opacity-50">Publish</button><button type="button" onClick={() => void moderate(record.id, "reject")} disabled={loading} className="rounded-full border border-gray-300 px-4 py-2 text-sm text-gray-1000 hover:border-gray-1200 disabled:opacity-50">Reject</button><span className="text-xs text-gray-1000">{record.page_url}</span></div>
+            <div className="mt-5 flex flex-wrap items-center gap-2"><button type="button" onClick={() => void moderate(record.id, "publish")} disabled={loading} className="rounded-full bg-gray-1200 px-4 py-2 text-sm font-semibold text-white hover:opacity-80 disabled:opacity-50">Publish</button><button type="button" onClick={() => void moderate(record.id, "reject")} disabled={loading} className="rounded-full border border-gray-300 px-4 py-2 text-sm text-gray-1000 hover:border-gray-1200 disabled:opacity-50">Reject</button><span className="max-w-full break-all text-xs text-gray-1000">{record.page_url}</span></div>
           </article>
         ))}
       </div>

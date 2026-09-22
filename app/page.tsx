@@ -100,7 +100,16 @@ export default function Home() {
           className="h-10 w-10 shrink-0 rounded-full object-cover"
         />
         <h1 className="m-0 font-serif text-lg font-semibold">Mattia Ciuni</h1>
-        <p className="m-0 w-full text-sm text-gray-1000 sm:w-auto sm:text-base">Founder & CEO @ Payle</p>
+        <p className="m-0 w-full text-sm text-gray-1000 sm:w-auto sm:text-base">
+          Founder &amp; CEO at{" "}
+          <a
+            href={site.payleUrl}
+            rel="noopener noreferrer"
+            className="font-semibold text-gray-1200 underline decoration-transparent underline-offset-4 transition-colors hover:decoration-gray-1200"
+          >
+            Payle
+          </a>
+        </p>
       </header>
 
       <div className="mb-16 space-y-6 text-text-paragraph sm:mb-24">
@@ -298,7 +307,7 @@ export default function Home() {
             <li key={f.slug}>
               <Link
                 href={`/feedback/${f.slug}/`}
-                className="group flex items-baseline justify-between gap-4 px-5 py-4 sm:px-6"
+                className="group flex min-w-0 flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5 px-5 py-4 sm:px-6"
               >
                 <span className="font-serif font-[450] underline decoration-transparent underline-offset-4 transition-colors group-hover:decoration-gray-1200">
                   {f.title}

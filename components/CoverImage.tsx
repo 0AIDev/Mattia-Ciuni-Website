@@ -11,8 +11,8 @@ import Image from "next/image";
  */
 export function CoverImage({ src }: { src: string }) {
   return (
-    <figure className="mb-10">
-      <div className="rounded-2xl bg-gray-background p-1 shadow-custom">
+    <figure className="mb-10 w-full min-w-0 max-w-full">
+      <div className="w-full min-w-0 max-w-full rounded-2xl bg-gray-background p-1 shadow-custom">
         <div className="overflow-hidden rounded-xl border border-gray-400 bg-preview-bg">
           <Image
             src={src}
@@ -20,7 +20,7 @@ export function CoverImage({ src }: { src: string }) {
             width={1200}
             height={630}
             priority
-            className="w-full select-none"
+            className="block h-auto w-full max-w-full select-none"
           />
         </div>
       </div>

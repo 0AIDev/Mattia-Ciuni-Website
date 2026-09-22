@@ -126,7 +126,7 @@ export default async function Note({
   return (
     <main
       id="content"
-      className="mx-auto max-w-[692px] px-6 py-12 leading-relaxed sm:py-24"
+      className="mx-auto w-full min-w-0 max-w-[692px] overflow-x-clip px-6 py-12 leading-relaxed sm:py-24"
     >
       <script
         type="application/ld+json"
@@ -153,12 +153,12 @@ export default async function Note({
             </Link>
           </li>
           <li aria-hidden="true">·</li>
-          <li aria-current="page" className="truncate text-gray-1200">
+          <li aria-current="page" className="min-w-0 break-words text-gray-1200">
             {note.title}
           </li>
         </ol>
       </nav>
-      <header className="mb-16 flex items-center justify-between sm:mb-24">
+      <header className="mb-16 flex flex-wrap items-center justify-between gap-4 sm:mb-24">
         <div className="flex items-center gap-4">
           <Link
             href="/"
@@ -176,13 +176,13 @@ export default async function Note({
         </span>
       </header>
 
-      <article>
+      <article className="min-w-0 max-w-full">
         {toc.length > 0 ? <TableOfContents items={toc} /> : null}
         <MobileTableOfContents items={toc} />
-        <div data-article-content>
+        <div data-article-content className="min-w-0 max-w-full break-words [overflow-wrap:anywhere]">
           <CoverImage src={`/notes/${note.slug}/cover.png`} />
           <h1
-            className="mb-5 scroll-mt-20 font-serif text-3xl font-medium leading-tight text-gray-1200 sm:text-4xl"
+            className="mb-5 min-w-0 scroll-mt-20 break-words font-serif text-3xl font-medium leading-tight text-gray-1200 sm:text-4xl [overflow-wrap:anywhere]"
           >
             {note.title}
           </h1>
@@ -220,7 +220,7 @@ export default async function Note({
       <nav aria-label="All notes" className="mt-8 border-t border-gray-300">
         <Link
           href="/notes/"
-          className="group flex items-baseline justify-between py-3.5"
+          className="group flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5 py-3.5"
         >
           <span className="text-gray-1000">Notes</span>
           <span className="font-medium">All notes</span>

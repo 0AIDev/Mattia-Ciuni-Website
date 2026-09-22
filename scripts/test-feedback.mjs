@@ -8,7 +8,7 @@
 //
 // È un test **offline**: carica la Function vera (Node esegue i `.ts`
 // direttamente), le dà uno storage in memoria e un `fetch` finto, e non tocca né
-// la rete né KV né Resend.
+// la rete né KV né Brevo.
 //
 //   node scripts/test-feedback.mjs
 const { onRequestPost } = await import(
@@ -87,8 +87,8 @@ function streamed(payload) {
 
 const message = "Ho usato la demo e la parte sui limiti per agente mi convince.";
 
-/** Cattura le chiamate che la Function farebbe a Resend, senza fare rete. */
-async function withStubbedResend(run) {
+/** Cattura le chiamate che la Function farebbe a Brevo, senza fare rete. */
+async function withStubbedBrevo(run) {
   const calls = [];
   const original = globalThis.fetch;
   globalThis.fetch = async (url, init = {}) => {
@@ -156,7 +156,7 @@ async function withStubbedResend(run) {
       !Object.hasOwn(record, "ip_first_octets") &&
       !JSON.stringify(record).includes(IP),
   );
-  check("without Resend keys the record says so instead of pretending", record.notification_status === "not_configured");
+  check("without Brevo keys the record says so instead of pretending", record.notification_status === "not_configured");
 }
 
 // --- 4 · la notifica porta alla dashboard dell'host che ha ricevuto il post --
@@ -165,34 +165,35 @@ async function withStubbedResend(run) {
 // viceversa). Adesso l'origine si legge dalla richiesta, e `SITE_URL` la fissa solo
 // quando il progetto la imposta.
 {
-  const resend = {
-    RESEND_API_KEY: API_KEY,
-    RESEND_FROM_EMAIL: FROM,
+  const brevo = {
+    BREVO_API_KEY: API_KEY,
+    BREVO_FROM_EMAIL: FROM,
+    BREVO_FROM_NAME: "Mattia Ciuni",
   };
 
-  const plain = newEnv(resend);
-  const { calls } = await withStubbedResend(async () => onRequestPost({ request: request({ message }), env: plain }));
-  const html = calls[0]?.body?.html || "";
+  const plain = newEnv(brevo);
+  const { calls } = await withStubbedBrevo(async () => onRequestPost({ request: request({ message }), env: plain }));
+  const html = calls[0]?.body?.htmlContent || "";
   check(
     "the notification links to the host that served the request",
     calls.length === 1 &&
-      calls[0].url === "https://api.resend.com/emails" &&
+      calls[0].url === "https://api.brevo.com/v3/smtp/email" &&
       html.includes(`${ORIGIN}/admin/feedback/`) &&
       !html.includes("mattiaciuni.pages.dev"),
   );
   check(
-    "the notification is idempotent per record and sends no PII beyond the feedback itself",
+    "the notification uses Brevo and sends no PII beyond the feedback itself",
     calls[0]?.headers?.["Idempotency-Key"]?.startsWith("feedback-notification:fb:") === true &&
-      calls[0]?.headers?.Authorization === `Bearer ${API_KEY}`,
+      calls[0]?.headers?.["api-key"] === API_KEY,
   );
 
-  const configured = newEnv({ ...resend, SITE_URL: "https://mattiaciuni.pages.dev/" });
-  const { calls: fixed } = await withStubbedResend(async () =>
+  const configured = newEnv({ ...brevo, SITE_URL: "https://mattiaciuni.pages.dev/" });
+  const { calls: fixed } = await withStubbedBrevo(async () =>
     onRequestPost({ request: request({ message }), env: configured }),
   );
   check(
     "SITE_URL, when the project sets it, wins over the request host (trailing slash removed)",
-    (fixed[0]?.body?.html || "").includes("https://mattiaciuni.pages.dev/admin/feedback/"),
+    (fixed[0]?.body?.htmlContent || "").includes("https://mattiaciuni.pages.dev/admin/feedback/"),
   );
 }
 

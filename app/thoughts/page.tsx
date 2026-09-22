@@ -49,13 +49,13 @@ export default function BlogIndex() {
   return (
     <main
       id="content"
-      className="mx-auto max-w-[692px] px-6 py-12 leading-relaxed sm:py-24"
+      className="mx-auto w-full min-w-0 max-w-[692px] overflow-x-clip px-6 py-12 leading-relaxed sm:py-24"
     >
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(listJsonLd) }}
       />
-      <header className="mb-16 flex items-center justify-between sm:mb-24">
+      <header className="mb-16 flex min-w-0 items-center justify-between sm:mb-24">
         <div className="flex items-center gap-4">
           <Link
             href="/"
@@ -83,10 +83,10 @@ export default function BlogIndex() {
           <li key={p.slug}>
             <Link
               href={`/thoughts/${p.slug}/`}
-              className="group flex items-baseline justify-between gap-4 py-3.5"
+              className="group flex min-w-0 flex-col items-start gap-1.5 py-3.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
             >
-              <span className="font-serif font-medium">{p.title}</span>
-              <span className="flex items-center gap-2 whitespace-nowrap text-gray-1000">
+              <span className="min-w-0 break-words font-serif font-medium [overflow-wrap:anywhere]">{p.title}</span>
+              <span className="flex min-w-0 max-w-full items-center gap-2 break-words text-sm text-gray-1000 sm:whitespace-nowrap sm:text-base">
                 {p.category} · {p.date}
                 <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
               </span>
@@ -98,7 +98,7 @@ export default function BlogIndex() {
       <nav aria-label="Notes" className="mt-16 border-t border-gray-300">
         <Link
           href="/notes/"
-          className="group flex items-baseline justify-between gap-4 py-3.5"
+          className="group flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5 py-3.5"
         >
           <span className="text-gray-1000">Longer, slower pieces</span>
           <span className="flex items-center gap-2 font-medium">

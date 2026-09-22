@@ -196,8 +196,8 @@ export default async function FeedbackPost({
         </ol>
       </nav>
 
-      <header className="mb-10 flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
+      <header className="mb-10 flex flex-wrap items-center justify-between gap-4">
+        <div className="flex min-w-0 items-center gap-4">
           <Link
             href="/"
             aria-label="Go back home"

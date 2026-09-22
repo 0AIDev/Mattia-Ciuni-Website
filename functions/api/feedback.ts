@@ -1,3 +1,8 @@
+// @ts-expect-error Pages bundles extensionless function imports; Node's offline loader needs `.ts`.
+import { supabaseConfigured, supabaseRequest } from "../lib/supabase.ts";
+// @ts-expect-error Pages bundles extensionless function imports; Node's offline loader needs `.ts`.
+import { supabaseKv } from "../lib/supabase-kv.ts";
+
 // POST /api/feedback: salva un feedback inviato dal form della sezione
 // /feedback/ in KV, pronto da recensire e pubblicare.
 //
@@ -6,11 +11,11 @@
 // dell'indice e non uno scan. Senza binding la richiesta risponde 503: un
 // feedback che si perde è peggio di un form che dice la verità.
 //
-// La notifica email a Mattia parte dopo il salvataggio (Resend, con chiave
-// idempotente sul record) e non è mai la cosa da cui dipende il feedback: se
-// fallisce, il record resta in coda con `notification_status: "failed"` e la
-// review lo legge in KV o dalla dashboard. Il link dentro la notifica si compone
-// dall'host che sta servendo la pagina, non da una costante.
+// La notifica email a Mattia parte dopo il salvataggio tramite Brevo, sul piano
+// gratuito, e non è mai la cosa da cui dipende il feedback: se fallisce, il record
+// resta in coda con `notification_status: "failed"` e la review lo legge in KV o
+// dalla dashboard. Il link dentro la notifica si compone dall'host che sta
+// servendo la pagina, non da una costante.
 
 interface RateLimitStore {
   get(key: string): Promise<string | null>;
@@ -24,10 +29,13 @@ interface FeedbackStore {
 interface Env {
   FEEDBACK?: FeedbackStore;
   RATE_LIMIT?: RateLimitStore;
-  RESEND_API_KEY?: string;
-  RESEND_FROM_EMAIL?: string;
+  BREVO_API_KEY?: string;
+  BREVO_FROM_EMAIL?: string;
+  BREVO_FROM_NAME?: string;
   FEEDBACK_NOTIFY_TO?: string;
   SITE_URL?: string;
+  SUPABASE_URL?: string;
+  SUPABASE_SERVICE_ROLE_KEY?: string;
 }
 
 interface PagesContext {
@@ -142,25 +150,31 @@ async function notifyMattia(
   record: { id: string; name: string; email: string; message: string; page_url: string; submitted_at: string },
   queueUrl: string,
 ): Promise<"sent" | "failed" | "not_configured"> {
-  if (!env.RESEND_API_KEY || !env.RESEND_FROM_EMAIL) return "not_configured";
+  if (!env.BREVO_API_KEY) return "not_configured";
   const to = env.FEEDBACK_NOTIFY_TO || "ceo@usepayle.com";
+  const senderEmail = env.BREVO_FROM_EMAIL || "ceo@usepayle.com";
+  const senderName = env.BREVO_FROM_NAME || "Mattia Ciuni";
+  const subject = `New Payle feedback${record.name ? ` from ${record.name}` : ""}`;
+  const htmlContent = `<p><strong>New feedback is waiting for review.</strong></p><p><strong>From:</strong> ${escapeHtml(record.name || "Anonymous")}${record.email ? ` (${escapeHtml(record.email)})` : ""}</p><p><strong>Page:</strong> ${escapeHtml(record.page_url)}</p><p><strong>Submitted:</strong> ${escapeHtml(record.submitted_at)}</p><blockquote style="white-space:pre-wrap">${escapeHtml(record.message)}</blockquote>${queueUrl ? `<p><a href="${escapeHtml(queueUrl + "/admin/feedback/")}">Open the review queue</a></p>` : ""}`;
+  const textContent = `New feedback is waiting for review.\n\nFrom: ${record.name || "Anonymous"}${record.email ? ` (${record.email})` : ""}\nPage: ${record.page_url}\nSubmitted: ${record.submitted_at}\n\n${record.message}${queueUrl ? `\n\nOpen the review queue: ${queueUrl}/admin/feedback/` : ""}`;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);
   try {
-    const response = await fetch("https://api.resend.com/emails", {
+    const response = await fetch("https://api.brevo.com/v3/smtp/email", {
       method: "POST",
       signal: controller.signal,
       headers: {
-        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        "api-key": env.BREVO_API_KEY,
         "Content-Type": "application/json",
         Accept: "application/json",
         "Idempotency-Key": `feedback-notification:${record.id}`,
       },
       body: JSON.stringify({
-        from: env.RESEND_FROM_EMAIL,
-        to: [to],
-        subject: `New Payle feedback${record.name ? ` from ${record.name}` : ""}`,
-        html: `<p><strong>New feedback is waiting for review.</strong></p><p><strong>From:</strong> ${escapeHtml(record.name || "Anonymous")}${record.email ? ` (${escapeHtml(record.email)})` : ""}</p><p><strong>Page:</strong> ${escapeHtml(record.page_url)}</p><p><strong>Submitted:</strong> ${escapeHtml(record.submitted_at)}</p><blockquote style="white-space:pre-wrap">${escapeHtml(record.message)}</blockquote>${queueUrl ? `<p><a href="${escapeHtml(queueUrl + "/admin/feedback/")}">Open the review queue</a></p>` : ""}`,
+        sender: { email: senderEmail, name: senderName },
+        to: [{ email: to, name: "Mattia Ciuni" }],
+        subject,
+        htmlContent,
+        textContent,
       }),
     });
     return response.ok ? "sent" : "failed";
@@ -216,15 +230,16 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
     return finish(json({ code: "invalid_message" }, 400), "invalid_message");
   }
 
-  if (!env.FEEDBACK) {
-    return finish(json({ code: "unavailable" }, 503), "missing_feedback_binding");
+  const storage = supabaseKv(env) || env.FEEDBACK;
+  if (!storage) {
+    return finish(json({ code: "unavailable" }, 503), "missing_feedback_storage");
   }
 
-  // RATE_LIMIT è il binding dedicato in produzione. FEEDBACK è un fallback
+  // RATE_LIMIT è il binding dedicato in produzione. La stessa coda è un fallback
   // sicuro per preview/local e per un deploy in cui il binding opzionale non è
   // ancora stato aggiunto: meglio una coda funzionante con chiavi temporanee
   // separate che bloccare ogni invio con un falso rate limit.
-  const rateLimitStore = env.RATE_LIMIT || env.FEEDBACK;
+  const rateLimitStore = env.RATE_LIMIT || storage;
   if (!rateLimitStore) {
     return finish(json({ code: "rate_limit_unavailable" }, 503), "missing_rate_limit_binding");
   }
@@ -254,15 +269,42 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
   };
 
   try {
-    await env.FEEDBACK.put(id, JSON.stringify(record));
+    await storage.put(id, JSON.stringify(record));
     // L'indice tiene gli ultimi MAX_INDEX id: è la coda di review.
-    const currentIndex = (await env.FEEDBACK.get("fb:index")) || "";
+    const currentIndex = (await storage.get("fb:index")) || "";
     const ids = [id, ...currentIndex.split("\n").filter(Boolean)].slice(0, MAX_INDEX);
-    await env.FEEDBACK.put("fb:index", ids.join("\n"));
+    await storage.put("fb:index", ids.join("\n"));
+
+    if (supabaseConfigured(env)) {
+      const { response } = await supabaseRequest(env, "feedback_submissions?on_conflict=legacy_id", {
+        method: "POST",
+        headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+        body: JSON.stringify({
+          legacy_id: record.id,
+          submitted_at: record.submitted_at,
+          status: record.status,
+          name: record.name,
+          email: record.email,
+          message: record.message,
+          page_url: record.page_url,
+          notification_status: record.notification_status,
+        }),
+      });
+      if (!response.ok) throw new Error(`supabase_feedback_${response.status}`);
+    }
+
     // Una notifica fallita non deve far perdere il feedback: il record resta
     // in coda e conserva lo stato, così può essere rilevato dalla dashboard.
     record.notification_status = await notifyMattia(env, record, siteOrigin(request, env));
-    await env.FEEDBACK.put(id, JSON.stringify(record));
+    await storage.put(id, JSON.stringify(record));
+    if (supabaseConfigured(env)) {
+      const { response } = await supabaseRequest(env, `feedback_submissions?legacy_id=eq.${encodeURIComponent(record.id)}`, {
+        method: "PATCH",
+        headers: { Prefer: "return=minimal" },
+        body: JSON.stringify({ notification_status: record.notification_status }),
+      });
+      if (!response.ok) console.error(JSON.stringify({ event: "feedback_supabase_update", outcome: "failed", status: response.status }));
+    }
   } catch {
     return finish(json({ code: "provider_error" }, 502), "kv_write_error");
   }

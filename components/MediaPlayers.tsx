@@ -214,7 +214,7 @@ export function VideoPlayer({ src, title, poster }: PlayerProps) {
           <PlayIcon playing={false} />
         </button>
       ) : null}
-      <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 bg-gray-1200/90 px-3 py-2 text-white opacity-0 transition-opacity group-hover:opacity-100 focus-within:opacity-100">
+      <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 bg-gray-1200/90 px-3 py-2 text-white opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
         <button
           type="button"
           onClick={state.togglePlay}

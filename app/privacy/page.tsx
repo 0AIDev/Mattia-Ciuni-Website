@@ -63,8 +63,8 @@ const sections: LegalSection[] = [
           email or one email to me.
         </p>
         <p>
-          Three services process this data on my behalf: <strong>Resend</strong>, which sends the Welcome email and the
-          notification emails for feedback; <strong>Brevo</strong>, which keeps the subscriber list
+          Three services process this data on my behalf: <strong>Resend</strong>, which sends the Welcome email;
+          <strong>Brevo</strong>, which sends the feedback notifications and keeps the subscriber list
           (&ldquo;Mattia Ciuni Newsletter&rdquo;) and the contacts I write to; and <strong>Beehiiv</strong>, a second
           subscription platform I use to keep the same list available if one provider fails. All three are processors,
           not owners: they cannot use your address for their own marketing, and they act under their own data
@@ -85,9 +85,9 @@ const sections: LegalSection[] = [
         <p>
           The feedback form in the Feedback section sends me what you write: the <strong>message</strong> (required),
           your <strong>name</strong> and <strong>email</strong> if you choose to add them, the <strong>page</strong> you
-          sent it from, the date and time, and the <strong>first two numbers of your IP address</strong> (used only
-          against abuse and never shown to anyone). Messages are stored in Cloudflare Workers KV, my own storage, and a
-          notification with the text is emailed to me so I can read it.
+          sent it from, and the date and time. Your IP address is used transiently for rate limiting and is not saved
+          with the feedback. Messages are stored in Cloudflare Workers KV, my own storage, and a notification with the
+          text is sent through Brevo so I can read it.
         </p>
         <p>
           The legal basis is your consent, given by submitting the form, and my legitimate interest in keeping the

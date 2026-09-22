@@ -1,6 +1,7 @@
 import assert from "node:assert/strict";
 import { readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
+import { canonicalizeSubscriberEmail } from "../lib/email-normalization.ts";
 
 const root = new URL("..", import.meta.url).pathname.replace(/^\/(\w:)/, "$1");
 const read = (file) => readFileSync(join(root, file), "utf8");
@@ -39,7 +40,16 @@ assert.match(endpoint, /BEEHIIV_PUBLICATION_ID/);
 assert.match(endpoint, /api\.beehiiv\.com\/v2\/publications/);
 assert.match(endpoint, /send_welcome_email: false/);
 assert.match(endpoint, /updateEnabled: true/);
+assert.match(endpoint, /canonicalizeSubscriberEmail/);
+assert.match(endpoint, /BREVO_LIST_ID/);
+assert.match(endpoint, /already_subscribed/);
 assert.match(endpoint, /MAX_REQUESTS = 5/);
+
+assert.equal(canonicalizeSubscriberEmail("mattiaciuni@gmail.com"), "mattiaciuni@gmail.com");
+assert.equal(canonicalizeSubscriberEmail(" MattiaCiuni+news@gmail.com "), "mattiaciuni@gmail.com");
+assert.equal(canonicalizeSubscriberEmail("m.a.t.t.i.a.c.i.u.n.i@googlemail.com"), "mattiaciuni@gmail.com");
+assert.equal(canonicalizeSubscriberEmail("mattiaciuni+news@outlook.com"), "mattiaciuni+news@outlook.com");
+assert.equal(canonicalizeSubscriberEmail("person+tag@example.com"), "person+tag@example.com");
 assert.match(endpoint, /RATE_LIMIT/);
 assert.match(endpoint, /Retry-After/);
 assert.match(endpoint, /SOURCE/);

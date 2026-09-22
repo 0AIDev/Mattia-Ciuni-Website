@@ -2,7 +2,7 @@ import { SITE_ORIGIN } from "./site-origin";
 
 export const site = {
   name: "Mattia Ciuni",
-  role: "Founder & CEO @ Payle",
+  role: "Founder & CEO at Payle",
   // Dominio di produzione. La stringa sta **una volta sola**, in
   // `lib/site-origin.ts`: qui si legge la variabile del progetto Pages
   // (`NEXT_PUBLIC_SITE_URL`, vedi README) e in mancanza quella.

@@ -58,7 +58,9 @@ if (builtFor !== SITE_ORIGIN) {
 check("post: canonical", post.includes(`rel="canonical" href="${PROD}/thoughts/money-layer-for-ai-agents/"`));
 check("index: og:image absolute", index.includes(`og:image" content="${PROD}/og.png"`));
 check("index: og:site_name", index.includes('og:site_name" content="Mattia Ciuni"'));
-check("index: title uses entity and topic", index.includes("Mattia Ciuni | Founder, CEO of Payle and AI Payments Builder"));
+check("index: title uses entity and topic", index.includes("Mattia Ciuni | Founder &amp; CEO at Payle"));
+check("index: role links bold Payle", index.includes("Founder &amp; CEO at") && index.includes('href="https://usepayle.com"') && index.includes(">Payle</a>"));
+check("index: WebSite identity", !!ldJson(index).find((j) => j["@type"] === "WebSite" && j.name === "Mattia Ciuni" && j.url === PROD));
 check("post: og:type article", post.includes('og:type" content="article"'));
 check("post: article:published_time", post.includes("article:published_time"));
 check("blog: twitter title fixed", blog.includes('twitter:title" content="Thoughts'));
@@ -187,14 +189,16 @@ const adminPage = read("admin/feedback/index.html");
 check(
   "feedback admin: private dashboard scaffold",
   adminPage.includes("Feedback review") &&
-    adminPage.includes("Admin token") &&
-    adminPage.includes('name="robots" content="noindex, nofollow, nocache"')
+    adminPage.includes('name="robots" content="noindex, nofollow, nocache"') &&
+    fs.existsSync(path.join(__dirname, "..", "functions", "api", "admin", "feedback.ts"))
 );
 check(
   "feedback admin: protected API and notification wiring",
   fs.existsSync(path.join(__dirname, "..", "functions", "api", "admin", "feedback.ts")) &&
     readFileSync(path.join(__dirname, "..", "functions", "api", "admin", "feedback.ts"), "utf8").includes("ADMIN_TOKEN") &&
-    readFileSync(path.join(__dirname, "..", "functions", "api", "feedback.ts"), "utf8").includes("api.resend.com/emails") &&
+    readFileSync(path.join(__dirname, "..", "functions", "api", "feedback.ts"), "utf8").includes("api.brevo.com/v3/smtp/email") &&
+    readFileSync(path.join(__dirname, "..", "functions", "api", "feedback.ts"), "utf8").includes("BREVO_API_KEY") &&
+    !readFileSync(path.join(__dirname, "..", "functions", "api", "feedback.ts"), "utf8").includes("api.resend.com/emails") &&
     readFileSync(path.join(__dirname, "..", "functions", "api", "feedback.ts"), "utf8").includes("ceo@usepayle.com")
 );
 // Il link dentro la notifica si compone dall'host che sta servendo la pagina: un
@@ -710,7 +714,7 @@ const cookies = read("cookies/index.html");
 const terms = read("terms/index.html");
 check(
   "legal: privacy covers newsletter, feedback and analytics while chat is disabled",
-  ["Brevo", "Beehiiv", "Resend", "Workers KV", "Google Analytics 4", "first two numbers", "Garante"].every(
+  ["Brevo", "Beehiiv", "Resend", "Workers KV", "Google Analytics 4", "transiently", "Garante"].every(
     (needle) => privacy.includes(needle),
   )
 );
@@ -912,5 +916,7 @@ console.log("homepage html+css: " + (bytes / 1024).toFixed(1) + "KB raw | all JS
 // in più. Il CSS globale sale lentamente con ogni componente client nuovo
 // (hover states, varianti del modal): il guardrail segue la pagina, non il
 // numero, e continua a fermare qualunque regressione strutturale oltre.
-check("weight: homepage html+css < 118KB raw", bytes < 118 * 1024);
+// Responsive viewport metadata and keyboard-safe mobile controls add a small,
+// intentional amount of CSS/HTML to the static shell. Keep the guard below 120KB.
+check("weight: homepage html+css < 120KB raw", bytes < 120 * 1024);
 process.exit(fail ? 1 : 0);

@@ -1,5 +1,7 @@
 // @ts-expect-error Cloudflare bundles extensionless TS imports; Node's native strip loader needs `.ts` for the offline test.
 import { newTotpSecret, otpauthUri, verifyTotp } from "../../../lib/totp.ts";
+// @ts-expect-error Pages bundles extensionless function imports; Node's offline loader needs `.ts`.
+import { supabaseKv } from "../../lib/supabase-kv.ts";
 
 // GET/POST /api/admin/feedback — la coda di review dei feedback.
 //
@@ -53,6 +55,8 @@ interface Env {
   ADMIN_TOKEN?: string;
   COFOUNDER_TOKEN?: string;
   LOCAL_ADMIN?: string;
+  SUPABASE_URL?: string;
+  SUPABASE_SERVICE_ROLE_KEY?: string;
 }
 
 interface PagesContext {
@@ -127,6 +131,8 @@ const localFeedback: Store = {
 };
 
 function withLocalStore(env: Env): Env {
+  const remote = supabaseKv(env);
+  if (remote) return { ...env, FEEDBACK: remote };
   return env.FEEDBACK || env.LOCAL_ADMIN === "1" ? { ...env, FEEDBACK: env.FEEDBACK || localFeedback } : env;
 }
 // Il nome usato prima dell'audit del 21/09, quando il cookie conteneva il token.
@@ -234,11 +240,12 @@ async function setupUsed(env: Env): Promise<boolean> {
 }
 
 async function authRateAllowed(env: Env, ip: string, kind: string, max: number): Promise<boolean> {
-  if (!env.RATE_LIMIT) return true;
+  const store = env.RATE_LIMIT || supabaseKv(env);
+  if (!store) return true;
   const key = `rl:admin:${LOGIN_RATE_VERSION}:${kind}:${ip}`;
-  const current = Number.parseInt((await env.RATE_LIMIT.get(key)) || "0", 10);
+  const current = Number.parseInt((await store.get(key)) || "0", 10);
   if (current >= max) return false;
-  await env.RATE_LIMIT.put(key, String(current + 1), { expirationTtl: kind === "totp" ? TOTP_WINDOW_SECONDS : LOGIN_WINDOW_SECONDS });
+  await store.put(key, String(current + 1), { expirationTtl: kind === "totp" ? TOTP_WINDOW_SECONDS : LOGIN_WINDOW_SECONDS });
   return true;
 }
 

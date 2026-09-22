@@ -5,6 +5,7 @@ out/
 .env
 .env*.local
 .dev.vars
+servicerole.txt
 # card For AI (artefatti generati in postbuild: out/ e public/)
 public/index.md
 public/thoughts.md
@@ -23,3 +24,5 @@ public/.well-known/
 .scratch/
 # metadati dell'agent (id del progetto): stato locale, non contenuto del sito
 .freebuff/
+# anteprime delle mail: rigenerate da `npm run email:preview`, contengono le immagini in base64
+emails/preview*.html

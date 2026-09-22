@@ -36,7 +36,7 @@ const instrumentSerif = Instrument_Serif({
 });
 
 // La card della home, dichiarata una volta e usata da Open Graph e Twitter.
-const homeCard = socialImages("/og.png", "Mattia Ciuni | Founder & CEO @ Payle");
+const homeCard = socialImages("/og.png", "Mattia Ciuni | Founder & CEO at Payle");
 
 // WebMCP è una capability opzionale del browser. Lo script è deferred e
 // statico, così gli agenti trovano strumenti reali senza bloccare l'LCP.
@@ -44,11 +44,12 @@ const homeCard = socialImages("/og.png", "Mattia Ciuni | Founder & CEO @ Payle")
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: "Mattia Ciuni | Founder, CEO of Payle and AI Payments Builder",
+    default: "Mattia Ciuni | Founder & CEO at Payle",
     // Un solo divisore, sempre il trattino: mai puntini o punti di sospensione.
     template: "%s | Mattia Ciuni",
   },
   description: site.description,
+  applicationName: site.name,
   keywords: [
     "Mattia Ciuni",
     "who is Mattia Ciuni",
@@ -76,7 +77,7 @@ export const metadata: Metadata = {
     type: "website",
     url: "/",
     siteName: "Mattia Ciuni",
-    title: "Mattia Ciuni | Founder, CEO of Payle and AI Payments Builder",
+    title: "Mattia Ciuni | Founder & CEO at Payle",
     description: site.description,
     locale: site.locale,
     images: homeCard.og,
@@ -84,7 +85,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     creator: "@mattiaciuni",
-    title: "Mattia Ciuni | Founder, CEO of Payle and AI Payments Builder",
+    title: "Mattia Ciuni | Founder & CEO at Payle",
     description: site.description,
     images: homeCard.twitter,
   },
@@ -93,6 +94,9 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   themeColor: "#FFFFFF",
   viewportFit: "cover",
+  // On mobile, opening the keyboard must resize the content viewport instead
+  // of leaving fixed dialogs behind the keyboard.
+  interactiveWidget: "resizes-content",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

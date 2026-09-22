@@ -1,4 +1,7 @@
 import { isValidEmail } from "../../lib/disposable-domains";
+import { canonicalizeSubscriberEmail } from "../../lib/email-normalization";
+// @ts-expect-error Pages bundles extensionless function imports; Node's offline loader needs `.ts`.
+import { supabaseConfigured, supabaseRequest } from "../lib/supabase.ts";
 
 interface RateLimitStore {
   get(key: string): Promise<string | null>;
@@ -14,6 +17,8 @@ interface Env {
   BEEHIIV_API_KEY?: string;
   BEEHIIV_PUBLICATION_ID?: string;
   RATE_LIMIT?: RateLimitStore;
+  SUPABASE_URL?: string;
+  SUPABASE_SERVICE_ROLE_KEY?: string;
 }
 
 interface PagesContext {
@@ -149,6 +154,34 @@ async function upsertBrevo(env: Env, email: string, attributes: Record<string, s
   if (!response.ok && response.status !== 204) throw new Error(`brevo_${response.status}`);
 }
 
+async function supabaseSubscriberExists(env: Env, canonicalEmail: string): Promise<boolean> {
+  const resource = `newsletter_subscribers?select=id&canonical_email=eq.${encodeURIComponent(canonicalEmail)}&status=eq.subscribed&limit=1`;
+  const { response, data } = await supabaseRequest<Array<{ id: string }>>(env, resource);
+  if (!response.ok) throw new Error(`supabase_lookup_${response.status}`);
+  return Array.isArray(data) && data.length > 0;
+}
+
+async function upsertSupabaseSubscriber(env: Env, email: string, canonicalEmail: string, attributes: Record<string, string>) {
+  const { response } = await supabaseRequest(env, "newsletter_subscribers?on_conflict=canonical_email", {
+    method: "POST",
+    headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
+    body: JSON.stringify({
+      email,
+      canonical_email: canonicalEmail,
+      status: "subscribed",
+      source: attributes.SOURCE,
+      medium: attributes.MEDIUM,
+      campaign: attributes.CAMPAIGN,
+      content: attributes.CONTENT,
+      term: attributes.TERM,
+      landing_page: attributes.LANDING_PAGE,
+      referrer: attributes.REFERRER,
+      last_seen_at: attributes.SUBSCRIBED_AT,
+    }),
+  });
+  if (!response.ok) throw new Error(`supabase_subscriber_${response.status}`);
+}
+
 async function upsertBeehiiv(env: Env, email: string, attributes: Record<string, string>) {
   if (!env.BEEHIIV_API_KEY || !env.BEEHIIV_PUBLICATION_ID) throw new Error("missing_beehiiv_config");
   const response = await fetch(`https://api.beehiiv.com/v2/publications/${env.BEEHIIV_PUBLICATION_ID}/subscriptions`, {
@@ -198,7 +231,8 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
     return finish(json({ ok: true }, 200, { "X-Robots-Tag": "noindex" }), "honeypot");
   }
 
-  const email = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+  const submittedEmail = typeof body.email === "string" ? body.email.trim().toLowerCase() : "";
+  const email = canonicalizeSubscriberEmail(submittedEmail);
   if (!isValidEmail(email) || email.length > 254) {
     return finish(json({ code: "invalid_email" }, 400), "invalid_email");
   }
@@ -207,16 +241,25 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
     return finish(json({ code: "rate_limited" }, 429, { "Retry-After": String(WINDOW_SECONDS) }), "rate_limited");
   }
 
-  if (!env.RESEND_API_KEY || !env.RESEND_WELCOME_TEMPLATE_ID || !env.RESEND_FROM_EMAIL || !env.BREVO_API_KEY || !env.BEEHIIV_API_KEY || !env.BEEHIIV_PUBLICATION_ID) {
+  if (!env.RESEND_API_KEY || !env.RESEND_WELCOME_TEMPLATE_ID || !env.RESEND_FROM_EMAIL || !env.BREVO_API_KEY || !env.BREVO_LIST_ID || !env.BEEHIIV_API_KEY || !env.BEEHIIV_PUBLICATION_ID) {
     return finish(json({ code: "unavailable" }, 503), "missing_provider_config");
+  }
+  if (!supabaseConfigured(env) && !env.BREVO_API_KEY) {
+    return finish(json({ code: "unavailable" }, 503), "missing_storage_config");
   }
 
   const fields = attribution(request, body);
   try {
-    const alreadyInBrevo = await brevoListMembership(env, email);
-    if (!alreadyInBrevo) await sendWelcome(env, email, fields);
+    const alreadySubscribed = supabaseConfigured(env)
+      ? await supabaseSubscriberExists(env, email)
+      : await brevoListMembership(env, email);
+    if (!alreadySubscribed) await sendWelcome(env, email, fields);
+    if (supabaseConfigured(env)) await upsertSupabaseSubscriber(env, submittedEmail, email, fields);
     await upsertBrevo(env, email, fields);
     await upsertBeehiiv(env, email, fields);
+    if (alreadySubscribed) {
+      return finish(json({ code: "already_subscribed" }, 409, { "X-Robots-Tag": "noindex" }), "already_subscribed");
+    }
     return finish(json({ ok: true }, 200, { "X-Robots-Tag": "noindex" }), "subscribed");
   } catch (error) {
     const outcome = error instanceof Error ? error.message.split("_")[0] : "provider_error";

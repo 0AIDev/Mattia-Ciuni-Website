@@ -6,11 +6,13 @@ html {
   scroll-behavior: smooth;
   background: #FCFCFC;
   overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
 }
 
 body {
   min-height: 100vh;
   display: flex;
+  min-width: 0;
   overflow-x: hidden;
   background: #FCFCFC;
 
@@ -124,6 +126,36 @@ a:hover {
 html {
   scrollbar-width: thin;
   scrollbar-color: #d6d6d6 #fcfcfc;
+}
+
+/* Long editorial copy must wrap inside narrow mobile columns, including
+   titles and URLs produced by inline content. */
+[data-article-content],
+[data-article-content] h1,
+[data-article-content] h2,
+[data-article-content] p,
+[data-article-content] li,
+[data-article-content] blockquote {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+}
+
+[data-article-content] img,
+[data-article-content] video,
+[data-article-content] iframe,
+[data-article-content] svg {
+  max-width: 100%;
+}
+
+@media (max-width: 639px) {
+  [data-article-content] h2 {
+    gap: 0.55rem;
+  }
+
+  [data-article-content] h2 > span[aria-hidden="true"] {
+    min-width: 1rem;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {

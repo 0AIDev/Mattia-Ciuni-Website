@@ -21,7 +21,8 @@
     "test:admin": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-admin.mjs",
     "test:feedback": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-feedback.mjs",
     "test:security": "node scripts/security-audit.mjs",
-    "audit:seo": "node scripts/audit-seo.mjs"
+    "audit:seo": "node scripts/audit-seo.mjs",
+    "email:preview": "tsx emails/render-preview.tsx"
   },
   "dependencies": {
     "@animateicons/react": "^0.5.0",
@@ -34,6 +35,8 @@
     "react-dom": "^19.3.0"
   },
   "devDependencies": {
+    "@react-email/components": "^1.0.12",
+    "@react-email/render": "^2.1.0",
     "@types/node": "^26.6.2",
     "@types/react": "^19.3.0",
     "@types/react-dom": "^19.3.0",
@@ -42,6 +45,7 @@
     "eslint-config-next": "^16.3.5",
     "postcss": "8.4.38",
     "tailwindcss": "3.4.4",
+    "tsx": "^4.23.15",
     "typescript": "^5.9.3"
   }
 }

@@ -44,8 +44,22 @@ export function FeedbackModalButton({
   useEffect(() => {
     if (!open) return;
     const trigger = triggerRef.current;
-    document.body.style.overflow = "hidden";
+    const scrollY = window.scrollY;
+    const body = document.body;
+    body.style.position = "fixed";
+    body.style.top = `-${scrollY}px`;
+    body.style.left = "0";
+    body.style.right = "0";
+    body.style.width = "100%";
+    body.style.overflow = "hidden";
     closeRef.current?.focus();
+    const onViewportResize = () => {
+      const active = document.activeElement;
+      if (active instanceof HTMLElement && dialogRef.current?.contains(active)) {
+        window.requestAnimationFrame(() => active.scrollIntoView({ block: "center", inline: "nearest" }));
+      }
+    };
+    window.visualViewport?.addEventListener("resize", onViewportResize);
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {
         setOpen(false);
@@ -66,7 +80,14 @@ export function FeedbackModalButton({
     };
     window.addEventListener("keydown", onKey);
     return () => {
-      document.body.style.overflow = "";
+      window.visualViewport?.removeEventListener("resize", onViewportResize);
+      body.style.position = "";
+      body.style.top = "";
+      body.style.left = "";
+      body.style.right = "";
+      body.style.width = "";
+      body.style.overflow = "";
+      window.scrollTo(0, scrollY);
       window.removeEventListener("keydown", onKey);
       trigger?.focus();
     };
@@ -140,7 +161,7 @@ export function FeedbackModalButton({
       ? "rounded-full bg-gray-1200 px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-80"
       : "rounded-full border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-1200 transition-colors hover:border-gray-1200";
   const field =
-    "w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-2.5 text-[15px] text-gray-1200 shadow-none outline-none transition-colors placeholder:text-gray-1000/60 hover:border-gray-1000 focus:border-gray-1200 focus:outline-none focus-visible:outline-none disabled:opacity-60";
+    "min-h-11 w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-2.5 text-base text-gray-1200 shadow-none outline-none transition-colors placeholder:text-gray-1000/60 hover:border-gray-1000 focus:border-gray-1200 focus:outline-none focus-visible:outline-none disabled:opacity-60";
 
   return (
     <>
@@ -150,7 +171,7 @@ export function FeedbackModalButton({
 
       {open && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-gray-1200/40 p-4 sm:p-6"
+          className="fixed inset-0 z-50 flex items-start justify-center overscroll-contain overflow-y-auto bg-gray-1200/40 p-3 pb-[max(0.75rem,env(safe-area-inset-bottom))] sm:items-center sm:p-6"
           onClick={close}
           role="presentation"
         >
@@ -160,7 +181,7 @@ export function FeedbackModalButton({
             aria-modal="true"
             aria-labelledby="feedback-dialog-title"
             aria-describedby="feedback-dialog-description"
-            className="w-full max-w-[460px] rounded-3xl bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:p-8"
+            className="my-auto max-h-[calc(100dvh-1.5rem)] w-full max-w-[460px] overflow-y-auto overscroll-contain rounded-3xl bg-white p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:p-8"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
@@ -237,7 +258,7 @@ export function FeedbackModalButton({
                   rows={5}
                   maxLength={4000}
                   required
-                  className="w-full appearance-none resize-y rounded-2xl border border-gray-400 bg-white px-5 py-3 text-[15px] leading-relaxed text-gray-1200 shadow-none outline-none transition-colors placeholder:text-gray-1000/60 hover:border-gray-1000 focus:border-gray-1200 focus:outline-none focus-visible:outline-none disabled:opacity-60"
+                  className="min-h-32 w-full appearance-none resize-y rounded-2xl border border-gray-400 bg-white px-5 py-3 text-base leading-relaxed text-gray-1200 shadow-none outline-none transition-colors placeholder:text-gray-1000/60 hover:border-gray-1000 focus:border-gray-1200 focus:outline-none focus-visible:outline-none disabled:opacity-60"
                   name="message"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}

@@ -82,9 +82,9 @@ export default function NotesIndex() {
                   className="h-auto w-full transition-transform duration-500 group-hover:scale-[1.01] motion-reduce:transition-none"
                 />
               </div>
-              <div className="mt-3 flex items-baseline justify-between gap-4">
-                <span className="font-serif font-medium">{n.title}</span>
-                <span className="flex shrink-0 items-center gap-2 whitespace-nowrap text-gray-1000">
+              <div className="mt-3 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5">
+                <span className="min-w-0 font-serif font-medium">{n.title}</span>
+                <span className="flex shrink-0 items-center gap-2 whitespace-nowrap text-sm text-gray-1000 sm:text-base">
                   {n.date}
                   <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </span>
@@ -97,7 +97,7 @@ export default function NotesIndex() {
       <nav aria-label="Thoughts" className="mt-16 border-t border-gray-300">
         <Link
           href="/thoughts/"
-          className="group flex items-baseline justify-between gap-4 py-3.5"
+          className="group flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5 py-3.5"
         >
           <span className="text-gray-1000">Shorter, faster pieces</span>
           <span className="flex items-center gap-2 font-medium">
