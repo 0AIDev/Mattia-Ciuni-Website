@@ -17,6 +17,7 @@
     "/robots.txt",
     "/feed.xml",
     "/llms.txt",
+    "/api/collect",
     "/api/subscribe",
     "/api/feedback",
     "/api/admin/feedback",

@@ -325,6 +325,35 @@ check(
     middleware.includes('!isPrivate && prefersMarkdown(request.headers.get("Accept")') &&
     routes.include.includes("/admin/*")
 );
+// Ogni endpoint sotto `functions/api/` deve essere instradato: una rotta non
+// elencata non arriva **mai** alla Function, la richiesta cade sull'handler
+// statico e torna un 405 che sembra un metodo sbagliato invece di un endpoint
+// che non esiste. È il guasto di `/api/collect`, e da qui non passa più: il
+// controllo legge i file, non una lista scritta a mano.
+const apiDir = path.join(__dirname, "..", "functions", "api");
+const apiRoutes = [];
+const walkApi = (current, prefix) => {
+  for (const e of readdirSync(current, { withFileTypes: true })) {
+    if (e.isDirectory()) walkApi(path.join(current, e.name), `${prefix}/${e.name}`);
+    else if (e.isFile() && e.name.endsWith(".ts")) apiRoutes.push(`${prefix}/${e.name.replace(/\.ts$/, "")}`);
+  }
+};
+walkApi(apiDir, "/api");
+// `/api/chat` è l'unica eccezione, e non è una deroga a mano: la rotta resta
+// fuori finché la chat è disattivata in tutto il sito. Il giorno in cui la chat
+// torna nel layout, questa condizione cade da sé e la rotta torna obbligatoria.
+const chatDisabled =
+  !/^\s*import .*DeferredSiteRagChat/m.test(layoutSource) &&
+  !/^\s*<DeferredSiteRagChat\s*\/>/m.test(layoutSource) &&
+  !/^\s*<SiteRagChat\s*\/>/m.test(layoutSource);
+const unrouted = apiRoutes.filter(
+  (r) => !routes.include.includes(r) && !(chatDisabled && r === "/api/chat"),
+);
+check(
+  `routes: all ${apiRoutes.length} endpoints under functions/api/ are invoked by Pages`,
+  unrouted.length === 0,
+);
+if (unrouted.length) console.log("     non instradati in _routes.json: " + unrouted.join(", "));
 if (leakedAdmin.length) console.log("     nominano admin: " + leakedAdmin.join(", "));
 // Nessun file si scrive **intorno** alla dashboard: `admin/feedback.md` era una
 // card servita come asset statico (quel percorso non passa dalla Function), e
