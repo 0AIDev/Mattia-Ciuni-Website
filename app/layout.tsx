@@ -8,6 +8,8 @@ import { DeferredNewsletter } from "@/components/DeferredNewsletter";
 import { DeferredAnalytics } from "@/components/DeferredAnalytics";
 import { UmamiAnalytics } from "@/components/UmamiAnalytics";
 import { SiteFooter } from "@/components/SiteFooter";
+import { LanguageSuggestion } from "@/components/LanguageSuggestion";
+import { isLocale } from "@/lib/i18n";
 // Ask Mattia Ciuni AI is intentionally disabled for now. Keep the component
 // import commented so it can be re-enabled without rebuilding the feature.
 // import { DeferredSiteRagChat } from "@/components/DeferredSiteRagChat";
@@ -103,9 +105,11 @@ export const viewport: Viewport = {
   interactiveWidget: "resizes-content",
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export default async function RootLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale?: string }> }) {
+  const routeParams = await params;
+  const language = routeParams.locale && isLocale(routeParams.locale) ? routeParams.locale : site.language;
   return (
-    <html lang={site.language} className={`${inter.variable} ${instrumentSerif.className}`}>
+    <html lang={language} className={`${inter.variable} ${instrumentSerif.className}`}>
       <head>
         <link rel="ai-catalog" href="/.well-known/ai-catalog.json" />
       </head>
@@ -125,6 +129,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           <DeferredNewsletter />
         </div>
         <SiteFooter />
+        <LanguageSuggestion />
         {/* Ask Mattia Ciuni AI is temporarily disabled site-wide. */}
         {/* <DeferredSiteRagChat /> */}
       </body>

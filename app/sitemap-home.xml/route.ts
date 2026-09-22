@@ -2,11 +2,18 @@ import { site } from "@/lib/site";
 import { latestOf, urlsetXml } from "@/lib/sitemap";
 import { posts } from "@/lib/posts";
 import { notes } from "@/lib/notes";
+import { LOCALES } from "@/lib/i18n";
 
 export const dynamic = "force-static";
 
 export async function GET() {
   const base = site.url.replace(/\/$/, "");
+  const localized = LOCALES.flatMap((locale) => [
+    { loc: `${base}/${locale}/`, lastmod: "2026-09-22", changeFrequency: "monthly", priority: "0.9" },
+    ...["about", "work", "thoughts", "notes", "feedback", "privacy", "terms", "cookies", "legal", "newsletter", "link", "voice-notes", "videos"].map((path) => ({
+      loc: `${base}/${locale}/${path}/`, lastmod: "2026-09-22", changeFrequency: "monthly", priority: "0.6",
+    })),
+  ]);
   const xml = urlsetXml([
     {
       loc: `${base}/`,
@@ -42,6 +49,7 @@ export async function GET() {
       changeFrequency: "monthly",
       priority: "0.5",
     },
+    ...localized,
   ]);
   return new Response(xml, {
     headers: {

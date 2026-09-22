@@ -17,5 +17,8 @@ export function DeferredNewsletter() {
   // /link ha la sua, in forma di scheda dentro la lista dei link: qui sotto
   // sarebbe un secondo form identico, staccato dal resto della pagina.
   if (pathname?.startsWith("/link")) return null;
+  // Localized routes own their translated page content; do not append the
+  // English global newsletter form beneath them.
+  if (/^\/(it|fr|es|de)(\/|$)/.test(pathname || "")) return null;
   return <NewsletterSection />;
 }

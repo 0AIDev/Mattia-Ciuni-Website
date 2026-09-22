@@ -23,6 +23,7 @@
     "/api/subscribe",
     "/api/feedback",
     "/api/admin/feedback",
+    "/api/locale",
     "/admin/*",
     "/.well-known/*"
   ],

@@ -2,6 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Flag-icons supplies the country artwork; this wrapper makes the artwork a
+   true circular flag instead of the library's default rectangular ratio. */
+.language-flag {
+  display: inline-block;
+  width: 1.75rem !important;
+  height: 1.75rem !important;
+  flex: 0 0 1.75rem;
+  overflow: hidden;
+  border-radius: 9999px;
+  background-size: cover !important;
+  background-position: center;
+  background-repeat: no-repeat;
+  line-height: 1;
+}
+
+.language-flag-large {
+  width: 2rem !important;
+  height: 2rem !important;
+  flex-basis: 2rem;
+}
+
 html {
   scroll-behavior: smooth;
   background: #FCFCFC;

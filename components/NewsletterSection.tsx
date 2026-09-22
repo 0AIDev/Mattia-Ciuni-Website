@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { FormEvent, useRef, useState, useSyncExternalStore } from "react";
 import { track } from "@/lib/analytics";
 
@@ -252,7 +253,7 @@ export function NewsletterSection({ variant = "section" }: { variant?: "section"
             </p>
             <p className="mt-4 max-w-[520px] text-[13px] leading-[1.55] text-gray-1000 sm:mt-5 sm:leading-relaxed">
               One email a week. Unsubscribe anytime. No data sharing, ever. Your voice never leaves your phone either. {" "}
-              <a href="/privacy/" className="underline decoration-gray-400 underline-offset-4 hover:text-gray-1200">privacy</a>
+              <Link href="/privacy/" className="underline decoration-gray-400 underline-offset-4 hover:text-gray-1200">privacy</Link>
             </p>
           </>
         )}
