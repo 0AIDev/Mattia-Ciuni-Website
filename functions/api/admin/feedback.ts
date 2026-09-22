@@ -51,6 +51,7 @@ interface Env {
   FEEDBACK?: Store;
   RATE_LIMIT?: Store;
   ADMIN_TOKEN?: string;
+  COFOUNDER_TOKEN?: string;
   LOCAL_ADMIN?: string;
 }
 
@@ -58,6 +59,10 @@ interface PagesContext {
   request: Request;
   env: Env;
 }
+
+type AdminRole = "ceo" | "cofounder";
+
+type StoredSession = { created_at: string; role: AdminRole };
 
 interface FeedbackRecord {
   id: string;
@@ -202,6 +207,16 @@ function newSessionId(): string {
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
+function newFeedbackId(): string {
+  return `fb:${Date.now().toString(36)}:${newSessionId().slice(0, 16)}`;
+}
+
+async function roleForToken(token: string, env: Env): Promise<AdminRole | null> {
+  if (await sameSecret(token, env.ADMIN_TOKEN || "")) return "ceo";
+  if (await sameSecret(token, env.COFOUNDER_TOKEN || "")) return "cofounder";
+  return null;
+}
+
 async function configOf(env: Env): Promise<TotpConfig | null> {
   if (!env.FEEDBACK) return null;
   const raw = await env.FEEDBACK.get(TOTP_CONFIG_KEY);
@@ -227,20 +242,31 @@ async function authRateAllowed(env: Env, ip: string, kind: string, max: number):
   return true;
 }
 
-async function sessionValid(request: Request, env: Env): Promise<boolean> {
+async function sessionRole(request: Request, env: Env): Promise<AdminRole | null> {
   const id = cookieOf(request, COOKIE);
-  if (!id || !env.FEEDBACK) return false;
-  return (await env.FEEDBACK.get(SESSION_PREFIX + id)) !== null;
+  if (!id || !env.FEEDBACK) return null;
+  const raw = await env.FEEDBACK.get(SESSION_PREFIX + id);
+  if (!raw) return null;
+  try {
+    const session = JSON.parse(raw) as StoredSession;
+    return session.role === "cofounder" ? "cofounder" : "ceo";
+  } catch {
+    // Sessions created before role support belonged to the CEO account.
+    return "ceo";
+  }
 }
 
 /** Sessione valida oppure token + TOTP per automazioni CLI. */
-async function isAuthorized(request: Request, env: Env): Promise<boolean> {
-  if (await sessionValid(request, env)) return true;
+async function isAuthorized(request: Request, env: Env): Promise<AdminRole | null> {
+  const existingRole = await sessionRole(request, env);
+  if (existingRole) return existingRole;
   const bearer = request.headers.get("Authorization");
   const given = bearer?.startsWith("Bearer ") ? bearer.slice(7).trim() : "";
   const code = request.headers.get("X-Admin-TOTP") || "";
   const config = await configOf(env);
-  return Boolean(config) && (await sameSecret(given, env.ADMIN_TOKEN || "")) && (await verifyTotp(config!.secret, code));
+  const role = await roleForToken(given, env);
+  if (!config || !role) return null;
+  return (await verifyTotp(config.secret, code)) ? role : null;
 }
 
 async function queue(env: Env): Promise<FeedbackRecord[]> {
@@ -278,9 +304,9 @@ function sessionCookies(session: string): Array<[string, string]> {
   ];
 }
 
-async function createSession(env: Env): Promise<string> {
+async function createSession(env: Env, role: AdminRole): Promise<string> {
   const session = newSessionId();
-  await env.FEEDBACK!.put(SESSION_PREFIX + session, new Date().toISOString(), {
+  await env.FEEDBACK!.put(SESSION_PREFIX + session, JSON.stringify({ created_at: new Date().toISOString(), role } satisfies StoredSession), {
     expirationTtl: SESSION_SECONDS,
   });
   return session;
@@ -292,12 +318,13 @@ export const onRequestGet = async ({ request, env: incomingEnv }: PagesContext):
   // an unconfigured administrator. Keep this distinct from the one-time TOTP
   // setup state so the UI and monitoring can diagnose the deployment correctly.
   if (!env.FEEDBACK) return json({ code: "unavailable" }, 503);
-  if (!(await isAuthorized(request, env))) {
+  const role = await isAuthorized(request, env);
+  if (!role) {
     return json({ code: "unauthorized", setup_required: !(await configOf(env)) }, 401);
   }
   if (!env.FEEDBACK) return json({ code: "unavailable" }, 503);
   const records = await queue(env);
-  return json({ records });
+  return json({ records, role });
 };
 
 export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext): Promise<Response> => {
@@ -396,7 +423,7 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
     }
     await env.FEEDBACK.put(TOTP_CONFIG_KEY, JSON.stringify({ secret: pending.secret, enabled_at: new Date().toISOString() } satisfies TotpConfig));
     if (env.FEEDBACK.delete) await env.FEEDBACK.delete(TOTP_PENDING_PREFIX + setupId);
-    const session = await createSession(env);
+    const session = await createSession(env, "ceo");
     console.log(JSON.stringify({ event: "admin_setup", outcome: "confirmed" }));
     return json({ ok: true, two_factor_enabled: true }, 200, sessionCookies(session));
   }
@@ -409,14 +436,15 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
       return json({ code: "rate_limited" }, 429, [["Retry-After", String(LOGIN_WINDOW_SECONDS)]]);
     }
     const given = typeof body.token === "string" ? body.token : "";
-    if (!(await sameSecret(given, env.ADMIN_TOKEN || ""))) {
+    const role = await roleForToken(given, env);
+    if (!role) {
       console.log(JSON.stringify({ event: "admin_login", outcome: "unauthorized" }));
       return json({ code: "unauthorized" }, 401);
     }
     // The browser reveals the second field only after this server-side check.
     // This is a UX gate, not a substitute for verifying the TOTP below.
     if (body.action === "token_check") {
-      return json({ ok: true, token_verified: true });
+      return json({ ok: true, token_verified: true, role });
     }
     if (!(await authRateAllowed(env, ip, "totp", TOTP_RATE_MAX_ATTEMPTS))) {
       return json({ code: "rate_limited" }, 429, [["Retry-After", String(TOTP_WINDOW_SECONDS)]]);
@@ -427,12 +455,30 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
       return json({ code: "unauthorized" }, 401);
     }
     if (!env.FEEDBACK) return json({ code: "unavailable" }, 503);
-    const session = await createSession(env);
-    console.log(JSON.stringify({ event: "admin_login", outcome: "ok" }));
-    return json({ ok: true, two_factor: true }, 200, sessionCookies(session));
+    const session = await createSession(env, role);
+    console.log(JSON.stringify({ event: "admin_login", outcome: "ok", role }));
+    return json({ ok: true, two_factor: true, role }, 200, sessionCookies(session));
   }
 
-  if (!(await isAuthorized(request, env))) return json({ code: "unauthorized" }, 401);
+  if (!await isAuthorized(request, env)) return json({ code: "unauthorized" }, 401);
+
+  if (body.action === "create_test") {
+    if (!env.FEEDBACK) return json({ code: "unavailable" }, 503);
+    const submittedAt = new Date().toISOString();
+    const record: FeedbackRecord = {
+      id: newFeedbackId(),
+      submitted_at: submittedAt,
+      status: "pending_review",
+      name: "Test submission",
+      email: "",
+      message: "This is a test feedback submission from the admin dashboard. It is stored in the review queue so you can check the real moderation flow.",
+      page_url: new URL(request.url).pathname,
+    };
+    await env.FEEDBACK.put(record.id, JSON.stringify(record));
+    const records = await queue(env);
+    await env.FEEDBACK.put(INDEX_KEY, [record.id, ...records.map((item) => item.id)].slice(0, MAX_INDEX).join("\n"));
+    return json({ ok: true, record });
+  }
 
   if (body.action === "logout") {
     const id = cookieOf(request, COOKIE);

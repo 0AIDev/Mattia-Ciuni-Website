@@ -43,6 +43,14 @@ body:has(#admin-feedback-page) > footer {
   display: none;
 }
 
+/* Keep OTP fields in the same Inter treatment as every other control. This
+   explicit rule also neutralizes cached utility styles from older admin builds. */
+#admin-feedback-page .admin-code-input,
+#admin-feedback-page .admin-code-input::placeholder {
+  font-family: var(--font-inter), Inter, sans-serif !important;
+  letter-spacing: normal !important;
+}
+
 ::selection {
   background: rgba(22, 22, 22, 0.14);
 }

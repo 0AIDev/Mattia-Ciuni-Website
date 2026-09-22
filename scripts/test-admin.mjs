@@ -4,6 +4,7 @@ import { onRequestGet, onRequestPost } from "../functions/api/admin/feedback.ts"
 import { totpCode } from "../lib/totp.ts";
 
 const TOKEN = "0".repeat(64);
+const COFOUNDER_TOKEN = "1".repeat(64);
 const ORIGIN = "https://example.test";
 const IP = "203.0.113.7";
 let failures = 0;
@@ -18,7 +19,7 @@ function store() {
     async delete(key) { map.delete(key); },
   };
 }
-function env() { return { FEEDBACK: store(), RATE_LIMIT: store(), ADMIN_TOKEN: TOKEN }; }
+function env() { return { FEEDBACK: store(), RATE_LIMIT: store(), ADMIN_TOKEN: TOKEN, COFOUNDER_TOKEN }; }
 
 // The local Pages runtime has no KV binding. LOCAL_ADMIN enables the intentionally
 // in-memory adapter so the browser flow can be exercised without production data.
@@ -89,17 +90,33 @@ let secret;
 // Normal login requires both factors. Session is the only browser credential.
 {
   const tokenCheck = await onRequestPost({ request: request({ method: "POST", body: { action: "token_check", token: TOKEN } }), env: configuredEnv });
-  check("correct token can be verified without creating a session", tokenCheck.status === 200 && (await tokenCheck.json()).token_verified === true);
-  const wrongTokenCheck = await onRequestPost({ request: request({ method: "POST", body: { action: "token_check", token: "1".repeat(64) } }), env: configuredEnv });
+  const tokenCheckData = await tokenCheck.json();
+  check("correct token can be verified without creating a session", tokenCheck.status === 200 && tokenCheckData.token_verified === true && tokenCheckData.role === "ceo");
+  const cofounderTokenCheck = await onRequestPost({ request: request({ method: "POST", body: { action: "token_check", token: COFOUNDER_TOKEN } }), env: configuredEnv });
+  const cofounderTokenCheckData = await cofounderTokenCheck.json();
+  check("co-founder token unlocks the same TOTP step with its own role", cofounderTokenCheck.status === 200 && cofounderTokenCheckData.role === "cofounder");
+  const wrongTokenCheck = await onRequestPost({ request: request({ method: "POST", body: { action: "token_check", token: "2".repeat(64) } }), env: configuredEnv });
   check("wrong token cannot unlock the TOTP step", wrongTokenCheck.status === 401);
   const code = await totpCode(secret);
   const login = await onRequestPost({ request: request({ method: "POST", body: { action: "login", token: TOKEN, code } }), env: configuredEnv });
   const session = sessionCookie(login);
   check("normal login requires token + current TOTP code", login.status === 200 && session.length > 20);
   check("wrong TOTP is rejected", (await onRequestPost({ request: request({ method: "POST", body: { action: "login", token: TOKEN, code: "000000" } }), env: configuredEnv })).status === 401);
-  check("wrong token is rejected", (await onRequestPost({ request: request({ method: "POST", body: { action: "login", token: "1".repeat(64), code } }), env: configuredEnv })).status === 401);
-  check("session opens queue without returning token or secret", (await onRequestGet({ request: request({ cookie: session }), env: configuredEnv })).status === 200);
+  check("wrong token is rejected", (await onRequestPost({ request: request({ method: "POST", body: { action: "login", token: "2".repeat(64), code } }), env: configuredEnv })).status === 401);
+  const queueResponse = await onRequestGet({ request: request({ cookie: session }), env: configuredEnv });
+  const queueData = await queueResponse.json();
+  check("session opens queue without returning token or secret", queueResponse.status === 200 && queueData.role === "ceo");
+  const cofounderCode = await totpCode(secret);
+  const cofounderLogin = await onRequestPost({ request: request({ method: "POST", body: { action: "login", token: COFOUNDER_TOKEN, code: cofounderCode } }), env: configuredEnv });
+  const cofounderSession = sessionCookie(cofounderLogin);
+  const cofounderQueue = await onRequestGet({ request: request({ cookie: cofounderSession }), env: configuredEnv });
+  const cofounderQueueData = await cofounderQueue.json();
+  check("co-founder login stores and returns the co-founder role", cofounderLogin.status === 200 && cofounderQueue.status === 200 && cofounderQueueData.role === "cofounder");
+  const testFeedback = await onRequestPost({ request: request({ method: "POST", body: { action: "create_test" }, cookie: session }), env: configuredEnv });
+  const testFeedbackData = await testFeedback.json();
+  check("authenticated dashboard can create a pending test feedback", testFeedback.status === 200 && testFeedbackData.record?.status === "pending_review" && testFeedbackData.record?.name === "Test submission");
   const logout = await onRequestPost({ request: request({ method: "POST", body: { action: "logout" }, cookie: session }), env: configuredEnv });
+  await onRequestPost({ request: request({ method: "POST", body: { action: "logout" }, cookie: cofounderSession }), env: configuredEnv });
   check("logout revokes the session server-side", logout.status === 200 && (await onRequestGet({ request: request({ cookie: session }), env: configuredEnv })).status === 401);
 }
 

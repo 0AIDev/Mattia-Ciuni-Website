@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import QRCode from "qrcode";
 
@@ -22,6 +23,13 @@ type Setup = {
 };
 
 type ApiError = { code?: string; setup_required?: boolean };
+type AdminRole = "ceo" | "cofounder";
+type AdminIdentity = { name: string; role: string; title: string };
+
+const IDENTITIES: Record<AdminRole, AdminIdentity> = {
+  ceo: { name: "Mattia Ciuni", role: "Chief Executive Officer", title: "CEO" },
+  cofounder: { name: "Ghassen", role: "Co-Founder & CTO", title: "Co-founder" },
+};
 
 const API = "/api/admin/feedback";
 
@@ -34,6 +42,8 @@ export default function FeedbackAdminPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
+  const [identity, setIdentity] = useState<AdminIdentity | null>(null);
+  const [sessionChecked, setSessionChecked] = useState(false);
   const [tokenVerified, setTokenVerified] = useState(false);
 
   const readError = async (response: Response): Promise<ApiError> =>
@@ -50,25 +60,30 @@ export default function FeedbackAdminPage() {
       if (response.status === 401) {
         const data = await readError(response);
         setAuthenticated(false);
+        setIdentity(null);
         setRecords([]);
         setMode(data.setup_required ? "setup" : "login");
         if (!quiet && !data.setup_required) setError("The token or authenticator code is not valid.");
         return;
       }
       if (!response.ok) throw new Error(localApiMessage(response));
-      const data = (await response.json()) as { records?: FeedbackRecord[] };
+      const data = (await response.json()) as { records?: FeedbackRecord[]; role?: AdminRole };
       setRecords(data.records || []);
+      setIdentity(IDENTITIES[data.role === "cofounder" ? "cofounder" : "ceo"]);
       setAuthenticated(true);
       setMode("login");
       setError("");
     } catch (caught) {
       setAuthenticated(false);
+      setIdentity(null);
       setMode("login");
       const message = caught instanceof Error ? caught.message : "The review queue is unavailable.";
       // In `next dev` Pages Functions are not mounted. Do not hide that fact on
       // the initial check: otherwise the user types a valid token into a form
       // that can never reach the API and only sees a generic failure later.
       if (!quiet || message.includes("local Pages API")) setError(message);
+    } finally {
+      setSessionChecked(true);
     }
   }, []);
 
@@ -201,8 +216,27 @@ export default function FeedbackAdminPage() {
       setTokenVerified(false);
       setRecords([]);
       setAuthenticated(false);
+      setIdentity(null);
       setMode("login");
       setError("");
+      setLoading(false);
+    }
+  }
+
+  async function createTestFeedback() {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "create_test" }),
+      });
+      if (!response.ok) throw new Error(response.status === 404 ? localApiMessage(response) : "The test feedback could not be created.");
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "The test feedback could not be created.");
+    } finally {
       setLoading(false);
     }
   }
@@ -225,6 +259,14 @@ export default function FeedbackAdminPage() {
     }
   }
 
+  if (!sessionChecked) {
+    return (
+      <main id="admin-feedback-page" className="mx-auto flex min-h-screen max-w-[460px] items-center px-6 py-12 font-sans">
+        <section aria-busy="true" aria-label="Checking admin session" className="h-[220px] w-full rounded-3xl border border-gray-300 bg-white p-6 sm:p-8" />
+      </main>
+    );
+  }
+
   if (!authenticated) {
     return (
       <main id="admin-feedback-page" className="mx-auto flex min-h-screen max-w-[460px] items-center px-6 py-12 font-sans">
@@ -245,11 +287,11 @@ export default function FeedbackAdminPage() {
             <>
               <h1 className="font-serif text-3xl text-gray-1200">Scan once, then confirm</h1>
               <p className="mt-3 text-sm leading-relaxed text-gray-1000">Scan this QR code in Google Authenticator, 1Password, Authy or another TOTP app. The QR code and manual key will not be shown again.</p>
-              <div className="mt-6 flex justify-center"><img src={setup.qr_data_url} alt="One-time authenticator setup QR code" width={240} height={240} className="rounded-2xl" /></div>
+              <div className="mt-6 flex justify-center"><Image src={setup.qr_data_url} alt="One-time authenticator setup QR code" width={240} height={240} unoptimized className="rounded-2xl" /></div>
               <p className="mt-4 break-all rounded-2xl bg-gray-100 px-4 py-3 font-mono text-xs text-gray-1000">{setup.manual_key}</p>
               <form onSubmit={confirmSetup} className="mt-4 flex flex-col gap-3">
                 <label htmlFor="setup-code" className="sr-only">Authenticator code</label>
-                <input id="setup-code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="6-digit code" autoComplete="one-time-code" className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 text-center text-sm tracking-[0.3em] text-gray-1200 outline-none shadow-none focus:border-gray-1200 focus:outline-none" required />
+                <input id="setup-code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="6-digit code" autoComplete="one-time-code" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 admin-code-input text-center font-sans text-base font-medium tabular-nums tracking-normal text-gray-1200 outline-none shadow-none placeholder:font-sans placeholder:font-normal focus:border-gray-1200 focus:outline-none" required />
                 <button type="submit" disabled={loading || code.length !== 6} className="rounded-full bg-gray-1200 px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-80 disabled:opacity-50">{loading ? "Confirming" : "Enable two-factor login"}</button>
               </form>
             </>
@@ -267,7 +309,7 @@ export default function FeedbackAdminPage() {
                 <form onSubmit={login} className="mt-6 flex flex-col gap-3">
                   <div className="flex items-center justify-between gap-3 rounded-full bg-gray-100 px-4 py-2 font-sans text-xs text-gray-1000"><span>Admin token verified</span><button type="button" onClick={() => { setTokenVerified(false); setCode(""); }} className="underline underline-offset-4 hover:text-gray-1200">Change</button></div>
                   <label htmlFor="admin-code" className="sr-only">Authenticator code</label>
-                  <input id="admin-code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="Authenticator code" autoComplete="one-time-code" className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 font-sans text-center text-sm tracking-[0.3em] text-gray-1200 outline-none shadow-none focus:border-gray-1200 focus:outline-none" required autoFocus />
+                  <input id="admin-code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="Authenticator code" autoComplete="one-time-code" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 admin-code-input text-center font-sans text-base font-medium tabular-nums tracking-normal text-gray-1200 outline-none shadow-none placeholder:font-sans placeholder:font-normal focus:border-gray-1200 focus:outline-none" required autoFocus />
                   <button type="submit" disabled={loading || code.length !== 6} className="rounded-full bg-gray-1200 px-5 py-3 font-sans text-sm font-semibold text-white transition-opacity hover:opacity-80 disabled:opacity-50">{loading ? "Checking" : "Open queue"}</button>
                 </form>
               )}
@@ -282,8 +324,17 @@ export default function FeedbackAdminPage() {
   return (
     <main id="admin-feedback-page" className="mx-auto max-w-[760px] px-6 py-12 sm:py-20">
       <header className="flex items-start justify-between gap-6">
-        <div><h1 className="font-serif text-3xl text-gray-1200">Feedback review</h1><p className="mt-2 text-sm text-gray-1000">{records.length} item{records.length === 1 ? "" : "s"} in the queue</p></div>
-        <button type="button" onClick={() => void logout()} className="rounded-full border border-gray-300 px-4 py-2 text-sm text-gray-1000 hover:border-gray-1200">Log out</button>
+        <div>
+          <h1 className="font-serif text-3xl text-gray-1200">Feedback review</h1>
+          <p className="mt-2 font-sans text-sm text-gray-1000">
+            {identity?.name || "Admin"} <span aria-hidden="true">·</span> {identity?.role || "Authorized reviewer"}
+          </p>
+          <p className="mt-1 font-sans text-sm text-gray-1000">{records.length} item{records.length === 1 ? "" : "s"} in the queue</p>
+        </div>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <button type="button" onClick={() => void createTestFeedback()} disabled={loading} className="rounded-full border border-gray-300 px-4 py-2 text-sm text-gray-1000 transition-colors hover:border-gray-1200 disabled:opacity-50">Send test feedback</button>
+          <button type="button" onClick={() => void logout()} disabled={loading} className="rounded-full border border-red-200 px-4 py-2 text-sm text-red-600 transition-colors hover:border-red-500 hover:bg-red-50 disabled:opacity-50">Log out</button>
+        </div>
       </header>
       {error ? <p role="alert" className="mt-5 text-sm text-gray-1000">{error}</p> : null}
       <div className="mt-10 grid gap-4">
