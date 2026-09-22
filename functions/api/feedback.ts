@@ -3,7 +3,7 @@ import { supabaseConfigured, supabaseRequest } from "../lib/supabase.ts";
 // @ts-expect-error Pages bundles extensionless function imports; Node's offline loader needs `.ts`.
 import { supabaseKv } from "../lib/supabase-kv.ts";
 // @ts-expect-error Pages bundles extensionless function imports; Node's offline loader needs `.ts`.
-import { FEEDBACK_EMAIL_ANON, FEEDBACK_EMAIL_NAMED } from "../lib/feedback-email-template.ts";
+import { FEEDBACK_EMAIL_ANON, FEEDBACK_EMAIL_ANON_TEXT, FEEDBACK_EMAIL_NAMED, FEEDBACK_EMAIL_NAMED_TEXT } from "../lib/feedback-email-template.ts";
 
 // POST /api/feedback: salva un feedback inviato dal form della sezione
 // /feedback/ in KV, pronto da recensire e pubblicare.
@@ -60,6 +60,24 @@ interface FeedbackBody {
   message?: unknown;
   company_website?: unknown;
   page_url?: unknown;
+  is_test?: unknown;
+}
+
+/**
+ * Un test non deve sporcare la coda né il database.
+ *
+ * Tre segnali, tutti espliciti: il campo `is_test` per gli script, un messaggio
+ * che comincia con "test" o "prova", un nome che è esattamente "test". Un test
+ * resta in KV marcato `is_test`, non entra nell'indice di review, non crea una
+ * riga in Supabase e non manda la notifica a Mattia. La conferma all'autore
+ * parte lo stesso: è proprio quello che un test end-to-end deve verificare.
+ */
+function looksLikeTest(body: FeedbackBody, name: string, message: string): boolean {
+  return (
+    body.is_test === true ||
+    /^(test|prova)\b/i.test(message) ||
+    name.trim().toLowerCase() === "test"
+  );
 }
 
 const WINDOW_SECONDS = 600;
@@ -213,6 +231,10 @@ async function confirmToAuthor(
   const html = record.name
     ? FEEDBACK_EMAIL_NAMED.replaceAll("{{NAME}}", name)
     : FEEDBACK_EMAIL_ANON;
+  // La parte testuale non va escapata: non è HTML.
+  const plain = record.name
+    ? FEEDBACK_EMAIL_NAMED_TEXT.replaceAll("{{NAME}}", record.name)
+    : FEEDBACK_EMAIL_ANON_TEXT;
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), 8000);
   try {
@@ -229,8 +251,11 @@ async function confirmToAuthor(
         from: env.RESEND_FROM_EMAIL,
         to: [record.email],
         reply_to: "ceo@usepayle.com",
-        subject: "Your feedback reached me",
+        subject: record.name
+          ? `${record.name}, Your feedback reached me`
+          : "Your feedback reached me",
         html,
+        text: plain,
       }),
     });
     return response.ok ? "sent" : "failed";
@@ -311,11 +336,13 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
     return finish(json({ code: "invalid_email" }, 400), "invalid_email");
   }
 
+  const isTest = looksLikeTest(body, name, message);
   const now = new Date().toISOString();
   const id = `fb:${now.replace(/[:.]/g, "-")}:${Math.random().toString(36).slice(2, 8)}`;
   const record = {
     id,
     submitted_at: now,
+    is_test: isTest,
     status: "pending_review" as const,
     name,
     email,
@@ -327,12 +354,15 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
 
   try {
     await storage.put(id, JSON.stringify(record));
-    // L'indice tiene gli ultimi MAX_INDEX id: è la coda di review.
-    const currentIndex = (await storage.get("fb:index")) || "";
-    const ids = [id, ...currentIndex.split("\n").filter(Boolean)].slice(0, MAX_INDEX);
-    await storage.put("fb:index", ids.join("\n"));
+    // L'indice tiene gli ultimi MAX_INDEX id: è la coda di review. Un test non
+    // entra qui: la coda serve a decidere cosa pubblicare, non a leggere prove.
+    if (!isTest) {
+      const currentIndex = (await storage.get("fb:index")) || "";
+      const ids = [id, ...currentIndex.split("\n").filter(Boolean)].slice(0, MAX_INDEX);
+      await storage.put("fb:index", ids.join("\n"));
+    }
 
-    if (supabaseConfigured(env)) {
+    if (!isTest && supabaseConfigured(env)) {
       const { response } = await supabaseRequest(env, "feedback_submissions?on_conflict=legacy_id", {
         method: "POST",
         headers: { Prefer: "resolution=merge-duplicates,return=minimal" },
@@ -352,10 +382,13 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
 
     // Una notifica fallita non deve far perdere il feedback: il record resta
     // in coda e conserva lo stato, così può essere rilevato dalla dashboard.
-    record.notification_status = await notifyMattia(env, record, siteOrigin(request, env));
+    // Su un test la notifica a Mattia si salta: sarebbe solo rumore.
+    record.notification_status = isTest
+      ? "not_configured"
+      : await notifyMattia(env, record, siteOrigin(request, env));
     record.confirmation_status = await confirmToAuthor(env, record);
     await storage.put(id, JSON.stringify(record));
-    if (supabaseConfigured(env)) {
+    if (!isTest && supabaseConfigured(env)) {
       const { response } = await supabaseRequest(env, `feedback_submissions?legacy_id=eq.${encodeURIComponent(record.id)}`, {
         method: "PATCH",
         headers: { Prefer: "return=minimal" },
@@ -367,5 +400,8 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
     return finish(json({ code: "provider_error" }, 502), "kv_write_error");
   }
 
-  return finish(json({ ok: true }, 200, { "X-Robots-Tag": "noindex" }), "stored");
+  return finish(
+    json({ ok: true }, 200, { "X-Robots-Tag": "noindex" }),
+    isTest ? "stored_test" : "stored",
+  );
 };

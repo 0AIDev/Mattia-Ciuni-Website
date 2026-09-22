@@ -50,3 +50,93 @@ export const FEEDBACK_EMAIL_ANON = `<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0
 <!--[if mso]>
 </v:textbox></v:rect>
 <![endif]--></div><table align="center" width="100%" border="0" cellPadding="0" cellSpacing="0" role="presentation" style="padding-right:1.5rem;padding-left:1.5rem;padding-top:2rem;padding-bottom:1.5rem"><tbody><tr><td><p class="email-ink" style="font-size:15px;line-height:1.5rem;margin:0px;color:rgb(22,22,22);margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">Hi<!-- -->,</p><p class="email-muted" style="font-size:15px;line-height:1.5rem;margin-bottom:0px;margin-top:0.75rem;color:rgb(119,119,113)">Your feedback reached me through mattiaciuni.pages.dev, and it&#x27;s in the review queue.</p><p class="email-ink" style="font-size:21px;line-height:1.75rem;margin-bottom:0px;margin-top:2rem;font-family:Instrument Serif,Georgia,serif;color:rgb(22,22,22)">What happens now</p><p class="email-muted" style="font-size:15px;line-height:1.5rem;margin-bottom:0px;margin-top:1rem;color:rgb(119,119,113)"><span style="font-weight:700;color:#161616">1. I read every submission myself</span>, usually within a few days.</p><p class="email-muted" style="font-size:15px;line-height:1.5rem;margin-bottom:0px;margin-top:1rem;color:rgb(119,119,113)"><span style="font-weight:700;color:#161616">2. Three outcomes possible:</span></p><table align="center" width="100%" border="0" cellPadding="0" cellSpacing="0" role="presentation" style="border-left:2px solid #dcdcd5;padding-left:14px;margin-top:18px"><tbody><tr><td><p class="email-ink" style="font-size:16px;line-height:1.5rem;margin:0px;font-family:Instrument Serif,Georgia,serif;font-style:italic;color:rgb(22,22,22);margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">It changes something<img alt="" height="8" src="https://mattiaciuni.pages.dev/mail-arrow.png" style="display:inline-block;outline:none;border:0;text-decoration:none;margin-left:7px;vertical-align:baseline" width="12"/></p><p class="email-muted" style="font-size:14px;line-height:1.5rem;margin:0px;margin-top:0.25rem;color:rgb(119,119,113);margin-bottom:0px;margin-left:0px;margin-right:0px">It goes into the work, and (if you consent) into the public Feedback series with your credit.</p></td></tr></tbody></table><table align="center" width="100%" border="0" cellPadding="0" cellSpacing="0" role="presentation" style="border-left:2px solid #dcdcd5;padding-left:14px;margin-top:20px"><tbody><tr><td><p class="email-ink" style="font-size:16px;line-height:1.5rem;margin:0px;font-family:Instrument Serif,Georgia,serif;font-style:italic;color:rgb(22,22,22);margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">It&#x27;s a feature request<img alt="" height="8" src="https://mattiaciuni.pages.dev/mail-arrow.png" style="display:inline-block;outline:none;border:0;text-decoration:none;margin-left:7px;vertical-align:baseline" width="12"/></p><p class="email-muted" style="font-size:14px;line-height:1.5rem;margin:0px;margin-top:0.25rem;color:rgb(119,119,113);margin-bottom:0px;margin-left:0px;margin-right:0px">It goes into the backlog with a written decision.</p></td></tr></tbody></table><table align="center" width="100%" border="0" cellPadding="0" cellSpacing="0" role="presentation" style="border-left:2px solid #dcdcd5;padding-left:14px;margin-top:20px"><tbody><tr><td><p class="email-ink" style="font-size:16px;line-height:1.5rem;margin:0px;font-family:Instrument Serif,Georgia,serif;font-style:italic;color:rgb(22,22,22);margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">It needs a conversation<img alt="" height="8" src="https://mattiaciuni.pages.dev/mail-arrow.png" style="display:inline-block;outline:none;border:0;text-decoration:none;margin-left:7px;vertical-align:baseline" width="12"/></p><p class="email-muted" style="font-size:14px;line-height:1.5rem;margin:0px;margin-top:0.25rem;color:rgb(119,119,113);margin-bottom:0px;margin-left:0px;margin-right:0px">I&#x27;ll reply to this email directly.</p></td></tr></tbody></table><p class="email-muted" style="font-size:15px;line-height:1.5rem;margin-bottom:0px;margin-top:1.5rem;color:rgb(119,119,113)"><span style="font-weight:700;color:#161616">The rule I hold myself to:</span> feedback that survives review never disappears silently. Either it changes the work and gets published, or it gets a written reason why not.</p><p class="email-muted" style="font-size:15px;line-height:1.5rem;margin-bottom:0px;margin-top:1rem;color:rgb(119,119,113)">Your message is not public yet, publication happens only after review and with the contributor&#x27;s approval.</p><p class="email-muted" style="font-size:15px;line-height:1.5rem;margin-bottom:0px;margin-top:1rem;color:rgb(119,119,113)">The question most people ask at this point<!-- --> <span style="font-weight:700;color:#161616">how does feedback actually become part of the roadmap?</span> <!-- -->has a real answer, and I&#x27;ve written it: the feedback that changes the design gets published in the Feedback series, with the contributor credited. The strongest corrections Payle received are already there, changing how the product talks about itself.</p><p class="email-muted" style="font-size:15px;line-height:1.5rem;margin-bottom:0px;margin-top:1rem;font-style:italic;color:rgb(119,119,113)">Thanks for taking the time. Most visitors browse; you wrote.</p><hr style="width:100%;border:none;border-top:1px solid #eaeaea;margin-bottom:1.75rem;margin-top:1.75rem;border-color:rgb(222,222,216)"/><p class="email-ink" style="font-size:13px;line-height:1.25rem;margin:0px;color:rgb(22,22,22);font-family:Inter, Arial, sans-serif;font-weight:700;margin-top:0px;margin-bottom:0px;margin-left:0px;margin-right:0px">Mattia Ciuni</p><p class="email-ink" style="font-size:16px;line-height:1.5rem;margin:0px;margin-top:0.25rem;font-family:Instrument Serif,Georgia,serif;color:rgb(22,22,22);margin-bottom:0px;margin-left:0px;margin-right:0px">Founder &amp; CEO,<!-- --> <span style="font-family:Inter, Arial, sans-serif;font-weight:700">Payle</span></p><p class="email-ink" style="font-size:12px;line-height:1.25rem;margin:0px;margin-top:0.5rem;color:rgb(22,22,22);font-family:Inter, Arial, sans-serif;font-weight:500;margin-bottom:0px;margin-left:0px;margin-right:0px"><a href="mailto:ceo@usepayle.com" style="color:#161616;text-decoration-line:underline;text-decoration-color:#c9c9c2">ceo@usepayle.com</a></p><p class="email-muted" style="font-size:12px;line-height:1.25rem;margin:0px;margin-top:0.75rem;font-style:italic;color:rgb(119,119,113);font-weight:500;margin-bottom:0px;margin-left:0px;margin-right:0px">You are receiving this e-mail because you submitted feedback through the personal website of Mattia Ciuni.</p></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table><!--/$--></body></html>`;
+
+/** Versione testo, con il nome di chi ha inviato il feedback. */
+export const FEEDBACK_EMAIL_NAMED_TEXT = `{{NAME}}, Thank you for the feedback
+
+https://mattiaciuni.pages.dev/feedback/
+
+Hi {{NAME}},
+
+Your feedback reached me through mattiaciuni.pages.dev, and it's in the review queue.
+
+What happens now
+
+1. I read every submission myself, usually within a few days.
+
+2. Three outcomes possible:
+
+It changes something
+
+It goes into the work, and (if you consent) into the public Feedback series with your credit.
+
+It's a feature request
+
+It goes into the backlog with a written decision.
+
+It needs a conversation
+
+I'll reply to this email directly.
+
+The rule I hold myself to: feedback that survives review never disappears silently. Either it changes the work and gets published, or it gets a written reason why not.
+
+Your message is not public yet, publication happens only after review and with the contributor's approval.
+
+The question most people ask at this point how does feedback actually become part of the roadmap? has a real answer, and I've written it: the feedback that changes the design gets published in the Feedback series, with the contributor credited. The strongest corrections Payle received are already there, changing how the product talks about itself.
+
+Thanks for taking the time. Most visitors browse; you wrote.
+
+----------------------------------------
+
+Mattia Ciuni
+
+Founder & CEO, Payle
+
+ceo@usepayle.com
+
+You are receiving this e-mail because you submitted feedback through the personal website of Mattia Ciuni.`;
+
+/** Versione testo senza nome. */
+export const FEEDBACK_EMAIL_ANON_TEXT = `Thank you for the feedback
+
+https://mattiaciuni.pages.dev/feedback/
+
+Hi,
+
+Your feedback reached me through mattiaciuni.pages.dev, and it's in the review queue.
+
+What happens now
+
+1. I read every submission myself, usually within a few days.
+
+2. Three outcomes possible:
+
+It changes something
+
+It goes into the work, and (if you consent) into the public Feedback series with your credit.
+
+It's a feature request
+
+It goes into the backlog with a written decision.
+
+It needs a conversation
+
+I'll reply to this email directly.
+
+The rule I hold myself to: feedback that survives review never disappears silently. Either it changes the work and gets published, or it gets a written reason why not.
+
+Your message is not public yet, publication happens only after review and with the contributor's approval.
+
+The question most people ask at this point how does feedback actually become part of the roadmap? has a real answer, and I've written it: the feedback that changes the design gets published in the Feedback series, with the contributor credited. The strongest corrections Payle received are already there, changing how the product talks about itself.
+
+Thanks for taking the time. Most visitors browse; you wrote.
+
+----------------------------------------
+
+Mattia Ciuni
+
+Founder & CEO, Payle
+
+ceo@usepayle.com
+
+You are receiving this e-mail because you submitted feedback through the personal website of Mattia Ciuni.`;
