@@ -113,12 +113,12 @@ export function FeedbackReceivedEmail({
           }
         `}</style>
       </Head>
-      {/* Il preheader continua il subject invece di ripeterlo: nella casella si
-          legge "Mattia, Your feedback reached me — and it is now in the review
-          queue", una frase sola invece di due che dicono lo stesso. */}
+      {/* Il preheader regge da solo, perché alcuni client mostrano solo lui,
+          e dopo il subject scorre senza inciampare: "Mattia, Your feedback
+          reached me — Your feedback is saved and now in the review queue". */}
       <Preview>
-        and it is now in the review queue. I read every submission myself,
-        usually within a few days.
+        Your feedback is saved and now in the review queue. I read every
+        submission myself, usually within a few days.
       </Preview>
       <Tailwind
         config={{
