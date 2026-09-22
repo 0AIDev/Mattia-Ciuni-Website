@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useState } from "react";
 import QRCode from "qrcode";
 
 type FeedbackRecord = {
@@ -71,12 +71,6 @@ export default function FeedbackAdminPage() {
       if (!quiet || message.includes("local Pages API")) setError(message);
     }
   }, []);
-
-  useEffect(() => {
-    // This is the initial session check; the response arrives after mount.
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    void load({ quiet: true });
-  }, [load]);
 
   async function beginSetup(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -172,7 +166,7 @@ export default function FeedbackAdminPage() {
           setMode("setup");
           throw new Error("Set up the authenticator before signing in.");
         }
-        throw new Error(response.status === 429 ? "Too many attempts. Try again later." : localApiMessage(response));
+        throw new Error(response.status === 429 ? "Too many attempts. Try again later." : response.status === 401 ? "That admin token or authenticator code is not valid." : localApiMessage(response));
       }
       setToken("");
       setCode("");
