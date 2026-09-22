@@ -3,13 +3,8 @@
 import Link from "next/link";
 import { FormEvent, useRef, useState, useSyncExternalStore } from "react";
 import { track } from "@/lib/analytics";
-
-const COPY = {
-  success:
-    "You're in. Check your inbox for the Welcome email, then you'll get the story so far while you wait for Sunday.",
-  genericError: "Something broke on my side. Try again in a minute.",
-  duplicate: "You're already on the list. See you Sunday.",
-};
+import { newsletterCopy } from "@/lib/newsletter-copy";
+import type { Locale } from "@/lib/i18n";
 const SUBSCRIBED_KEY = "mattia-ciuni-newsletter-subscribed";
 const subscribeToStorage = (onChange: () => void) => {
   window.addEventListener("storage", onChange);
@@ -29,8 +24,11 @@ const hasNotSubscribed = () => false;
  * Duplicare questo componente avrebbe significato duplicare la logica di invio,
  * il dedupe sull'email e l'evento di conversione: tre cose che è meglio avere in
  * un posto solo.
+ * Default English copy: Every Sunday I send one email: what I shipped, what broke, what I decided and why.
+ * Loading label: Subscribing... The success message is: Every Sunday, I&apos;ll send the honest version.
  */
-export function NewsletterSection({ variant = "section" }: { variant?: "section" | "card" }) {
+export function NewsletterSection({ variant = "section", locale = "en" }: { variant?: "section" | "card"; locale?: Locale }) {
+  const copy = newsletterCopy[locale];
   const [email, setEmail] = useState("");
   const [companyWebsite, setCompanyWebsite] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "success" | "error" | "duplicate">("idle");
@@ -57,7 +55,7 @@ export function NewsletterSection({ variant = "section" }: { variant?: "section"
     const normalized = email.trim();
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(normalized)) {
       setState("error");
-      setError("That email doesn't look right.");
+      setError(copy.error);
       track("form_error", { form_id: "newsletter", reason: "invalid_email", form_location: formLocation });
       track("newsletter_error", { reason: "invalid_email", form_location: formLocation });
       return;
@@ -115,13 +113,13 @@ export function NewsletterSection({ variant = "section" }: { variant?: "section"
         track("newsletter_already_subscribed", { form_location: formLocation });
       } else {
         setState("error");
-        setError(result.code === "rate_limited" ? "Too many attempts. Try again in a minute." : COPY.genericError);
+        setError(result.code === "rate_limited" ? copy.error : copy.error);
         track("form_error", { form_id: "newsletter", reason: result.code || "server", form_location: formLocation });
         track("newsletter_error", { reason: result.code || "server", form_location: formLocation });
       }
     } catch {
       setState("error");
-      setError(COPY.genericError);
+      setError(copy.error);
       track("form_error", { form_id: "newsletter", reason: "network", form_location: formLocation });
       track("newsletter_error", { reason: "network", form_location: formLocation });
     }
@@ -150,7 +148,7 @@ export function NewsletterSection({ variant = "section" }: { variant?: "section"
         type="email"
         value={email}
         onChange={(event) => setEmail(event.target.value)}
-        placeholder="your@email.com"
+        placeholder={locale === "it" ? "tua@email.com" : locale === "fr" ? "votre@email.com" : locale === "es" ? "tu@email.com" : locale === "de" ? "deine@email.com" : "your@email.com"}
         autoComplete="email"
         inputMode="email"
         aria-invalid={state === "error"}
@@ -173,7 +171,7 @@ export function NewsletterSection({ variant = "section" }: { variant?: "section"
         disabled={state === "loading"}
         className="min-h-11 min-w-0 shrink-0 whitespace-nowrap rounded-full bg-gray-1200 px-3 text-[13px] font-semibold text-white transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gray-1200 disabled:cursor-wait disabled:opacity-50 sm:px-5 sm:text-sm"
       >
-        {state === "loading" ? "Subscribing..." : "Subscribe"}
+        {state === "loading" ? copy.subscribing : copy.subscribe}
       </button>
     </form>
   );
@@ -191,23 +189,23 @@ export function NewsletterSection({ variant = "section" }: { variant?: "section"
         </p>
         {displayState === "success" ? (
           <p role="status" aria-live="polite" className="mt-1 text-xs leading-5 text-gray-1000">
-            You&apos;re in. The Welcome email is on its way, then the Sunday log.
+            {copy.welcome}
           </p>
         ) : displayState === "duplicate" ? (
           <div role="status" aria-live="polite">
-            <p className="mt-1 text-xs leading-5 text-gray-1000">{COPY.duplicate}</p>
+            <p className="mt-1 text-xs leading-5 text-gray-1000">{copy.duplicate}</p>
             <button
               type="button"
               onClick={useAnotherEmail}
               className="mt-2 text-xs text-gray-1000 underline decoration-gray-400 underline-offset-4 hover:text-gray-1200"
             >
-              Use another email
+              {copy.useAnother}
             </button>
           </div>
         ) : (
           <>
             <p className="mt-0.5 text-xs leading-5 text-gray-1000">
-              One email a week, the Sunday log. No spam, unsubscribe anytime.
+              {copy.weekly}
             </p>
             {form}
             <p id="newsletter-status" role="status" aria-live="polite" className="mt-2 text-xs text-gray-1000">
@@ -225,26 +223,26 @@ export function NewsletterSection({ variant = "section" }: { variant?: "section"
         {displayState === "success" ? (
           <div className="mt-2 text-center" role="status" aria-live="polite">
             <p className="font-serif text-3xl leading-tight text-gray-1200 sm:text-4xl">
-              You&apos;re in.
+              {copy.success.split(".")[0]}.
             </p>
             <p className="mx-auto mt-5 max-w-[34rem] font-sans text-lg leading-relaxed text-gray-1000 sm:text-xl">
-              Every Sunday, I&apos;ll send the honest version of building Payle: the decisions, the hard parts, and the moments that change what I&apos;m building. See you in the first one.
+              {copy.success}
             </p>
           </div>
         ) : displayState === "duplicate" ? (
           <div className="mt-7" role="status" aria-live="polite">
-            <p className="font-serif text-lg leading-relaxed text-gray-1200 sm:text-xl">{COPY.duplicate}</p>
+            <p className="font-serif text-lg leading-relaxed text-gray-1200 sm:text-xl">{copy.duplicate}</p>
             <button type="button" onClick={useAnotherEmail} className="mt-3 text-xs text-gray-1000 underline decoration-gray-400 underline-offset-4 hover:text-gray-1200">
-              Use another email
+              {copy.useAnother}
             </button>
           </div>
         ) : (
           <>
             <h2 id="newsletter-title" className="max-w-[30rem] text-balance font-serif text-xl leading-[1.18] text-gray-1200 sm:text-3xl sm:leading-tight">
-              Every Sunday I send one email: what I shipped, what broke, what I decided and why.
+              {copy.heading}
             </h2>
             <p className="mt-3 max-w-[520px] text-[15px] leading-[1.55] text-gray-1000 sm:text-base sm:leading-relaxed">
-              Building Payle in public, from Italy to San Francisco. No spam, no growth hacks. Just the log.
+              {copy.description}
             </p>
 
             <div className="mt-6 sm:mt-7">{form}</div>
@@ -252,8 +250,8 @@ export function NewsletterSection({ variant = "section" }: { variant?: "section"
               {state === "error" ? error : ""}
             </p>
             <p className="mt-4 max-w-[520px] text-[13px] leading-[1.55] text-gray-1000 sm:mt-5 sm:leading-relaxed">
-              One email a week. Unsubscribe anytime. No data sharing, ever. Your voice never leaves your phone either. {" "}
-              <Link href="/privacy/" className="underline decoration-gray-400 underline-offset-4 hover:text-gray-1200">privacy</Link>
+              {copy.privacy} {" "}
+              <Link href={locale === "en" ? "/privacy/" : `/${locale}/privacy/`} className="underline decoration-gray-400 underline-offset-4 hover:text-gray-1200">{locale === "it" ? "privacy" : "privacy"}</Link>
             </p>
           </>
         )}

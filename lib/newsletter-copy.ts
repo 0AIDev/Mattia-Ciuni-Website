@@ -1,0 +1,21 @@
+import type { Locale } from "./i18n";
+
+export const newsletterCopy: Record<Locale, {
+  heading: string;
+  description: string;
+  success: string;
+  error: string;
+  duplicate: string;
+  useAnother: string;
+  subscribe: string;
+  subscribing: string;
+  privacy: string;
+  weekly: string;
+  welcome: string;
+}> = {
+  en: { heading: "Every Sunday I send one email: what I shipped, what broke, what I decided and why.", description: "Building Payle in public, from Italy to San Francisco. No spam, no growth hacks. Just the log.", success: "You're in. Every Sunday, I’ll send the honest version of building Payle.", error: "Something broke on my side. Try again in a minute.", duplicate: "You're already on the list. See you Sunday.", useAnother: "Use another email", subscribe: "Subscribe", subscribing: "Subscribing...", privacy: "One email a week. Unsubscribe anytime. No data sharing, ever.", weekly: "One email a week, the Sunday log. No spam, unsubscribe anytime.", welcome: "You're in. The Welcome email is on its way, then the Sunday log." },
+  it: { heading: "Ogni domenica invio una email: cosa ho spedito, cosa si è rotto, cosa ho deciso e perché.", description: "Costruisco Payle in pubblico, dall'Italia a San Francisco. Niente spam, niente growth hack. Solo il log.", success: "Ci sei. Ogni domenica riceverai la versione onesta della costruzione di Payle.", error: "Qualcosa non ha funzionato. Riprova tra un minuto.", duplicate: "Sei già nella lista. Ci vediamo domenica.", useAnother: "Usa un'altra email", subscribe: "Iscriviti", subscribing: "Iscrizione...", privacy: "Una email a settimana. Puoi disiscriverti quando vuoi. Nessuna condivisione dei dati.", weekly: "Una email a settimana, il log della domenica. Niente spam, disiscrizione sempre possibile.", welcome: "Ci sei. La email di benvenuto sta arrivando, poi riceverai il log della domenica." },
+  fr: { heading: "Chaque dimanche, j'envoie un e-mail : ce que j'ai livré, cassé, décidé et pourquoi.", description: "Je construis Payle en public, de l'Italie à San Francisco. Pas de spam ni de growth hacks. Juste le journal.", success: "C'est fait. Chaque dimanche, vous recevrez la version honnête de la construction de Payle.", error: "Un problème est survenu. Réessayez dans une minute.", duplicate: "Vous êtes déjà inscrit. À dimanche.", useAnother: "Utiliser une autre adresse", subscribe: "S'inscrire", subscribing: "Inscription...", privacy: "Un e-mail par semaine. Désinscription à tout moment. Aucune donnée partagée.", weekly: "Un e-mail par semaine, le journal du dimanche. Pas de spam.", welcome: "C'est fait. L'e-mail de bienvenue arrive, puis le journal du dimanche." },
+  es: { heading: "Cada domingo envío un email: lo que lancé, lo que falló, lo que decidí y por qué.", description: "Construyo Payle en público, desde Italia hasta San Francisco. Sin spam ni growth hacks. Solo el registro.", success: "Listo. Cada domingo recibirás la versión honesta de construir Payle.", error: "Algo falló. Inténtalo de nuevo en un minuto.", duplicate: "Ya estás en la lista. Nos vemos el domingo.", useAnother: "Usar otro email", subscribe: "Suscribirse", subscribing: "Suscribiendo...", privacy: "Un email a la semana. Cancela cuando quieras. No compartimos tus datos.", weekly: "Un email a la semana, el registro del domingo. Sin spam.", welcome: "Listo. El email de bienvenida está en camino, después llegará el registro del domingo." },
+  de: { heading: "Jeden Sonntag sende ich eine E-Mail: was ich gebaut, kaputt gemacht und entschieden habe und warum.", description: "Ich baue Payle öffentlich auf, von Italien bis San Francisco. Kein Spam, keine Growth Hacks. Nur das Protokoll.", success: "Geschafft. Jeden Sonntag erhältst du die ehrliche Version vom Aufbau von Payle.", error: "Etwas ist schiefgelaufen. Versuch es in einer Minute erneut.", duplicate: "Du bist bereits angemeldet. Bis Sonntag.", useAnother: "Andere E-Mail verwenden", subscribe: "Abonnieren", subscribing: "Wird abonniert...", privacy: "Eine E-Mail pro Woche. Jederzeit abbestellbar. Keine Weitergabe deiner Daten.", weekly: "Eine E-Mail pro Woche, das Sonntagsprotokoll. Kein Spam.", welcome: "Geschafft. Die Willkommensmail ist unterwegs, danach folgt das Sonntagsprotokoll." },
+};

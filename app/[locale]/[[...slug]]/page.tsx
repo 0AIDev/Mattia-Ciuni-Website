@@ -5,13 +5,15 @@ import { notFound } from "next/navigation";
 import CopyEmail from "@/components/CopyEmail";
 import MilanClock from "@/components/MilanClock";
 import { ChevronRight } from "@/components/icons";
-import { localeMeta, copy, LOCALES, isLocale, type Locale } from "@/lib/i18n";
+import { copy, LOCALES, isLocale, type Locale } from "@/lib/i18n";
 import { site } from "@/lib/site";
 import { socialImages } from "@/lib/social";
 import { posts } from "@/lib/posts";
 import { notes } from "@/lib/notes";
 import { feedback } from "@/lib/feedback";
 import { FeedbackModalButton } from "@/components/FeedbackForm";
+import { LocalizedSection } from "@/components/LocalizedSection";
+import { NewsletterSection } from "@/components/NewsletterSection";
 
 const SECTIONS = ["about", "work", "thoughts", "notes", "feedback", "privacy", "terms", "cookies", "legal", "newsletter", "link", "voice-notes", "videos"] as const;
 type Section = (typeof SECTIONS)[number];
@@ -67,6 +69,7 @@ function LocalizedHome({ locale }: { locale: Locale }) {
  className="group flex flex-wrap items-baseline justify-between gap-4 py-3.5"><span className="font-serif">{note.title}</span><span className="text-sm text-gray-1000">{note.date}<ChevronRight className="ml-2 inline h-4 w-4" /></span></Link></li>)}</ul></section>
       <section aria-labelledby="localized-feedback" className="mb-16 sm:mb-24"><div className="mb-2 flex flex-wrap items-baseline justify-between gap-4"><h2 id="localized-feedback" className="font-serif font-medium">{text.feedback}</h2><Link href={`/${locale}/feedback/`} className="text-sm text-gray-1000">{locale === "it" ? "Tutti i feedback" : "All feedback"}</Link></div><p className="mb-6 max-w-[600px] text-text-paragraph">{home.feedbackBody}</p><ul className="m-0 list-none rounded-3xl bg-gray-100 p-0">{feedback.map((item) => <li key={item.slug}><Link href={`/${locale}/feedback/${item.slug}/`}
  className="group flex min-w-0 flex-wrap items-baseline justify-between gap-4 px-5 py-4"><span className="font-serif font-[450]">{item.title}</span><span className="flex items-center gap-2 text-sm text-gray-1000">{item.author}<ChevronRight className="h-4 w-4" /></span></Link></li>)}</ul><div className="mt-6"><FeedbackModalButton label={text.sendFeedback} /></div></section>
+      <section aria-labelledby="localized-newsletter" className="mb-16 sm:mb-24"><h2 id="localized-newsletter" className="mb-2 font-serif font-medium">{text.newsletter}</h2><p className="mb-5 max-w-[600px] text-text-paragraph">{locale === "it" ? "Una email a settimana: cosa ho spedito, cosa si è rotto, cosa ho deciso e perché." : locale === "fr" ? "Un e-mail par semaine : ce que j'ai livré, cassé, décidé et pourquoi." : locale === "es" ? "Un email a la semana: lo que lancé, lo que falló, lo que decidí y por qué." : locale === "de" ? "Eine E-Mail pro Woche: was ich gebaut, kaputt gemacht und entschieden habe und warum." : "One email a week: what I shipped, what broke, what I decided and why."}</p><NewsletterSection locale={locale} /></section>
       <section aria-labelledby="localized-field-notes" className="mb-16 sm:mb-24"><div className="mb-2 flex flex-wrap items-baseline justify-between gap-4"><h2 id="localized-field-notes" className="font-serif font-medium">{home.fieldNotes}</h2><span className="text-sm text-gray-1000">{locale === "it" ? "in corso" : "in progress"}</span></div><p className="mb-6 max-w-[600px] text-text-paragraph">{home.fieldBody}</p><div className="grid gap-4 sm:grid-cols-2"><Link href={`/${locale}/voice-notes/`} className="group border-t border-gray-300 pt-4"><span className="font-serif text-2xl">{home.voice}</span><p className="mt-2 text-sm leading-relaxed text-gray-1000">{home.voiceBody}</p></Link><Link href={`/${locale}/videos/`} className="group border-t border-gray-300 pt-4"><span className="font-serif text-2xl">{home.videos}</span><p className="mt-2 text-sm leading-relaxed text-gray-1000">{home.videosBody}</p></Link></div></section>
     </>
   );
@@ -75,6 +78,8 @@ function LocalizedHome({ locale }: { locale: Locale }) {
 export default async function LocalizedRoute({ params }: { params: Promise<{ locale: string; slug?: string[] }> }) {
   const { locale: raw, slug } = await params;
   if (!isLocale(raw) || (slug && slug.length > 1) || (slug?.[0] && !SECTIONS.includes(slug[0] as Section))) notFound();
-  const locale = raw as Locale; const text = copy[locale]; const section = slug?.[0] as Section | undefined; const item = section ? sectionText(locale, section) : null; const links = [["about", text.about], ["work", text.work], ["thoughts", text.thoughts], ["notes", text.notes], ["feedback", text.feedback]] as const;
-  return <main id="content" className="mx-auto w-full min-w-0 max-w-[692px] overflow-hidden px-5 py-10 leading-relaxed sm:px-6 sm:py-24">{item ? <><header className="mb-16 flex items-center justify-between gap-4 sm:mb-24"><Link href={`/${locale}/`} aria-label={text.back} className="font-serif text-xl font-medium">Mattia Ciuni</Link><Image src={`/flags/${localeMeta[locale].country.toLowerCase()}.svg`} alt={localeMeta[locale].native} className="language-flag language-flag-large" width={32} height={32} unoptimized /></header><section className="mb-16 sm:mb-24"><p className="text-sm text-gray-1000">Mattia Ciuni · {text.founder}</p><h1 className="mt-5 font-serif text-4xl font-medium leading-tight text-gray-1200 sm:text-5xl">{item.title}</h1><p className="mt-6 max-w-[600px] text-lg leading-relaxed text-text-paragraph">{item.body}</p></section><nav aria-label={text.language} className="border-t border-gray-300">{links.map(([target, label]) => <Link key={target} href={`/${locale}/${target}/`} className="flex items-center justify-between border-b border-gray-300 py-4"><span className="font-serif text-lg">{label}</span><span>→</span></Link>)}</nav></> : <LocalizedHome locale={locale} />}</main>;
+  const locale = raw as Locale;
+  const section = slug?.[0] as Section | undefined;
+  if (section) return <LocalizedSection locale={locale} section={section} />;
+  return <main id="content" className="mx-auto w-full min-w-0 max-w-[692px] overflow-hidden px-5 py-10 leading-relaxed sm:px-6 sm:py-24"><LocalizedHome locale={locale} /></main>;
 }
