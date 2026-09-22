@@ -103,9 +103,12 @@ export function FeedbackReceivedEmail({
           /* Su schermi stretti l'header si abbassa: l'immagine è 1920x1008 e
              con cover un riquadro alto resterebbe troppo ritagliato ai lati. */
           @media (max-width: 480px) {
+            /* Su schermo stretto il titolo va più in alto: a 30px di corpo
+               occupa due righe, e con il padding del desktop l'ultima riga
+               finiva sotto il bordo dell'immagine. */
             .email-header {
-              height: 210px !important;
-              padding-top: 122px !important;
+              height: 214px !important;
+              padding-top: 92px !important;
             }
           }
         `}</style>
