@@ -23,8 +23,30 @@ This directory contains the database schema for the personal site.
    - `admin_audit_log`
    - `email_delivery_events`
    - `private_kv` (from the second migration, for the temporary KV compatibility layer)
+   - `analytics_events` (from the third migration, the site-owned copy of the measurement)
+   - the views `analytics_daily`, `analytics_pages`, `analytics_flow`
 
-Run both migration files in filename order. Each migration is idempotent and contains no credentials. They can be run again safely.
+Run all migration files in filename order. Each migration is idempotent and contains no credentials. They can be run again safely.
+
+## The measurement copy (`analytics_events`)
+
+Umami and Google Analytics are services run by someone else: they can change plan, prune
+their history or close. `functions/api/collect.ts` therefore writes a copy of every site
+event into `analytics_events`, so the measurement of the site cannot be lost with them.
+
+The copy is anonymous by construction:
+
+- no IP address is stored, not even truncated;
+- no user agent, no cookie, no device identifier;
+- the raw address is read once, hashed together with a server secret and the UTC date, and
+discarded. `visitor_day` is that truncated hash: it counts distinct visits inside one day,
+it cannot be reversed, and it cannot link one day to the next;
+- only `country` (from Cloudflare) and a one-word `device` survive the request;
+- events and parameter names are whitelisted, values are primitives and truncated.
+
+The salt comes from `ANALYTICS_SALT` if set, otherwise from the service role key. No extra
+configuration is required. There is no retention policy: the table is never pruned, because
+not losing this data is the reason it exists.
 
 ## Security model
 

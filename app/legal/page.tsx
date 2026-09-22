@@ -10,7 +10,7 @@ const card = socialImages("/og.png", "Legal Center | Mattia Ciuni");
 export const metadata: Metadata = {
   title: "Legal Center | Privacy, Terms and Cookies",
   description:
-    "Privacy, terms, and cookies for Mattia Ciuni's website, including the newsletter, feedback submissions, the AI chat and analytics.",
+    "Privacy, terms, and cookies for Mattia Ciuni's website: the newsletter, feedback submissions, and the analytics you control.",
   alternates: { canonical: "/legal/" },
   openGraph: {
     type: "website",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     siteName: "Mattia Ciuni",
     title: pageTitle,
     description:
-      "Privacy, terms, and cookies for Mattia Ciuni's website, including the newsletter, feedback submissions, the AI chat and analytics.",
+      "Privacy, terms, and cookies for Mattia Ciuni's website: the newsletter, feedback submissions, and the analytics you control.",
     images: card.og,
   },
   twitter: { card: "summary_large_image", title: pageTitle, images: card.twitter },
@@ -56,10 +56,12 @@ const sections: LegalSection[] = [
     title: "What this site does with your data",
     content: (
       <p>
-        Four things, all optional: the newsletter stores your email address with the source you arrived from; the
-        feedback form stores your message and, if you add them, your name and email; the AI chat sends your question to
-        this site&apos;s own endpoint to answer it, and keeps the conversation in your browser only; analytics are off
-        until you allow them. Nothing is sold, nothing is shared with advertisers, and there are no social pixels.
+        Three things are optional: the newsletter stores your email address together with the source you arrived from;
+        the feedback form stores your message and, if you add them, your name and email; Google Analytics is off until
+        you allow it, and when it is on it measures pages, how you arrived, how long a page stayed open, how far you
+        scrolled, and where you went next. Beside them a cookieless counter (Umami) records visits while storing nothing
+        about you at all, which is why it asks nothing and the notice never mentions it. Nothing is sold, nothing is
+        shared with advertisers, and there are no social pixels.
       </p>
     ),
   },

@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useState, useSyncExternalStore } from "react";
+import { track } from "@/lib/analytics";
 
 const COPY = {
   success:
@@ -16,7 +17,19 @@ const subscribeToStorage = (onChange: () => void) => {
 const hasSubscribed = () => window.localStorage.getItem(SUBSCRIBED_KEY) === "1";
 const hasNotSubscribed = () => false;
 
-export function NewsletterSection() {
+/**
+ * Due modi di mostrare lo stesso form, una sola implementazione.
+ *
+ * `section` è la sezione della home e di `/newsletter`: titolo grande in serif,
+ * form a pillola. `card` è la scheda di `/link`, dove la newsletter vive dentro
+ * la stessa lista dei link, con la stessa riga di bordo arrotondato, perché lì
+ * una sezione a tutta larghezza spezzerebbe il ritmo della pagina.
+ *
+ * Duplicare questo componente avrebbe significato duplicare la logica di invio,
+ * il dedupe sull'email e l'evento di conversione: tre cose che è meglio avere in
+ * un posto solo.
+ */
+export function NewsletterSection({ variant = "section" }: { variant?: "section" | "card" }) {
   const [email, setEmail] = useState("");
   const [companyWebsite, setCompanyWebsite] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "success" | "error" | "duplicate">("idle");
@@ -24,6 +37,11 @@ export function NewsletterSection() {
   const [ignoreRemembered, setIgnoreRemembered] = useState(false);
   const remembered = useSyncExternalStore(subscribeToStorage, hasSubscribed, hasNotSubscribed);
   const displayState = !ignoreRemembered && remembered && state === "idle" ? "duplicate" : state;
+  const isCard = variant === "card";
+  // Dove sta il form: home e /newsletter sono la sezione, /link è la scheda.
+  // Senza questo parametro i due punti di iscrizione si sommano in un numero
+  // solo che non dice quale dei due funziona.
+  const formLocation = isCard ? "link_card" : "section";
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -31,6 +49,7 @@ export function NewsletterSection() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(normalized)) {
       setState("error");
       setError("That email doesn't look right.");
+      track("newsletter_error", { reason: "invalid_email", form_location: formLocation });
       return;
     }
 
@@ -45,7 +64,7 @@ export function NewsletterSection() {
       if (clickId && !medium) medium = "paid";
       if (!source && referrer) {
         try {
-          source = new URL(referrer).hostname.replace(/^www\\./, "");
+          source = new URL(referrer).hostname.replace(/^www\./, "");
           medium = medium || (source.includes("google.") || source.includes("bing.") ? "organic_search" : "referral");
         } catch {
           source = "referral";
@@ -72,21 +91,25 @@ export function NewsletterSection() {
         setState("success");
         // Conversione vera, non un page view: sapere quante persone arrivano
         // dal traffico invece di quante si iscrivono sono due numeri diversi.
-        window.gtag?.("event", "newsletter_signup", {
+        track("newsletter_signup", {
           source: source || "direct",
           medium: medium || "none",
           campaign: params.get("utm_campaign") || "",
+          form_location: formLocation,
         });
       } else if (response.status === 409 || result.code === "already_subscribed") {
         window.localStorage.setItem(SUBSCRIBED_KEY, "1");
         setState("duplicate");
+        track("newsletter_already_subscribed", { form_location: formLocation });
       } else {
         setState("error");
         setError(result.code === "rate_limited" ? "Too many attempts. Try again in a minute." : COPY.genericError);
+        track("newsletter_error", { reason: result.code || "server", form_location: formLocation });
       }
     } catch {
       setState("error");
       setError(COPY.genericError);
+      track("newsletter_error", { reason: "network", form_location: formLocation });
     }
   }
 
@@ -95,6 +118,90 @@ export function NewsletterSection() {
     setIgnoreRemembered(true);
     setEmail("");
     setState("idle");
+  }
+
+  const form = (
+    <form
+      onSubmit={submit}
+      className="mt-3 box-border grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1 overflow-hidden rounded-full border border-gray-400 p-1 transition-colors focus-within:border-gray-1200 focus-within:ring-2 focus-within:ring-gray-1200/15 sm:gap-2"
+      noValidate
+    >
+      <label htmlFor="newsletter-email" className="sr-only">
+        Email address
+      </label>
+      <input
+        id="newsletter-email"
+        name="email"
+        type="email"
+        value={email}
+        onChange={(event) => setEmail(event.target.value)}
+        placeholder="your@email.com"
+        autoComplete="email"
+        inputMode="email"
+        aria-invalid={state === "error"}
+        aria-describedby={state === "error" ? "newsletter-status" : undefined}
+        disabled={state === "loading"}
+        className="newsletter-email min-h-11 min-w-0 rounded-full border-0 bg-transparent px-3 py-2 text-[15px] text-gray-1200 !outline-none placeholder:text-gray-1000/60 focus:!outline-none focus:ring-0 focus-visible:!outline-none disabled:opacity-60 sm:px-4 sm:text-base"
+      />
+      <input
+        type="text"
+        name="company_website"
+        value={companyWebsite}
+        onChange={(event) => setCompanyWebsite(event.target.value)}
+        tabIndex={-1}
+        autoComplete="off"
+        aria-hidden="true"
+        className="sr-only"
+      />
+      <button
+        type="submit"
+        disabled={state === "loading"}
+        className="min-h-11 min-w-0 shrink-0 whitespace-nowrap rounded-full bg-gray-1200 px-3 text-[13px] font-semibold text-white transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gray-1200 disabled:cursor-wait disabled:opacity-50 sm:px-5 sm:text-sm"
+      >
+        {state === "loading" ? "Subscribing..." : "Subscribe"}
+      </button>
+    </form>
+  );
+
+  // Variante scheda: la newsletter si presenta come una riga della lista link,
+  // con il titolo al posto del nome del link e il form al posto della freccia.
+  if (isCard) {
+    return (
+      <section
+        aria-labelledby="newsletter-title"
+        className="rounded-2xl border border-gray-300 px-4 py-3.5 text-left sm:px-5"
+      >
+        <p id="newsletter-title" className="text-[15px] font-medium leading-5 text-gray-1200">
+          Newsletter
+        </p>
+        {displayState === "success" ? (
+          <p role="status" aria-live="polite" className="mt-1 text-xs leading-5 text-gray-1000">
+            You&apos;re in. The Welcome email is on its way, then the Sunday log.
+          </p>
+        ) : displayState === "duplicate" ? (
+          <div role="status" aria-live="polite">
+            <p className="mt-1 text-xs leading-5 text-gray-1000">{COPY.duplicate}</p>
+            <button
+              type="button"
+              onClick={useAnotherEmail}
+              className="mt-2 text-xs text-gray-1000 underline decoration-gray-400 underline-offset-4 hover:text-gray-1200"
+            >
+              Use another email
+            </button>
+          </div>
+        ) : (
+          <>
+            <p className="mt-0.5 text-xs leading-5 text-gray-1000">
+              One email a week, the Sunday log. No spam, unsubscribe anytime.
+            </p>
+            {form}
+            <p id="newsletter-status" role="status" aria-live="polite" className="mt-2 text-xs text-gray-1000">
+              {state === "error" ? error : ""}
+            </p>
+          </>
+        )}
+      </section>
+    );
   }
 
   return (
@@ -125,44 +232,7 @@ export function NewsletterSection() {
               Building Payle in public, from Italy to San Francisco. No spam, no growth hacks. Just the log.
             </p>
 
-            <form
-              onSubmit={submit}
-              className="mt-6 box-border grid w-full max-w-[520px] min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1 overflow-hidden rounded-full border border-gray-400 p-1 transition-colors focus-within:border-gray-1200 focus-within:ring-2 focus-within:ring-gray-1200/15 sm:mt-7 sm:gap-2"
-              noValidate
-            >
-              <label htmlFor="newsletter-email" className="sr-only">Email address</label>
-              <input
-                id="newsletter-email"
-                name="email"
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="your@email.com"
-                autoComplete="email"
-                inputMode="email"
-                aria-invalid={state === "error"}
-                aria-describedby={state === "error" ? "newsletter-status" : undefined}
-                disabled={state === "loading"}
-                className="newsletter-email min-h-11 min-w-0 rounded-full border-0 bg-transparent px-3 py-2 text-[15px] text-gray-1200 !outline-none placeholder:text-gray-1000/60 focus:!outline-none focus:ring-0 focus-visible:!outline-none disabled:opacity-60 sm:px-4 sm:text-base"
-              />
-              <input
-                type="text"
-                name="company_website"
-                value={companyWebsite}
-                onChange={(event) => setCompanyWebsite(event.target.value)}
-                tabIndex={-1}
-                autoComplete="off"
-                aria-hidden="true"
-                className="sr-only"
-              />
-              <button
-                type="submit"
-                disabled={state === "loading"}
-                className="min-h-11 min-w-0 shrink-0 whitespace-nowrap rounded-full bg-gray-1200 px-3 text-[13px] font-semibold text-white transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gray-1200 disabled:cursor-wait disabled:opacity-50 sm:px-5 sm:text-sm"
-              >
-                {state === "loading" ? "Subscribing..." : "Subscribe"}
-              </button>
-            </form>
+            <div className="mt-6 sm:mt-7">{form}</div>
             <p id="newsletter-status" role="status" aria-live="polite" className="mt-3 min-h-5 text-sm text-gray-1000">
               {state === "error" ? error : ""}
             </p>

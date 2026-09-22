@@ -37,6 +37,35 @@ const PROD = (process.env.NEXT_PUBLIC_SITE_URL || SITE_ORIGIN).replace(/\/$/, ""
 
 check("index: single h1", (index.match(/<h1/g) || []).length === 1);
 check("index: h1 Mattia Ciuni", index.includes("<h1") && index.includes("Mattia Ciuni"));
+// Un link dentro un grassetto non si vede. InlineText spezza il testo con una
+// sola regex (`**grassetto**` | `*corsivo*` | `[etichetta](url)`) e vince il primo
+// match: `**... [nome](url) ...**` esce come **testo letterale**, parentesi quadre
+// comprese, e nessuno se ne accorge leggendo il registro. Il controllo gira sui
+// registri, dove il testo si scrive, non sull'export.
+//
+// La prova riproduce il parser: si spezza ogni stringa dei registri con la stessa
+// regex di `components/RichText.tsx` e si guarda dentro i token di grassetto. Un
+// controllo con una regex piu' larga darebbe falsi positivi (il `**` di chiusura di
+// una frase seguito da un link piu' avanti e' legittimo), e un controllo che grida
+// al lupo viene disattivato invece che corretto.
+const REGISTRIES = ["lib/posts.ts", "lib/notes.ts", "lib/feedback.ts"];
+const INLINE_TOKEN = /(\*\*[^*]+\*\*|\*[^*]+\*|\[[^\]]+\]\([^)]+\))/g;
+const boldWithLink = [];
+for (const file of REGISTRIES) {
+  const source = readFileSync(path.join(__dirname, "..", file), "utf8");
+  for (const line of source.split(/\r?\n/)) {
+    for (const literal of line.match(/"(?:[^"\\]|\\.)*"/g) || []) {
+      const value = literal.slice(1, -1);
+      for (const part of value.split(INLINE_TOKEN)) {
+        if (part.startsWith("**") && part.endsWith("**") && part.includes("](")) {
+          boldWithLink.push(file + ": " + value.slice(0, 48));
+        }
+      }
+    }
+  }
+}
+check("content: no markdown link nested inside bold", boldWithLink.length === 0);
+if (boldWithLink.length) console.log("     link dentro un grassetto: " + boldWithLink.join(" | "));
 check("post: single h1", (post.match(/<h1/g) || []).length === 1);
 check("index: lang=en", index.includes('<html lang="en"'));
 check("index: canonical", index.includes(`rel="canonical" href="${PROD}/"`));
@@ -84,13 +113,20 @@ const noteCrumb = ldJson(note).find((j) => j["@type"] === "BreadcrumbList");
 check("note: BreadcrumbList valid", !!noteCrumb && noteCrumb.itemListElement.length === 3 && noteCrumb.itemListElement[2].item === `${PROD}/notes/on-boring-systems/`);
 check("404: noindex + home link", read("404.html").includes('name="robots" content="noindex"') && read("404.html").includes("Go back home"));
 
+// Quanti articoli abbia il blog si legge dal registro, non si scrive a mano: un
+// post nuovo non deve far fallire un controllo per il motivo sbagliato, e un
+// controllo che conta i post deve accorgersi se registro e build divergono.
+const postCount = [
+  ...readFileSync(path.join(__dirname, "..", "lib", "posts.ts"), "utf8").matchAll(/slug:\s*"/g),
+].length;
+
 const smIndex = read("sitemap.xml");
 check(
   "sitemap: index with 4 children",
   smIndex.includes('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">') && (smIndex.match(/<sitemap>/g) || []).length === 4 && smIndex.includes(`${PROD}/sitemap-home.xml`) && smIndex.includes(`${PROD}/sitemap-thoughts.xml`) && smIndex.includes(`${PROD}/sitemap-notes.xml`) && smIndex.includes(`${PROD}/sitemap-feedback.xml`)
 );
 check("sitemap-home: 5 urls", (read("sitemap-home.xml").match(/<loc>/g) || []).length === 5 && read("sitemap-home.xml").includes(`${PROD}/`) && read("sitemap-home.xml").includes(`${PROD}/about/`) && read("sitemap-home.xml").includes(`${PROD}/work/`) && read("sitemap-home.xml").includes(`${PROD}/voice-notes/`) && read("sitemap-home.xml").includes(`${PROD}/videos/`));
-check("sitemap-thoughts: 4 url", (read("sitemap-thoughts.xml").match(/<loc>/g) || []).length === 4 && read("sitemap-thoughts.xml").includes("finding-ghassen-the-co-founder-question-answered-in-three-weeks"));
+check("sitemap-thoughts: index + every post", (read("sitemap-thoughts.xml").match(/<loc>/g) || []).length === postCount + 1 && read("sitemap-thoughts.xml").includes("finding-ghassen-the-co-founder-question-answered-in-three-weeks") && read("sitemap-thoughts.xml").includes("welcoming-alex-mwaniki-founding-engineer-core"));
 check("sitemap-notes: 9 url", (read("sitemap-notes.xml").match(/<loc>/g) || []).length === 9 && read("sitemap-notes.xml").includes("/notes/"));
 // Le date seguono i contenuti: una collezione è datata con l'elemento più
 // recente che contiene, non con la data del deploy.
@@ -167,7 +203,7 @@ const homeCard = read("index.md");
 check("card home: structured", homeCard.startsWith("# Mattia") && homeCard.includes("- URL: " + PROD) && homeCard.includes("- Type: Home") && homeCard.includes("[Thoughts index](thoughts.md)") && homeCard.includes("[Notes index](notes.md)"));
 check("cards: public copy for dev", fs.existsSync(path.join(__dirname, "..", "public", "index.md")) && fs.existsSync(path.join(__dirname, "..", "public", "thoughts", "money-layer-for-ai-agents.md")));
 const thoughtsCard = read("thoughts.md");
-check("card thoughts index: 3 posts", (thoughtsCard.match(/^\- \[.*\]\(thoughts\/[a-z0-9-]+\.md\)/gm) || []).length === 3 && thoughtsCard.includes("money-layer-for-ai-agents.md") && thoughtsCard.includes("artifact-based-hiring.md") && thoughtsCard.includes("finding-ghassen-the-co-founder-question-answered-in-three-weeks.md"));
+check("card thoughts index: one line per post", (thoughtsCard.match(/^\- \[.*\]\(thoughts\/[a-z0-9-]+\.md\)/gm) || []).length === postCount && thoughtsCard.includes("money-layer-for-ai-agents.md") && thoughtsCard.includes("artifact-based-hiring.md") && thoughtsCard.includes("finding-ghassen-the-co-founder-question-answered-in-three-weeks.md") && thoughtsCard.includes("welcoming-alex-mwaniki-founding-engineer-core.md"));
 const postCard = read("thoughts/money-layer-for-ai-agents.md");
 check("card post: content", postCard.includes("- Type: Blog post") && postCard.includes(PROD + "/thoughts/money-layer-for-ai-agents") && postCard.includes("- Published: 2026-09-20"));
 const notesCard = read("notes.md");
@@ -725,16 +761,33 @@ check(
 // costruita non passa.
 const privacy = read("privacy/index.html");
 const cookies = read("cookies/index.html");
+// I nomi delle chiavi si leggono dal codice invece di essere elencati a mano: una
+// chiave nuova che nessuno documenta fa fallire questo controllo, invece di
+// comparire nel browser di qualcuno senza che la policy lo dica.
+const storageKeys = [
+  ...new Set(
+    [
+      "lib/analytics.ts",
+      "components/GoogleAnalytics.tsx",
+      "components/NewsletterSection.tsx",
+      "components/FeedbackForm.tsx",
+    ]
+      .map((file) => readFileSync(path.join(__dirname, "..", file), "utf8"))
+      .join("\n")
+      .match(/mattia-ciuni-[a-z-]+/g) || [],
+  ),
+];
 const terms = read("terms/index.html");
 check(
   "legal: privacy covers newsletter, feedback and analytics while chat is disabled",
-  ["Brevo", "Beehiiv", "Resend", "Workers KV", "Google Analytics 4", "transiently", "Garante"].every(
+  ["Brevo", "Beehiiv", "Resend", "Workers KV", "Supabase", "Google Analytics 4", "Umami", "a copy in my own database", "transiently", "Garante"].every(
     (needle) => privacy.includes(needle),
   )
 );
 check(
   "legal: cookies lists the real storage keys",
-  ["mattia-ciuni-analytics-consent", "mattia-ciuni-newsletter-subscribed", "mattia_feedback_admin", "_ga_G-YQS0R94ZQP"].every(
+  storageKeys.length >= 5 &&
+  [...storageKeys, "mattia_feedback_admin", "_ga_G-YQS0R94ZQP"].every(
     (needle) => cookies.includes(needle),
   )
 );
@@ -743,7 +796,42 @@ check(
   ["Content-Signal", "permission to publish", "initial"].every((needle) =>
     terms.includes(needle),
   ) && !terms.includes("Ask Mattia Ciuni AI")
-);check("security: production hardening headers are configured", headersFile.includes("Content-Security-Policy:") && headersFile.includes("Strict-Transport-Security:") && headersFile.includes("Cross-Origin-Opener-Policy:") && headersFile.includes("X-Frame-Options: DENY") && headersFile.includes("X-Content-Type-Options: nosniff") && headersFile.includes("frame-ancestors 'none'"));
+);// La copia nel database del sito: se l'endpoint o lo schema spariscono, la misura
+// continua a vivere solo in due servizi di terzi, che e' esattamente il problema che
+// questa copia e' stata costruita per risolvere.
+const collectFunction = readFileSync(path.join(__dirname, "..", "functions", "api", "collect.ts"), "utf8");
+const collectMigration = readFileSync(
+  path.join(__dirname, "..", "supabase", "migrations", "20260922_000003_analytics_events.sql"),
+  "utf8",
+);
+check(
+  "analytics: the owned copy is a real endpoint with a schema",
+  collectFunction.includes("crypto.subtle.digest") &&
+    collectFunction.includes("EVENTS.has(name)") &&
+    collectFunction.includes("visitorDay") &&
+    collectMigration.includes("create table if not exists public.analytics_events") &&
+    collectMigration.includes("enable row level security"),
+);
+// Il controllo guarda **la riga che viene scritta**, non il file: `ip` compare
+// legittimamente come nome di parametro in `visitorDay(ip, salt)`, ed e' proprio
+// quello che deve succedere. Quello che non deve esistere e' un campo `ip` o
+// `user_agent` dentro la riga che finisce nel database.
+const rowsBlock = (() => {
+  const start = collectFunction.indexOf("rows.push({");
+  return start < 0 ? "" : collectFunction.slice(start, collectFunction.indexOf("});", start));
+})();
+check(
+  "analytics: the row that reaches the database has no address and no user agent",
+  rowsBlock.length > 100 &&
+    !/\bip\b\s*:/.test(rowsBlock) &&
+    !/user[_-]?agent\s*:/i.test(rowsBlock) &&
+    rowsBlock.includes("visitor_day") &&
+    collectFunction.includes('deviceOf(request.headers.get("User-Agent")'),
+);
+// Umami non e' dietro il consenso: se la CSP non lo autorizza, lo script viene bloccato in silenzio e il contatore resta a zero senza che nessuno se ne accorga. Per questo l'origine e' verificata sia nello `script-src` (lo script) sia nel `connect-src` (l'endpoint che riceve i dati).
+check("security: CSP allows the cookieless counter", /script-src[^;]*https:\/\/cloud\.umami\.is/.test(headersFile) && /connect-src[^;]*https:\/\/cloud\.umami\.is/.test(headersFile));
+check("legal: cookies says Umami writes nothing", cookies.includes("Umami") && cookies.includes("no cookie, no local storage"));
+check("security: production hardening headers are configured", headersFile.includes("Content-Security-Policy:") && headersFile.includes("Strict-Transport-Security:") && headersFile.includes("Cross-Origin-Opener-Policy:") && headersFile.includes("X-Frame-Options: DENY") && headersFile.includes("X-Content-Type-Options: nosniff") && headersFile.includes("frame-ancestors 'none'"));
 check("security: vulnerability disclosure document is published", fs.existsSync(path.join(out, ".well-known", "security.txt")) && read(".well-known/security.txt").includes("Contact: mailto:ceo@usepayle.com") && read(".well-known/security.txt").includes("Canonical:"));
 check("security: public forms reject cross-origin browser posts", readFileSync(path.join(__dirname, "..", "functions", "api", "feedback.ts"), "utf8").includes("cross_origin") && readFileSync(path.join(__dirname, "..", "functions", "api", "subscribe.ts"), "utf8").includes("cross_origin"));
 check("accessibility: feedback dialog has a labelled focusable implementation", readFileSync(path.join(__dirname, "..", "components", "FeedbackForm.tsx"), "utf8").includes("aria-labelledby=\"feedback-dialog-title\"") && readFileSync(path.join(__dirname, "..", "components", "FeedbackForm.tsx"), "utf8").includes("event.key !== \"Tab\"") && readFileSync(path.join(__dirname, "..", "components", "FeedbackForm.tsx"), "utf8").includes("triggerRef"));
@@ -931,6 +1019,25 @@ console.log("homepage html+css: " + (bytes / 1024).toFixed(1) + "KB raw | all JS
 // (hover states, varianti del modal): il guardrail segue la pagina, non il
 // numero, e continua a fermare qualunque regressione strutturale oltre.
 // Responsive viewport metadata and keyboard-safe mobile controls add a small,
-// intentional amount of CSS/HTML to the static shell. Keep the guard below 120KB.
-check("weight: homepage html+css < 120KB raw", bytes < 120 * 1024);
+// intentional amount of CSS/HTML to the static shell.
+//
+// Perche' il limite sale a 122KB: i nomi dei chunk JS sono **ripetuti** dentro il
+// payload di idratazione, una volta per ogni componente client che li usa. Una
+// rotta in piu' cambia lo split di Turbopack (misurato con `/link`: due chunk
+// condivisi al posto di uno) e la stessa pagina home guadagna ~0.7KB di soli
+// riferimenti, senza nessun byte di codice o CSS in piu'. Il budget serve a
+// fermare regressioni strutturali, non a contare le rotte: 2KB di margine
+// assorbono un paio di pagine nuove e qualsiasi regressione vera resta sopra.
+//
+// Perche' il limite sale a 128KB: la home elenca l'**intero** archivio Thoughts,
+// e ogni articolo in piu' costa circa 1.6KB di HTML crudo. Non e' il testo del
+// titolo: il payload di idratazione ripete ogni voce due volte, quindi una riga
+// da ~300 byte si paga tre. Misurato con la quarta Thoughts (Alex): 121.5 -> 123.1KB.
+//
+// Il margine copre ancora qualche articolo, ma la crescita e' lineare e senza
+// tetto: quando l'archivio arrivera' a farsi sentire, la risposta giusta e'
+// strutturale (ultimi N in home + link "All thoughts", come fanno gia' Notes e
+// Feedback) e non l'ennesima deroga al numero. Quel cambio e' una decisione di
+// prodotto, quindi resta aperto qui invece di essere preso di nascosto.
+check("weight: homepage html+css < 128KB raw", bytes < 128 * 1024);
 process.exit(fail ? 1 : 0);

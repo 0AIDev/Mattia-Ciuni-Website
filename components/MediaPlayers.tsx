@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { track } from "@/lib/analytics";
 
 type MediaElement = HTMLAudioElement | HTMLVideoElement;
 
@@ -74,7 +75,13 @@ function Progress({
   );
 }
 
-function useMediaState<T extends MediaElement>(media: React.RefObject<T | null>) {
+/**
+ * Lo stato di un player, con il tracciamento di due soli momenti che contano:
+ * quando parte e quando finisce. Il resto (ricerca, mute, pausa) è rumore: la
+ * domanda utile è "quanti ascoltano davvero una voice note", non quante volte
+ * viene toccata la barra di avanzamento.
+ */
+function useMediaState<T extends MediaElement>(media: React.RefObject<T | null>, mediaKind: "audio" | "video", title: string) {
   const [playing, setPlaying] = useState(false);
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -85,11 +92,15 @@ function useMediaState<T extends MediaElement>(media: React.RefObject<T | null>)
     if (!element) return;
     const onLoaded = () => setDuration(element.duration || 0);
     const onTime = () => setCurrent(element.currentTime);
-    const onPlay = () => setPlaying(true);
+    const onPlay = () => {
+      setPlaying(true);
+      track("media_play", { media_kind: mediaKind, media_title: title });
+    };
     const onPause = () => setPlaying(false);
     const onEnded = () => {
       setPlaying(false);
       setCurrent(0);
+      track("media_complete", { media_kind: mediaKind, media_title: title });
     };
     element.addEventListener("loadedmetadata", onLoaded);
     element.addEventListener("durationchange", onLoaded);
@@ -107,7 +118,7 @@ function useMediaState<T extends MediaElement>(media: React.RefObject<T | null>)
       element.removeEventListener("pause", onPause);
       element.removeEventListener("ended", onEnded);
     };
-  }, [media]);
+  }, [media, mediaKind, title]);
 
   function togglePlay() {
     const element = media.current;
@@ -139,7 +150,7 @@ function useMediaState<T extends MediaElement>(media: React.RefObject<T | null>)
 
 export function AudioPlayer({ src, title }: PlayerProps) {
   const media = useRef<HTMLAudioElement>(null);
-  const state = useMediaState(media);
+  const state = useMediaState(media, "audio", title);
 
   return (
     <div className="rounded-xl border border-gray-300 px-3 py-2.5" aria-label={`Audio player: ${title}`}>
@@ -175,7 +186,7 @@ export function AudioPlayer({ src, title }: PlayerProps) {
 
 export function VideoPlayer({ src, title, poster }: PlayerProps) {
   const media = useRef<HTMLVideoElement>(null);
-  const state = useMediaState(media);
+  const state = useMediaState(media, "video", title);
 
   function fullscreen() {
     const element = media.current;

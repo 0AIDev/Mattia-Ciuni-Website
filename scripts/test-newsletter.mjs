@@ -63,6 +63,13 @@ assert.match(analytics, /outbound_click/);
 assert.match(analytics, /localStorage/);
 assert.match(analytics, /getServerConsent = \(\): ConsentState => "loading"/);
 assert.match(analytics, /consent !== "unset"/);
+// Il comando a gtag deve essere un oggetto `arguments`, non un array: gtag.js
+// esegue solo il primo, mentre un array lo legge come evento di dataLayer e lo
+// ignora. Con l'array il container partiva, gli eventi finivano in dataLayer e
+// nessuna richiesta partiva verso google-analytics: un guasto silenzioso, senza
+// errori in console. Qui diventa un test che fallisce.
+assert.match(analytics, /window\.dataLayer\.push\(arguments\)/, "gtag must push the arguments object, not an array");
+assert.doesNotMatch(analytics, /dataLayer\.push\(args\)/, "an array entry is ignored by gtag.js and silently kills every hit");
 
 const out = join(root, "out");
 const pages = [];
@@ -80,6 +87,15 @@ for (const page of pages) {
   // The private feedback dashboard deliberately has no public newsletter or
   // footer, and is excluded from all public indexes.
   if (/[\\/]out[\\/]admin[\\/]/.test(page)) continue;
+  // /link e' la pagina per i link in bio: non ha il footer del sito e la
+  // newsletter vive dentro la lista dei link, in forma di scheda. Non e' un
+  // caso da saltare: si verifica che sia esattamente cosi', perche' un'eccezione
+  // non controllata e' un'eccezione che si rompe in silenzio al primo refactor.
+  if (/[\\/]out[\\/]link[\\/]/.test(page)) {
+    assert.ok(html.includes("newsletter-title"), `${page} has no newsletter card`);
+    assert.ok(!html.includes("© 2026 Mattia Ciuni"), `${page} must not carry the site footer`);
+    continue;
+  }
   const footer = html.indexOf("© 2026 Mattia Ciuni");
   assert.ok(footer >= 0, `${page} has no footer`);
 }

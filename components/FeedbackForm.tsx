@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { currentPath, track } from "@/lib/analytics";
 
 /**
  * Il pulsante "Give feedback" che apre un modal centrale: il form non sta più
@@ -37,6 +38,9 @@ export function FeedbackModalButton({
   const [companyWebsite, setCompanyWebsite] = useState("");
   const [state, setState] = useState<"idle" | "loading" | "success" | "error">("idle");
   const [error, setError] = useState("");
+  // Da dove parte il feedback: la pagina /feedback o un post pubblicato. Serve
+  // a sapere quale pagina convince a scrivere, invece di sommare tutto.
+  const formLocation = currentPath().kind;
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -108,11 +112,13 @@ export function FeedbackModalButton({
     if (trimmed.length < 20) {
       setState("error");
       setError(COPY.tooShort);
+      track("feedback_error", { reason: "too_short", form_location: formLocation });
       return;
     }
     if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
       setState("error");
       setError(COPY.invalidEmail);
+      track("feedback_error", { reason: "invalid_email", form_location: formLocation });
       return;
     }
 
@@ -139,13 +145,16 @@ export function FeedbackModalButton({
         setState("success");
         // Il numero che conta non è quanti aprono la pagina, ma quanti
         // scrivono: senza questo evento le conversioni vere restano invisibili.
-        window.gtag?.("event", "feedback_submitted", {
-          page_url: window.location.pathname,
+        track("feedback_submitted", {
+          form_location: formLocation,
           has_email: email.trim() ? "yes" : "no",
+          has_name: name.trim() ? "yes" : "no",
+          length: trimmed.length,
         });
       } else if (response.status === 429) {
         setState("error");
         setError(COPY.rateLimited);
+        track("feedback_error", { reason: "rate_limited", form_location: formLocation });
       } else {
         setState("error");
         setError(
@@ -155,10 +164,13 @@ export function FeedbackModalButton({
               ? "The feedback could not be saved. Try again shortly."
               : COPY.genericError,
         );
+        track("feedback_error", { reason: result.code || "server", form_location: formLocation });
       }
     } catch (caught) {
       setState("error");
-      setError(caught instanceof DOMException && caught.name === "AbortError" ? "The request took too long. Try again." : COPY.genericError);
+      const aborted = caught instanceof DOMException && caught.name === "AbortError";
+      setError(aborted ? "The request took too long. Try again." : COPY.genericError);
+      track("feedback_error", { reason: aborted ? "timeout" : "network", form_location: formLocation });
     }
   }
 
@@ -171,7 +183,15 @@ export function FeedbackModalButton({
 
   return (
     <>
-      <button ref={triggerRef} type="button" onClick={() => setOpen(true)} className={`${baseTrigger} ${className}`}>
+      <button
+        ref={triggerRef}
+        type="button"
+        onClick={() => {
+          setOpen(true);
+          track("feedback_open", { form_location: formLocation, trigger: label });
+        }}
+        className={`${baseTrigger} ${className}`}
+      >
         {label}
       </button>
 

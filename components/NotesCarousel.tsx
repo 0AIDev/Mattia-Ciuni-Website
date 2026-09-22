@@ -5,6 +5,8 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ChevronRight } from "@/components/icons";
 import type { Note } from "@/lib/notes";
+// `track` è già il nome del riferimento allo scroller in questo componente.
+import { track as trackEvent } from "@/lib/analytics";
 
 function DirectionArrow({ previous = false }: { previous?: boolean }) {
   return (
@@ -51,6 +53,9 @@ export function NotesCarousel({ notes }: { notes: Note[] }) {
 
   function move(direction: -1 | 1) {
     track.current?.scrollBy({ left: direction * 292, behavior: "smooth" });
+    // Quale dei due pulsanti viene usato dice se le note in evidenza vengono
+    // sfogliate o se la gente legge solo la prima card.
+    trackEvent("carousel_step", { direction: direction === 1 ? "next" : "previous", list: "featured_notes" });
   }
 
   return (

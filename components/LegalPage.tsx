@@ -26,7 +26,7 @@ export function LegalPage({ title, intro, sections }: LegalPageProps) {
       <header className="mb-12">
         <h1 className="font-serif text-4xl font-medium leading-tight text-gray-1200 sm:text-5xl">{title}</h1>
         <p className="mt-5 max-w-[580px] text-text-paragraph">{intro}</p>
-        <p className="mt-4 text-sm text-gray-1000">Last updated September 21, 2026.</p>
+        <p className="mt-4 text-sm text-gray-1000">Last updated September 22, 2026.</p>
       </header>
 
       <TableOfContents items={toc} />

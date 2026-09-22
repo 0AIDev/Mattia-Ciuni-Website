@@ -10,7 +10,7 @@ const card = socialImages("/og.png", "Privacy Policy | Mattia Ciuni");
 export const metadata: Metadata = {
   title: "Privacy Policy | What I collect and why",
   description:
-    "How Mattia Ciuni handles newsletter subscriptions, feedback submissions and analytics while the site AI chat is disabled.",
+    "What this site collects: newsletter subscriptions, feedback submissions, and the analytics you can turn on or off.",
   alternates: { canonical: "/privacy/" },
   openGraph: {
     type: "website",
@@ -18,7 +18,7 @@ export const metadata: Metadata = {
     siteName: "Mattia Ciuni",
     title: pageTitle,
     description:
-      "How Mattia Ciuni handles newsletter subscriptions, feedback submissions and analytics while the site AI chat is disabled.",
+      "What this site collects: newsletter subscriptions, feedback submissions, and the analytics you can turn on or off.",
     images: card.og,
   },
   twitter: { card: "summary_large_image", title: pageTitle, images: card.twitter },
@@ -40,8 +40,8 @@ const sections: LegalSection[] = [
           accounts.
         </p>
         <p>
-          It is hosted on Cloudflare Pages. There are exactly four places where you can leave something behind: the
-          newsletter form, the feedback form, the AI chat, and the analytics choice. Each one is described below.
+          It is hosted on Cloudflare Pages. There are exactly three places where you can leave something behind: the
+          newsletter form, the feedback form, and the analytics choice. Each one is described below.
         </p>
       </>
     ),
@@ -63,10 +63,11 @@ const sections: LegalSection[] = [
           email or one email to me.
         </p>
         <p>
-          Three services process this data on my behalf: <strong>Resend</strong>, which sends the Welcome email;
-          <strong>Brevo</strong>, which sends the feedback notifications and keeps the subscriber list
-          (&ldquo;Mattia Ciuni Newsletter&rdquo;) and the contacts I write to; and <strong>Beehiiv</strong>, a second
-          subscription platform I use to keep the same list available if one provider fails. All three are processors,
+          The subscriber record lives in my own database on <strong>Supabase</strong>, with the email address, the
+          attribution fields above, the subscription status and the dates. The same address is then kept in
+          <strong>Brevo</strong>, which sends the list emails and where the list &ldquo;Mattia Ciuni Newsletter&rdquo;
+          lives, and in <strong>Beehiiv</strong>, a second subscription platform I use to keep the list available if one
+          provider fails. <strong>Resend</strong> sends the Welcome email right after signup. All four are processors,
           not owners: they cannot use your address for their own marketing, and they act under their own data
           processing terms.
         </p>
@@ -85,9 +86,18 @@ const sections: LegalSection[] = [
         <p>
           The feedback form in the Feedback section sends me what you write: the <strong>message</strong> (required),
           your <strong>name</strong> and <strong>email</strong> if you choose to add them, the <strong>page</strong> you
-          sent it from, and the date and time. Your IP address is used transiently for rate limiting and is not saved
-          with the feedback. Messages are stored in Cloudflare Workers KV, my own storage, and a notification with the
-          text is sent through Brevo so I can read it.
+          sent it from, and the date and time. Your IP address is used transiently to limit automated traffic and is
+          not saved with the feedback. Messages are stored in my own database on <strong>Supabase</strong>, together
+          with the index of the review queue; if the database is ever unconfigured the same record goes to Cloudflare
+          Workers KV instead, so a submission is never lost to a missing provider. A notification with the text is sent
+          through <strong>Brevo</strong> so I can read it on my phone, and if you left an address, a confirmation is
+          sent to you through <strong>Resend</strong>.
+        </p>
+        <p>
+          Two things about that confirmation, because they are the kind of detail usually left out: the recipient
+          address of every email the site sends is recorded only as a <strong>hash</strong>, in a delivery log that
+          exists to prove a message left and to avoid sending it twice; and the confirmation email is a receipt, not a
+          subscription. It does not add you to the newsletter.
         </p>
         <p>
           The legal basis is your consent, given by submitting the form, and my legitimate interest in keeping the
@@ -111,22 +121,81 @@ const sections: LegalSection[] = [
   },
   */
   {
+    id: "review-dashboard",
+    title: "The review dashboard",
+    content: (
+      <p>
+        Feedback and the moderation queue are read in a private dashboard at{" "}
+        <code className="font-mono text-[13px]">/admin/feedback/</code>, reachable by me and by Payle&apos;s
+        co-founder and CTO, each with their own credential plus a six-digit code from an authenticator app. Access is
+        logged there: who acted, on what, when. It is not a public page, it is not indexed, and it is not measured by
+        analytics.
+      </p>
+    ),
+  },
+  {
     id: "analytics",
-    title: "Analytics",
+    title: "Measurement: two tools, two rules",
     content: (
       <>
         <p>
-          Analytics are <strong>optional and off until you allow them</strong>. If you choose &ldquo;Allow&rdquo; in
-          the notice, Google Analytics 4 receives anonymous measurement of this site: pages viewed, the referring
-          domain, campaign parameters in the link you arrived from, outbound and CTA clicks, and the source of your
-          first visit, kept in your browser. Advertising storage, advertising personalisation and ad user data are
-          explicitly <strong>denied</strong>, and IP addresses are anonymised.
+          Two things measure this site and they are deliberately not the same kind of thing. The first is{" "}
+          <strong>Umami</strong>, a counter that runs from the first page view without asking anything: it writes no
+          cookie and no identifier on your device, it does not keep your IP address, it does not follow you to other
+          sites and it cannot recognise you on a later visit. It counts the page, the referring domain, the country, the
+          browser and the device in aggregate form. Since nothing about you is stored, there is nothing to consent to,
+          and the notice on this site does not ask about it.
         </p>
         <p>
-          The purpose is editorial: knowing which pages are read tells me what to keep writing. Google retains this
-          measurement for up to 14 months and acts as an independent controller for its own processing, described in
-          Google&apos;s privacy policy. If you decline, nothing is loaded and nothing is measured. You can change your
-          choice at any time by clearing this site&apos;s browser storage, as described in the{" "}
+          Beside those two, every event is written to <strong>a copy in my own database</strong>, on Supabase. It is the
+          one piece of this that does not depend on a provider staying in business: the measurement of the site cannot
+          be lost because a plan changed or a service closed. That copy is anonymous by construction. Your address is
+          read once, to compute a one-way fingerprint of that visit and that day, truncated, and is then discarded: the
+          fingerprint cannot be reversed, it cannot be linked from one day to the next because the date is part of it,
+          and nothing else about your device is kept, not the user agent, not a cookie, not an identifier. What is
+          written is the page, the event, the time, the country, whether the device was a phone or a computer, and how
+          you arrived. It is kept without a deadline: the whole point of the copy is that nothing is deleted from it.
+        </p>
+        <p>
+          The second is <strong>Google Analytics 4</strong>, and it is <strong>optional and off until you allow
+          it</strong>: it does keep an identifier in your browser, and that identifier is exactly the reason consent is
+          required. If you choose &ldquo;Allow&rdquo; in the notice, it receives a measurement of how the site is used.
+          Concretely, and completely, that is:
+        </p>
+        <ul className="m-0 list-disc space-y-2 pl-5">
+          <li>the <strong>pages you view</strong>, with the kind of content (an article, a note, the home page)</li>
+          <li>
+            <strong>how you arrived</strong>: the referring domain, the campaign parameters in the link you followed
+            (utm_source, utm_medium, utm_campaign, utm_content, utm_term), the click identifiers of paid campaigns when
+            they are present, and the page you landed on
+          </li>
+          <li>the <strong>source of your first visit</strong>, kept in your browser so a later visit is attributed honestly</li>
+          <li>
+            <strong>how long each page stayed open</strong> and <strong>how far you scrolled</strong> through it, at
+            four points: a quarter, half, three quarters, and the end
+          </li>
+          <li>
+            <strong>where you went next</strong>: the page you moved to, and the destination domain when you leave the
+            site or close the tab
+          </li>
+          <li>clicks on internal links and on links that lead outside, with the text of the link</li>
+          <li>how many pages the visit contained and how long the visit lasted as a whole</li>
+        </ul>
+        <p>
+          Advertising storage, advertising personalisation and ad user data are explicitly <strong>denied</strong>, no
+          advertising features are enabled, and IP addresses are not stored or reported by Analytics: Google uses the
+          address at collection time to derive an approximate location and does not retain it. Nothing here is
+          personal, nothing is sold, and no measurement is linked to an identity.
+        </p>
+        <p>
+          The purpose is editorial for both: knowing which pages are read, which are abandoned halfway, where people
+          arrive from and where they leave tells me what to keep writing and what to fix, which is the whole point of a
+          site like this one. Neither tool is used for advertising, profiling or decisions about you, and neither is
+          shared with anyone. Google retains its measurement for up to 14 months and acts as an independent controller
+          for its own processing, described in Google&apos;s privacy policy; Umami keeps aggregate counts, not visits.
+          If you decline Google Analytics, nothing of it is loaded and nothing of it is measured, while the cookieless
+          counter keeps its anonymous count. You can change your choice at any time by clearing this site&apos;s
+          browser storage, as described in the{" "}
           <Link href="/cookies/" className="article-underline">
             Cookies
           </Link>{" "}
@@ -142,9 +211,9 @@ const sections: LegalSection[] = [
       <p>
         The site is served by Cloudflare, which sees the requests needed to deliver a page: IP address, user agent, the
         address requested and the answer. Cloudflare keeps those logs as a service provider for security and
-        reliability, and they are not used by this site to build profiles. The newsletter, feedback and chat endpoints
-        log only anonymous outcomes (which kind of request, whether it succeeded, how long it took): never an email
-        address, a message, an IP address or a provider credential.
+        reliability, and they are not used by this site to build profiles. The newsletter and feedback endpoints log
+        only anonymous outcomes (which kind of request, whether it succeeded, how long it took): never an email address,
+        a message, an IP address or a provider credential.
       </p>
     ),
   },
@@ -152,11 +221,11 @@ const sections: LegalSection[] = [
     id: "browser-storage",
     title: "What stays in your browser",
     content: (
-      <p>
-        A few values are stored locally so the site remembers your choices instead of asking again: the newsletter
-        state, the analytics choice, your first visit source, the chat history, and a session flag for the traffic
-        source event. None of them identify you and none of them leave your device on their own. The complete list is
-        on the{" "}
+      <p>          A few values are stored locally so the site remembers your choices instead of asking again: the newsletter
+        state, the analytics choice, the source of your first visit, and a handful of visit counters that measure one
+        visit inside one tab (how many pages it has touched, when the current page was opened, and a flag that stops
+        the same source from being counted twice). None of them identify you, none of them survives the tab, and none
+        of them leaves your device on its own. The complete list is on the{" "}
         <Link href="/cookies/" className="article-underline">
           Cookies
         </Link>{" "}
@@ -169,8 +238,8 @@ const sections: LegalSection[] = [
     title: "Who else is involved",
     content: (
       <p>
-        The processors listed above (Cloudflare, Resend, Brevo, Beehiiv, Google for optional analytics) are the only
-        third parties involved. They may process data outside the European Union, under their standard contractual
+        The processors listed above (Cloudflare, Supabase, Resend, Brevo, Beehiiv, Umami for the cookieless counter,
+        Google for the optional analytics) are the only third parties involved. They may process data outside the European Union, under their standard contractual
         clauses or an equivalent safeguard. There are no advertising networks, no trackers from social platforms, no
         data brokers, and no sale or rental of personal data ever. If I add a provider, this page is updated before it
         starts processing anything.
@@ -184,8 +253,10 @@ const sections: LegalSection[] = [
       <p>
         Newsletter: for as long as you stay subscribed, plus the minimum suppression record needed not to contact you
         again. Feedback: until you ask me to delete it, or while it stays in the review queue; published reviews stay
-        published until you ask me to remove them. Analytics: up to 14 months at Google. Hosting logs: Cloudflare&apos;s
-        own retention period. Nothing is kept &ldquo;just in case&rdquo;.
+        published until you ask me to remove them. Email delivery logs: metadata only, with the address hashed.
+        Measurement: aggregate counts at Umami, the copy in my own database kept without a deadline because that is the
+        reason it exists, and up to 14 months at Google for the optional analytics. Hosting logs: Cloudflare&apos;s own
+        retention period. Nothing is kept &ldquo;just in case&rdquo;.
       </p>
     ),
   },

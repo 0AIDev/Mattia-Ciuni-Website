@@ -125,8 +125,8 @@ const sections: LegalSection[] = [
     content: (
       <p>
         I work to keep the site available and accurate, and I edit pages when something is wrong or outdated. I cannot
-        promise that every page, link or feature will always be available or error-free, and features like the AI chat
-        may change or be removed. Material corrections are visible in the page itself rather than hidden in a changelog.
+        promise that every page, link or feature will always be available or error-free, and a feature may change or be
+        removed. Material corrections are visible in the page itself rather than hidden in a changelog.
       </p>
     ),
   },
@@ -175,7 +175,7 @@ export default function TermsPage() {
   return (
     <LegalPage
       title="Terms of Service"
-      intro="The rules for reading this site, subscribing to the newsletter, sending feedback and using the AI chat. Short, because there is not much to it."
+      intro="The rules for reading this site, subscribing to the newsletter and sending feedback. Short, because there is not much to it."
       sections={sections}
     />
   );

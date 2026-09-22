@@ -4,3 +4,7 @@ ADMIN_TOKEN=replace-with-a-long-local-token
 LOCAL_ADMIN=1
 SUPABASE_URL=https://kthtavvhjharmluqfdzn.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=replace-with-a-server-only-service-role-key
+# Facoltativo. Il sale con cui `functions/api/collect.ts` calcola l'hash
+# giornaliero delle visite. Se assente usa la chiave del database: non serve
+# configurarlo, ma averne uno dedicato permette di ruotarlo senza toccare altro.
+# ANALYTICS_SALT=replace-with-a-random-string
