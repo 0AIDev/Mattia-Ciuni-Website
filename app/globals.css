@@ -181,6 +181,27 @@ html {
   }
 }
 
+/* /link: l'alone bianco dietro la figura e la sfumatura del suo ritaglio.
+   Stanno qui, come classi con un nome, e non come utility con il valore
+   incollato nel className: Tailwind riscrive il valore dentro il selettore
+   (`.bg-\[radial-gradient\(125\%_85\%_at_50\%...`), e fra escape e variante
+   `sm:` lo stesso gradiente costa centinaia di byte in più nel CSS che ogni
+   pagina scarica. Due nomi costano un terzo. */
+.link-hero-glow {
+  background: radial-gradient(120% 92% at 50% 0%, #ffffff 0%, #ffffff 46%, rgba(255, 255, 255, 0.66) 72%, rgba(255, 255, 255, 0) 100%);
+}
+
+.link-hero-cutout {
+  -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent);
+  mask-image: linear-gradient(to bottom, #000 78%, transparent);
+}
+
+@media (min-width: 640px) {
+  .link-hero-glow {
+    height: 560px;
+  }
+}
+
 /* Lenis: smooth scroll globale */
 html.lenis,
 html.lenis body {

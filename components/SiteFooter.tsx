@@ -8,6 +8,10 @@ import { ArrowUpRightIcon } from "@/components/ui/arrow-up-right";
 export function SiteFooter() {
   const pathname = usePathname();
   if (pathname?.startsWith("/admin")) return null;
+  // /link è una pagina per i link in bio: vive fuori dal sito, si apre da un
+  // profilo social e deve finire sopra la piega. Le navigazioni del footer
+  // sarebbero una seconda lista di link sotto la lista di link.
+  if (pathname?.startsWith("/link")) return null;
 
   return (
     <footer className="mx-auto max-w-[692px] px-6 pb-10">
