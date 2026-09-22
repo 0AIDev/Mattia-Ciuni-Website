@@ -192,14 +192,28 @@ check(
     adminPage.includes('name="robots" content="noindex, nofollow, nocache"') &&
     fs.existsSync(path.join(__dirname, "..", "functions", "api", "admin", "feedback.ts"))
 );
+// Due provider, due destinatari, per non consumare gli invii Resend che servono
+// alla newsletter: Brevo manda la notifica a Mattia, Resend la conferma a chi ha
+// scritto. La conferma usa il template congelato, non un HTML scritto a mano qui.
+const feedbackSource = readFileSync(
+  path.join(__dirname, "..", "functions", "api", "feedback.ts"),
+  "utf8",
+);
 check(
   "feedback admin: protected API and notification wiring",
   fs.existsSync(path.join(__dirname, "..", "functions", "api", "admin", "feedback.ts")) &&
     readFileSync(path.join(__dirname, "..", "functions", "api", "admin", "feedback.ts"), "utf8").includes("ADMIN_TOKEN") &&
-    readFileSync(path.join(__dirname, "..", "functions", "api", "feedback.ts"), "utf8").includes("api.brevo.com/v3/smtp/email") &&
-    readFileSync(path.join(__dirname, "..", "functions", "api", "feedback.ts"), "utf8").includes("BREVO_API_KEY") &&
-    !readFileSync(path.join(__dirname, "..", "functions", "api", "feedback.ts"), "utf8").includes("api.resend.com/emails") &&
-    readFileSync(path.join(__dirname, "..", "functions", "api", "feedback.ts"), "utf8").includes("ceo@usepayle.com")
+    feedbackSource.includes("api.brevo.com/v3/smtp/email") &&
+    feedbackSource.includes("BREVO_API_KEY") &&
+    feedbackSource.includes("ceo@usepayle.com")
+);
+check(
+  "feedback: the author gets the frozen Resend confirmation",
+  feedbackSource.includes("api.resend.com/emails") &&
+    feedbackSource.includes("feedback-email-template") &&
+    feedbackSource.includes("FEEDBACK_EMAIL_NAMED") &&
+    !feedbackSource.includes("<html") &&
+    fs.existsSync(path.join(__dirname, "..", "functions", "lib", "feedback-email-template.ts"))
 );
 // Il link dentro la notifica si compone dall'host che sta servendo la pagina: un
 // dominio scritto a mano in una Function è il guasto che questo sito ha già pagato

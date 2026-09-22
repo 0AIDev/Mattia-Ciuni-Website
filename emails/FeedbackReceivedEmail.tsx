@@ -43,12 +43,13 @@ const OUTCOMES = [
 /**
  * Confirmation sent to the person who submitted feedback.
  *
- * Shape of the message: a rounded image header (frame.png, inset from the
- * sides so the page shows through the corners), the content block, then the
- * signature. Same grammar as the cover images on the site.
+ * Shape of the message: a rounded image header (email-header.png, with the
+ * logo baked in and the whole block linking to the feedback page), the content
+ * block, then the signature. Same grammar as the cover images on the site.
  */
 export function FeedbackReceivedEmail({
   name = "",
+  feedbackUrl = `${siteUrl}/feedback/`,
 }: FeedbackReceivedEmailProps) {
   // Il nome c'è solo se la persona l'ha lasciato: senza, il titolo resta
   // pulito e non inventa un destinatario.
@@ -73,19 +74,21 @@ export function FeedbackReceivedEmail({
     ? `<span style="font-weight:700;color:#ffffff">${escapeHtml(who)}, </span>`
     : "";
 
-  // Altezza dell'header per il riquadro VML: il contenuto misura circa 264px,
-  // teniamo un margine così Outlook non taglia nulla.
-  const headerVmlHeight = 280;
+  // Altezza dell'header: la stessa di prima, quando la foto stava dietro logo e
+  // titolo. L'immagine è 1920x1008, quindi a 542px di larghezza ne copre ~264
+  // senza deformarsi.
+  const headerHeight = 264;
   const headerHtml = [
     "<!--[if mso]>",
-    `<v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:542px;height:${headerVmlHeight}px;">`,
-    `<v:fill type="frame" src="${siteUrl}/frame.png" color="#161616" />`,
+    `<v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:542px;height:${headerHeight}px;">`,
+    `<v:fill type="frame" src="${siteUrl}/email-header.png" color="#161616" />`,
     '<v:textbox inset="0,0,0,0">',
     "<![endif]-->",
-    `<div style="background-color:#161616;background-image:url(${siteUrl}/frame.png);background-position:center center;background-repeat:no-repeat;background-size:cover;border-radius:16px;padding:36px 32px 40px;text-align:center;font-family:Inter,Arial,sans-serif;">`,
-    `<img src="${siteUrl}/logo-white.svg" width="65" height="65" alt="Mattia Ciuni" style="display:block;margin:0 auto 56px;border:0;outline:none;text-decoration:none;" />`,
+    `<a href="${feedbackUrl}" style="display:block;text-decoration:none;">`,
+    `<div class="email-header" style="box-sizing:border-box;background-color:#161616;background-image:url(${siteUrl}/email-header.png);background-position:center center;background-repeat:no-repeat;background-size:cover;border-radius:16px;height:${headerHeight}px;padding:170px 32px 0;text-align:center;font-family:Inter,Arial,sans-serif;">`,
     `<p style="margin:0;font-family:'Instrument Serif',Georgia,serif;font-size:30px;line-height:1.08;letter-spacing:-0.02em;color:#ffffff;font-weight:400;">${nameLine}Thank you for the feedback</p>`,
     "</div>",
+    "</a>",
     "<!--[if mso]>",
     "</v:textbox></v:rect>",
     "<![endif]-->",
@@ -96,6 +99,16 @@ export function FeedbackReceivedEmail({
       <Head>
         <meta name="color-scheme" content="light dark" />
         <meta name="supported-color-schemes" content="light dark" />
+        <style>{`
+          /* Su schermi stretti l'header si abbassa: l'immagine è 1920x1008 e
+             con cover un riquadro alto resterebbe troppo ritagliato ai lati. */
+          @media (max-width: 480px) {
+            .email-header {
+              height: 210px !important;
+              padding-top: 122px !important;
+            }
+          }
+        `}</style>
       </Head>
       <Preview>
         Your feedback reached me and it is now in the review queue.

@@ -2,6 +2,8 @@
 import { supabaseConfigured, supabaseRequest } from "../lib/supabase.ts";
 // @ts-expect-error Pages bundles extensionless function imports; Node's offline loader needs `.ts`.
 import { supabaseKv } from "../lib/supabase-kv.ts";
+// @ts-expect-error Pages bundles extensionless function imports; Node's offline loader needs `.ts`.
+import { FEEDBACK_EMAIL_ANON, FEEDBACK_EMAIL_NAMED } from "../lib/feedback-email-template.ts";
 
 // POST /api/feedback: salva un feedback inviato dal form della sezione
 // /feedback/ in KV, pronto da recensire e pubblicare.
@@ -16,6 +18,13 @@ import { supabaseKv } from "../lib/supabase-kv.ts";
 // resta in coda con `notification_status: "failed"` e la review lo legge in KV o
 // dalla dashboard. Il link dentro la notifica si compone dall'host che sta
 // servendo la pagina, non da una costante.
+//
+// Dopo il salvataggio parte anche la conferma a chi ha lasciato un'email, via
+// Resend, con il template React Email congelato in
+// `functions/lib/feedback-email-template.ts` (`npm run email:template`): la Function
+// non può importare JSX, quindi legge due stringhe e sostituisce il nome. Senza
+// indirizzo, o senza chiave Resend, non parte niente e lo stato lo dice:
+// `confirmation_status`.
 
 interface RateLimitStore {
   get(key: string): Promise<string | null>;
@@ -33,6 +42,8 @@ interface Env {
   BREVO_FROM_EMAIL?: string;
   BREVO_FROM_NAME?: string;
   FEEDBACK_NOTIFY_TO?: string;
+  RESEND_API_KEY?: string;
+  RESEND_FROM_EMAIL?: string;
   SITE_URL?: string;
   SUPABASE_URL?: string;
   SUPABASE_SERVICE_ROLE_KEY?: string;
@@ -185,6 +196,51 @@ async function notifyMattia(
   }
 }
 
+/**
+ * Conferma a chi ha scritto il feedback, con lo stesso template delle anteprime.
+ *
+ * Il nome è quello che la persona ha davvero lasciato nel form: se il campo è
+ * vuoto si usa la variante senza nome, invece di inventarne uno. Il fallimento
+ * non tocca il feedback, che è già salvato: cambia solo `confirmation_status`.
+ */
+async function confirmToAuthor(
+  env: Env,
+  record: { name: string; email: string },
+): Promise<"sent" | "failed" | "not_configured" | "no_recipient"> {
+  if (!record.email) return "no_recipient";
+  if (!env.RESEND_API_KEY || !env.RESEND_FROM_EMAIL) return "not_configured";
+  const name = escapeHtml(record.name);
+  const html = record.name
+    ? FEEDBACK_EMAIL_NAMED.replaceAll("{{NAME}}", name)
+    : FEEDBACK_EMAIL_ANON;
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+  try {
+    const response = await fetch("https://api.resend.com/emails", {
+      method: "POST",
+      signal: controller.signal,
+      headers: {
+        Authorization: `Bearer ${env.RESEND_API_KEY}`,
+        "Content-Type": "application/json",
+        // La stessa richiesta ripetuta non deve mandare due mail.
+        "Idempotency-Key": `feedback-confirmation:${record.email}:${record.name}`,
+      },
+      body: JSON.stringify({
+        from: env.RESEND_FROM_EMAIL,
+        to: [record.email],
+        reply_to: "ceo@usepayle.com",
+        subject: "Your feedback reached me",
+        html,
+      }),
+    });
+    return response.ok ? "sent" : "failed";
+  } catch {
+    return "failed";
+  } finally {
+    clearTimeout(timeout);
+  }
+}
+
 export const onRequestPost = async ({ request, env }: PagesContext): Promise<Response> => {
   const started = Date.now();
   const finish = (response: Response, outcome: string) => {
@@ -266,6 +322,7 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
     message,
     page_url: safePagePath(body.page_url, request),
     notification_status: "not_configured" as "sent" | "failed" | "not_configured",
+    confirmation_status: "not_configured" as "sent" | "failed" | "not_configured" | "no_recipient",
   };
 
   try {
@@ -296,6 +353,7 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
     // Una notifica fallita non deve far perdere il feedback: il record resta
     // in coda e conserva lo stato, così può essere rilevato dalla dashboard.
     record.notification_status = await notifyMattia(env, record, siteOrigin(request, env));
+    record.confirmation_status = await confirmToAuthor(env, record);
     await storage.put(id, JSON.stringify(record));
     if (supabaseConfigured(env)) {
       const { response } = await supabaseRequest(env, `feedback_submissions?legacy_id=eq.${encodeURIComponent(record.id)}`, {

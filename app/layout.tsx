@@ -70,6 +70,9 @@ export const metadata: Metadata = {
   publisher: "Mattia Ciuni",
   verification: {
     google: "2Yp93wGXnpI1i5vhC09zwHdmGr1vY6rFCZIXptWOITI",
+    other: {
+      "p:domain_verify": "3d076b32843d0a076953fbb547fc68fc",
+    },
   },
   alternates: { canonical: "/" },
   robots: { index: true, follow: true },

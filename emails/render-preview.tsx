@@ -23,24 +23,19 @@ async function main() {
     />,
   );
 
-  const frame = await readFile("public/frame.png");
-  const logo = await readFile("public/logo-white.svg", "utf8");
+  const header = await readFile("public/email-header.png");
   const arrow = await readFile("public/mail-arrow.png");
 
   // Le immagini remote vengono incorporate solo nell'anteprima locale:
   // nelle mail reali servono URL assoluti, che i client possano scaricare.
   const inlined = html
     .replaceAll(
-      "https://mattiaciuni.pages.dev/frame.png",
-      `data:image/png;base64,${frame.toString("base64")}`,
+      "https://mattiaciuni.pages.dev/email-header.png",
+      `data:image/png;base64,${header.toString("base64")}`,
     )
     .replaceAll(
       "https://mattiaciuni.pages.dev/mail-arrow.png",
       `data:image/png;base64,${arrow.toString("base64")}`,
-    )
-    .replaceAll(
-      "https://mattiaciuni.pages.dev/logo-white.svg",
-      `data:image/svg+xml;base64,${Buffer.from(logo).toString("base64")}`,
     );
 
   const headInner = inlined.match(/<head>([\s\S]*?)<\/head>/)?.[1] ?? "";
