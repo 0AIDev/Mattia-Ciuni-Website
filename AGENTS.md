@@ -7,3 +7,5 @@ This version has breaking changes — APIs, conventions, and file structure may 
 This block is written and re-added by `next dev` — verify at `node_modules/next/dist/server/lib/generate-agent-files.js`. Removing it from a diff only re-creates the uncommitted change; committing it with your work keeps the tree clean.
 
 <!-- END:nextjs-agent-rules -->
+
+Before writing or reviewing ANY content: read and follow `.claude/skills/editorial-payle/SKILL.md`. Section 5 (canonical facts) overrides everything the tool thinks it knows about Payle.
