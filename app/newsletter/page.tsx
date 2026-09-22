@@ -10,7 +10,10 @@ export const metadata: Metadata = {
 
 export default function Page() {
   return (
-    <main id="content" className="mx-auto w-full min-w-0 max-w-[692px] px-6">
+    <main
+      id="content"
+      className="mx-auto w-full min-w-0 max-w-[692px] px-6 pt-24 sm:pt-32"
+    >
       <div className="mx-auto w-full max-w-[520px] text-center">
         <h1 className="font-serif text-[28px] font-medium leading-[1.15] text-gray-1200">
           Newsletter
