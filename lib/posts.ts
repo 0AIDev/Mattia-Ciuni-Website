@@ -33,6 +33,165 @@ function minutesOf(blocks: Block[]): number {
 
 const raw: Post[] = [
   {
+    slug: "welcoming-alex-mwaniki-founding-engineer-core",
+    title: "Welcoming Alex Mwaniki, Founding Engineer (Core): the interview",
+    category: "Thoughts",
+    description:
+      "Alex Mwaniki, 21, from Kenya, is Payle's Founding Engineer on the core: the interview on least privilege, Go, and why no LLM touches the money.",
+    date: "2026-09-22",
+    tags: ["founders", "hiring", "engineering", "building in public", "Payle"],
+    keywords: [
+      "Alex Mwaniki",
+      "founding engineer",
+      "Payle team",
+      "artifact-based hiring",
+      "AI agent payments",
+      "Mattia Ciuni",
+    ],
+    content: [
+      {
+        type: "p",
+        text: "**Founding Team series.** This is the first post in a series I've wanted to write since the day Payle stopped being just me: introducing the people building this company, [in their own words](/work/), with the honesty we use everywhere else on this site.",
+      },
+      {
+        type: "p",
+        text: "First up: Alex Mwaniki, 21, from Kenya. Founding Engineer on the core: the Go authorization engine, the ledger, the money path. He joined after shipping a working proposal, survived a technical questionnaire built from our own audit findings, and now owns the most sensitive code in the product.",
+      },
+      {
+        type: "p",
+        text: "What follows is our conversation, edited for length but not for honesty.",
+      },
+      { type: "h2", text: "A builder with nowhere to build" },
+      {
+        type: "p",
+        text: "**Mattia: Take me back to the day you first saw Payle. What made you reply instead of just scrolling?**",
+      },
+      {
+        type: "quote",
+        text: "Actually, it didn't start with a public post; it started on Discord. At that time I felt like a builder with nowhere to build. I had the drive, the certifications and the skills, but I was searching for real and ambitious projects where I could contribute. I crossed paths with Mattia while working on an earlier project. What caught my attention wasn't just the tech: it was his energy in building. I immediately wanted to build with him.",
+      },
+      {
+        type: "p",
+        text: "That \"energy in building\" line is why our hiring works the way it does, and it is the same idea as [artifact-based hiring](/thoughts/artifact-based-hiring/): judge the work, not the pitch. Alex didn't arrive with a CV and a cover letter about passion. He arrived with a complete technical proposal: ephemeral scoped credentials, ledger-first architecture. He wrote it before he'd ever seen our codebase. He attacked the problem before asking for anything.",
+      },
+      { type: "h2", text: "Least privilege, applied to AI agents" },
+      {
+        type: "p",
+        text: "**Mattia: Where did that instinct come from? The proposal described our architecture almost exactly, before it existed.**",
+      },
+      {
+        type: "quote",
+        text: "It came directly from my background in Cloud Architecture and SRE. In cloud security, the foundational rule is the Principle of Least Privilege: you never grant a service excess access. You generate the minimal permissions needed to execute the task given, nothing more. When I looked at what Payle was building, I applied the exact mental model to AI. We want autonomous agents to handle transactions, but can we blindly trust non-deterministic software with unrestricted access to our money? Giving an AI agent a static card number or a permanent API key is asking for a disaster; one hallucination could drain an entire account. The only safe model is treating the agent like an untrusted cloud process and giving it the least permissions required. Pairing that with an append-only ledger was the natural counterpart: every permission granted and every cent moved must be permanently recorded in an immutable trail.",
+      },
+      {
+        type: "p",
+        text: "This is the paragraph I read three times before offering him the role. He arrived at the core principle behind [the money layer for AI agents](/thoughts/money-layer-for-ai-agents/), capabilities instead of credentials and a record of everything, from a completely different discipline. Cloud security and agent payments converging on the same answer is either a coincidence or a sign the answer is right. We bet on the second.",
+      },
+      { type: "h2", text: "I told no one" },
+      {
+        type: "p",
+        text: "**Mattia: You were 21 when you joined. What did the people around you say when you told them you were going full-time on a startup founded by someone you'd met on the internet?**",
+      },
+      {
+        type: "quote",
+        text: "I told no one. In tech, especially on social media, people love to celebrate announcements and titles before they've written a single line of production code. I didn't want premature congratulations or outside noise. I believe in execution first. I wanted 100% of my focus on the architecture and shipping real value alongside the team. My mindset is simple: keep your head down, build the system, and let the code do the talking.",
+      },
+      {
+        type: "p",
+        text: "\"I told no one, let the code do the talking\" is a level of discipline I didn't expect from a 21-year-old. Most people his age announce the title first. He announced nothing until the code existed.",
+      },
+      { type: "h2", text: "M-Pesa: where money taught him security" },
+      {
+        type: "p",
+        text: "**Mattia: Your M-Pesa gateway started because API keys were leaking on the frontend. Tell that story properly.**",
+      },
+      {
+        type: "quote",
+        text: "I initially built it to understand how Daraja works under the hood, but I soon realized that client-to-payment integrations are broken by design. You can't handle money safely on a frontend. You need a backend to verify request authenticity, absorb duplicate callback bursts, and guarantee transaction state even during network failures. I built the Go gateway as a reusable, bulletproof bridge: deploy it once, configure environment variables, and any frontend can transact securely without leaking credentials. It taught me that client applications should never touch payment rails directly. Money always demands an authoritative, isolated backend.",
+      },
+      {
+        type: "p",
+        text: "For context: M-Pesa is the payment system that proved to the world money doesn't need bank branches; it can live as programmatic software. Alex cut his teeth building secure infrastructure on top of it. When he talks about money needing an \"authoritative, isolated backend,\" he's not repeating a tutorial. He's describing the exact gap he watched real developers fall into, which is the same class of problem as [duplicate callback bursts](/notes/idempotent-payments-for-ai-agents/) on our side.",
+      },
+      { type: "h2", text: "The honest part: the questionnaire and the gap" },
+      {
+        type: "p",
+        text: "I run hiring differently. Every candidate gets real technical questions built from my own audit findings, and I publish the method. Alex's questionnaire didn't go perfectly, and I want this post to include that, because the honesty standard on this site applies to the team too.",
+      },
+      {
+        type: "p",
+        text: "The strongest moment of the review was our money test suite. Every change to the payment path passes through it. Alex's first mission was to study it end to end, walk me through the audit fixes that produced it, and then write the test he found missing: rate limiting under burst load against a budget. Owning the money path means owning its proofs first.",
+      },
+      {
+        type: "p",
+        text: "The result of that mission will be a follow-up to this post. That's the deal we made: the next time we write about Alex, it will include the test he shipped.",
+      },
+      { type: "h2", text: "Go, and what JavaScript hides from you" },
+      {
+        type: "p",
+        text: "**Mattia: What's the most Go-specific thing you've learned here, something a JavaScript developer wouldn't naturally know?**",
+      },
+      {
+        type: "quote",
+        text: "How true multi-threaded concurrency behaves under load. In JavaScript, the single-threaded event loop hides memory safety issues from you. In Go, goroutines execute on real, concurrent OS threads across multiple CPU cores. You have to actively think about memory ownership so high-traffic bursts don't cause data corruption or crashes.",
+      },
+      {
+        type: "p",
+        text: "This is precisely why the engine is written in Go and why the questionnaire focused on races and locks. An agent fires 60 requests in 5 seconds: that's not a hypothetical, that's what agents do. In JavaScript, you hope you don't corrupt shared state. In Go, you must prove you didn't. Alex is now the person proving it.",
+      },
+      { type: "h2", text: "Relief, not resentment" },
+      {
+        type: "p",
+        text: "**Mattia: Be honest: the structure changed. Ghassen arrived as CTO while you became Head of Engineering on the core. What was it really like?**",
+      },
+      {
+        type: "quote",
+        text: "Honestly? The main feeling was relief. I'm 21, and taking on an executive CTO role involves regulatory compliance and corporate management that would pull me completely away from the code. Having Ghassen own that side lets me focus 100% on what I do best: building the core engine, the ledger, and the infrastructure. The only uneasy part was the initial surprise of a sudden structural shift, but that passed immediately once I realized it protects my time to just build. I'm sure there's still a lot to learn before taking a managerial role like a CTO. I believe in the Payle manifesto, and I'm grateful for this chance to be part of it at this early stage. The growth and networking from this team, different countries and different backgrounds, really makes me want to stay and build.",
+      },
+      {
+        type: "p",
+        text: "I'm including this answer unedited because it's the most mature response to the hardest question I ask any early team member. The title changed. The compensation didn't. And instead of ego, he saw the structure for what it is: protection of his time to build. That answer is why the path we wrote into his agreement, growth toward bigger technical ownership earned through shipped work, is one I'm confident we'll walk together. The other half of that story is [how Ghassen became my co-founder](/thoughts/finding-ghassen-the-co-founder-question-answered-in-three-weeks/).",
+      },
+      { type: "h2", text: "The principle he would defend" },
+      {
+        type: "p",
+        text: "**Mattia: Our rule is \"no LLM in the authorization path, deterministic code decides.\" A founder tells you \"AI is smart enough now, why not let it decide?\" Defend the principle.**",
+      },
+      {
+        type: "quote",
+        text: "AI is smart, but we're still in an early, experimental phase where models fundamentally hallucinate. In financial authorization, a hallucination isn't an awkward chatbot response: it's an unauthorized charge or a drained account. AI belongs at the planning layer, to figure out what an agent wants to do. But mathematical, deterministic code must guard the money.",
+      },
+      {
+        type: "p",
+        text: "One sentence in that answer is going on our docs page: AI belongs at the planning layer. Deterministic code guards the money.",
+      },
+      { type: "h2", text: "His version of the future" },
+      {
+        type: "p",
+        text: "**Mattia: Payle's bet is that one day agents pay for things everywhere and nobody thinks about it. Alex, the kid from Kenya who built an M-Pesa gateway, what does everyday money look like when your generation rebuilds it?**",
+      },
+      {
+        type: "quote",
+        text: "M-Pesa proved to the world that money doesn't need plastic cards or bank branches; it can live as programmatic software. My generation's version takes human friction out of transactions completely. Agents will negotiate, book, and pay for services autonomously in milliseconds, while humans sleep peacefully knowing that strict, programmatic policy limits set the boundaries. It's an economy where money moves seamlessly, but code guarantees safety.",
+      },
+      { type: "h2", text: "Welcome to the team, Alex" },
+      {
+        type: "p",
+        text: "Alex is now officially Founding Engineer (Core) at Payle: full-time, equity with vesting, San Francisco-bound with the team if we make the batch. He owns the authorization engine, the ledger, and the money test suite. His first shipped test, rate limiting under burst load, is coming in a follow-up post.",
+      },
+      {
+        type: "list",
+        items: [
+          "GitHub: [github.com/lxmwaniky](https://github.com/lxmwaniky)",
+          "LinkedIn: [linkedin.com/in/lxmwaniky](https://www.linkedin.com/in/lxmwaniky)",
+          "Blog: [lxmwaniky.hashnode.dev](https://lxmwaniky.hashnode.dev)",
+          "Website: [lxmwaniky.vercel.app](https://lxmwaniky.vercel.app)",
+          "X: [x.com/lxmwaniky](https://x.com/lxmwaniky)",
+        ],
+      },
+    ],
+  },
+  {
     slug: "money-layer-for-ai-agents",
     title: "The money layer for AI agents",
     category: "Thoughts",

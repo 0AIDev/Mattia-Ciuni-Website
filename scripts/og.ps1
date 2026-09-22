@@ -271,16 +271,35 @@ foreach ($a in $articles) {
   $subText = if ($Subtitle -eq "meta") { $a.Meta } else { $a.Description }
   $cta = if ($noCtaSlugs -contains $a.Slug) { "" } elseif ($a.Kind -eq "Thoughts") { "Read thought" } elseif ($a.Kind -eq "Feedback") { "Read feedback" } else { "Read note" }
 
-  # Ghassen ha un master editoriale dedicato, fornito per questa pagina:
-  # non va ricomposto con il template delle altre Thoughts.
-  if ($a.Slug -eq "finding-ghassen-the-co-founder-question-answered-in-three-weeks" -and (Test-Path (Join-Path $Root "ghassen-og.png"))) {
-    Copy-MasterCard "ghassen-og.png" $ogPath
+  # Master editoriali disegnati a mano, uno per articolo, in root.
+  #
+  # La chiave e' lo slug e il valore e' il file: i master non seguono lo slug
+  # (sono `<nome>-og.png`, come `ghassen-og.png`), quindi la corrispondenza si
+  # scrive qui una volta invece di indovinarla da una convenzione di nome che
+  # nessuno rispetta. Prima questo era un caso speciale scritto a mano dentro
+  # l'if di Ghassen: ora e' una tabella, e il prossimo ritratto della serie
+  # Founding Team si aggiunge con una riga.
+  #
+  # Un master vale per **due** file: la card social e l'immagine in pagina.
+  # La copertina pure, perche' in una card con la persona dentro il logo e' il
+  # marchio del sito, non una seconda call to action.
+  $masters = @{
+    "finding-ghassen-the-co-founder-question-answered-in-three-weeks" = "ghassen-og.png"
+    "welcoming-alex-mwaniki-founding-engineer-core" = "alex-og.png"
+  }
+  $masterFile = $masters[$a.Slug]
+  if ($masterFile -and (Test-Path (Join-Path $Root $masterFile))) {
+    Copy-MasterCard $masterFile $ogPath
   } else {
     New-ArticleCard $bgCard $a.Title $subText $ogPath 230 604 $cta
   }
 
   if ($a.Kind -ne "Feedback") {
-    New-ArticleCard $bgCover $a.Title $subText $coverPath 60 570 $cta
+    if ($masterFile -and (Test-Path (Join-Path $Root $masterFile))) {
+      Copy-MasterCard $masterFile $coverPath
+    } else {
+      New-ArticleCard $bgCover $a.Title $subText $coverPath 60 570 $cta
+    }
   }
 }
 
