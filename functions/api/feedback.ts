@@ -144,9 +144,12 @@ async function notifyMattia(
 ): Promise<"sent" | "failed" | "not_configured"> {
   if (!env.RESEND_API_KEY || !env.RESEND_FROM_EMAIL) return "not_configured";
   const to = env.FEEDBACK_NOTIFY_TO || "ceo@usepayle.com";
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
   try {
     const response = await fetch("https://api.resend.com/emails", {
       method: "POST",
+      signal: controller.signal,
       headers: {
         Authorization: `Bearer ${env.RESEND_API_KEY}`,
         "Content-Type": "application/json",
@@ -163,6 +166,8 @@ async function notifyMattia(
     return response.ok ? "sent" : "failed";
   } catch {
     return "failed";
+  } finally {
+    clearTimeout(timeout);
   }
 }
 

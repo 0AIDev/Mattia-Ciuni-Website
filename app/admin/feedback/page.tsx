@@ -261,8 +261,40 @@ export default function FeedbackAdminPage() {
 
   if (!sessionChecked) {
     return (
-      <main id="admin-feedback-page" className="mx-auto flex min-h-screen max-w-[460px] items-center px-6 py-12 font-sans">
-        <section aria-busy="true" aria-label="Checking admin session" className="h-[220px] w-full rounded-3xl border border-gray-300 bg-white p-6 sm:p-8" />
+      <main id="admin-feedback-page" className="mx-auto max-w-[760px] px-6 py-12 sm:py-20 font-sans">
+        <section aria-busy="true" aria-label="Checking admin session" className="animate-pulse">
+          <header className="flex items-start justify-between gap-6">
+            <div className="space-y-3">
+              <div className="h-9 w-56 rounded-full bg-gray-200" />
+              <div className="h-4 w-64 rounded-full bg-gray-200" />
+              <div className="h-4 w-36 rounded-full bg-gray-200" />
+            </div>
+            <div className="flex gap-2">
+              <div className="h-10 w-36 rounded-full bg-gray-200" />
+              <div className="h-10 w-20 rounded-full bg-gray-200" />
+            </div>
+          </header>
+          <div className="mt-10 grid gap-4">
+            {["w-full", "w-[92%]"].map((width) => (
+              <div key={width} className={`rounded-2xl border border-gray-200 bg-white px-5 py-5 sm:px-6 ${width}`}>
+                <div className="flex flex-wrap gap-2">
+                  <div className="h-4 w-28 rounded-full bg-gray-200" />
+                  <div className="h-4 w-36 rounded-full bg-gray-200" />
+                  <div className="h-4 w-24 rounded-full bg-gray-200" />
+                </div>
+                <div className="mt-5 space-y-2">
+                  <div className="h-4 w-full rounded-full bg-gray-200" />
+                  <div className="h-4 w-4/5 rounded-full bg-gray-200" />
+                </div>
+                <div className="mt-5 flex gap-2">
+                  <div className="h-9 w-20 rounded-full bg-gray-200" />
+                  <div className="h-9 w-20 rounded-full bg-gray-200" />
+                  <div className="h-4 w-32 self-center rounded-full bg-gray-200" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
       </main>
     );
   }
@@ -291,7 +323,10 @@ export default function FeedbackAdminPage() {
               <p className="mt-4 break-all rounded-2xl bg-gray-100 px-4 py-3 font-mono text-xs text-gray-1000">{setup.manual_key}</p>
               <form onSubmit={confirmSetup} className="mt-4 flex flex-col gap-3">
                 <label htmlFor="setup-code" className="sr-only">Authenticator code</label>
-                <input id="setup-code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="6-digit code" autoComplete="one-time-code" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 admin-code-input text-center font-sans text-base font-medium tabular-nums tracking-normal text-gray-1200 outline-none shadow-none placeholder:font-sans placeholder:font-normal focus:border-gray-1200 focus:outline-none" required />
+                <div className="relative">
+                  <input id="setup-code" aria-label="Authenticator code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} autoComplete="one-time-code" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 admin-code-input text-center font-sans text-base font-medium tabular-nums tracking-normal text-gray-1200 outline-none shadow-none focus:border-gray-1200 focus:outline-none" required />
+                  {!code ? <span aria-hidden="true" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="pointer-events-none absolute inset-0 flex items-center justify-center px-5 font-sans text-base text-gray-400">6-digit code</span> : null}
+                </div>
                 <button type="submit" disabled={loading || code.length !== 6} className="rounded-full bg-gray-1200 px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-80 disabled:opacity-50">{loading ? "Confirming" : "Enable two-factor login"}</button>
               </form>
             </>
@@ -309,7 +344,10 @@ export default function FeedbackAdminPage() {
                 <form onSubmit={login} className="mt-6 flex flex-col gap-3">
                   <div className="flex items-center justify-between gap-3 rounded-full bg-gray-100 px-4 py-2 font-sans text-xs text-gray-1000"><span>Admin token verified</span><button type="button" onClick={() => { setTokenVerified(false); setCode(""); }} className="underline underline-offset-4 hover:text-gray-1200">Change</button></div>
                   <label htmlFor="admin-code" className="sr-only">Authenticator code</label>
-                  <input id="admin-code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} placeholder="Authenticator code" autoComplete="one-time-code" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 admin-code-input text-center font-sans text-base font-medium tabular-nums tracking-normal text-gray-1200 outline-none shadow-none placeholder:font-sans placeholder:font-normal focus:border-gray-1200 focus:outline-none" required autoFocus />
+                  <div className="relative">
+                    <input id="admin-code" aria-label="Authenticator code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} autoComplete="one-time-code" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 admin-code-input text-center font-sans text-base font-medium tabular-nums tracking-normal text-gray-1200 outline-none shadow-none focus:border-gray-1200 focus:outline-none" required autoFocus />
+                    {!code ? <span aria-hidden="true" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="pointer-events-none absolute inset-0 flex items-center justify-center px-5 font-sans text-base text-gray-400">Authenticator code</span> : null}
+                  </div>
                   <button type="submit" disabled={loading || code.length !== 6} className="rounded-full bg-gray-1200 px-5 py-3 font-sans text-sm font-semibold text-white transition-opacity hover:opacity-80 disabled:opacity-50">{loading ? "Checking" : "Open queue"}</button>
                 </form>
               )}

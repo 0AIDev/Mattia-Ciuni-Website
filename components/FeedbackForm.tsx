@@ -12,8 +12,9 @@ import { FormEvent, useEffect, useRef, useState } from "react";
  */
 
 const COPY = {
+  successTitle: "Feedback received",
   success:
-    "Received. I read every submission: if it holds up, it gets published here, with your name or just an initial, your choice.",
+    "Thank you. Your feedback is now in review. If it is selected, I will publish it here with your name or just an initial, your choice.",
   genericError: "Something broke on my side. Try again in a minute.",
   rateLimited: "Too many submissions. Try again in a few minutes.",
   tooShort: "Tell me a little more about what you think.",
@@ -180,9 +181,10 @@ export function FeedbackModalButton({
               </button>
             </div>
 
-            {state === "success" ? (
-              <div role="status" aria-live="polite" className="mt-6">
-                <p className="font-serif text-lg leading-relaxed text-gray-1200">{COPY.success}</p>
+                    {state === "success" ? (
+              <div role="status" aria-live="polite" className="mt-6 rounded-2xl bg-gray-100 px-5 py-5">
+                <p className="font-sans text-sm font-semibold text-gray-1200">{COPY.successTitle}</p>
+                <p className="mt-2 font-serif text-lg leading-relaxed text-gray-1200">{COPY.success}</p>
                 <button
                   type="button"
                   onClick={close}
@@ -192,7 +194,7 @@ export function FeedbackModalButton({
                 </button>
               </div>
             ) : (
-              <form onSubmit={submit} noValidate className="mt-6 flex flex-col gap-3">
+              <form onSubmit={submit} noValidate aria-busy={state === "loading"} className="mt-6 flex flex-col gap-3">
                 {/* Honeypot: invisibile a chi legge, pieno per i bot. */}
                 <input
                   type="text"
@@ -250,7 +252,7 @@ export function FeedbackModalButton({
                     disabled={state === "loading"}
                     className="min-h-11 shrink-0 rounded-full bg-gray-1200 px-6 text-sm font-semibold text-white transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gray-1200 disabled:cursor-wait disabled:opacity-50"
                   >
-                    {state === "loading" ? "Sending" : "Send feedback"}
+                    {state === "loading" ? "Sending…" : "Send feedback"}
                   </button>
                 </div>
               </form>
