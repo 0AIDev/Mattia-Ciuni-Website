@@ -11,5 +11,14 @@
 # Occhio al limite: oltre le prime 100 regole Cloudflare le ignora senza dire
 # niente. Se un giorno servissero, quelle regole vanno in functions/_middleware.ts.
 #
+# Sitemap endpoints are files, not directory pages. Accept the common trailing-slash
+# form too, because Search Console can retain a submitted slash variant.
+/sitemap.xml/ /sitemap.xml 301
+/sitemap-home.xml/ /sitemap-home.xml 301
+/sitemap-thoughts.xml/ /sitemap-thoughts.xml 301
+/sitemap-notes.xml/ /sitemap-notes.xml 301
+/sitemap-feedback.xml/ /sitemap-feedback.xml 301
+/news-sitemap.xml/ /news-sitemap.xml 301
+
 # (Il runtime di Pages legge questo file solo nel deploy: `next dev` non lo vede,
 # per provarlo serve `npx wrangler pages dev out`.)

@@ -107,6 +107,8 @@ assert.match(analytics, /document\.addEventListener\("click", onClick/);
 // La copia nel database del sito: lotto, coda, ritentativo, e la pageview dentro
 // (è l'unica destinazione che la riceve da noi).
 assert.match(helper, /COLLECT_ENDPOINT = "\/api\/collect"/);
+assert.match(helper, /function pagesCollectorAvailable\(\)/);
+assert.match(helper, /window\.location\.port === "8787"/);
 assert.match(helper, /enqueueCollect\(event, enrichedParams\)/);
 assert.match(helper, /navigator\.sendBeacon\(COLLECT_ENDPOINT/);
 assert.match(helper, /collectQueue = \[\.\.\.batch, \.\.\.collectQueue\]/);

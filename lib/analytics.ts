@@ -168,7 +168,16 @@ function scheduleCollect(): void {
   }, COLLECT_FLUSH_MS);
 }
 
+function pagesCollectorAvailable(): boolean {
+  if (typeof window === "undefined") return false;
+  const localHost = window.location.hostname === "localhost" || window.location.hostname === "127.0.0.1";
+  // `next dev` serves only the static UI. Pages Functions are available in the
+  // local Cloudflare runtime (`npm run dev:pages`, port 8787) and in production.
+  return !localHost || window.location.port === "8787";
+}
+
 function enqueueCollect(event: string, params: Record<string, unknown>): void {
+  if (!pagesCollectorAvailable()) return;
   const here = currentPath();
   // Lo stesso filtro di Umami va bene anche qui: valori semplici, e le due chiavi
   // della pagina fuori dai dati, perché la pagina la manda l'involucro e il server
@@ -194,7 +203,7 @@ function enqueueCollect(event: string, params: Record<string, unknown>): void {
  * silenziosa è esattamente quello che questa copia esiste per evitare.
  */
 export function flushCollect(beacon = false): void {
-  if (typeof window === "undefined") return;
+  if (!pagesCollectorAvailable()) return;
   if (collectTimer !== null) {
     clearTimeout(collectTimer);
     collectTimer = null;

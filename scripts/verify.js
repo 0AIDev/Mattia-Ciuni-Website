@@ -803,7 +803,7 @@ const storageKeys = [
     ]
       .map((file) => readFileSync(path.join(__dirname, "..", file), "utf8"))
       .join("\n")
-      .match(/mattia-ciuni-[a-z-]+/g) || [],
+      .match(/mattia-ciuni-[a-z0-9-]+/g) || [],
   ),
 ];
 const terms = read("terms/index.html");

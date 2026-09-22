@@ -14,7 +14,7 @@ import { FeedbackModalButton } from "@/components/FeedbackForm";
  * riquadro tondo; l'autore in testa con il suo GitHub quando lo rivendica.
  */
 const pageTitle = "Feedback on Payle | Mattia Ciuni";
-const card = socialImages("/og.png", "Feedback | Mattia Ciuni");
+const card = socialImages("/feedback/og.png", "Feedback on Payle | Mattia Ciuni");
 
 export const metadata: Metadata = {
   title: "Feedback on Payle",

@@ -127,8 +127,12 @@ const sections: LegalSection[] = [
               body: "legacy first-touch key from the previous implementation. It is no longer written and disappears when site data is cleared.",
             },
             {
-              name: "mattia-ciuni-traffic-source-sent",
+              name: "mattia-ciuni-traffic-source-sent-v2",
               body: "a session value that stops the same source event from being counted twice while you browse. Deleted when you close the tab.",
+            },
+            {
+              name: "mattia-ciuni-page-view-sent-v2",
+              body: "a session value that prevents duplicate page-view events during one visit. Deleted when you close the tab.",
             },
           ]}
         />
