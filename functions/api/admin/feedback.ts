@@ -133,9 +133,15 @@ const localFeedback: Store = {
 };
 
 function withLocalStore(env: Env): Env {
+  // The Cloudflare KV binding is authoritative for the review queue and its
+  // authentication state. Supabase is an analytics/data fallback elsewhere in
+  // the app, but must never silently replace an existing KV binding: doing so
+  // makes an already-configured TOTP secret and session cookie look missing as
+  // soon as SUPABASE_* variables are added to production, resulting in 401s.
+  if (env.FEEDBACK) return env;
   const remote = supabaseKv(env);
   if (remote) return { ...env, FEEDBACK: remote };
-  return env.FEEDBACK || env.LOCAL_ADMIN === "1" ? { ...env, FEEDBACK: env.FEEDBACK || localFeedback } : env;
+  return env.LOCAL_ADMIN === "1" ? { ...env, FEEDBACK: localFeedback } : env;
 }
 // Il nome usato prima dell'audit del 21/09, quando il cookie conteneva il token.
 // Si cancella al login per non lasciare in giro una copia del segreto.
