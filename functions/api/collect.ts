@@ -44,9 +44,18 @@ const EVENTS = new Set([
   "page_view",
   "page_leave",
   "traffic_source",
+  "navigation_click",
   "cta_click",
   "outbound_click",
+  "social_click",
+  "email_click",
+  "copy_link",
   "scroll_depth",
+  "form_start",
+  "form_field_interaction",
+  "form_submit",
+  "form_success",
+  "form_error",
   "newsletter_signup",
   "newsletter_already_subscribed",
   "newsletter_error",
@@ -55,6 +64,7 @@ const EVENTS = new Set([
   "feedback_error",
   "carousel_step",
   "media_play",
+  "media_progress",
   "media_complete",
 ]);
 
@@ -193,6 +203,21 @@ function sanitizeData(value: unknown): Record<string, unknown> {
   return out;
 }
 
+const ATTRIBUTION_KEYS = [
+  "source", "medium", "campaign", "content", "term", "campaign_id", "landing_page", "referrer_domain",
+  "gclid", "gbraid", "wbraid", "fbclid", "msclkid", "ttclid", "li_fat_id",
+] as const;
+
+function attribution(value: unknown): Record<string, string> {
+  if (!value || typeof value !== "object" || Array.isArray(value)) return {};
+  const input = value as Record<string, unknown>;
+  const out: Record<string, string> = {};
+  for (const key of ATTRIBUTION_KEYS) {
+    if (typeof input[key] === "string" && input[key].length <= MAX_STRING) out[key] = input[key].slice(0, MAX_STRING);
+  }
+  return out;
+}
+
 function pagePath(value: unknown): string {
   if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return "/";
   return value.slice(0, 300);
@@ -278,7 +303,11 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
       skipped += 1;
       continue;
     }
-    const data = sanitizeData(item.data);
+    const rawData = item.data;
+    const data = sanitizeData(rawData);
+    const current = attribution(rawData && typeof rawData === "object" && !Array.isArray(rawData) ? (rawData as Record<string, unknown>).attribution : null);
+    const first = attribution(rawData && typeof rawData === "object" && !Array.isArray(rawData) ? (rawData as Record<string, unknown>).first_touch : null);
+    const last = attribution(rawData && typeof rawData === "object" && !Array.isArray(rawData) ? (rawData as Record<string, unknown>).last_touch : null);
     rows.push({
       occurred_at: occurredAt(item.at, now),
       event: name,
@@ -288,8 +317,17 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
       next_page: typeof data.next_page === "string" ? data.next_page.slice(0, 300) : "",
       country,
       device,
-      referrer_domain: referrer,
+      referrer_domain: current.referrer_domain || referrer,
       visitor_day: visitor,
+      source: current.source || "direct",
+      medium: current.medium || "none",
+      campaign: current.campaign || "(not set)",
+      content: current.content || "(not set)",
+      term: current.term || "(not set)",
+      campaign_id: current.campaign_id || "(not set)",
+      landing_page: current.landing_page || pagePath(item.path),
+      first_touch: first,
+      last_touch: last || current,
       params: data,
     });
   }

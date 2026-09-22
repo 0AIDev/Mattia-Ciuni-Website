@@ -35,6 +35,8 @@
  * cambia ogni giorno e non viene mai salvato.
  */
 
+import { currentAttribution } from "@/lib/attribution";
+
 export type Gtag = (...args: unknown[]) => void;
 
 /**
@@ -171,7 +173,11 @@ function enqueueCollect(event: string, params: Record<string, unknown>): void {
   // Lo stesso filtro di Umami va bene anche qui: valori semplici, e le due chiavi
   // della pagina fuori dai dati, perché la pagina la manda l'involucro e il server
   // ricostruisce il percorso da sé.
-  collectQueue.push({ event, at: new Date().toISOString(), path: here.pathname, kind: here.kind, data: forUmami(params) });
+  const collectData: Record<string, unknown> = { ...forUmami(params) };
+  for (const key of ["attribution", "first_touch", "last_touch"]) {
+    if (params[key] && typeof params[key] === "object" && !Array.isArray(params[key])) collectData[key] = params[key];
+  }
+  collectQueue.push({ event, at: new Date().toISOString(), path: here.pathname, kind: here.kind, data: collectData });
   if (collectQueue.length > COLLECT_MAX_QUEUE) {
     collectQueue = collectQueue.slice(-COLLECT_MAX_QUEUE);
   }
@@ -238,10 +244,22 @@ export function flushCollect(beacon = false): void {
  */
 export function track(event: string, params: Record<string, unknown> = {}): void {
   if (typeof window === "undefined") return;
-  window.gtag?.("event", event, params);
-  enqueueCollect(event, params);
+  const attribution = currentAttribution();
+  const enrichedParams = {
+    ...params,
+    attribution: attribution.last,
+    first_touch: attribution.first,
+    last_touch: attribution.last,
+  };
+  const cleanParams = forUmami(enrichedParams);
+  // Contratto per GTM futuro: evento e proprietà piatte, senza email, messaggi,
+  // token o valori annidati. Il dataLayer non carica alcun vendor da solo.
+  window.dataLayer = window.dataLayer || [];
+  window.dataLayer.push({ event, ...cleanParams, content_kind: cleanParams.content_kind || currentPath().kind });
+  window.gtag?.("event", event, forUmami(enrichedParams));
+  enqueueCollect(event, enrichedParams);
   if (event === "page_view") return;
-  window.umami?.track(event, forUmami(params));
+  window.umami?.track(event, cleanParams);
 }
 
 /** La pagina corrente, per marcare gli eventi con la loro origine. */

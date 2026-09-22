@@ -65,7 +65,13 @@ function event(overrides = {}) {
     at: new Date().toISOString(),
     path: "/notes/",
     kind: "notes",
-    data: { content_kind: "notes", from_path: "/" },
+    data: {
+      content_kind: "notes",
+      from_path: "/",
+      attribution: { source: "meta", medium: "paid_social", campaign: "launch", campaign_id: "c123", landing_page: "/notes/", referrer_domain: "instagram.com" },
+      first_touch: { source: "google", medium: "organic_search", landing_page: "/" },
+      last_touch: { source: "meta", medium: "paid_social", campaign: "launch", landing_page: "/notes/" },
+    },
     ...overrides,
   };
 }
@@ -177,6 +183,10 @@ function rowsOf(calls) {
       !serialized.includes(IP) &&
       !serialized.includes("iPhone") &&
       !serialized.includes("Mozilla"),
+  );
+  check(
+    "campaign attribution is lifted into queryable columns",
+    rows[0].source === "meta" && rows[0].medium === "paid_social" && rows[0].campaign_id === "c123" && rows[0].first_touch.source === "google" && rows[0].last_touch.source === "meta",
   );
   check(
     "the device is reduced to one word and the country to a code",

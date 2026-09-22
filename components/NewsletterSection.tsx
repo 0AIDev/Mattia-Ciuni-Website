@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useState, useSyncExternalStore } from "react";
+import { FormEvent, useRef, useState, useSyncExternalStore } from "react";
 import { track } from "@/lib/analytics";
 
 const COPY = {
@@ -42,6 +42,14 @@ export function NewsletterSection({ variant = "section" }: { variant?: "section"
   // Senza questo parametro i due punti di iscrizione si sommano in un numero
   // solo che non dice quale dei due funziona.
   const formLocation = isCard ? "link_card" : "section";
+  const interactedFields = useRef(new Set<string>());
+
+  function fieldFocus(field: string) {
+    if (interactedFields.current.has(field)) return;
+    interactedFields.current.add(field);
+    track("form_field_interaction", { form_id: "newsletter", field, form_location: formLocation });
+    track("form_start", { form_id: "newsletter", form_location: formLocation });
+  }
 
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -49,12 +57,14 @@ export function NewsletterSection({ variant = "section" }: { variant?: "section"
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(normalized)) {
       setState("error");
       setError("That email doesn't look right.");
+      track("form_error", { form_id: "newsletter", reason: "invalid_email", form_location: formLocation });
       track("newsletter_error", { reason: "invalid_email", form_location: formLocation });
       return;
     }
 
     setState("loading");
     setError("");
+    track("form_submit", { form_id: "newsletter", form_location: formLocation });
     try {
       const params = new URLSearchParams(window.location.search);
       const referrer = document.referrer;
@@ -89,6 +99,7 @@ export function NewsletterSection({ variant = "section" }: { variant?: "section"
       if (response.ok) {
         window.localStorage.setItem(SUBSCRIBED_KEY, "1");
         setState("success");
+        track("form_success", { form_id: "newsletter", form_location: formLocation });
         // Conversione vera, non un page view: sapere quante persone arrivano
         // dal traffico invece di quante si iscrivono sono due numeri diversi.
         track("newsletter_signup", {
@@ -104,11 +115,13 @@ export function NewsletterSection({ variant = "section" }: { variant?: "section"
       } else {
         setState("error");
         setError(result.code === "rate_limited" ? "Too many attempts. Try again in a minute." : COPY.genericError);
+        track("form_error", { form_id: "newsletter", reason: result.code || "server", form_location: formLocation });
         track("newsletter_error", { reason: result.code || "server", form_location: formLocation });
       }
     } catch {
       setState("error");
       setError(COPY.genericError);
+      track("form_error", { form_id: "newsletter", reason: "network", form_location: formLocation });
       track("newsletter_error", { reason: "network", form_location: formLocation });
     }
   }
@@ -123,6 +136,7 @@ export function NewsletterSection({ variant = "section" }: { variant?: "section"
   const form = (
     <form
       onSubmit={submit}
+      onFocus={(event) => fieldFocus((event.target as unknown as HTMLInputElement).name || "email")}
       className="mt-3 box-border grid w-full min-w-0 grid-cols-[minmax(0,1fr)_auto] items-center gap-1 overflow-hidden rounded-full border border-gray-400 p-1 transition-colors focus-within:border-gray-1200 focus-within:ring-2 focus-within:ring-gray-1200/15 sm:gap-2"
       noValidate
     >

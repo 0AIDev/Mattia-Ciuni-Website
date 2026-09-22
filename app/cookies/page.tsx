@@ -115,8 +115,16 @@ const sections: LegalSection[] = [
               body: "Google Analytics cookies, set by Google, used to tell a returning visit from a new one and to group one visit together. Up to 13 months.",
             },
             {
+              name: "mattia-ciuni-attribution-session-v2",
+              body: "the current, first and last campaign snapshot for this tab: normalized source, medium, campaign, content, term, campaign ID, landing path, referrer domain and supported click IDs. Session storage, deleted with the tab.",
+            },
+            {
+              name: "mattia-ciuni-first-touch-v2 / mattia-ciuni-last-touch-v2",
+              body: "first and last campaign snapshots. The first-touch persistent copy is created only after Google Analytics consent; the session copy exists for the anonymous first-party measurement. No raw query string is stored.",
+            },
+            {
               name: "mattia-ciuni-first-touch",
-              body: "the source, medium, campaign and landing page of your first visit to this site, kept locally so a later visit is attributed to the right place instead of being counted as direct. No expiry.",
+              body: "legacy first-touch key from the previous implementation. It is no longer written and disappears when site data is cleared.",
             },
             {
               name: "mattia-ciuni-traffic-source-sent",
@@ -174,7 +182,7 @@ const sections: LegalSection[] = [
         a signature of your browser, and returns nothing to your device. The copy of the measurement in my own database
         is not in those lists either, and for the same reason: the page sends it on its way out and nothing is written
         here or read back. Everything else runs on this site&apos;s own domain or on Cloudflare, which serves the pages.
-        There are no pixels, no social embeds, no advertising identifiers. What each provider does with the data is
+        There are no pixels, no social embeds, no advertising identifiers.          What each provider does with the data is
         described in the{" "}
         <Link href="/privacy/" className="article-underline">
           Privacy Policy

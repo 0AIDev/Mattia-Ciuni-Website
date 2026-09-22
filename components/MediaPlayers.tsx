@@ -86,18 +86,30 @@ function useMediaState<T extends MediaElement>(media: React.RefObject<T | null>,
   const [current, setCurrent] = useState(0);
   const [duration, setDuration] = useState(0);
   const [muted, setMuted] = useState(false);
+  const progressMarks = useRef(new Set<number>());
 
   useEffect(() => {
     const element = media.current;
     if (!element) return;
     const onLoaded = () => setDuration(element.duration || 0);
-    const onTime = () => setCurrent(element.currentTime);
+    const onTime = () => {
+      setCurrent(element.currentTime);
+      if (!element.duration || !Number.isFinite(element.duration)) return;
+      const percent = Math.floor((element.currentTime / element.duration) * 100);
+      for (const mark of [25, 50, 75]) {
+        if (percent >= mark && !progressMarks.current.has(mark)) {
+          progressMarks.current.add(mark);
+          track("media_progress", { media_kind: mediaKind, media_title: title, percent });
+        }
+      }
+    };
     const onPlay = () => {
       setPlaying(true);
       track("media_play", { media_kind: mediaKind, media_title: title });
     };
     const onPause = () => setPlaying(false);
     const onEnded = () => {
+      progressMarks.current.clear();
       setPlaying(false);
       setCurrent(0);
       track("media_complete", { media_kind: mediaKind, media_title: title });

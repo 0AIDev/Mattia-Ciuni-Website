@@ -188,6 +188,20 @@ const sections: LegalSection[] = [
           personal, nothing is sold, and no measurement is linked to an identity.
         </p>
         <p>
+          Campaign attribution follows a strict first-touch and last-touch rule. The first meaningful source is never
+          overwritten; a later meaningful campaign updates only last touch. The site records normalized source, medium,
+          campaign, content, term, campaign ID, landing pathname, referrer domain and supported click IDs such as
+          gclid and fbclid. Query strings are not stored wholesale, and no personal data is put into event parameters.
+          A session copy is kept in session storage for the anonymous first-party measurement. The persistent first-touch
+          copy is created only after Google Analytics consent.
+        </p>
+        <p>
+          The same events are exposed as a flat, vendor-neutral data layer for a future tag manager. It contains event
+          names and operational values such as page type, CTA, form, destination and scroll percentage. It never contains
+          names, email addresses, messages, tokens or raw query strings. The active real conversions are newsletter signup
+          and feedback submitted. There is no customer, revenue or advertising conversion in this site yet.
+        </p>
+        <p>
           The purpose is editorial for both: knowing which pages are read, which are abandoned halfway, where people
           arrive from and where they leave tells me what to keep writing and what to fix, which is the whole point of a
           site like this one. Neither tool is used for advertising, profiling or decisions about you, and neither is

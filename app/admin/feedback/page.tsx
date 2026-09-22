@@ -26,6 +26,26 @@ type ApiError = { code?: string; setup_required?: boolean };
 type AdminRole = "ceo" | "cofounder";
 type AdminIdentity = { name: string; role: string; title: string };
 
+type AnalyticsRow = Record<string, unknown>;
+type AnalyticsData = {
+  daily: AnalyticsRow[];
+  pages: AnalyticsRow[];
+  flow: AnalyticsRow[];
+  acquisition: AnalyticsRow[];
+  conversions: AnalyticsRow[];
+  available: boolean;
+};
+
+function metric(value: unknown, suffix = "") {
+  if (value === null || value === undefined || value === "") return "—";
+  const number = typeof value === "number" ? value : Number(value);
+  return Number.isFinite(number) ? `${number}${suffix}` : String(value);
+}
+
+function dateLabel(value: unknown) {
+  return typeof value === "string" ? value.slice(0, 10) : "—";
+}
+
 const IDENTITIES: Record<AdminRole, AdminIdentity> = {
   ceo: { name: "Mattia Ciuni", role: "Chief Executive Officer", title: "CEO" },
   cofounder: { name: "Ghassen", role: "Co-Founder & CTO", title: "Co-founder" },
@@ -39,6 +59,7 @@ export default function FeedbackAdminPage() {
   const [setup, setSetup] = useState<Setup | null>(null);
   const [mode, setMode] = useState<"loading" | "setup" | "login">("loading");
   const [records, setRecords] = useState<FeedbackRecord[]>([]);
+  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
@@ -62,13 +83,15 @@ export default function FeedbackAdminPage() {
         setAuthenticated(false);
         setIdentity(null);
         setRecords([]);
+        setAnalytics(null);
         setMode(data.setup_required ? "setup" : "login");
         if (!quiet && !data.setup_required) setError("The token or authenticator code is not valid.");
         return;
       }
       if (!response.ok) throw new Error(localApiMessage(response));
-      const data = (await response.json()) as { records?: FeedbackRecord[]; role?: AdminRole };
+      const data = (await response.json()) as { records?: FeedbackRecord[]; role?: AdminRole; analytics?: AnalyticsData };
       setRecords(data.records || []);
+      setAnalytics(data.analytics || null);
       setIdentity(IDENTITIES[data.role === "cofounder" ? "cofounder" : "ceo"]);
       setAuthenticated(true);
       setMode("login");
@@ -215,6 +238,7 @@ export default function FeedbackAdminPage() {
       setCode("");
       setTokenVerified(false);
       setRecords([]);
+      setAnalytics(null);
       setAuthenticated(false);
       setIdentity(null);
       setMode("login");
@@ -375,6 +399,73 @@ export default function FeedbackAdminPage() {
         </div>
       </header>
       {error ? <p role="alert" className="mt-5 text-sm text-gray-1000">{error}</p> : null}
+
+      <section aria-labelledby="analytics-heading" className="mt-10">
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <div>
+            <h2 id="analytics-heading" className="font-serif text-2xl text-gray-1200">Site analytics</h2>
+            <p className="mt-1 text-xs text-gray-1000">Anonymous copies from Supabase. No IP addresses or user agents.</p>
+          </div>
+          {analytics?.available ? <span className="text-xs text-gray-1000">Updated when this page loads</span> : null}
+        </div>
+        {!analytics?.available ? (
+          <p className="mt-4 rounded-2xl border border-gray-300 px-5 py-4 text-sm text-gray-1000">Analytics views are unavailable. Run the analytics migration or check the Supabase connection.</p>
+        ) : (
+          <div className="mt-4 grid gap-3 lg:grid-cols-3">
+            <div className="min-w-0 rounded-2xl border border-gray-300 p-4">
+              <h3 className="text-sm font-semibold text-gray-1200">Daily</h3>
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full min-w-[300px] text-left text-xs">
+                  <thead className="text-gray-1000"><tr><th className="pb-2 pr-3 font-medium">Day</th><th className="pb-2 pr-3 font-medium">Event</th><th className="pb-2 pr-3 font-medium">Events</th><th className="pb-2 font-medium">Visitors</th></tr></thead>
+                  <tbody>{analytics.daily.slice(0, 8).map((row, index) => <tr key={`${String(row.day)}-${String(row.event)}-${index}`} className="border-t border-gray-200"><td className="py-2 pr-3 whitespace-nowrap">{dateLabel(row.day)}</td><td className="py-2 pr-3">{String(row.event ?? "—")}</td><td className="py-2 pr-3">{metric(row.events)}</td><td className="py-2">{metric(row.visitors)}</td></tr>)}</tbody>
+                </table>
+                {!analytics.daily.length ? <p className="text-xs text-gray-1000">No daily data yet.</p> : null}
+              </div>
+            </div>
+            <div className="min-w-0 rounded-2xl border border-gray-300 p-4">
+              <h3 className="text-sm font-semibold text-gray-1200">Pages</h3>
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full min-w-[320px] text-left text-xs">
+                  <thead className="text-gray-1000"><tr><th className="pb-2 pr-3 font-medium">Page</th><th className="pb-2 pr-3 font-medium">Views</th><th className="pb-2 pr-3 font-medium">Time</th><th className="pb-2 font-medium">Scroll</th></tr></thead>
+                  <tbody>{analytics.pages.slice(0, 8).map((row, index) => <tr key={`${String(row.page_path)}-${index}`} className="border-t border-gray-200"><td className="max-w-[150px] truncate py-2 pr-3" title={String(row.page_path ?? "")}>{String(row.page_path ?? "—")}</td><td className="py-2 pr-3">{metric(row.views)}</td><td className="py-2 pr-3">{metric(row.avg_seconds, "s")}</td><td className="py-2">{metric(row.avg_scroll_percent, "%")}</td></tr>)}</tbody>
+                </table>
+                {!analytics.pages.length ? <p className="text-xs text-gray-1000">No page data yet.</p> : null}
+              </div>
+            </div>
+            <div className="min-w-0 rounded-2xl border border-gray-300 p-4">
+              <h3 className="text-sm font-semibold text-gray-1200">Flow</h3>
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full min-w-[300px] text-left text-xs">
+                  <thead className="text-gray-1000"><tr><th className="pb-2 pr-3 font-medium">From</th><th className="pb-2 pr-3 font-medium">To</th><th className="pb-2 pr-3 font-medium">Moves</th><th className="pb-2 font-medium">Time</th></tr></thead>
+                  <tbody>{analytics.flow.slice(0, 8).map((row, index) => <tr key={`${String(row.from_path)}-${String(row.next_page)}-${index}`} className="border-t border-gray-200"><td className="max-w-[110px] truncate py-2 pr-3" title={String(row.from_path ?? "")}>{String(row.from_path ?? "—")}</td><td className="max-w-[110px] truncate py-2 pr-3" title={String(row.next_page ?? "")}>{String(row.next_page ?? "—")}</td><td className="py-2 pr-3">{metric(row.moves)}</td><td className="py-2">{metric(row.avg_seconds_before_leaving, "s")}</td></tr>)}</tbody>
+                </table>
+                {!analytics.flow.length ? <p className="text-xs text-gray-1000">No flow data yet.</p> : null}
+              </div>
+            </div>
+            <div className="min-w-0 rounded-2xl border border-gray-300 p-4">
+              <h3 className="text-sm font-semibold text-gray-1200">Acquisition</h3>
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full min-w-[360px] text-left text-xs">
+                  <thead className="text-gray-1000"><tr><th className="pb-2 pr-3 font-medium">Source / medium</th><th className="pb-2 pr-3 font-medium">Campaign</th><th className="pb-2 pr-3 font-medium">Visitors</th><th className="pb-2 font-medium">Conv.</th></tr></thead>
+                  <tbody>{analytics.acquisition.slice(0, 8).map((row, index) => <tr key={`${String(row.source)}-${String(row.campaign)}-${index}`} className="border-t border-gray-200"><td className="max-w-[150px] truncate py-2 pr-3" title={`${String(row.source ?? "")} / ${String(row.medium ?? "")}`}>{String(row.source ?? "—")} / {String(row.medium ?? "—")}</td><td className="max-w-[130px] truncate py-2 pr-3" title={String(row.campaign ?? "")}>{String(row.campaign ?? "—")}</td><td className="py-2 pr-3">{metric(row.visitors)}</td><td className="py-2">{metric(row.conversions)}</td></tr>)}</tbody>
+                </table>
+                {!analytics.acquisition.length ? <p className="text-xs text-gray-1000">No acquisition data yet.</p> : null}
+              </div>
+            </div>
+            <div className="min-w-0 rounded-2xl border border-gray-300 p-4">
+              <h3 className="text-sm font-semibold text-gray-1200">Conversions</h3>
+              <div className="mt-3 overflow-x-auto">
+                <table className="w-full min-w-[360px] text-left text-xs">
+                  <thead className="text-gray-1000"><tr><th className="pb-2 pr-3 font-medium">Event</th><th className="pb-2 pr-3 font-medium">Page</th><th className="pb-2 pr-3 font-medium">Source</th><th className="pb-2 font-medium">Campaign</th></tr></thead>
+                  <tbody>{analytics.conversions.slice(0, 8).map((row, index) => <tr key={`${String(row.occurred_at)}-${index}`} className="border-t border-gray-200"><td className="py-2 pr-3 whitespace-nowrap">{String(row.conversion ?? "—")}</td><td className="max-w-[110px] truncate py-2 pr-3" title={String(row.page_path ?? "")}>{String(row.page_path ?? "—")}</td><td className="py-2 pr-3">{String(row.source ?? "—")}</td><td className="max-w-[110px] truncate py-2" title={String(row.campaign ?? "")}>{String(row.campaign ?? "—")}</td></tr>)}</tbody>
+                </table>
+                {!analytics.conversions.length ? <p className="text-xs text-gray-1000">No conversions yet.</p> : null}
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+
       <div className="mt-10 grid gap-4">
         {!records.length ? <p className="rounded-2xl border border-gray-300 px-5 py-6 text-gray-1000">The queue is empty.</p> : null}
         {records.map((record) => (

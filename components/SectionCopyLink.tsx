@@ -5,6 +5,7 @@ import { Check } from "./icons";
 import { LinkIcon } from "@/components/ui/link";
 import { copyText, sectionUrl } from "@/lib/copy";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics";
 
 // Comportamento di default sugli heading: compare in hover sull'H2 (o al focus).
 const DEFAULT_CLASS =
@@ -27,6 +28,7 @@ export default function SectionCopyLink({
   async function copy() {
     await copyText(sectionUrl(anchor));
     setCopied(true);
+    track("copy_link", { copy_kind: "section", section: label, content_kind: "other" });
     window.setTimeout(() => setCopied(false), 1600);
   }
 

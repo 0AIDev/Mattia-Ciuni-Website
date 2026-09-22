@@ -139,9 +139,9 @@ export default function Page() {
         />
         <div className="relative flex flex-col items-center text-center">
           {/* Il nome sta **dentro** la figura, appoggiato al bordo basso: cade
-              dove la maschera ha già sciolto il ritaglio nel fondo chiaro della
-              pagina, quindi è nero e si legge. La sfumatura è sull'immagine e non
-              sul testo, altrimenti anche il nome si spegnerebbe sul fondo. */}
+              sul maglione scuro e resta bianco. Il ritaglio elimina la vecchia
+              scritta incorporata nel master, così il titolo esiste una sola volta
+              come testo HTML accessibile. */}
           <div className="relative">
             <Image
               src="/mattia-cutout.webp"
@@ -152,7 +152,7 @@ export default function Page() {
               sizes="560px"
               className="link-hero-cutout h-[240px] w-auto select-none sm:h-[280px]"
             />
-            <h1 className="absolute inset-x-0 bottom-0 font-serif text-[30px] font-semibold leading-none text-gray-1200 sm:text-4xl">
+            <h1 className="absolute inset-x-0 bottom-0 font-serif text-[30px] font-semibold leading-none text-white sm:text-4xl">
               Mattia Ciuni
             </h1>
           </div>

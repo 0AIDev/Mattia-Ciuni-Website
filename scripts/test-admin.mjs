@@ -106,6 +106,7 @@ let secret;
   const queueResponse = await onRequestGet({ request: request({ cookie: session }), env: configuredEnv });
   const queueData = await queueResponse.json();
   check("session opens queue without returning token or secret", queueResponse.status === 200 && queueData.role === "ceo");
+  check("queue response includes an unavailable-safe analytics payload", queueResponse.status === 200 && queueData.analytics?.available === false && Array.isArray(queueData.analytics?.daily) && Array.isArray(queueData.analytics?.pages) && Array.isArray(queueData.analytics?.flow) && Array.isArray(queueData.analytics?.acquisition) && Array.isArray(queueData.analytics?.conversions));
   const cofounderCode = await totpCode(secret);
   const cofounderLogin = await onRequestPost({ request: request({ method: "POST", body: { action: "login", token: COFOUNDER_TOKEN, code: cofounderCode } }), env: configuredEnv });
   const cofounderSession = sessionCookie(cofounderLogin);

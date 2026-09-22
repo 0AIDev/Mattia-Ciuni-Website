@@ -24,9 +24,9 @@ This directory contains the database schema for the personal site.
    - `email_delivery_events`
    - `private_kv` (from the second migration, for the temporary KV compatibility layer)
    - `analytics_events` (from the third migration, the site-owned copy of the measurement)
-   - the views `analytics_daily`, `analytics_pages`, `analytics_flow`
+   - the views `analytics_daily`, `analytics_pages`, `analytics_flow`, `analytics_acquisition`, `analytics_conversions`
 
-Run all migration files in filename order. Each migration is idempotent and contains no credentials. They can be run again safely.
+Run all migration files in filename order. The fourth migration adds queryable first-touch/last-touch attribution and acquisition/conversion views. Each migration is idempotent and contains no credentials. They can be run again safely.
 
 ## The measurement copy (`analytics_events`)
 
@@ -42,7 +42,9 @@ The copy is anonymous by construction:
 discarded. `visitor_day` is that truncated hash: it counts distinct visits inside one day,
 it cannot be reversed, and it cannot link one day to the next;
 - only `country` (from Cloudflare) and a one-word `device` survive the request;
-- events and parameter names are whitelisted, values are primitives and truncated.
+- events and parameter names are whitelisted, values are primitives and truncated;
+- campaign source, medium, campaign, content, term, campaign ID and landing path are stored in dedicated columns;
+- first-touch and last-touch attribution snapshots contain only campaign fields and referrer domains, never personal data.
 
 The salt comes from `ANALYTICS_SALT` if set, otherwise from the service role key. No extra
 configuration is required. There is no retention policy: the table is never pruned, because
@@ -73,7 +75,7 @@ The anon key is not needed by the server-side Pages Functions. It must not be us
 The application should be switched in this order:
 
 1. Apply the schema.
-2. Verify the tables and constraints in Supabase.
+2. Verify the tables, attribution columns and views in Supabase.
 3. Configure `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `.dev.vars` for local Pages testing and as Production Secrets in Cloudflare Pages.
 4. Import existing KV records without deleting KV data.
 5. Enable dual-write for a verification window.

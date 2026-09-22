@@ -1,6 +1,8 @@
 // @ts-expect-error Cloudflare bundles extensionless TS imports; Node's native strip loader needs `.ts` for the offline test.
 import { newTotpSecret, otpauthUri, verifyTotp } from "../../../lib/totp.ts";
 // @ts-expect-error Pages bundles extensionless function imports; Node's offline loader needs `.ts`.
+import { supabaseConfigured, supabaseRequest } from "../../lib/supabase.ts";
+// @ts-expect-error Pages bundles extensionless function imports; Node's native strip loader needs `.ts` for the offline test.
 import { supabaseKv } from "../../lib/supabase-kv.ts";
 
 // GET/POST /api/admin/feedback — la coda di review dei feedback.
@@ -298,6 +300,47 @@ async function saveQueue(env: Env, records: FeedbackRecord[]) {
   await env.FEEDBACK.put(INDEX_KEY, records.map((record) => record.id).join("\n"));
 }
 
+type AnalyticsViews = {
+  daily: Array<Record<string, unknown>>;
+  pages: Array<Record<string, unknown>>;
+  flow: Array<Record<string, unknown>>;
+  acquisition: Array<Record<string, unknown>>;
+  conversions: Array<Record<string, unknown>>;
+  available: boolean;
+};
+
+/**
+ * Le viste sono interrogate solo dopo l'autenticazione e mai dal browser
+ * direttamente: la service role resta nella Function. Un errore di una vista
+ * non deve nascondere la coda dei feedback, quindi la dashboard può mostrare
+ * la review anche quando la migrazione analytics non è stata ancora eseguita.
+ */
+async function analyticsViews(env: Env): Promise<AnalyticsViews> {
+  const empty: AnalyticsViews = { daily: [], pages: [], flow: [], acquisition: [], conversions: [], available: false };
+  if (!supabaseConfigured(env)) return empty;
+  try {
+    const [daily, pages, flow, acquisition, conversions] = await Promise.all([
+      supabaseRequest<Array<Record<string, unknown>>>(env, "analytics_daily?select=*&order=day.desc&limit=14"),
+      supabaseRequest<Array<Record<string, unknown>>>(env, "analytics_pages?select=*&order=views.desc&limit=20"),
+      supabaseRequest<Array<Record<string, unknown>>>(env, "analytics_flow?select=*&order=moves.desc&limit=20"),
+      supabaseRequest<Array<Record<string, unknown>>>(env, "analytics_acquisition?select=*&order=conversions.desc,visitors.desc&limit=20"),
+      supabaseRequest<Array<Record<string, unknown>>>(env, "analytics_conversions?select=*&order=occurred_at.desc&limit=20"),
+    ]);
+    return {
+      daily: daily.response.ok && daily.data ? daily.data : [],
+      pages: pages.response.ok && pages.data ? pages.data : [],
+      flow: flow.response.ok && flow.data ? flow.data : [],
+      acquisition: acquisition.response.ok && acquisition.data ? acquisition.data : [],
+      conversions: conversions.response.ok && conversions.data ? conversions.data : [],
+      // Le tre viste originali tengono viva la dashboard anche durante la
+      // finestra in cui la migrazione attribution non è ancora stata applicata.
+      available: daily.response.ok && pages.response.ok && flow.response.ok,
+    };
+  } catch {
+    return empty;
+  }
+}
+
 function sessionCookies(session: string): Array<[string, string]> {
   return [
     [
@@ -330,8 +373,8 @@ export const onRequestGet = async ({ request, env: incomingEnv }: PagesContext):
     return json({ code: "unauthorized", setup_required: !(await configOf(env)) }, 401);
   }
   if (!env.FEEDBACK) return json({ code: "unavailable" }, 503);
-  const records = await queue(env);
-  return json({ records, role });
+  const [records, analytics] = await Promise.all([queue(env), analyticsViews(env)]);
+  return json({ records, role, analytics });
 };
 
 export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext): Promise<Response> => {

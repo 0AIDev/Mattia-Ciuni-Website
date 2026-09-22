@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Check } from "./icons";
 import { CopyIcon } from "@/components/ui/copy";
+import { track } from "@/lib/analytics";
 
 export default function CopyPostLink() {
   const [copied, setCopied] = useState(false);
@@ -20,6 +21,7 @@ export default function CopyPostLink() {
       document.body.removeChild(ta);
     }
     setCopied(true);
+    track("copy_link", { copy_kind: "article", content_kind: "thought" });
     window.setTimeout(() => setCopied(false), 1600);
   }
 

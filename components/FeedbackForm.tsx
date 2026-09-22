@@ -44,6 +44,14 @@ export function FeedbackModalButton({
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+  const interactedFields = useRef(new Set<string>());
+
+  function fieldFocus(field: string) {
+    if (interactedFields.current.has(field)) return;
+    interactedFields.current.add(field);
+    track("form_field_interaction", { form_id: "feedback", field, form_location: formLocation });
+    track("form_start", { form_id: "feedback", form_location: formLocation });
+  }
 
   useEffect(() => {
     if (!open) return;
@@ -112,18 +120,21 @@ export function FeedbackModalButton({
     if (trimmed.length < 20) {
       setState("error");
       setError(COPY.tooShort);
+      track("form_error", { form_id: "feedback", reason: "too_short", form_location: formLocation });
       track("feedback_error", { reason: "too_short", form_location: formLocation });
       return;
     }
     if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
       setState("error");
       setError(COPY.invalidEmail);
+      track("form_error", { form_id: "feedback", reason: "invalid_email", form_location: formLocation });
       track("feedback_error", { reason: "invalid_email", form_location: formLocation });
       return;
     }
 
     setState("loading");
     setError("");
+    track("form_submit", { form_id: "feedback", form_location: formLocation });
     try {
       const controller = new AbortController();
       const timeout = window.setTimeout(() => controller.abort(), 15000);
@@ -143,6 +154,7 @@ export function FeedbackModalButton({
       const result = (await response.json().catch(() => ({}))) as { code?: string };
       if (response.ok) {
         setState("success");
+        track("form_success", { form_id: "feedback", form_location: formLocation });
         // Il numero che conta non è quanti aprono la pagina, ma quanti
         // scrivono: senza questo evento le conversioni vere restano invisibili.
         track("feedback_submitted", {
@@ -154,6 +166,7 @@ export function FeedbackModalButton({
       } else if (response.status === 429) {
         setState("error");
         setError(COPY.rateLimited);
+        track("form_error", { form_id: "feedback", reason: "rate_limited", form_location: formLocation });
         track("feedback_error", { reason: "rate_limited", form_location: formLocation });
       } else {
         setState("error");
@@ -164,12 +177,14 @@ export function FeedbackModalButton({
               ? "The feedback could not be saved. Try again shortly."
               : COPY.genericError,
         );
+        track("form_error", { form_id: "feedback", reason: result.code || "server", form_location: formLocation });
         track("feedback_error", { reason: result.code || "server", form_location: formLocation });
       }
     } catch (caught) {
       setState("error");
       const aborted = caught instanceof DOMException && caught.name === "AbortError";
       setError(aborted ? "The request took too long. Try again." : COPY.genericError);
+      track("form_error", { form_id: "feedback", reason: aborted ? "timeout" : "network", form_location: formLocation });
       track("feedback_error", { reason: aborted ? "timeout" : "network", form_location: formLocation });
     }
   }
@@ -241,7 +256,7 @@ export function FeedbackModalButton({
                 </button>
               </div>
             ) : (
-              <form onSubmit={submit} noValidate aria-busy={state === "loading"} className="mt-6 flex flex-col gap-3">
+              <form onSubmit={submit} onFocus={(event) => fieldFocus((event.target as unknown as HTMLInputElement).name || "message")} noValidate aria-busy={state === "loading"} className="mt-6 flex flex-col gap-3">
                 {/* Honeypot: invisibile a chi legge, pieno per i bot. */}
                 <input
                   type="text"

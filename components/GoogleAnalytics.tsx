@@ -3,43 +3,10 @@
 import { useEffect, useRef, useSyncExternalStore } from "react";
 import { usePathname } from "next/navigation";
 import { contentKindOf, currentPath, flushCollect, markPageEnter, markScroll, noteNextPage, pageLeavePayload, track, type Gtag } from "@/lib/analytics";
+import { attributionParams, captureAttribution } from "@/lib/attribution";
 
 const MEASUREMENT_ID = "G-YQS0R94ZQP";
 const CONSENT_KEY = "mattia-ciuni-analytics-consent";
-
-function sourceData() {
-  const params = new URLSearchParams(window.location.search);
-  const referrer = document.referrer;
-  let source = params.get("utm_source") || "";
-  let medium = params.get("utm_medium") || "";
-  const campaign = params.get("utm_campaign") || "";
-  const content = params.get("utm_content") || "";
-  const term = params.get("utm_term") || "";
-  const clickId = ["gclid", "gbraid", "wbraid", "fbclid", "ttclid", "msclkid", "li_fat_id"].find((key) => params.has(key));
-
-  if (clickId && !medium) medium = "paid";
-  if (!source && referrer) {
-    try {
-      const host = new URL(referrer).hostname;
-      source = host.replace(/^www\./, "");
-      medium = medium || (host.includes("google.") || host.includes("bing.") ? "organic_search" : "referral");
-    } catch {
-      source = "referral";
-    }
-  }
-
-  return {
-    source: source || "direct",
-    medium: medium || "none",
-    campaign: campaign || "(not set)",
-    content: content || "(not set)",
-    term: term || "(not set)",
-    referrer_domain: referrer ? (() => {
-      try { return new URL(referrer).hostname; } catch { return ""; }
-    })() : "(none)",
-    landing_page: `${window.location.pathname}${window.location.search}`,
-  };
-}
 
 /**
  * La forma del comando conta piu' del comando.
@@ -78,48 +45,7 @@ function loadAnalytics() {
   // GA4 ignora gli IP per progetto, e in ogni evento compariva solo come
   // `ep.anonymize_ip=true`, cioe' rumore che sembra una garanzia e non lo e'.
   window.gtag("config", MEASUREMENT_ID, { send_page_view: false });
-  const attribution = sourceData();
-  const firstTouch = window.localStorage.getItem("mattia-ciuni-first-touch");
-  if (!firstTouch) {
-    window.localStorage.setItem("mattia-ciuni-first-touch", JSON.stringify({ ...attribution, date: new Date().toISOString() }));
-  }
-  const sessionKey = "mattia-ciuni-traffic-source-sent";
-  if (!window.sessionStorage.getItem(sessionKey)) {
-    window.sessionStorage.setItem(sessionKey, "1");
-    track("traffic_source", { ...attribution, first_touch: firstTouch || JSON.stringify(attribution) });
-  }
-  markPageEnter();
-  track("page_view", {
-    page_location: window.location.href,
-    page_title: document.title,
-    content_kind: contentKindOf(window.location.pathname),
-    // Prima pagina della visita: l'origine la porta `traffic_source`, quindi qui
-    // non c'è un `from_path` interno da dichiarare.
-    from_path: "(entry)",
-  });
-
-  const onClick = (event: MouseEvent) => {
-    const target = (event.target as HTMLElement).closest("a,button");
-    if (!target || !window.gtag) return;
-    const href = target instanceof HTMLAnchorElement ? target.href : "";
-    const outbound = !!href && target instanceof HTMLAnchorElement && target.origin !== window.location.origin;
-    // La destinazione la sa solo il click: la teniamo per l'evento di uscita,
-    // così `page_leave` dice anche *dove* la persona è andata via.
-    if (href) noteNextPage(href);
-    const params = {
-      link_text: (target.textContent || "").trim().slice(0, 80),
-      link_url: href || undefined,
-      link_domain: href ? (() => { try { return new URL(href).hostname.replace(/^www\./, ""); } catch { return ""; } })() : undefined,
-      content_kind: currentPath().kind,
-    };
-    // Due eventi distinti, non un evento con un flag: "ho portato qualcuno
-    // fuori dal sito" e "ho cliccato dentro il sito" si leggono in due report
-    // diversi e non vanno sommati.
-    if (outbound) track("outbound_click", { ...params, outbound: 1 });
-    else track("cta_click", params);
-  };
-  document.addEventListener("click", onClick, { passive: true });
-  return () => document.removeEventListener("click", onClick);
+  return;
 }
 
 const subscribeConsent = (onChange: () => void) => {
@@ -151,8 +77,75 @@ export function GoogleAnalytics() {
   const seenPath = useRef<string | null>(null);
 
   useEffect(() => {
-    if (consent === "accepted") loadAnalytics();
+    const allowed = consent === "accepted";
+    const params = attributionParams(allowed);
+    const captured = captureAttribution(allowed);
+    const sessionKey = "mattia-ciuni-traffic-source-sent-v2";
+    if (!window.sessionStorage.getItem(sessionKey)) {
+      window.sessionStorage.setItem(sessionKey, "1");
+      track("traffic_source", {
+        ...params,
+        first_source: captured.first.source,
+        first_medium: captured.first.medium,
+        first_campaign: captured.first.campaign,
+        first_landing_page: captured.first.landing_page,
+        last_source: captured.last.source,
+        last_medium: captured.last.medium,
+        last_campaign: captured.last.campaign,
+        last_landing_page: captured.last.landing_page,
+      });
+    }
+    if (allowed) loadAnalytics();
+    const pageView = {
+      page_location: window.location.href,
+      page_title: document.title,
+      content_kind: contentKindOf(window.location.pathname),
+      from_path: "(entry)",
+      attribution: params,
+      first_touch: captured.first,
+      last_touch: captured.last,
+    };
+    markPageEnter();
+    if (!window.sessionStorage.getItem("mattia-ciuni-page-view-sent-v2")) {
+      window.sessionStorage.setItem("mattia-ciuni-page-view-sent-v2", "1");
+      track("page_view", pageView);
+    } else if (allowed) {
+      // Il consenso può arrivare dopo il primo page view: in quel caso GA riceve
+      // la pagina senza duplicare Umami o la copia Supabase.
+      window.gtag?.("event", "page_view", pageView);
+    }
   }, [consent]);
+
+  // Una nuova URL con UTM durante una navigazione client-side aggiorna il last
+  // touch senza riscrivere il first touch.
+  useEffect(() => {
+    captureAttribution(consent === "accepted");
+  }, [pathname, consent]);
+
+  // I click sono first-party e devono essere raccolti anche quando una persona
+  // rifiuta GA: Umami e Supabase restano indipendenti dal consenso GA.
+  useEffect(() => {
+    const onClick = (event: MouseEvent) => {
+      const target = (event.target as HTMLElement).closest("a,button");
+      if (!target) return;
+      const href = target instanceof HTMLAnchorElement ? target.href : "";
+      const isAnchor = target instanceof HTMLAnchorElement;
+      const outbound = isAnchor && target.origin !== window.location.origin;
+      const isEmail = href.startsWith("mailto:");
+      const text = (isEmail ? "email" : target.textContent || "").trim().slice(0, 80);
+      const destination = isEmail ? "email" : href ? (() => { try { return new URL(href).hostname.replace(/^www\./, ""); } catch { return ""; } })() : "";
+      const ctaId = (target as HTMLElement).dataset.analyticsId || text.toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 64) || "unnamed";
+      const params = { cta_id: ctaId, cta_text: text, cta_location: target.closest("[data-analytics-location]")?.getAttribute("data-analytics-location") || currentPath().kind, destination, link_url: isEmail ? "mailto:" : href || undefined, content_kind: currentPath().kind };
+      if (href) noteNextPage(href);
+      track("navigation_click", params);
+      if (outbound) track("outbound_click", { ...params, outbound: 1 });
+      else track("cta_click", params);
+      if (isEmail) track("email_click", { cta_id: ctaId, destination: "email", content_kind: currentPath().kind });
+      if (/github\.com|linkedin\.com|x\.com|instagram\.com|crunchbase\.com/i.test(destination)) track("social_click", { cta_id: ctaId, destination, content_kind: currentPath().kind });
+    };
+    document.addEventListener("click", onClick, { passive: true });
+    return () => document.removeEventListener("click", onClick);
+  }, []);
 
   // Nessuna guardia sul consenso: se Analytics non è caricato, `track()` non
   // trova `window.gtag` e scarta l'evento da sé, mentre Umami (che è sempre in

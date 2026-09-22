@@ -28,9 +28,18 @@ const EVENTI = [
   "page_view",
   "page_leave",
   "traffic_source",
+  "navigation_click",
   "cta_click",
   "outbound_click",
+  "social_click",
+  "email_click",
+  "copy_link",
   "scroll_depth",
+  "form_start",
+  "form_field_interaction",
+  "form_submit",
+  "form_success",
+  "form_error",
   "newsletter_signup",
   "newsletter_already_subscribed",
   "newsletter_error",
@@ -39,6 +48,7 @@ const EVENTI = [
   "feedback_error",
   "carousel_step",
   "media_play",
+  "media_progress",
   "media_complete",
 ];
 
@@ -51,10 +61,12 @@ const newsletter = read("components/NewsletterSection.tsx");
 const feedback = read("components/FeedbackForm.tsx");
 const carousel = read("components/NotesCarousel.tsx");
 const media = read("components/MediaPlayers.tsx");
+const copyLink = read("components/CopyPostLink.tsx");
+const copyEmail = read("components/CopyEmail.tsx");
 
 // La guardia: senza consenso `window.gtag` non esiste e l'evento si scarta da
 // solo. Nessun componente deve chiamarlo direttamente.
-assert.match(helper, /window\.gtag\?\.\("event", event, params\)/);
+assert.match(helper, /window\.gtag\?\.\("event", event, forUmami\(enrichedParams\)\)/);
 assert.match(helper, /typeof window === "undefined"/);
 
 // Chi legge i file dei componenti non deve chiamare gtag per conto proprio:
@@ -84,14 +96,18 @@ assert.doesNotMatch(umami, /useSyncExternalStore|"declined"/, "Umami non deve es
 
 // La diramazione: `track()` parla a tutti e due, e la pageview la lascia al
 // tracker di Umami per non contare due volte la stessa pagina.
-assert.match(helper, /window\.umami\?\.track\(event, forUmami\(params\)\)/);
+assert.match(helper, /window\.umami\?\.track\(event, cleanParams\)/);
 assert.match(helper, /if \(event === "page_view"\) return;/);
 assert.match(helper, /forUmami/);
+assert.match(helper, /window\.dataLayer\.push\(\{ event/);
+assert.match(helper, /currentAttribution/);
+assert.match(analytics, /attributionParams/);
+assert.match(analytics, /document\.addEventListener\("click", onClick/);
 
 // La copia nel database del sito: lotto, coda, ritentativo, e la pageview dentro
 // (è l'unica destinazione che la riceve da noi).
 assert.match(helper, /COLLECT_ENDPOINT = "\/api\/collect"/);
-assert.match(helper, /enqueueCollect\(event, params\)/);
+assert.match(helper, /enqueueCollect\(event, enrichedParams\)/);
 assert.match(helper, /navigator\.sendBeacon\(COLLECT_ENDPOINT/);
 assert.match(helper, /collectQueue = \[\.\.\.batch, \.\.\.collectQueue\]/);
 // Il ritentativo vale solo per un guasto temporaneo: su un 4xx (endpoint non
@@ -133,7 +149,7 @@ assert.match(analytics, /"pagehide"/);
 assert.match(analytics, /visibilitychange/);
 
 // Ogni evento usato nei componenti deve essere registrato in questo file.
-const sources = { analytics, newsletter, feedback, carousel, media };
+const sources = { analytics, newsletter, feedback, carousel, media, copyLink, copyEmail };
 const found = new Set();
 for (const source of Object.values(sources)) {
   for (const match of source.matchAll(/\btrack(?:Event)?\(\s*"([a-z_]+)"/g)) found.add(match[1]);
@@ -144,6 +160,11 @@ for (const name of found) {
 for (const name of EVENTI) {
   assert.ok(found.has(name), `evento dichiarato ma mai usato: ${name}`);
 }
+assert.match(helper, /window\.dataLayer\.push\(\{ event/);
+assert.match(helper, /currentAttribution/);
+assert.match(analytics, /attributionParams/);
+assert.match(analytics, /document\.addEventListener\("click", onClick/);
+assert.match(media, /track\("media_progress"/);
 
 const pages = readdirSync(join(root, "out"), { withFileTypes: true }).filter((e) => e.isDirectory()).length;
 console.log(`analytics: ${EVENTI.length} eventi (incluse partenza, permanenza e uscita), un solo punto di uscita verso GA, Umami e la copia nel database, nessun tag GA prima del consenso, Umami sempre attivo fuori da /admin (${pages} cartelle nell'export)`);

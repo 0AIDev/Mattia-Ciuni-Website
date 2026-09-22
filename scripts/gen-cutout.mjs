@@ -27,11 +27,16 @@ if (!existsSync(master)) {
 }
 
 const WIDTH = 560;
+// Il master contiene una vecchia scritta nera nella fascia inferiore. La pagina
+// aggiunge il nome come testo HTML, quindi il ritaglio la elimina alla fonte e
+// lascia il titolo bianco pulito, senza sovrapporre due nomi.
+const CROP_HEIGHT = 470;
 
 const source = sharp(master);
 const meta = await source.metadata();
 
 await source
+  .extract({ left: 0, top: 0, width: meta.width || WIDTH, height: Math.min(meta.height || CROP_HEIGHT, CROP_HEIGHT) })
   .resize({ width: WIDTH, withoutEnlargement: true })
   .webp({ quality: 80, effort: 6, alphaQuality: 90 })
   .toFile(dest);

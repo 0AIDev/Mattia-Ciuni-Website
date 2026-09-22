@@ -10,6 +10,7 @@ import { InlineText } from "@/components/RichText";
 import { ChevronRight } from "@/components/icons";
 import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
 import { MailCheckIcon } from "@/components/ui/mail-check";
+import { AudioPlayer } from "@/components/MediaPlayers";
 import SectionCopyLink from "@/components/SectionCopyLink";
 import TableOfContents, {
   MobileTableOfContents,
@@ -101,6 +102,12 @@ function RenderBlock({ block }: { block: Block }) {
       <pre className="m-0 overflow-x-auto bg-gray-100 p-4 text-sm text-gray-1100">
         <code>{block.code}</code>
       </pre>
+    );
+  if (block.type === "audio")
+    return (
+      <div className="my-1">
+        <AudioPlayer src={block.src} title={block.title} />
+      </div>
     );
   return (
     <p className="w-full text-text-paragraph">

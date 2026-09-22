@@ -3,7 +3,8 @@ export type Block =
   | { type: "h2"; text: string }
   | { type: "quote"; text: string }
   | { type: "list"; items: string[] }
-  | { type: "code"; lang: string; code: string };
+  | { type: "code"; lang: string; code: string }
+  | { type: "audio"; src: string; title: string };
 
 export interface Post {
   slug: string;
@@ -24,7 +25,9 @@ function minutesOf(blocks: Block[]): number {
         ? b.items.join(" ")
         : b.type === "code"
           ? b.code
-          : b.text
+          : b.type === "audio"
+            ? b.title
+            : b.text
     )
     .join(" ")
     .split(/\s+/).length;
@@ -60,6 +63,15 @@ const raw: Post[] = [
       {
         type: "p",
         text: "What follows is our conversation, edited for length but not for honesty.",
+      },
+      {
+        type: "p",
+        text: "**Describe in one sentence what you think about Payle.**",
+      },
+      {
+        type: "audio",
+        src: "/thoughts/welcoming-alex-mwaniki-founding-engineer-core/alex-audio.m4a",
+        title: "Alex Mwaniki: one sentence about Payle",
       },
       { type: "h2", text: "A builder with nowhere to build" },
       {
