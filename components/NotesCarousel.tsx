@@ -77,7 +77,7 @@ export function NotesCarousel({ notes }: { notes: Note[] }) {
       </div>
       <ul
         ref={track}
-        className="-mx-1 flex snap-x gap-4 overflow-x-auto px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+        className="-mx-1 flex max-w-full snap-x gap-4 overflow-x-auto px-1 pb-2 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
         aria-label="Featured notes"
       >
         {notes.map((note) => (

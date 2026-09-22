@@ -4,12 +4,16 @@
 
 html {
   scroll-behavior: smooth;
-  background: #ffffff;
+  background: #FCFCFC;
+  overflow-x: hidden;
 }
 
 body {
   min-height: 100vh;
   display: flex;
+  overflow-x: hidden;
+  background: #FCFCFC;
+
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;

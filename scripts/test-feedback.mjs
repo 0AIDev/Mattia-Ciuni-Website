@@ -132,7 +132,7 @@ async function withStubbedResend(run) {
   check("an oversized chunked body → 413, nothing stored", huge.status === 413 && env.FEEDBACK.map.size === 0);
 }
 
-// --- 3 · un feedback vero finisce in coda, senza il resto dell'IP ------------
+// --- 3 · un feedback vero finisce in coda, senza dati IP persistenti ---------
 {
   const env = newEnv();
   const response = await onRequestPost({
@@ -148,15 +148,12 @@ async function withStubbedResend(run) {
   const id = (await env.FEEDBACK.get("fb:index")) || "";
   const record = JSON.parse((await env.FEEDBACK.get(id)) || "{}");
   check("a valid feedback is stored and answered 200", response.status === 200 && body.ok === true);
-  // Due ottetti, non tre: dalla `203.0.113.7` resta `203.0`, che è quello che
-  // `/privacy/` promette. Se un giorno qualcuno allarga il campo, questo check
-  // cade prima che la promessa diventi falsa.
   check(
-    "the record is pending review, trimmed, lowercased, and keeps only two IP octets",
+    "the record is pending review, trimmed, lowercased, and does not persist the IP",
     record.status === "pending_review" &&
       record.name === "Liam" &&
       record.email === "liam@example.com" &&
-      record.ip_first_octets === "203.0" &&
+      !Object.hasOwn(record, "ip_first_octets") &&
       !JSON.stringify(record).includes(IP),
   );
   check("without Resend keys the record says so instead of pretending", record.notification_status === "not_configured");

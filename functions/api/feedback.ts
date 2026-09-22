@@ -17,7 +17,7 @@ interface RateLimitStore {
   put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>;
 }
 interface FeedbackStore {
-  put(key: string, value: string): Promise<void>;
+  put(key: string, value: string, options?: { expirationTtl?: number }): Promise<void>;
   get(key: string): Promise<string | null>;
 }
 
@@ -74,7 +74,28 @@ function ipOf(request: Request): string {
   );
 }
 
-async function allowed(store: RateLimitStore | undefined, ip: string): Promise<boolean> {
+function sameOrigin(request: Request): boolean {
+  const origin = request.headers.get("Origin");
+  if (!origin) return true;
+  try {
+    return new URL(origin).origin === new URL(request.url).origin;
+  } catch {
+    return false;
+  }
+}
+
+function safePagePath(value: unknown, request: Request): string {
+  const fallback = new URL(request.url).pathname;
+  if (typeof value !== "string" || !value.startsWith("/") || value.startsWith("//")) return fallback;
+  try {
+    const url = new URL(value, request.url);
+    return url.origin === new URL(request.url).origin ? `${url.pathname}${url.search}`.slice(0, 300) : fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+async function allowed(store: RateLimitStore | FeedbackStore | undefined, ip: string): Promise<boolean> {
   if (!store) return false;
   const key = `rl:feedback:${ip}`;
   const current = Number.parseInt((await store.get(key)) || "0", 10);
@@ -153,6 +174,10 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
     return response;
   };
 
+  if (!sameOrigin(request)) {
+    return finish(json({ code: "forbidden" }, 403), "cross_origin");
+  }
+
   if (request.headers.get("Content-Type")?.split(";")[0] !== "application/json") {
     return finish(json({ code: "invalid_request" }, 415), "invalid_content_type");
   }
@@ -186,12 +211,20 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
     return finish(json({ code: "invalid_message" }, 400), "invalid_message");
   }
 
-  if (!(await allowed(env.RATE_LIMIT, ipOf(request)))) {
-    return finish(json({ code: "rate_limited" }, 429, { "Retry-After": String(WINDOW_SECONDS) }), "rate_limited");
+  if (!env.FEEDBACK) {
+    return finish(json({ code: "unavailable" }, 503), "missing_feedback_binding");
   }
 
-  if (!env.FEEDBACK) {
-    return finish(json({ code: "unavailable" }, 503), "missing_kv_binding");
+  // RATE_LIMIT è il binding dedicato in produzione. FEEDBACK è un fallback
+  // sicuro per preview/local e per un deploy in cui il binding opzionale non è
+  // ancora stato aggiunto: meglio una coda funzionante con chiavi temporanee
+  // separate che bloccare ogni invio con un falso rate limit.
+  const rateLimitStore = env.RATE_LIMIT || env.FEEDBACK;
+  if (!rateLimitStore) {
+    return finish(json({ code: "rate_limit_unavailable" }, 503), "missing_rate_limit_binding");
+  }
+  if (!(await allowed(rateLimitStore, ipOf(request)))) {
+    return finish(json({ code: "rate_limited" }, 429, { "Retry-After": String(WINDOW_SECONDS) }), "rate_limited");
   }
 
   // Nome ed email sono opzionali: l'autore può restare un'iniziale, ma senza
@@ -202,7 +235,6 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
     return finish(json({ code: "invalid_email" }, 400), "invalid_email");
   }
 
-  const url = new URL(request.url);
   const now = new Date().toISOString();
   const id = `fb:${now.replace(/[:.]/g, "-")}:${Math.random().toString(36).slice(2, 8)}`;
   const record = {
@@ -212,8 +244,7 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
     name,
     email,
     message,
-    page_url: text(body.page_url, 300) || url.pathname,
-    ip_first_octets: ipOf(request).split(".").slice(0, 2).join("."),
+    page_url: safePagePath(body.page_url, request),
     notification_status: "not_configured" as "sent" | "failed" | "not_configured",
   };
 

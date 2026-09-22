@@ -80,7 +80,6 @@ const TOTP_BOOTSTRAP_KEY = "auth:totp:bootstrap-used";
 const TOTP_PENDING_PREFIX = "auth:totp:pending:";
 const TOTP_SETUP_SECONDS = 900; // 15 minutes to scan and confirm the first code
 const TOTP_WINDOW_SECONDS = 600;
-const TOTP_MAX_ATTEMPTS = 5;
 // La forma di una chiave di feedback (`fb:<timestamp>:<random>`, vedi
 // `functions/api/feedback.ts`). Serve a **delimitare il raggio d'azione della
 // moderazione**: publish/reject scrivono su una chiave presa dal corpo della
@@ -88,9 +87,11 @@ const TOTP_MAX_ATTEMPTS = 5;
 // `adm:<sessione>` — sarebbe una chiave scrivibile con la stessa credenziale.
 // Una sessione deve poter toccare un feedback, non tutto il namespace.
 const RECORD_ID = /^fb:[0-9A-Za-z:._-]{1,120}$/;
-const SESSION_SECONDS = 14400; // 4 ore: una sessione di lavoro, non una settimana
+const SESSION_SECONDS = 43200; // 12 ore, fino al logout esplicito
 const LOGIN_WINDOW_SECONDS = 600;
-const LOGIN_MAX_ATTEMPTS = 10;
+const LOGIN_MAX_ATTEMPTS = 15;
+const TOTP_RATE_MAX_ATTEMPTS = 8;
+const LOGIN_RATE_VERSION = "v2"; // resetta i contatori precedenti dopo il cambio di policy
 const MAX_BODY_BYTES = 8192;
 const MAX_INDEX = 500;
 // `__Host-`: il cookie vale solo per questo host, mai per un sottodominio, e solo
@@ -219,7 +220,7 @@ async function setupUsed(env: Env): Promise<boolean> {
 
 async function authRateAllowed(env: Env, ip: string, kind: string, max: number): Promise<boolean> {
   if (!env.RATE_LIMIT) return true;
-  const key = `rl:admin:${kind}:${ip}`;
+  const key = `rl:admin:${LOGIN_RATE_VERSION}:${kind}:${ip}`;
   const current = Number.parseInt((await env.RATE_LIMIT.get(key)) || "0", 10);
   if (current >= max) return false;
   await env.RATE_LIMIT.put(key, String(current + 1), { expirationTtl: kind === "totp" ? TOTP_WINDOW_SECONDS : LOGIN_WINDOW_SECONDS });
@@ -379,7 +380,7 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
 
   if (body.action === "confirm_setup") {
     if (!env.FEEDBACK) return json({ code: "unavailable" }, 503);
-    if (!(await authRateAllowed(env, ip, "totp", TOTP_MAX_ATTEMPTS))) {
+    if (!(await authRateAllowed(env, ip, "totp", TOTP_RATE_MAX_ATTEMPTS))) {
       return json({ code: "rate_limited" }, 429, [["Retry-After", String(TOTP_WINDOW_SECONDS)]]);
     }
     const setupId = typeof body.setup_id === "string" ? body.setup_id : "";
@@ -417,7 +418,7 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
     if (body.action === "token_check") {
       return json({ ok: true, token_verified: true });
     }
-    if (!(await authRateAllowed(env, ip, "totp", TOTP_MAX_ATTEMPTS))) {
+    if (!(await authRateAllowed(env, ip, "totp", TOTP_RATE_MAX_ATTEMPTS))) {
       return json({ code: "rate_limited" }, 429, [["Retry-After", String(TOTP_WINDOW_SECONDS)]]);
     }
     const code = typeof body.code === "string" ? body.code : "";

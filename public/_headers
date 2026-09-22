@@ -11,6 +11,12 @@
   X-Content-Type-Options: nosniff
   Referrer-Policy: strict-origin-when-cross-origin
   Permissions-Policy: camera=(), microphone=(), geolocation=()
+  Strict-Transport-Security: max-age=31536000; includeSubDomains
+  Cross-Origin-Opener-Policy: same-origin
+  Cross-Origin-Resource-Policy: same-site
+  X-Permitted-Cross-Domain-Policies: none
+  X-Download-Options: noopen
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; frame-src 'none'; form-action 'self'; manifest-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com; media-src 'self' blob:; worker-src 'self' blob:; upgrade-insecure-requests
   Link: </llms.txt>; rel="describedby"; type="text/plain", </index.md>; rel="service-doc"; type="text/markdown", </feed.xml>; rel="alternate"; type="application/rss+xml", </sitemap.xml>; rel="alternate"; type="application/xml"
 
 # I documenti di scoperta: il tipo lo decidono le regole, non l'estensione
@@ -49,6 +55,11 @@
 /auth.md
   Content-Type: text/markdown; charset=utf-8
   Cache-Control: public, max-age=3600, s-maxage=3600
+  Access-Control-Allow-Origin: *
+
+/.well-known/security.txt
+  Content-Type: text/plain; charset=utf-8
+  Cache-Control: public, max-age=86400, s-maxage=86400
   Access-Control-Allow-Origin: *
 
 # La dashboard privata non si indicizza e non si mette in cache, nemmeno come

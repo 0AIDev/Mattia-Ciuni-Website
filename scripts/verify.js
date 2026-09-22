@@ -57,6 +57,8 @@ if (builtFor !== SITE_ORIGIN) {
 }
 check("post: canonical", post.includes(`rel="canonical" href="${PROD}/thoughts/money-layer-for-ai-agents/"`));
 check("index: og:image absolute", index.includes(`og:image" content="${PROD}/og.png"`));
+check("index: og:site_name", index.includes('og:site_name" content="Mattia Ciuni"'));
+check("index: title uses entity and topic", index.includes("Mattia Ciuni | Founder, CEO of Payle and AI Payments Builder"));
 check("post: og:type article", post.includes('og:type" content="article"'));
 check("post: article:published_time", post.includes("article:published_time"));
 check("blog: twitter title fixed", blog.includes('twitter:title" content="Thoughts'));
@@ -68,6 +70,8 @@ check("index: Google Search Console verification", index.includes('name="google-
 
 const person = ldJson(index).find((j) => j["@type"] === "Person");
 check("index: Person JSON-LD valid", !!person && person.name === "Mattia Ciuni" && person.worksFor.name === "Payle" && person.sameAs.length === 5);
+const organization = ldJson(index).find((j) => j["@type"] === "Organization");
+check("index: Payle Organization JSON-LD valid", !!organization && organization.name === "Payle" && organization.founder?.["@id"]?.endsWith("/#mattia-ciuni"));
 const art = ldJson(post).find((j) => j["@type"] === "BlogPosting");
 check("post: BlogPosting JSON-LD valid", !!art && !!art.headline && !!art.datePublished && !!art.author);
 const crumb = ldJson(post).find((j) => j["@type"] === "BreadcrumbList");
@@ -83,7 +87,7 @@ check(
   "sitemap: index with 4 children",
   smIndex.includes('<sitemapindex xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">') && (smIndex.match(/<sitemap>/g) || []).length === 4 && smIndex.includes(`${PROD}/sitemap-home.xml`) && smIndex.includes(`${PROD}/sitemap-thoughts.xml`) && smIndex.includes(`${PROD}/sitemap-notes.xml`) && smIndex.includes(`${PROD}/sitemap-feedback.xml`)
 );
-check("sitemap-home: 4 urls", (read("sitemap-home.xml").match(/<loc>/g) || []).length === 4 && read("sitemap-home.xml").includes(`${PROD}/`) && read("sitemap-home.xml").includes(`${PROD}/about/`) && read("sitemap-home.xml").includes(`${PROD}/voice-notes/`) && read("sitemap-home.xml").includes(`${PROD}/videos/`));
+check("sitemap-home: 5 urls", (read("sitemap-home.xml").match(/<loc>/g) || []).length === 5 && read("sitemap-home.xml").includes(`${PROD}/`) && read("sitemap-home.xml").includes(`${PROD}/about/`) && read("sitemap-home.xml").includes(`${PROD}/work/`) && read("sitemap-home.xml").includes(`${PROD}/voice-notes/`) && read("sitemap-home.xml").includes(`${PROD}/videos/`));
 check("sitemap-thoughts: 4 url", (read("sitemap-thoughts.xml").match(/<loc>/g) || []).length === 4 && read("sitemap-thoughts.xml").includes("finding-ghassen-the-co-founder-question-answered-in-three-weeks"));
 check("sitemap-notes: 9 url", (read("sitemap-notes.xml").match(/<loc>/g) || []).length === 9 && read("sitemap-notes.xml").includes("/notes/"));
 // Le date seguono i contenuti: una collezione è datata con l'elemento più
@@ -154,7 +158,7 @@ check(
     note.includes("rel=\"alternate\" type=\"text/markdown\"")
 );
 const llmtxt = read("llms.txt");
-check("llms.txt: valid", llmtxt.startsWith("# Mattia Ciuni") && llmtxt.includes("## Thoughts") && llmtxt.includes("## Notes") && llmtxt.includes("## Feedback") && llmtxt.includes("/thoughts/") && llmtxt.includes("/notes/") && llmtxt.includes("/feedback/") && llmtxt.includes("mailto:") && llmtxt.includes(".md"));
+check("llms.txt: valid", llmtxt.startsWith("# Mattia Ciuni") && llmtxt.includes("## Thoughts") && llmtxt.includes("## Notes") && llmtxt.includes("## Feedback") && llmtxt.includes("/thoughts/") && llmtxt.includes("/notes/") && llmtxt.includes("/feedback/") && llmtxt.includes("/work/") && llmtxt.includes("mailto:") && llmtxt.includes(".md"));
 
 // Card For AI: file .md generati in postbuild da scripts/gen-cards.mjs
 const homeCard = read("index.md");
@@ -721,12 +725,19 @@ check(
   ["Content-Signal", "permission to publish", "initial"].every((needle) =>
     terms.includes(needle),
   ) && !terms.includes("Ask Mattia Ciuni AI")
-);check("WebMCP: registration is present in the page",
+);check("security: production hardening headers are configured", headersFile.includes("Content-Security-Policy:") && headersFile.includes("Strict-Transport-Security:") && headersFile.includes("Cross-Origin-Opener-Policy:") && headersFile.includes("X-Frame-Options: DENY") && headersFile.includes("X-Content-Type-Options: nosniff") && headersFile.includes("frame-ancestors 'none'"));
+check("security: vulnerability disclosure document is published", fs.existsSync(path.join(out, ".well-known", "security.txt")) && read(".well-known/security.txt").includes("Contact: mailto:ceo@usepayle.com") && read(".well-known/security.txt").includes("Canonical:"));
+check("security: public forms reject cross-origin browser posts", readFileSync(path.join(__dirname, "..", "functions", "api", "feedback.ts"), "utf8").includes("cross_origin") && readFileSync(path.join(__dirname, "..", "functions", "api", "subscribe.ts"), "utf8").includes("cross_origin"));
+check("accessibility: feedback dialog has a labelled focusable implementation", readFileSync(path.join(__dirname, "..", "components", "FeedbackForm.tsx"), "utf8").includes("aria-labelledby=\"feedback-dialog-title\"") && readFileSync(path.join(__dirname, "..", "components", "FeedbackForm.tsx"), "utf8").includes("event.key !== \"Tab\"") && readFileSync(path.join(__dirname, "..", "components", "FeedbackForm.tsx"), "utf8").includes("triggerRef"));
+check("WebMCP: registration is present in the page",
   index.includes('rel="ai-catalog"') && index.includes("webmcp.js") &&
     fs.existsSync(path.join(out, "webmcp.js")) &&
     readFileSync(path.join(out, "webmcp.js"), "utf8").includes("navigator.modelContext") &&
+    readFileSync(path.join(out, "webmcp.js"), "utf8").includes("provideContext") &&
     readFileSync(path.join(out, "webmcp.js"), "utf8").includes("registerTool") &&
+    readFileSync(path.join(out, "webmcp.js"), "utf8").includes("additionalProperties: false") &&
     readFileSync(path.join(out, "webmcp.js"), "utf8").includes("read_current_page") &&
+    readFileSync(path.join(out, "webmcp.js"), "utf8").includes("search_site_archive") &&
     readFileSync(path.join(out, "webmcp.js"), "utf8").includes("find_site_content")
 );
 

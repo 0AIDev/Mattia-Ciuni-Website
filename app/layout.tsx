@@ -44,7 +44,7 @@ const homeCard = socialImages("/og.png", "Mattia Ciuni | Founder & CEO @ Payle")
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: "Mattia Ciuni | Founder & CEO @ Payle",
+    default: "Mattia Ciuni | Founder, CEO of Payle and AI Payments Builder",
     // Un solo divisore, sempre il trattino: mai puntini o punti di sospensione.
     template: "%s | Mattia Ciuni",
   },
@@ -76,14 +76,15 @@ export const metadata: Metadata = {
     type: "website",
     url: "/",
     siteName: "Mattia Ciuni",
-    title: "Mattia Ciuni | Founder & CEO @ Payle",
+    title: "Mattia Ciuni | Founder, CEO of Payle and AI Payments Builder",
     description: site.description,
     locale: site.locale,
     images: homeCard.og,
   },
   twitter: {
     card: "summary_large_image",
-    title: "Mattia Ciuni | Founder & CEO @ Payle",
+    creator: "@mattiaciuni",
+    title: "Mattia Ciuni | Founder, CEO of Payle and AI Payments Builder",
     description: site.description,
     images: homeCard.twitter,
   },
@@ -101,7 +102,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <link rel="ai-catalog" href="/.well-known/ai-catalog.json" />
       </head>
       <body className="bg-gray-background font-sans text-base leading-relaxed text-gray-1200">
-        <Script id="webmcp-tools" src="/webmcp.js" strategy="lazyOnload" />
+        <Script id="webmcp-tools" src="/webmcp.js" strategy="afterInteractive" />
         <DeferredAnalytics />
         <a
           href="#content"

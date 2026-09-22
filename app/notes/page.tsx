@@ -76,7 +76,7 @@ export default function NotesIndex() {
               <div className="overflow-hidden rounded-xl border border-gray-300 bg-preview-bg">
                 <Image
                   src={`/notes/${n.slug}/cover.png`}
-                  alt=""
+                  alt={n.title}
                   width={1200}
                   height={630}
                   className="h-auto w-full transition-transform duration-500 group-hover:scale-[1.01] motion-reduce:transition-none"

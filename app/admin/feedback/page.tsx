@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useState } from "react";
+import { FormEvent, useCallback, useEffect, useState } from "react";
 import QRCode from "qrcode";
 
 type FeedbackRecord = {
@@ -71,6 +71,14 @@ export default function FeedbackAdminPage() {
       if (!quiet || message.includes("local Pages API")) setError(message);
     }
   }, []);
+
+  useEffect(() => {
+    // Revalidate the HttpOnly session after a refresh. An unauthenticated 401 is
+    // expected here and stays quiet; an existing session restores the queue
+    // without asking for the token or TOTP again.
+    const timer = window.setTimeout(() => void load({ quiet: true }), 0);
+    return () => window.clearTimeout(timer);
+  }, [load]);
 
   async function beginSetup(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();

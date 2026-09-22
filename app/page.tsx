@@ -53,15 +53,27 @@ const personJsonLd = {
 const websiteJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
+  "@id": `${site.url.replace(/\/$/, "")}/#website`,
   name: "Mattia Ciuni",
   url: site.url,
+  description: site.description,
+  publisher: { "@id": `${site.url.replace(/\/$/, "")}/#mattia-ciuni` },
+};
+
+const organizationJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "@id": `${site.payleUrl}/#organization`,
+  name: "Payle",
+  url: site.payleUrl,
+  founder: { "@id": `${site.url.replace(/\/$/, "")}/#mattia-ciuni` },
 };
 
 export default function Home() {
   return (
     <main
       id="content"
-      className="mx-auto max-w-[692px] px-6 py-12 leading-relaxed sm:py-24"
+      className="mx-auto w-full min-w-0 max-w-[692px] overflow-hidden px-5 py-10 leading-relaxed sm:px-6 sm:py-24"
     >
       <script
         type="application/ld+json"
@@ -71,8 +83,12 @@ export default function Home() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteJsonLd) }}
       />
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(organizationJsonLd) }}
+      />
 
-      <header className="mb-16 flex items-center gap-4 sm:mb-24">
+      <header className="mb-14 flex flex-wrap items-center gap-x-4 gap-y-2 sm:mb-24">
         {/* 80×80 nel file (WebP, ~2KB) per i 40px a cui è mostrato: `next/image`
             è `unoptimized` (static export), quindi la dimensione giusta la Decide
             il file, e la fa `scripts/gen-avatar.mjs`. */}
@@ -84,7 +100,7 @@ export default function Home() {
           className="h-10 w-10 shrink-0 rounded-full object-cover"
         />
         <h1 className="m-0 font-serif text-lg font-semibold">Mattia Ciuni</h1>
-        <p className="m-0 text-gray-1000">Founder & CEO @ Payle</p>
+        <p className="m-0 w-full text-sm text-gray-1000 sm:w-auto sm:text-base">Founder & CEO @ Payle</p>
       </header>
 
       <div className="mb-16 space-y-6 text-text-paragraph sm:mb-24">
@@ -211,7 +227,7 @@ export default function Home() {
             <a
               href={site.payleUrl}
               rel="noopener noreferrer"
-              className="group grid grid-cols-[auto_1fr_auto] items-baseline gap-4 py-3.5"
+              className="group grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-3 py-3.5 sm:gap-4"
             >
               <span className="font-medium">Payle</span>
               <span className="text-gray-1000">The money layer for AI agents.</span>
@@ -221,7 +237,7 @@ export default function Home() {
           <li>
             <Link
               href="/thoughts/"
-              className="group grid grid-cols-[auto_1fr_auto] items-baseline gap-4 py-3.5"
+              className="group grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-3 py-3.5 sm:gap-4"
             >
               <span className="font-medium">Thoughts</span>
               <span className="text-gray-1000">
@@ -240,10 +256,10 @@ export default function Home() {
             <li key={p.slug}>
               <Link
                 href={`/thoughts/${p.slug}/`}
-                className="group flex items-baseline justify-between gap-4 py-3.5"
+                className="group flex min-w-0 flex-col items-start gap-1.5 py-3.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"
               >
-                <span className="font-serif font-[450]">{p.title}</span>
-                <span className="flex items-center gap-2 whitespace-nowrap text-gray-1000">
+                <span className="min-w-0 font-serif font-[450]">{p.title}</span>
+                <span className="flex items-center gap-2 text-sm text-gray-1000 sm:whitespace-nowrap sm:text-base">
                   {p.category}
                   <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </span>
@@ -254,7 +270,7 @@ export default function Home() {
       </section>
 
       <section aria-labelledby="notes" className="mb-16 sm:mb-24">
-        <div className="mb-2 flex items-baseline justify-between gap-4">
+        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <h2 id="notes" className="font-serif font-medium">Notes</h2>
           <Link href="/notes/" className="text-sm text-gray-1000 article-underline">All notes</Link>
         </div>
@@ -265,7 +281,7 @@ export default function Home() {
       </section>
 
       <section aria-labelledby="feedback" className="mb-16 sm:mb-24">
-        <div className="mb-2 flex items-baseline justify-between gap-4">
+        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <h2 id="feedback" className="font-serif font-medium">Feedback</h2>
           <Link href="/feedback/" className="text-sm text-gray-1000 article-underline">All feedback</Link>
         </div>
@@ -287,7 +303,7 @@ export default function Home() {
                 <span className="font-serif font-[450] underline decoration-transparent underline-offset-4 transition-colors group-hover:decoration-gray-1200">
                   {f.title}
                 </span>
-                <span className="flex items-center gap-2 whitespace-nowrap text-gray-1000">
+                <span className="flex items-center gap-2 text-sm text-gray-1000 sm:whitespace-nowrap sm:text-base">
                   {f.author}
                   <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </span>
@@ -298,7 +314,7 @@ export default function Home() {
       </section>
 
       <section aria-labelledby="field-notes" className="mb-16 sm:mb-24">
-        <div className="mb-2 flex items-baseline justify-between gap-4">
+        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
           <h2 id="field-notes" className="font-serif font-medium">Field notes</h2>
           <span className="text-sm text-gray-1000">in progress</span>
         </div>

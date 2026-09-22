@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 export function ForAICard() {
@@ -15,7 +14,7 @@ export function ForAICard() {
   const card = p === "/" ? "index.md" : p.slice(1) + ".md";
   return (
     <p className="ml-auto text-xs">
-      For AI: <Link href={"/" + card}>{card}</Link>
+      For AI: <a href={"/" + card}>{card}</a>
     </p>
   );
 }

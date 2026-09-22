@@ -83,6 +83,10 @@ export default function AboutPage() {
       </section>
 
       <nav aria-label="Explore Mattia Ciuni's work" className="border-t border-gray-300">
+        <Link href="/work/" className="group flex items-baseline justify-between gap-4 border-b border-gray-300 py-4">
+          <span className="font-serif text-lg">Work</span>
+          <span className="text-sm text-gray-1000 transition-transform group-hover:translate-x-1">Payle, Celeste and the topics underneath →</span>
+        </Link>
         <Link href="/thoughts/" className="group flex items-baseline justify-between gap-4 border-b border-gray-300 py-4">
           <span className="font-serif text-lg">Thoughts</span>
           <span className="text-sm text-gray-1000 transition-transform group-hover:translate-x-1">AI agents, payments and building Payle →</span>

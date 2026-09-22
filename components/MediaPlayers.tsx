@@ -143,7 +143,7 @@ export function AudioPlayer({ src, title }: PlayerProps) {
 
   return (
     <div className="rounded-xl border border-gray-300 px-3 py-2.5" aria-label={`Audio player: ${title}`}>
-      <audio ref={media} src={src} preload="metadata" />
+      <audio ref={media} src={src} preload="metadata" aria-label={`Audio: ${title}`} />
       <div className="flex items-center gap-3">
         <button
           type="button"
@@ -192,8 +192,17 @@ export function VideoPlayer({ src, title, poster }: PlayerProps) {
         poster={poster}
         preload="metadata"
         playsInline
+        tabIndex={0}
+        role="button"
+        aria-label={state.playing ? `Pause ${title}` : `Play ${title}`}
         className="aspect-video w-full object-contain"
         onClick={state.togglePlay}
+        onKeyDown={(event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            event.preventDefault();
+            state.togglePlay();
+          }
+        }}
       />
       {!state.playing ? (
         <button

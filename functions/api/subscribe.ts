@@ -57,6 +57,16 @@ function ipOf(request: Request): string {
   );
 }
 
+function sameOrigin(request: Request): boolean {
+  const origin = request.headers.get("Origin");
+  if (!origin) return true;
+  try {
+    return new URL(origin).origin === new URL(request.url).origin;
+  } catch {
+    return false;
+  }
+}
+
 async function allowed(store: RateLimitStore | undefined, ip: string): Promise<boolean> {
   // A missing KV binding must not make the endpoint globally unusable. Use a
   // short-lived key only when an address is available; Pages always supplies
@@ -168,6 +178,10 @@ export const onRequestPost = async ({ request, env }: PagesContext): Promise<Res
     console.log(JSON.stringify({ event: "newsletter_subscribe", outcome, latency_ms: Date.now() - started }));
     return response;
   };
+
+  if (!sameOrigin(request)) {
+    return finish(json({ code: "forbidden" }, 403), "cross_origin");
+  }
 
   if (request.headers.get("Content-Type")?.split(";")[0] !== "application/json") {
     return finish(json({ code: "invalid_request" }, 415), "invalid_content_type");

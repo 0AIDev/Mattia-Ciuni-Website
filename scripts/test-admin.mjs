@@ -82,7 +82,7 @@ let secret;
   const code = await totpCode(secret);
   const confirm = await onRequestPost({ request: request({ method: "POST", body: { action: "confirm_setup", setup_id: data.setup_id, code } }), env: e });
   const setupCookies = cookies(confirm);
-  check("the first valid TOTP confirms setup and creates a session", confirm.status === 200 && setupCookies.some((v) => v.startsWith("__Host-") && v.includes("HttpOnly") && v.includes("Secure") && v.includes("SameSite=Strict")));
+  check("the first valid TOTP confirms setup and creates a session", confirm.status === 200 && setupCookies.some((v) => v.startsWith("__Host-") && v.includes("Max-Age=43200") && v.includes("HttpOnly") && v.includes("Secure") && v.includes("SameSite=Strict")));
   check("the stored config is not exposed by GET", !(await (await onRequestGet({ request: request({ cookie: sessionCookie(confirm) }), env: e })).text()).includes(secret));
 }
 
@@ -117,7 +117,7 @@ let secret;
   check("cross-origin login → 403", cross.status === 403);
   check("oversized declared body → 413", big.status === 413);
   const statuses = [];
-  for (let i = 0; i < 7; i += 1) statuses.push((await onRequestPost({ request: request({ method: "POST", body: { action: "login", token: "2".repeat(64), code: "000000" } }), env: configuredEnv })).status);
+  for (let i = 0; i < 20; i += 1) statuses.push((await onRequestPost({ request: request({ method: "POST", body: { action: "login", token: "2".repeat(64), code: "000000" } }), env: configuredEnv })).status);
   check("token brute force reaches a 429", statuses.includes(429));
 }
 

@@ -38,18 +38,36 @@ export function FeedbackModalButton({
   const [error, setError] = useState("");
   const dialogRef = useRef<HTMLDivElement>(null);
   const closeRef = useRef<HTMLButtonElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   useEffect(() => {
     if (!open) return;
+    const trigger = triggerRef.current;
     document.body.style.overflow = "hidden";
     closeRef.current?.focus();
     const onKey = (event: KeyboardEvent) => {
-      if (event.key === "Escape") setOpen(false);
+      if (event.key === "Escape") {
+        setOpen(false);
+        return;
+      }
+      if (event.key !== "Tab" || !dialogRef.current) return;
+      const focusable = dialogRef.current.querySelectorAll<HTMLElement>("button:not([disabled]), input:not([disabled]), textarea:not([disabled])");
+      if (!focusable.length) return;
+      const first = focusable[0];
+      const last = focusable[focusable.length - 1];
+      if (event.shiftKey && document.activeElement === first) {
+        event.preventDefault();
+        last.focus();
+      } else if (!event.shiftKey && document.activeElement === last) {
+        event.preventDefault();
+        first.focus();
+      }
     };
     window.addEventListener("keydown", onKey);
     return () => {
       document.body.style.overflow = "";
       window.removeEventListener("keydown", onKey);
+      trigger?.focus();
     };
   }, [open]);
 
@@ -79,9 +97,12 @@ export function FeedbackModalButton({
     setState("loading");
     setError("");
     try {
+      const controller = new AbortController();
+      const timeout = window.setTimeout(() => controller.abort(), 15000);
       const response = await fetch("/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
         body: JSON.stringify({
           name: name.trim(),
           email: email.trim(),
@@ -90,6 +111,8 @@ export function FeedbackModalButton({
           page_url: window.location.pathname,
         }),
       });
+      window.clearTimeout(timeout);
+      const result = (await response.json().catch(() => ({}))) as { code?: string };
       if (response.ok) {
         setState("success");
       } else if (response.status === 429) {
@@ -97,11 +120,17 @@ export function FeedbackModalButton({
         setError(COPY.rateLimited);
       } else {
         setState("error");
-        setError(COPY.genericError);
+        setError(
+          result.code === "unavailable" || result.code === "rate_limit_unavailable"
+            ? "Feedback is temporarily unavailable. Try again shortly."
+            : result.code === "provider_error"
+              ? "The feedback could not be saved. Try again shortly."
+              : COPY.genericError,
+        );
       }
-    } catch {
+    } catch (caught) {
       setState("error");
-      setError(COPY.genericError);
+      setError(caught instanceof DOMException && caught.name === "AbortError" ? "The request took too long. Try again." : COPY.genericError);
     }
   }
 
@@ -114,7 +143,7 @@ export function FeedbackModalButton({
 
   return (
     <>
-      <button type="button" onClick={() => setOpen(true)} className={`${baseTrigger} ${className}`}>
+      <button ref={triggerRef} type="button" onClick={() => setOpen(true)} className={`${baseTrigger} ${className}`}>
         {label}
       </button>
 
@@ -128,14 +157,15 @@ export function FeedbackModalButton({
             ref={dialogRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Send your feedback"
+            aria-labelledby="feedback-dialog-title"
+            aria-describedby="feedback-dialog-description"
             className="w-full max-w-[460px] rounded-3xl bg-white p-6 shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:p-8"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
               <div className="text-left">
-                <p className="m-0 font-serif text-2xl leading-tight text-gray-1200">Give feedback</p>
-                <p className="mt-1 text-sm leading-relaxed text-gray-1000">
+                <h2 id="feedback-dialog-title" className="m-0 font-serif text-2xl leading-tight text-gray-1200">Give feedback</h2>
+                <p id="feedback-dialog-description" className="mt-1 text-sm leading-relaxed text-gray-1000">
                   Tell me what you think, what interests you, or what you&apos;d like to see next.
                 </p>
               </div>
