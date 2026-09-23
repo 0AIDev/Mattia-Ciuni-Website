@@ -33,8 +33,8 @@ const instrumentSerif = Instrument_Serif({
   weight: "400",
   subsets: ["latin"],
   display: "swap",
-  // The above-the-fold copy uses Inter. Let the serif load on demand so mobile
-  // does not block the first paint on a second large font request.
+  // The serif is used above the fold across the editorial pages, so preload it
+  // to avoid a font-swap layout shift in the first heading.
   preload: true,
 });
 

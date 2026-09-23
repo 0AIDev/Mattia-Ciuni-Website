@@ -433,6 +433,22 @@ export default function FeedbackAdminPage() {
     );
   }
 
+  async function createNda(fullName: string, emailAddress: string): Promise<string | null> {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "nda_create", full_name: fullName, email_address: emailAddress }) });
+      const data = (await response.json().catch(() => ({}))) as { link?: string; code?: string };
+      if (!response.ok || !data.link) throw new Error(data.code === "unavailable" ? "Supabase is unavailable." : "The NDA link could not be created.");
+      return data.link;
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "The NDA link could not be created.");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function saveJobs(nextJobs: AdminJob[]) {
     setLoading(true);
     setError("");
@@ -458,6 +474,7 @@ export default function FeedbackAdminPage() {
       onCreateTest={() => void createTestFeedback()}
       onModerate={(id, action) => void moderate(id, action)}
       onSaveJobs={(nextJobs) => void saveJobs(nextJobs)}
+      onCreateNda={createNda}
       localMode={localPreviewEnabled()}
     />;
 

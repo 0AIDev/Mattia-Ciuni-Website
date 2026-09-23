@@ -87,6 +87,10 @@ for (const page of pages) {
   // The private feedback dashboard deliberately has no public newsletter or
   // footer, and is excluded from all public indexes.
   if (/[\\/]out[\\/]admin[\\/]/.test(page)) continue;
+  // Application routes are intentionally noindex and either redirect to the
+  // canonical English flow or render a full-screen modal over the detail page;
+  // they are not public document shells and do not need the global footer.
+  if (/[\\/]out[\\/](?:careers[\\/][^\\/]+[\\/]apply|(?:en|it|fr|es|de)[\\/]careers[\\/][^\\/]+[\\/]apply)[\\/]/.test(page)) continue;
   // /link e' la pagina per i link in bio: non ha il footer del sito e la
   // newsletter vive dentro la lista dei link, in forma di scheda. Non e' un
   // caso da saltare: si verifica che sia esattamente cosi', perche' un'eccezione

@@ -11,8 +11,8 @@ export const dynamic = "force-static";
 // Il `Disallow` si ripete in **ogni** blocco perché un crawler applica il gruppo
 // più specifico che lo nomina: lasciarlo solo sotto `*` lo renderebbe invisibile
 // proprio agli agenti nominati qui sotto, che è il contrario di quello che serve.
-// Restano fuori da ogni sitemap e da `llms.txt` (vedi `verify.js`).
-const PRIVATE_PATHS = ["/admin/", "/api/admin/"];
+// Restano fuori da ogni sitemap e da `llms.txt` (vedi `verify.js`). L’NDA usa inoltre un token one-time e non espone mai il documento dal sito.
+const PRIVATE_PATHS = ["/admin/", "/api/admin/", "/nda", "/nda/", "/api/nda", "/api/nda/"];
 const AI_AGENTS = [
   "GPTBot",
   "OAI-SearchBot",

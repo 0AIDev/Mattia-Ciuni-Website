@@ -59,6 +59,7 @@ interface Env {
   LOCAL_ADMIN?: string;
   SUPABASE_URL?: string;
   SUPABASE_SERVICE_ROLE_KEY?: string;
+  SITE_URL?: string;
 }
 
 interface PagesContext {
@@ -246,6 +247,16 @@ async function sameSecret(given: string, expected: string): Promise<boolean> {
 function newSessionId(): string {
   const bytes = crypto.getRandomValues(new Uint8Array(32));
   return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+function newNdaToken(): string {
+  const bytes = crypto.getRandomValues(new Uint8Array(48));
+  return Array.from(bytes, (byte) => byte.toString(16).padStart(2, "0")).join("");
+}
+
+async function sha256(value: string): Promise<string> {
+  const digest = await crypto.subtle.digest("SHA-256", new TextEncoder().encode(value));
+  return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
 function newFeedbackId(): string {
@@ -490,6 +501,8 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
     id?: unknown;
     reason?: unknown;
     jobs?: unknown;
+    full_name?: unknown;
+    email_address?: unknown;
   };
   try {
     body = JSON.parse(payload) as typeof body;
@@ -602,6 +615,30 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
   }
 
   if (!localAdminEnabled(request, env) && !await isAuthorized(request, env)) return json({ code: "unauthorized" }, 401);
+
+  if (body.action === "nda_create") {
+    if (!supabaseConfigured(env)) return json({ code: "unavailable" }, 503);
+    const fullName = typeof body.full_name === "string" ? body.full_name.trim().replace(/\s+/g, " ") : "";
+    const email = typeof body.email_address === "string" ? body.email_address.trim().toLowerCase() : "";
+    if (fullName.length < 2 || fullName.length > 160 || !/^[^\s@]+@[^\s@]+\.[^\s@]{2,254}$/.test(email)) {
+      return json({ code: "validation_error" }, 422);
+    }
+    const rawToken = newNdaToken();
+    const tokenHash = await sha256(rawToken);
+    const expiresAt = new Date(Date.now() + 30 * 86400 * 1000).toISOString();
+    try {
+      const inserted = await supabaseRequest<Array<{ id: string }>>(env, "nda_recipients", {
+        method: "POST",
+        headers: { Prefer: "return=representation" },
+        body: JSON.stringify({ full_name: fullName, email, token_hash: tokenHash, expires_at: expiresAt }),
+      });
+      if (!inserted.response.ok) return json({ code: "provider_error" }, 502);
+      const origin = (env.SITE_URL || new URL(request.url).origin).replace(/\/+$/, "");
+      return json({ ok: true, recipient_id: inserted.data?.[0]?.id || null, link: `${origin}/nda?token=${rawToken}`, expires_at: expiresAt });
+    } catch {
+      return json({ code: "provider_error" }, 502);
+    }
+  }
 
   if (body.action === "jobs_save") {
     if (!env.FEEDBACK || !validJobs(body.jobs)) return json({ code: "invalid_jobs" }, 422);

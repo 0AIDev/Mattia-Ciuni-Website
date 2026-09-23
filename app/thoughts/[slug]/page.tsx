@@ -201,7 +201,7 @@ export default async function BlogPost({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <nav aria-label={ui.thoughts} className="mb-4">
+      <nav aria-label="Breadcrumb" className="mb-4">
         <ol className="m-0 flex list-none flex-wrap items-center gap-x-2 p-0 text-sm text-gray-1000">
           <li>
             <Link href={`${prefix}/`} className="transition-colors hover:text-gray-1200">
