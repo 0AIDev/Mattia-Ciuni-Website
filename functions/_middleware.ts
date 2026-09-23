@@ -100,6 +100,22 @@ export const onRequest = async (context: Context): Promise<Response> => {
   // Vale per ogni card futura, non solo per quella cancellata oggi.
   const privatePath = url.pathname.replace(/\/+$/, "").toLowerCase();
   const isPrivate = privatePath === "/admin" || privatePath.startsWith("/admin/");
+  const isNda = privatePath === "/nda";
+
+  // `/nda` is not a public landing page. Only an invite URL generated from the
+  // admin workspace may reach the client gate; a guessed or shared bare path
+  // must fail before the static export is served.
+  if (isNda && !url.searchParams.get("token")) {
+    return new Response("Not found", {
+      status: 404,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+        "X-Robots-Tag": "noindex, nofollow, noarchive",
+        "Referrer-Policy": "no-referrer",
+      },
+    });
+  }
 
   if (isPrivate && privatePath.endsWith(".md")) {
     return new Response("Not found", {

@@ -6,8 +6,8 @@ export const metadata: Metadata = {
   description: "Private NDA access.",
   alternates: { canonical: "/nda/" },
   robots: { index: false, follow: false, noarchive: true },
-  openGraph: { title: "NDA", url: "/nda/", images: [] },
-  twitter: { card: "summary" },
+  openGraph: { type: "website", siteName: "Mattia Ciuni", title: "NDA | Mattia Ciuni", url: "/nda/", images: [] },
+  twitter: { card: "summary", title: "NDA | Mattia Ciuni" },
 };
 
 export default function NdaPage() {
