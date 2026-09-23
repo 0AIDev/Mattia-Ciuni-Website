@@ -30,10 +30,9 @@ export function LegalPage({ title, intro, sections }: LegalPageProps) {
         <p className="mt-4 text-sm text-gray-1000">Last updated September 22, 2026.</p>
       </header>
 
-      <TableOfContents items={toc} />
-      <MobileTableOfContents items={toc} />
-
-      <article className="space-y-12">
+      <article className="relative space-y-12">
+        <TableOfContents items={toc} />
+        <MobileTableOfContents items={toc} />
         {sections.map((section) => (
           <section key={section.id} id={section.id} className="scroll-mt-20">
             <h2 className="mb-4 flex items-center gap-3 font-serif text-2xl font-medium leading-tight text-gray-1200">

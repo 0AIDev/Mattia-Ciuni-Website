@@ -39,7 +39,7 @@ function navigateTo(
 }
 
 /** Rail laterale sticky: solo desktop, a sinistra della colonna da 692px. */
-export default function TableOfContents({ items, locale = "en", placement = "article" }: { items: TocItem[]; locale?: Locale; placement?: "article" | "viewport-left" }) {
+export default function TableOfContents({ items, locale = "en" }: { items: TocItem[]; locale?: Locale }) {
   const text = articleUi[locale];
   const key = items.map((item) => item.anchor).join("|");
   const anchors = useMemo(() => key.split("|").filter(Boolean), [key]);
@@ -85,13 +85,9 @@ export default function TableOfContents({ items, locale = "en", placement = "art
   if (!items.length) return null;
 
   return (
-    // Solo desktop: a sinistra della colonna 692px, senza mai uscire dal viewport.
-    <div
-      className={placement === "viewport-left" ? "career-toc-viewport fixed inset-y-0 left-0 z-40 w-[320px] justify-start pointer-events-auto" : "fixed inset-y-0 z-40 hidden w-[320px] justify-end pointer-events-none xl:flex"}
-      style={placement === "viewport-left" ? undefined : { right: "min(calc(50% + 346px), calc(100% - 320px))" }}
-      onMouseEnter={() => placement === "viewport-left" && setExpanded(true)}
-      onMouseLeave={() => placement === "viewport-left" && setExpanded(false)}
-    >
+    // Il rail vive dentro l'articolo: sticky durante la lettura e limitato
+    // automaticamente ai bordi dell'articolo, senza restare fisso nella pagina.
+    <div className="article-toc-shell pointer-events-none absolute inset-y-0 -left-[220px] z-40 hidden w-[220px] justify-end xl:flex">
       <nav
         aria-label={text.onThisPage}
         onMouseEnter={() => setExpanded(true)}
@@ -102,10 +98,10 @@ export default function TableOfContents({ items, locale = "en", placement = "art
             setExpanded(false);
           }
         }}
-        className="sticky top-0 flex h-dvh h-screen items-center bg-transparent transition-[width] duration-300 ease-out motion-reduce:transition-none pointer-events-auto"
-        style={{ width: expanded ? 320 : placement === "viewport-left" ? 64 : 192, pointerEvents: placement === "viewport-left" ? "auto" : undefined }}
+        className="sticky top-6 flex max-h-[calc(100vh-3rem)] items-center bg-transparent transition-[width] duration-300 ease-out motion-reduce:transition-none pointer-events-auto"
+        style={{ width: expanded ? 220 : 32 }}
       >
-        <div className={`relative flex w-full flex-col ${placement === "viewport-left" ? "pl-6" : "pr-6"}`} style={{ gap: 6 }}>
+        <div className="relative flex w-full flex-col pr-6" style={{ gap: 6 }}>
           {items.map((item) => {
             const isActive = active === item.anchor;
             return (
@@ -113,7 +109,7 @@ export default function TableOfContents({ items, locale = "en", placement = "art
               // bersaglio per volta, così il click non naviga mai per errore.
               <div
                 key={item.anchor}
-                className={`group/row relative flex items-center transition-[height] duration-300 ease-out motion-reduce:transition-none ${placement === "viewport-left" ? "justify-start" : "justify-end"}`}
+                className="group/row relative flex items-center justify-end transition-[height] duration-300 ease-out motion-reduce:transition-none"
                 style={{ height: expanded ? 24 : 8 }}
               >
                 <SectionCopyLink
@@ -121,7 +117,7 @@ export default function TableOfContents({ items, locale = "en", placement = "art
                   label={item.label}
                   size={14}
                   className={cn(
-                    `${placement === "viewport-left" ? "ml-2 mr-2" : "mr-2"} text-neutral-400 transition-opacity duration-300 hover:text-neutral-500 focus-visible:opacity-100 motion-reduce:transition-none`,
+                    "mr-2 text-neutral-400 transition-opacity duration-300 hover:text-neutral-500 focus-visible:opacity-100 motion-reduce:transition-none",
                     expanded
                       ? "opacity-0 group-hover/row:opacity-100"
                       : "pointer-events-none opacity-0",
@@ -132,12 +128,12 @@ export default function TableOfContents({ items, locale = "en", placement = "art
                   onClick={(event) => onNavigate(event, item.anchor)}
                   aria-current={isActive ? "true" : undefined}
                   className="relative flex cursor-pointer items-center"
-                  style={{ width: expanded ? "auto" : placement === "viewport-left" ? 24 : undefined, paddingRight: 0 }}
+                  style={{ width: expanded ? "auto" : 12, paddingRight: 0 }}
                 >
                   <div
                     aria-hidden="true"
                     className={cn(
-                      `absolute ${placement === "viewport-left" ? "left-0" : "right-0"} h-0.5 rounded-full transition-all duration-300 ease-out motion-reduce:transition-none`,
+                      "absolute right-0 h-0.5 rounded-full transition-all duration-300 ease-out motion-reduce:transition-none",
                       isActive ? "bg-neutral-400" : "bg-neutral-300",
                     )}
                     style={{
@@ -147,7 +143,7 @@ export default function TableOfContents({ items, locale = "en", placement = "art
                   />
                   <span
                     className={cn(
-                      `whitespace-nowrap text-xs font-medium transition-all duration-300 ease-out motion-reduce:transition-none ${placement === "viewport-left" ? "text-left" : "text-right"}`,
+                      "whitespace-nowrap text-right text-xs font-medium transition-all duration-300 ease-out motion-reduce:transition-none",
                       isActive
                         ? "text-neutral-500"
                         : "text-neutral-400 hover:text-neutral-500",

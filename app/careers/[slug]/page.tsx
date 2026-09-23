@@ -82,8 +82,9 @@ export default async function CareerDetailPage({ params, locale = "en", basePath
     baseSalary: { "@type": "MonetaryAmount", currency: "EUR", value: { "@type": "QuantitativeValue", minValue: 2500, maxValue: 3000, unitText: "MONTH" } },
   } : null;
   return (
-    <main id="content" data-career-detail className="pb-20 lg:pb-0"><TableOfContents items={toc} locale={locale} placement="viewport-left" />
-      <article className="mx-auto grid w-full max-w-[1040px] gap-10 px-5 py-12 leading-relaxed sm:px-6 sm:py-24 lg:grid-cols-[minmax(0,692px)_280px] lg:items-start lg:gap-16">
+    <main id="content" data-career-detail className="pb-20 lg:pb-0">
+      <article className="relative mx-auto grid w-full max-w-[1040px] gap-10 px-5 py-12 leading-relaxed sm:px-6 sm:py-24 lg:grid-cols-[minmax(0,692px)_280px] lg:items-start lg:gap-16">
+        {toc.length > 0 ? <TableOfContents items={toc} locale={locale} /> : null}
         {jsonLd ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} /> : null}
         <header className="lg:col-span-2">
           <div className="flex items-center gap-3"><HistoryBackButton fallbackHref={`${basePath}/`} fallbackLabel={text.back} /><Link href={`${basePath}/`} className="text-sm text-gray-1000 underline-offset-4 hover:underline">{text.careers}</Link></div>
@@ -97,7 +98,7 @@ export default async function CareerDetailPage({ params, locale = "en", basePath
           </div>
         </header>
 
-        <div className="career-main-grid lg:col-span-2"><div className="max-w-[620px] space-y-6 text-[17px] leading-relaxed text-text-paragraph"><div className="xl:hidden"><MobileTableOfContents items={toc} locale={locale} /></div><div id="the-role-content">{renderDescription(job.description)}</div>
+        <div className="career-main-grid lg:col-span-2"><div className="max-w-[620px] space-y-6 text-[17px] leading-relaxed text-text-paragraph"><MobileTableOfContents items={toc} locale={locale} /><div id="the-role-content">{renderDescription(job.description)}</div>
           {job.challenge ? <section id="first-artifact" className="mt-16 border-t border-gray-300 pt-8" aria-labelledby="first-artifact-heading"><p className="text-xs uppercase tracking-[.12em] text-gray-1000">{locale === "it" ? "Primo artefatto" : locale === "fr" ? "Premier artefact" : locale === "es" ? "Primer artefacto" : locale === "de" ? "Erstes Artefakt" : "First artifact"}</p><h2 id="first-artifact-heading" className="mt-3 font-serif text-3xl font-medium">{job.challenge.title}</h2><p className="mt-4">{inlineCareerText(job.challenge.description)}</p><p className="mt-4 text-sm text-gray-1000"><strong>{locale === "it" ? "Consegna:" : locale === "fr" ? "Livrable :" : locale === "es" ? "Entrega:" : locale === "de" ? "Lieferumfang:" : "Deliverable:"}</strong> {inlineCareerText(job.challenge.deliverable)}</p></section> : null}
           <section id="fit" className="mt-16 border-t border-gray-300 pt-8" aria-labelledby="not-for-you-heading"><p className="text-xs uppercase tracking-[.12em] text-gray-1000">{locale === "it" ? "Fit" : locale === "fr" ? "Compatibilité" : locale === "es" ? "Encaje" : locale === "de" ? "Passung" : "Fit"}</p><h2 id="not-for-you-heading" className="mt-3 font-serif text-3xl font-medium">{text.notForYou}</h2><ul className="mt-6 grid gap-3 sm:grid-cols-2">{text.notForYouItems.map((item) => <li key={item} className="rounded-2xl border border-gray-300 bg-white px-4 py-4 text-[15px] leading-relaxed">{inlineCareerText(item)}</li>)}</ul><blockquote className="mt-6 border-l-2 border-gray-400 pl-5 font-serif text-xl italic leading-relaxed text-gray-1100">{text.stillReading}</blockquote></section>
         </div>

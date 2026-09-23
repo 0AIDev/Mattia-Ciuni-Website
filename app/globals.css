@@ -268,14 +268,6 @@ html {
 /* Career detail: keep exactly one application CTA visible at each viewport.
    This is explicit CSS rather than breakpoint-only utilities because the page is
    also reviewed inside narrow desktop preview panes. */
-.career-toc-viewport {
-  display: none;
-}
-@media (min-width: 1024px) {
-  .career-toc-viewport {
-    display: flex;
-  }
-}
 .career-main-grid {
   display: block;
 }
