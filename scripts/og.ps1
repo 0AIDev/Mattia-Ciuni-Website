@@ -70,6 +70,19 @@ function Save-Og($bmp, $g, $path) {
   Write-Output "wrote $path"
 }
 
+function Resize-Png($sourcePath, $outPath, $width, $height) {
+  $src = [System.Drawing.Image]::FromFile($sourcePath)
+  $bmp = New-Object System.Drawing.Bitmap($width, $height, [System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
+  $g = [System.Drawing.Graphics]::FromImage($bmp)
+  $g.InterpolationMode = [System.Drawing.Drawing2D.InterpolationMode]::HighQualityBicubic
+  $g.PixelOffsetMode = [System.Drawing.Drawing2D.PixelOffsetMode]::HighQuality
+  $g.CompositingQuality = [System.Drawing.Drawing2D.CompositingQuality]::HighQuality
+  $g.SmoothingMode = [System.Drawing.Drawing2D.SmoothingMode]::HighQuality
+  $g.DrawImage($src, 0, 0, $width, $height)
+  $src.Dispose()
+  Save-Og $bmp $g $outPath
+}
+
 # ---------------------------------------------------------------- font del sito
 # Instrument Serif (titoli) e Inter Light (sottotitoli) dai file in scripts/fonts/:
 # PrivateFontCollection li usa da disco, senza installarli nel sistema.
@@ -238,6 +251,34 @@ if ((Get-Item (Join-Path $Root "sfondo.svg")).LastWriteTime -gt (Get-Item $bgCar
   Write-Output 'ATTENZIONE: sfondo.svg e'' piu'' recente di og-sfondo.png: rilancia  node scripts/gen-og-bg.mjs'
 }
 
+# ------------------------------------------------------------ 3. OG delle Careers
+# Le pagine Careers sono contenuto pubblico distinto dagli articoli: la card
+# indice e ogni offerta usano lo stesso sistema editoriale, con dati letti dal
+# registro dei job per evitare titoli duplicati o card stale.
+function Get-CareerJobs {
+  $src = Get-Content (Join-Path $Root "lib\careers\jobs.ts") -Raw -Encoding UTF8
+  $re = [regex]'(?s)slug:\s*"([^"]+)".*?title:\s*"([^"]+)".*?department:\s*"([^"]+)".*?status:\s*"([^"]+)"'
+  return $re.Matches($src) | ForEach-Object {
+    [pscustomobject]@{
+      Slug = $_.Groups[1].Value
+      Title = $_.Groups[2].Value
+      Department = $_.Groups[3].Value
+      Status = $_.Groups[4].Value
+    }
+  }
+}
+
+$careerJobs = @(Get-CareerJobs | Where-Object { $_.Status -ne "closed" })
+if (!$Only -and !$Preview) {
+  $careerIndexPath = Join-Path (Join-Path $OutRoot "careers") "og.png"
+  New-ArticleCard $bgCard "Build with Payle - Careers" "Careers - Open roles and artifact-based hiring" $careerIndexPath 230 604 "View roles"
+  foreach ($careerJob in $careerJobs) {
+    $statusLabel = if ($careerJob.Status -eq "open") { "Open role" } else { "Coming soon" }
+    $careerOgPath = Join-Path (Join-Path $OutRoot "careers") (Join-Path $careerJob.Slug "og.png")
+    New-ArticleCard $bgCard $careerJob.Title ($careerJob.Department + " - " + $statusLabel) $careerOgPath 230 604 "View role"
+  }
+}
+
 $articles = @()
 $articles += Get-Articles "lib/posts.ts" "Thoughts"
 $articles += Get-Articles "lib/notes.ts" "Notes"
@@ -268,6 +309,7 @@ foreach ($a in $articles) {
   $dir = if ($a.Kind -eq "Thoughts") { "thoughts" } elseif ($a.Kind -eq "Feedback") { "feedback" } else { "notes" }
   $ogPath = Join-Path $OutRoot ($dir + "\" + $a.Slug + "\og.png")
   $coverPath = Join-Path $OutRoot ($dir + "\" + $a.Slug + "\cover.png")
+  $coverSmallPath = Join-Path $OutRoot ($dir + "\" + $a.Slug + "\cover-small.png")
   $subText = if ($Subtitle -eq "meta") { $a.Meta } else { $a.Description }
   $cta = if ($noCtaSlugs -contains $a.Slug) { "" } elseif ($a.Kind -eq "Thoughts") { "Read thought" } elseif ($a.Kind -eq "Feedback") { "Read feedback" } else { "Read note" }
 
@@ -299,6 +341,9 @@ foreach ($a in $articles) {
       Copy-MasterCard $masterFile $coverPath
     } else {
       New-ArticleCard $bgCover $a.Title $subText $coverPath 60 570 $cta
+    }
+    if ($a.Kind -eq "Notes") {
+      Resize-Png $coverPath $coverSmallPath 504 265
     }
   }
 }

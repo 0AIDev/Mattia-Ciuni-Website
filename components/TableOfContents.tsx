@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { flushSync } from "react-dom";
 import { ChevronRight } from "@/components/icons";
 import SectionCopyLink from "@/components/SectionCopyLink";
@@ -45,32 +45,26 @@ export default function TableOfContents({ items, locale = "en" }: { items: TocIt
   const anchors = useMemo(() => key.split("|").filter(Boolean), [key]);
   const [active, setActive] = useState<string | null>(null);
   const [expanded, setExpanded] = useState(false);
-  const frame = useRef(0);
-
-  // Sezione corrente = ultimo heading che ha passato la linea di lettura.
+  // IntersectionObserver aggiorna la sezione attiva senza interrogare la
+  // geometria di tutti gli heading a ogni scroll. Il browser calcola già queste
+  // intersezioni durante il proprio ciclo di layout, evitando forced reflow.
   useEffect(() => {
-    if (!anchors.length) return;
-    const measure = () => {
-      frame.current = 0;
-      const line = Math.max(SCROLL_OFFSET, window.innerHeight * 0.12);
-      let current: string | null = null;
-      for (const anchor of anchors) {
-        const el = document.getElementById(anchor);
-        if (el && el.getBoundingClientRect().top <= line) current = anchor;
-      }
-      setActive(current);
-    };
-    const schedule = () => {
-      if (!frame.current) frame.current = window.requestAnimationFrame(measure);
-    };
-    measure();
-    window.addEventListener("scroll", schedule, { passive: true });
-    window.addEventListener("resize", schedule);
-    return () => {
-      window.removeEventListener("scroll", schedule);
-      window.removeEventListener("resize", schedule);
-      if (frame.current) window.cancelAnimationFrame(frame.current);
-    };
+    if (!anchors.length || typeof IntersectionObserver === "undefined") return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const visible = entries
+          .filter((entry) => entry.isIntersecting)
+          .sort((a, b) => a.boundingClientRect.top - b.boundingClientRect.top);
+        const next = visible[0]?.target.id;
+        if (next) setActive((current) => (current === next ? current : next));
+      },
+      { rootMargin: `-${SCROLL_OFFSET}px 0px -70% 0px`, threshold: [0, 1] },
+    );
+    anchors.forEach((anchor) => {
+      const element = document.getElementById(anchor);
+      if (element) observer.observe(element);
+    });
+    return () => observer.disconnect();
   }, [anchors]);
 
   const onNavigate = useCallback(

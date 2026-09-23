@@ -92,11 +92,23 @@
   Content-Type: image/png
   Cache-Control: public, max-age=86400, s-maxage=86400
 
+/notes/*/cover-small.png
+  Content-Type: image/png
+  Cache-Control: public, max-age=86400, s-maxage=86400
+
 /thoughts/og.png
   Content-Type: image/png
   Cache-Control: public, max-age=86400, s-maxage=86400
 
 /notes/og.png
+  Content-Type: image/png
+  Cache-Control: public, max-age=86400, s-maxage=86400
+
+/careers/og.png
+  Content-Type: image/png
+  Cache-Control: public, max-age=86400, s-maxage=86400
+
+/careers/*/og.png
   Content-Type: image/png
   Cache-Control: public, max-age=86400, s-maxage=86400
 

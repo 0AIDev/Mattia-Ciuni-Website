@@ -31,6 +31,7 @@ export function NotesCarousel({ notes }: { notes: Note[] }) {
   const track = useRef<HTMLUListElement>(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(notes.length > 1);
+  const frame = useRef<number | null>(null);
 
   const updateControls = useCallback(() => {
     const element = track.current;
@@ -42,12 +43,20 @@ export function NotesCarousel({ notes }: { notes: Note[] }) {
   useEffect(() => {
     const element = track.current;
     if (!element) return;
+    const scheduleControls = () => {
+      if (frame.current !== null) return;
+      frame.current = window.requestAnimationFrame(() => {
+        frame.current = null;
+        updateControls();
+      });
+    };
     updateControls();
-    element.addEventListener("scroll", updateControls, { passive: true });
-    window.addEventListener("resize", updateControls);
+    element.addEventListener("scroll", scheduleControls, { passive: true });
+    window.addEventListener("resize", scheduleControls);
     return () => {
-      element.removeEventListener("scroll", updateControls);
-      window.removeEventListener("resize", updateControls);
+      element.removeEventListener("scroll", scheduleControls);
+      window.removeEventListener("resize", scheduleControls);
+      if (frame.current !== null) window.cancelAnimationFrame(frame.current);
     };
   }, [updateControls]);
 
@@ -90,11 +99,12 @@ export function NotesCarousel({ notes }: { notes: Note[] }) {
             <Link href={`/notes/${note.slug}/`} className="group block">
               <div className="overflow-hidden rounded-lg border border-gray-300 bg-preview-bg">
                 <Image
-                  src={`/notes/${note.slug}/cover.png`}
+                  src={`/notes/${note.slug}/cover-small.png`}
                   alt=""
-                  width={1200}
-                  height={630}
+                  width={504}
+                  height={265}
                   loading="lazy"
+                  sizes="(max-width: 640px) 228px, 252px"
                   className="aspect-[1.9] h-auto w-full object-cover transition-transform duration-500 group-hover:scale-[1.02] motion-reduce:transition-none"
                 />
               </div>

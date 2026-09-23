@@ -33,17 +33,7 @@ export function UmamiAnalytics() {
         id="umami-analytics"
         src="https://cloud.umami.is/script.js"
         data-website-id="3a1dbd1d-11af-4437-a649-e82f55944f53"
-        strategy="afterInteractive"
-      />
-      {/* Umami pixel: fallback leggero per i client che non eseguono JavaScript. */}
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
-        src="https://cloud.umami.is/p/0nHh9TNrR"
-        alt=""
-        width="1"
-        height="1"
-        aria-hidden="true"
-        className="pointer-events-none absolute h-px w-px opacity-0"
+        strategy="lazyOnload"
       />
     </>
   );

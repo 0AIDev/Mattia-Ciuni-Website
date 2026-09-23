@@ -5,11 +5,18 @@ import { HistoryBackButton } from "@/components/HistoryBackButton";
 import { comingSoonJobs, openJobs, publicJobs, shouldShowRoleSearch } from "@/lib/careers/jobs";
 import type { Locale } from "@/lib/i18n";
 import { careersUi } from "@/lib/careers/ui";
+import { socialImages } from "@/lib/social";
+
+const careersTitle = "Build with Payle — Careers";
+const careersDescription = "I hire by artifact: ship something real, then we talk. Open roles at Payle.";
+const careersCard = socialImages("/careers/og.png", careersTitle);
 
 export const metadata: Metadata = {
-  title: "Build with Payle — Careers",
-  description: "I hire by artifact: ship something real, then we talk. Open roles at Payle.",
+  title: careersTitle,
+  description: careersDescription,
   alternates: { canonical: "/careers/" },
+  openGraph: { type: "website", url: "/careers/", siteName: "Mattia Ciuni", title: careersTitle, description: careersDescription, images: careersCard.og },
+  twitter: { card: "summary_large_image", title: careersTitle, description: careersDescription, images: careersCard.twitter },
 };
 
 export function CareersPage({ locale = "en", basePath = "/careers" }: { locale?: Locale; basePath?: string }) {

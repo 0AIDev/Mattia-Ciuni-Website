@@ -184,7 +184,9 @@ export function GoogleAnalytics() {
   useEffect(() => {
     const marks = [25, 50, 75, 100];
     const fired = new Set<number>();
-    const onScroll = () => {
+    let frame: number | null = null;
+    const measure = () => {
+      frame = null;
       const scrollable = document.documentElement.scrollHeight - window.innerHeight;
       if (scrollable <= 4) return;
       const percent = Math.min(100, Math.round((window.scrollY / scrollable) * 100));
@@ -196,9 +198,15 @@ export function GoogleAnalytics() {
         }
       }
     };
-    onScroll();
+    const onScroll = () => {
+      if (frame === null) frame = window.requestAnimationFrame(measure);
+    };
+    measure();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      if (frame !== null) window.cancelAnimationFrame(frame);
+    };
   }, [pathname, consent]);
 
   // Uscita: quanto è durata la pagina, quanto in basso è arrivata, dove è andata

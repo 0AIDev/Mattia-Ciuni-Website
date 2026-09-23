@@ -35,7 +35,7 @@ const instrumentSerif = Instrument_Serif({
   display: "swap",
   // The above-the-fold copy uses Inter. Let the serif load on demand so mobile
   // does not block the first paint on a second large font request.
-  preload: false,
+  preload: true,
 });
 
 // La card della home, dichiarata una volta e usata da Open Graph e Twitter.

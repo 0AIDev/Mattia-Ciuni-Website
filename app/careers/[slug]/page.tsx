@@ -13,6 +13,7 @@ import { WalletIcon } from "@/components/ui/wallet";
 import SectionCopyLink from "@/components/SectionCopyLink";
 import TableOfContents, { MobileTableOfContents, type TocItem } from "@/components/TableOfContents";
 import { slugify } from "@/lib/slug";
+import { socialImages } from "@/lib/social";
 
 export const dynamicParams = false;
 
@@ -23,7 +24,8 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const job = getJob((await params).slug);
   if (!job) return {};
-  return { title: job.title, description: job.shortPitch, alternates: { canonical: `/careers/${job.slug}/` } };
+  const card = socialImages(`/careers/${job.slug}/og.png`, job.title);
+  return { title: job.title, description: job.shortPitch, alternates: { canonical: `/careers/${job.slug}/` }, openGraph: { type: "website", url: `/careers/${job.slug}/`, siteName: "Mattia Ciuni", title: job.title, description: job.shortPitch, images: card.og }, twitter: { card: "summary_large_image", title: job.title, description: job.shortPitch, images: card.twitter } };
 }
 
 function MinimalArrow({ direction = "right" }: { direction?: "left" | "right" }) { return <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4"><path d={direction === "left" ? "m12.5 4-6 6 6 6" : "m7.5 4 6 6-6 6"} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" /></svg>; }
