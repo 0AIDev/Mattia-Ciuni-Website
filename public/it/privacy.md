@@ -1,6 +1,6 @@
 # Privacy | Mattia Ciuni
 
-> Come raccolgo, uso e proteggo i dati quando visiti questo sito.
+> Founder & CEO of Payle, the money layer for AI agents. Building controlled spending infrastructure for the agentic economy. YC applicant, relocating to San Francisco.
 
 - URL: https://mattiaciuni.pages.dev/it/privacy
 - Type: Page

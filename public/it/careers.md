@@ -1,6 +1,6 @@
-# Lavora con Payle — Careers | Mattia Ciuni
+# Lavora con me — Payle | Mattia Ciuni
 
-> Le posizioni aperte e il processo di selezione di Payle.
+> Lavora con me. Segui il lavoro nel Sunday log.
 
 - URL: https://mattiaciuni.pages.dev/it/careers
 - Type: Page

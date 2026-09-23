@@ -4,7 +4,7 @@ Generated from the static export on 2026-09-23. This is the repository/export au
 
 ## Executive summary
 
-The audit found **183 public HTML pages**. Every public page is checked for a title, canonical, Open Graph image, H1, structured data, image alt text and sitemap membership. The admin area is intentionally excluded from indexing and from this table. A CHECK is a prompt for review, not an automatic ranking failure: empty content pages such as Videos and Voice Notes can legitimately have no item-level schema when they are awaiting recordings.
+The audit found **184 public HTML pages**. Every public page is checked for a title, canonical, Open Graph image, H1, structured data, image alt text and sitemap membership. The admin area is intentionally excluded from indexing and from this table. A CHECK is a prompt for review, not an automatic ranking failure: empty content pages such as Videos and Voice Notes can legitimately have no item-level schema when they are awaiting recordings.
 
 ## Page inventory
 
@@ -173,6 +173,7 @@ The audit found **183 public HTML pages**. Every public page is checked for a ti
 | [/it/work/](/it/work/) | PASS Lavoro | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/legal/](/legal/) | PASS Legal Center | Privacy, Terms and Cookies | Mattia Ciuni | PASS | CHECK none | PASS | CHECK | 1 / all alt | 17 |
 | [/link/](/link/) | PASS Links | Mattia Ciuni | PASS | PASS Person | PASS | CHECK | 1 / all alt | 9 |
+| [/nda/](/nda/) | PASS NDA | Mattia Ciuni | PASS | CHECK none | CHECK | CHECK | 1 / all alt | 16 |
 | [/newsletter/](/newsletter/) | PASS Newsletter | Mattia Ciuni | PASS | CHECK none | PASS | CHECK | 1 / all alt | 16 |
 | [/notes/about-the-name/](/notes/about-the-name/) | PASS About the name | Mattia Ciuni | PASS | PASS Article, BreadcrumbList | PASS | PASS | 2 / all alt | 22 |
 | [/notes/honestly-im-excited/](/notes/honestly-im-excited/) | PASS Honestly? I&#x27;m excited. | Mattia Ciuni | PASS | PASS Article, BreadcrumbList | PASS | PASS | 2 / all alt | 22 |

@@ -79,6 +79,10 @@ const sections: LegalSection[] = [
               body: "your answer to the Google Analytics notice. Local storage, no expiry, deleted when you clear site data, after which the notice appears again.",
             },
             {
+              name: "mattia-ciuni-consent-event-v1",
+              body: "a session marker that prevents the analytics consent choice from being counted twice in one visit. Session storage, deleted when you close the tab.",
+            },
+            {
               name: "mattia-ciuni-page-enter",
               body: "the moment the page you are reading was opened, so its duration can be written when you move on. Session storage: it disappears when you close the tab and it is empty in a new one.",
             },

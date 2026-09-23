@@ -111,6 +111,7 @@ const isPrivate = (pagePath) => pagePath === "admin" || pagePath.startsWith("adm
 const pages = listPages(outDir)
   .filter(({ rel }) => !["404", "_not-found"].includes(pagePathOf(rel)))
   .filter(({ rel }) => !isPrivate(pagePathOf(rel)))
+  .filter(({ rel }) => pagePathOf(rel) !== "nda")
   .map(({ file, rel }) => {
     const pagePath = pagePathOf(rel);
     const segments = pagePath ? pagePath.split("/") : [];

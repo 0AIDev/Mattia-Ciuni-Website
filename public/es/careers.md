@@ -1,6 +1,6 @@
-# Build with Payle — Careers | Mattia Ciuni
+# Carreras — Payle | Mattia Ciuni
 
-> Open roles and the artifact-based hiring process at Payle.
+> Carreras. Sigue el trabajo en el Sunday log.
 
 - URL: https://mattiaciuni.pages.dev/es/careers
 - Type: Page
