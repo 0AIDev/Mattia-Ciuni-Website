@@ -5,6 +5,9 @@ import { flushSync } from "react-dom";
 import { ChevronRight } from "@/components/icons";
 import SectionCopyLink from "@/components/SectionCopyLink";
 import { cn } from "@/lib/utils";
+import { track } from "@/lib/analytics";
+import type { Locale } from "@/lib/i18n";
+import { articleUi } from "@/lib/article-ui";
 
 export interface TocItem {
   anchor: string;
@@ -36,7 +39,8 @@ function navigateTo(
 }
 
 /** Rail laterale sticky: solo desktop, a sinistra della colonna da 692px. */
-export default function TableOfContents({ items }: { items: TocItem[] }) {
+export default function TableOfContents({ items, locale = "en", placement = "article" }: { items: TocItem[]; locale?: Locale; placement?: "article" | "viewport-left" }) {
+  const text = articleUi[locale];
   const key = items.map((item) => item.anchor).join("|");
   const anchors = useMemo(() => key.split("|").filter(Boolean), [key]);
   const [active, setActive] = useState<string | null>(null);
@@ -72,6 +76,7 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
   const onNavigate = useCallback(
     (event: React.MouseEvent<HTMLAnchorElement>, anchor: string) => {
       setActive(anchor);
+      track("toc_click", { anchor, label: document.getElementById(anchor)?.textContent?.slice(0, 120) || anchor, placement: "rail" });
       navigateTo(event, anchor);
     },
     [],
@@ -82,11 +87,13 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
   return (
     // Solo desktop: a sinistra della colonna 692px, senza mai uscire dal viewport.
     <div
-      className="pointer-events-none fixed inset-y-0 z-40 hidden w-[320px] justify-end print:hidden xl:flex"
-      style={{ right: "min(calc(50% + 346px), calc(100% - 320px))" }}
+      className={placement === "viewport-left" ? "career-toc-viewport fixed inset-y-0 left-0 z-40 w-[320px] justify-start pointer-events-auto" : "fixed inset-y-0 z-40 hidden w-[320px] justify-end pointer-events-none xl:flex"}
+      style={placement === "viewport-left" ? undefined : { right: "min(calc(50% + 346px), calc(100% - 320px))" }}
+      onMouseEnter={() => placement === "viewport-left" && setExpanded(true)}
+      onMouseLeave={() => placement === "viewport-left" && setExpanded(false)}
     >
       <nav
-        aria-label="Table of contents"
+        aria-label={text.onThisPage}
         onMouseEnter={() => setExpanded(true)}
         onMouseLeave={() => setExpanded(false)}
         onFocus={() => setExpanded(true)}
@@ -96,9 +103,9 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
           }
         }}
         className="sticky top-0 flex h-dvh h-screen items-center bg-transparent transition-[width] duration-300 ease-out motion-reduce:transition-none pointer-events-auto"
-        style={{ width: expanded ? 320 : 192 }}
+        style={{ width: expanded ? 320 : placement === "viewport-left" ? 64 : 192, pointerEvents: placement === "viewport-left" ? "auto" : undefined }}
       >
-        <div className="relative flex w-full flex-col pr-6" style={{ gap: 6 }}>
+        <div className={`relative flex w-full flex-col ${placement === "viewport-left" ? "pl-6" : "pr-6"}`} style={{ gap: 6 }}>
           {items.map((item) => {
             const isActive = active === item.anchor;
             return (
@@ -106,7 +113,7 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
               // bersaglio per volta, così il click non naviga mai per errore.
               <div
                 key={item.anchor}
-                className="group/row relative flex items-center justify-end transition-[height] duration-300 ease-out motion-reduce:transition-none"
+                className={`group/row relative flex items-center transition-[height] duration-300 ease-out motion-reduce:transition-none ${placement === "viewport-left" ? "justify-start" : "justify-end"}`}
                 style={{ height: expanded ? 24 : 8 }}
               >
                 <SectionCopyLink
@@ -114,7 +121,7 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
                   label={item.label}
                   size={14}
                   className={cn(
-                    "mr-2 text-neutral-400 transition-opacity duration-300 hover:text-neutral-500 focus-visible:opacity-100 motion-reduce:transition-none",
+                    `${placement === "viewport-left" ? "ml-2 mr-2" : "mr-2"} text-neutral-400 transition-opacity duration-300 hover:text-neutral-500 focus-visible:opacity-100 motion-reduce:transition-none`,
                     expanded
                       ? "opacity-0 group-hover/row:opacity-100"
                       : "pointer-events-none opacity-0",
@@ -125,12 +132,12 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
                   onClick={(event) => onNavigate(event, item.anchor)}
                   aria-current={isActive ? "true" : undefined}
                   className="relative flex cursor-pointer items-center"
-                  style={{ paddingRight: 0 }}
+                  style={{ width: expanded ? "auto" : placement === "viewport-left" ? 24 : undefined, paddingRight: 0 }}
                 >
                   <div
                     aria-hidden="true"
                     className={cn(
-                      "absolute right-0 h-0.5 rounded-full transition-all duration-300 ease-out motion-reduce:transition-none",
+                      `absolute ${placement === "viewport-left" ? "left-0" : "right-0"} h-0.5 rounded-full transition-all duration-300 ease-out motion-reduce:transition-none`,
                       isActive ? "bg-neutral-400" : "bg-neutral-300",
                     )}
                     style={{
@@ -140,7 +147,7 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
                   />
                   <span
                     className={cn(
-                      "whitespace-nowrap text-right text-xs font-medium transition-all duration-300 ease-out motion-reduce:transition-none",
+                      `whitespace-nowrap text-xs font-medium transition-all duration-300 ease-out motion-reduce:transition-none ${placement === "viewport-left" ? "text-left" : "text-right"}`,
                       isActive
                         ? "text-neutral-500"
                         : "text-neutral-400 hover:text-neutral-500",
@@ -166,7 +173,8 @@ export default function TableOfContents({ items }: { items: TocItem[] }) {
  * Indice ripiegato in cima all'articolo: solo mobile/tablet (sotto `xl`),
  * dove il rail laterale non c'è.
  */
-export function MobileTableOfContents({ items }: { items: TocItem[] }) {
+export function MobileTableOfContents({ items, locale = "en" }: { items: TocItem[]; locale?: Locale }) {
+  const text = articleUi[locale];
   const [open, setOpen] = useState(false);
 
   if (!items.length) return null;
@@ -177,10 +185,10 @@ export function MobileTableOfContents({ items }: { items: TocItem[] }) {
         type="button"
         aria-expanded={open}
         aria-controls="on-this-page"
-        onClick={() => setOpen((value) => !value)}
+        onClick={() => { setOpen((value) => !value); track("toc_toggle", { open: !open, placement: "mobile" }); }}
         className="flex w-full cursor-pointer items-center justify-between gap-4 py-3.5 text-sm text-gray-1000"
       >
-        On this page
+        {text.onThisPage}
         <span
           className="shrink-0 transition-transform duration-300 motion-reduce:transition-none"
           style={{ transform: open ? "rotate(90deg)" : undefined }}
@@ -202,6 +210,7 @@ export function MobileTableOfContents({ items }: { items: TocItem[] }) {
                   // altrimenti l'heading atterra spostato di tutta l'altezza
                   // dell'indice appena richiuso.
                   flushSync(() => setOpen(false));
+                  track("toc_click", { anchor: item.anchor, placement: "mobile" });
                   navigateTo(event, item.anchor);
                 }}
                 className="text-sm text-text-paragraph"

@@ -3,6 +3,7 @@
 import Image from "next/image";
 import { FormEvent, useCallback, useEffect, useState } from "react";
 import QRCode from "qrcode";
+import { AdminWorkspace, type AdminJob } from "@/components/AdminWorkspace";
 
 type FeedbackRecord = {
   id: string;
@@ -36,6 +37,8 @@ type AnalyticsData = {
   available: boolean;
 };
 
+type AdminJobsResponse = { jobs?: AdminJob[] };
+
 function metric(value: unknown, suffix = "") {
   if (value === null || value === undefined || value === "") return "—";
   const number = typeof value === "number" ? value : Number(value);
@@ -51,6 +54,12 @@ const IDENTITIES: Record<AdminRole, AdminIdentity> = {
 };
 
 const API = "/api/admin/feedback";
+const EMPTY_ANALYTICS: AnalyticsData = { daily: [], pages: [], flow: [], acquisition: [], conversions: [], available: false };
+
+function localPreviewEnabled() {
+  if (typeof window === "undefined") return false;
+  return ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
+}
 
 export default function FeedbackAdminPage() {
   const [token, setToken] = useState("");
@@ -59,12 +68,14 @@ export default function FeedbackAdminPage() {
   const [setup, setSetup] = useState<Setup | null>(null);
   const [mode, setMode] = useState<"loading" | "setup" | "login">("loading");
   const [records, setRecords] = useState<FeedbackRecord[]>([]);
-  const [analytics, setAnalytics] = useState<AnalyticsData | null>(null);
+  const [analytics, setAnalytics] = useState<AnalyticsData>(EMPTY_ANALYTICS);
+  const [jobs, setJobs] = useState<AdminJob[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const [identity, setIdentity] = useState<AdminIdentity | null>(null);
   const [sessionChecked, setSessionChecked] = useState(false);
+  const [resetRequested, setResetRequested] = useState(false);
 
   const readError = async (response: Response): Promise<ApiError> =>
     (await response.json().catch(() => ({}))) as ApiError;
@@ -76,34 +87,66 @@ export default function FeedbackAdminPage() {
 
   const load = useCallback(async ({ quiet = false } = {}) => {
     try {
+      if (!localPreviewEnabled() && new URLSearchParams(window.location.search).get("reset") === "1") {
+        setAuthenticated(false);
+        setIdentity(null);
+        setMode("setup");
+        setSessionChecked(true);
+        return;
+      }
       const response = await fetch(API, { cache: "no-store" });
       if (response.status === 401) {
         const data = await readError(response);
         setAuthenticated(false);
         setIdentity(null);
         setRecords([]);
-        setAnalytics(null);
+        setAnalytics(EMPTY_ANALYTICS);
+        setJobs([]);
         setMode(data.setup_required ? "setup" : "login");
         if (!quiet && !data.setup_required) setError("The token or authenticator code is not valid.");
         return;
       }
-      if (!response.ok) throw new Error(localApiMessage(response));
-      const data = (await response.json()) as { records?: FeedbackRecord[]; role?: AdminRole; analytics?: AnalyticsData };
+      if (!response.ok) {
+        // `next dev` does not mount Cloudflare Pages Functions. On loopback we
+        // still render the workspace so the UI can be reviewed without auth;
+        // mutations remain unavailable until `npm run dev:pages` is used.
+        if (localPreviewEnabled() && [401, 404, 503].includes(response.status)) {
+          setRecords([]);
+          setAnalytics(EMPTY_ANALYTICS);
+          setJobs([]);
+          setIdentity(IDENTITIES.ceo);
+          setAuthenticated(true);
+          setMode("login");
+          setError("");
+          return;
+        }
+        throw new Error(localApiMessage(response));
+      }
+      const data = (await response.json()) as { records?: FeedbackRecord[]; role?: AdminRole; analytics?: AnalyticsData } & AdminJobsResponse;
       setRecords(data.records || []);
-      setAnalytics(data.analytics || null);
+      setAnalytics(data.analytics || EMPTY_ANALYTICS);
+      setJobs(data.jobs || []);
       setIdentity(IDENTITIES.ceo);
       setAuthenticated(true);
       setMode("login");
       setError("");
     } catch (caught) {
-      setAuthenticated(false);
-      setIdentity(null);
-      setMode("login");
-      const message = caught instanceof Error ? caught.message : "The review queue is unavailable.";
-      // In `next dev` Pages Functions are not mounted. Do not hide that fact on
-      // the initial check: otherwise the user types a valid token into a form
-      // that can never reach the API and only sees a generic failure later.
-      if (!quiet || message.includes("local Pages API")) setError(message);
+      if (localPreviewEnabled()) {
+        setRecords([]);
+        setAnalytics(EMPTY_ANALYTICS);
+        setJobs([]);
+        setIdentity(IDENTITIES.ceo);
+        setAuthenticated(true);
+        setMode("login");
+        setError("");
+      } else {
+        setAuthenticated(false);
+        setIdentity(null);
+        setMode("login");
+        const message = caught instanceof Error ? caught.message : "The review queue is unavailable.";
+        // Outside loopback, keep the real authentication/API error visible.
+        if (!quiet || message.includes("local Pages API")) setError(message);
+      }
     } finally {
       setSessionChecked(true);
     }
@@ -113,7 +156,10 @@ export default function FeedbackAdminPage() {
     // Revalidate the HttpOnly session after a refresh. An unauthenticated 401 is
     // expected here and stays quiet; an existing session restores the queue
     // without asking for the token or TOTP again.
-    const timer = window.setTimeout(() => void load({ quiet: true }), 0);
+    const timer = window.setTimeout(() => {
+      setResetRequested(new URLSearchParams(window.location.search).get("reset") === "1");
+      void load({ quiet: true });
+    }, 0);
     return () => window.clearTimeout(timer);
   }, [load]);
 
@@ -169,6 +215,33 @@ export default function FeedbackAdminPage() {
     }
   }
 
+  async function resetAuthenticator(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(API, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ action: "reset_setup", token }),
+      });
+      if (!response.ok) {
+        const data = await readError(response);
+        throw new Error(data.code === "unauthorized" ? "The reset secret is not valid." : localApiMessage(response));
+      }
+      setToken("");
+      setCode("");
+      setSetup(null);
+      setResetRequested(false);
+      setMode("setup");
+      window.history.replaceState({}, "", "/admin/feedback/");
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "Authenticator reset failed.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
   async function login(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setLoading(true);
@@ -211,7 +284,8 @@ export default function FeedbackAdminPage() {
       setCode("");
       setToken("");
       setRecords([]);
-      setAnalytics(null);
+      setAnalytics(EMPTY_ANALYTICS);
+      setJobs([]);
       setAuthenticated(false);
       setIdentity(null);
       setMode("login");
@@ -300,7 +374,17 @@ export default function FeedbackAdminPage() {
     return (
       <main id="admin-feedback-page" className="mx-auto flex min-h-[100dvh] max-w-[460px] items-center px-5 py-8 font-sans sm:px-6 sm:py-12">
         <section className="w-full rounded-3xl border border-gray-300 bg-white p-6 sm:p-8">
-          {mode === "setup" && !setup ? (
+          {resetRequested ? (
+            <>
+              <h1 className="font-serif text-3xl text-gray-1200">Reset your authenticator</h1>
+              <p className="mt-3 text-sm leading-relaxed text-gray-1000">This revokes every existing admin session and lets you configure TOTP again from zero. It requires the dedicated Cloudflare reset secret.</p>
+              <form onSubmit={resetAuthenticator} className="mt-6 flex flex-col gap-3">
+                <label htmlFor="totp-reset-token" className="sr-only">TOTP reset secret</label>
+                <input id="totp-reset-token" type="password" value={token} onChange={(event) => setToken(event.target.value)} placeholder="TOTP reset secret" autoComplete="off" className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 text-sm text-gray-1200 outline-none shadow-none focus:border-gray-1200 focus:outline-none" required />
+                <button type="submit" disabled={loading || !token} className="rounded-full bg-red-600 px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-80 disabled:opacity-50">{loading ? "Resetting" : "Reset authenticator"}</button>
+              </form>
+            </>
+          ) : mode === "setup" && !setup ? (
             <>
               <h1 className="font-serif text-3xl text-gray-1200">Set up your authenticator</h1>
               <p className="mt-3 text-sm leading-relaxed text-gray-1000">
@@ -348,6 +432,34 @@ export default function FeedbackAdminPage() {
       </main>
     );
   }
+
+  async function saveJobs(nextJobs: AdminJob[]) {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "jobs_save", jobs: nextJobs }) });
+      if (!response.ok) throw new Error("The job offers could not be saved.");
+      setJobs(nextJobs);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "The job offers could not be saved.");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return <AdminWorkspace
+      records={records}
+      analytics={analytics}
+      jobs={jobs}
+      identity={identity}
+      loading={loading}
+      error={error}
+      onLogout={() => void logout()}
+      onCreateTest={() => void createTestFeedback()}
+      onModerate={(id, action) => void moderate(id, action)}
+      onSaveJobs={(nextJobs) => void saveJobs(nextJobs)}
+      localMode={localPreviewEnabled()}
+    />;
 
   return (
     <main id="admin-feedback-page" className="mx-auto w-full max-w-[760px] min-w-0 px-5 py-8 sm:px-6 sm:py-20">

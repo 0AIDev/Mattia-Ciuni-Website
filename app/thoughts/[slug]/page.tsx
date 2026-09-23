@@ -8,7 +8,7 @@ import { GhassenLinks } from "@/components/GhassenLinks";
 import { RelatedList } from "@/components/RelatedList";
 import { InlineText } from "@/components/RichText";
 import { ChevronRight } from "@/components/icons";
-import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
+import { HistoryBackButton } from "@/components/HistoryBackButton";
 import { MailCheckIcon } from "@/components/ui/mail-check";
 import { AudioPlayer } from "@/components/MediaPlayers";
 import SectionCopyLink from "@/components/SectionCopyLink";
@@ -22,6 +22,8 @@ import { notes } from "@/lib/notes";
 import { relatedArticles } from "@/lib/related";
 import { slugify } from "@/lib/slug";
 import { socialImages } from "@/lib/social";
+import { articleUi } from "@/lib/article-ui";
+import type { Locale } from "@/lib/i18n";
 
 export function generateStaticParams() {
   return posts.map((p) => ({ slug: p.slug }));
@@ -136,12 +138,18 @@ function BlockFlow({ blocks }: { blocks: Block[] }) {
 
 export default async function BlogPost({
   params,
+  fallbackHref = "/",
+  locale = "en",
 }: {
   params: Promise<{ slug: string }>;
+  fallbackHref?: string;
+  locale?: Locale;
 }) {
   const { slug } = await params;
   const post = getPost(slug);
   if (!post) notFound();
+  const ui = articleUi[locale];
+  const prefix = locale === "en" ? "" : `/${locale}`;
   const base = site.url.replace(/\/$/, "");
   const url = `${base}/thoughts/${post.slug}/`;
 
@@ -165,8 +173,8 @@ export default async function BlogPost({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: base + "/" },
-      { "@type": "ListItem", position: 2, name: "Thoughts", item: base + "/thoughts/" },
+      { "@type": "ListItem", position: 1, name: ui.home, item: base + `${prefix}/` },
+      { "@type": "ListItem", position: 2, name: ui.thoughts, item: base + `${prefix}/thoughts/` },
       { "@type": "ListItem", position: 3, name: post.title, item: url },
     ],
   };
@@ -193,20 +201,18 @@ export default async function BlogPost({
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbJsonLd) }}
       />
-      <nav aria-label="Breadcrumb" className="mb-4">
+      <nav aria-label={ui.thoughts} className="mb-4">
         <ol className="m-0 flex list-none flex-wrap items-center gap-x-2 p-0 text-sm text-gray-1000">
           <li>
-            <Link href="/" className="transition-colors hover:text-gray-1200">
-              Home
+            <Link href={`${prefix}/`} className="transition-colors hover:text-gray-1200">
+              {ui.home}
             </Link>
           </li>
           <li aria-hidden="true">·</li>
           <li>
             <Link
-              href="/thoughts/"
-              className="transition-colors hover:text-gray-1200"
-            >
-              Thoughts
+              href={`${prefix}/thoughts/`}
+              className="transition-colors hover:text-gray-1200">{ui.thoughts}
             </Link>
           </li>
           <li aria-hidden="true">·</li>
@@ -217,30 +223,24 @@ export default async function BlogPost({
       </nav>
       <header className="mb-16 flex min-w-0 flex-wrap items-center justify-between gap-4 sm:mb-24">
         <div className="flex min-w-0 max-w-full items-center gap-4">
-          <Link
-            href="/"
-            aria-label="Go back home"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-300 transition-colors hover:bg-gray-400"
-          >
-            <ArrowUpLeftIcon size={16} />
-          </Link>
+          <HistoryBackButton fallbackHref={fallbackHref} fallbackLabel={ui.back} />
           <span className="min-w-0 text-sm text-gray-1000">
             <time dateTime={post.date}>{post.date}</time>
             {post.updated ? (
               <>
                 {" "}
-                · updated <time dateTime={post.updated}>{post.updated}</time>
+                · {ui.updated} <time dateTime={post.updated}>{post.updated}</time>
               </>
             ) : null}{" "}
-            · {post.readingMinutes} min read
+            · {post.readingMinutes} {ui.minRead}
           </span>
         </div>
-        <CopyPostLink />
+        <CopyPostLink locale={locale} />
       </header>
 
       <article className="min-w-0 max-w-full">
-        {toc.length > 0 ? <TableOfContents items={toc} /> : null}
-        <MobileTableOfContents items={toc} />
+        {toc.length > 0 ? <TableOfContents items={toc} locale={locale} /> : null}
+        <MobileTableOfContents items={toc} locale={locale} />
         <div data-article-content className="min-w-0 max-w-full break-words [overflow-wrap:anywhere]">
           <CoverImage src={`/thoughts/${post.slug}/cover.png`} />
           <h1
@@ -271,10 +271,10 @@ export default async function BlogPost({
 
       <RelatedList
         id="more"
-        heading="More"
+        heading={ui.more}
         items={related.map((r) => ({
           slug: r.slug,
-          href: `/thoughts/${r.slug}/`,
+          href: `${prefix}/thoughts/${r.slug}/`,
           title: r.title,
           meta: `${r.category} · ${r.date}`,
         }))}
@@ -282,23 +282,23 @@ export default async function BlogPost({
 
       <RelatedList
         id="notes"
-        heading="Notes"
+        heading={ui.notes}
         className="mt-16"
         items={relatedNotes.map((n) => ({
           slug: n.slug,
-          href: `/notes/${n.slug}/`,
+          href: `${prefix}/notes/${n.slug}/`,
           title: n.title,
           meta: n.date,
         }))}
       />
 
-      <nav aria-label="Continue reading" className="mt-8 border-t border-gray-300">
+      <nav aria-label={ui.continueReading} className="mt-8 border-t border-gray-300">
         {next ? (
           <Link
-            href={`/thoughts/${next.slug}/`}
+            href={`${prefix}/thoughts/${next.slug}/`}
             className="group flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5 py-3.5"
           >
-            <span className="text-gray-1000">Next</span>
+            <span className="text-gray-1000">{ui.next}</span>
             <span className="flex min-w-0 items-center gap-2 text-right font-serif font-[450]">
               {next.title}
               <ChevronRight className="h-4 w-4 shrink-0 transition-transform group-hover:translate-x-1" />
@@ -306,11 +306,11 @@ export default async function BlogPost({
           </Link>
         ) : (
           <Link
-            href="/thoughts/"
+            href={`${prefix}/thoughts/`}
             className="group flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5 py-3.5"
           >
-            <span className="text-gray-1000">Thoughts</span>
-            <span className="font-medium">All posts</span>
+            <span className="text-gray-1000">{ui.thoughts}</span>
+            <span className="font-medium">{ui.allPosts}</span>
           </Link>
         )}
       </nav>

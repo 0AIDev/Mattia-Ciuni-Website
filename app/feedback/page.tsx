@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
+import { HistoryBackButton } from "@/components/HistoryBackButton";
 import { GithubIcon } from "@/components/ui/github";
 import { site } from "@/lib/site";
 import { feedback } from "@/lib/feedback";
@@ -61,13 +61,7 @@ export default function FeedbackIndex() {
         dangerouslySetInnerHTML={{ __html: JSON.stringify(listJsonLd) }}
       />
       <header className="mb-14 flex items-center gap-4 sm:mb-20">
-        <Link
-          href="/"
-          aria-label="Go back home"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-300 transition-colors hover:bg-gray-400"
-        >
-          <ArrowUpLeftIcon size={16} />
-        </Link>
+        <HistoryBackButton fallbackLabel="Go back" />
         <span className="text-sm text-gray-1000">Feedback</span>
       </header>
 

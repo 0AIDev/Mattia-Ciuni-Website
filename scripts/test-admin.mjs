@@ -19,7 +19,8 @@ function store() {
     async delete(key) { map.delete(key); },
   };
 }
-function env() { return { FEEDBACK: store(), RATE_LIMIT: store(), ADMIN_TOKEN: TOKEN, COFOUNDER_TOKEN }; }
+const RESET_TOKEN = "reset-" + "9".repeat(60);
+function env() { return { FEEDBACK: store(), RATE_LIMIT: store(), ADMIN_TOKEN: TOKEN, ADMIN_TOTP_RESET_TOKEN: RESET_TOKEN, COFOUNDER_TOKEN }; }
 
 // The local Pages runtime has no KV binding. LOCAL_ADMIN enables the intentionally
 // in-memory adapter so the browser flow can be exercised without production data.
@@ -29,7 +30,13 @@ function env() { return { FEEDBACK: store(), RATE_LIMIT: store(), ADMIN_TOKEN: T
     request: request({ method: "POST", body: { action: "setup", token: TOKEN } }),
     env: local,
   });
-  check("LOCAL_ADMIN enables the same bootstrap flow without a KV binding", response.status === 200);
+  const nonLoopbackDashboard = await onRequestGet({ request: request(), env: local });
+  check("LOCAL_ADMIN does not bypass auth on a non-loopback host", response.status === 200 && nonLoopbackDashboard.status === 401);
+  const localDashboard = await onRequestGet({
+    request: request({ url: "http://localhost:8787/api/admin/feedback" }),
+    env: local,
+  });
+  check("localhost + LOCAL_ADMIN opens the dashboard without TOTP", localDashboard.status === 200);
 }
 
 {
@@ -37,13 +44,13 @@ function env() { return { FEEDBACK: store(), RATE_LIMIT: store(), ADMIN_TOKEN: T
   const response = await onRequestGet({ request: request(), env: missing });
   check("a deployed API without FEEDBACK returns 503, not setup_required", response.status === 503);
 }
-function request({ method = "GET", body, cookie, totp, origin, type = "application/json", length, headers: extraHeaders = {} } = {}) {
+function request({ method = "GET", body, cookie, totp, origin, type = "application/json", length, url = `${ORIGIN}/api/admin/feedback`, headers: extraHeaders = {} } = {}) {
   const headers = { "Content-Type": type, "CF-Connecting-IP": IP, ...extraHeaders };
   if (cookie) headers.Cookie = cookie;
   if (totp) headers["X-Admin-TOTP"] = totp;
   if (origin !== undefined) headers.Origin = origin;
   if (length !== undefined) headers["Content-Length"] = String(length);
-  return new Request(`${ORIGIN}/api/admin/feedback`, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
+  return new Request(url, { method, headers, body: body === undefined ? undefined : JSON.stringify(body) });
 }
 function cookies(response) {
   if (typeof response.headers.getSetCookie === "function") return response.headers.getSetCookie();
@@ -63,6 +70,17 @@ function sessionCookie(response) {
   check("wrong bootstrap token → 401 and no setup state", wrong.status === 401 && e.FEEDBACK.map.size === 0);
   const malformed = await onRequestPost({ request: request({ method: "POST", body: "nope" }), env: e });
   check("malformed JSON → 400", malformed.status === 400);
+}
+
+// Reset requires the dedicated secret and invalidates existing TOTP state.
+{
+  const resetEnv = env();
+  await resetEnv.FEEDBACK.put("auth:totp:config", JSON.stringify({ secret: "OLDSECRET", enabled_at: new Date().toISOString() }));
+  await resetEnv.FEEDBACK.put("auth:totp:bootstrap-used", "1");
+  const badReset = await onRequestPost({ request: request({ method: "POST", body: { action: "reset_setup", token: TOKEN } }), env: resetEnv });
+  check("wrong reset secret is rejected", badReset.status === 401);
+  const reset = await onRequestPost({ request: request({ method: "POST", body: { action: "reset_setup", token: RESET_TOKEN } }), env: resetEnv });
+  check("dedicated reset secret clears TOTP state", reset.status === 200 && await resetEnv.FEEDBACK.get("auth:totp:config") === null && await resetEnv.FEEDBACK.get("auth:totp:bootstrap-used") === null);
 }
 
 // One-time setup, QR URI, manual key, and bootstrap replay lock.

@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Link from "next/link";
+import { HistoryBackButton } from "@/components/HistoryBackButton";
 import TableOfContents, { MobileTableOfContents, type TocItem } from "@/components/TableOfContents";
 
 export type LegalSection = {
@@ -19,8 +20,8 @@ export function LegalPage({ title, intro, sections }: LegalPageProps) {
 
   return (
     <main id="content" className="mx-auto max-w-[692px] px-6 py-12 leading-relaxed sm:py-24">
-      <nav aria-label="Breadcrumb" className="mb-16 text-sm text-gray-1000">
-        <Link href="/">Home</Link> <span aria-hidden="true">·</span> <span aria-current="page">{title}</span>
+      <nav aria-label="Breadcrumb" className="mb-16 flex items-center gap-3 text-sm text-gray-1000">
+        <HistoryBackButton fallbackLabel="Go back" /> <span aria-hidden="true">·</span> <span aria-current="page">{title}</span>
       </nav>
 
       <header className="mb-12">

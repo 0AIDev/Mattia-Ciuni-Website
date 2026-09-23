@@ -4,8 +4,11 @@ import { useState } from "react";
 import { Check } from "./icons";
 import { CopyIcon } from "@/components/ui/copy";
 import { track } from "@/lib/analytics";
+import type { Locale } from "@/lib/i18n";
+import { articleUi } from "@/lib/article-ui";
 
-export default function CopyPostLink() {
+export default function CopyPostLink({ locale = "en" }: { locale?: Locale }) {
+  const text = articleUi[locale];
   const [copied, setCopied] = useState(false);
 
   async function copy() {
@@ -29,8 +32,8 @@ export default function CopyPostLink() {
     <button
       type="button"
       onClick={copy}
-      title={copied ? "Copied" : "Copy link"}
-      aria-label={copied ? "Link copied" : "Copy link to article"}
+      title={copied ? text.copied : text.copyLink}
+      aria-label={copied ? text.copied : text.copyLink}
       aria-live="polite"
       className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-300 text-gray-1200 transition-colors hover:bg-gray-400"
     >

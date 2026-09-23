@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
+import { HistoryBackButton } from "@/components/HistoryBackButton";
 import { CoverImage } from "@/components/CoverImage";
 import { RelatedList } from "@/components/RelatedList";
 import { InlineText } from "@/components/RichText";
@@ -16,6 +16,8 @@ import { posts } from "@/lib/posts";
 import { relatedArticles } from "@/lib/related";
 import { slugify } from "@/lib/slug";
 import { socialImages } from "@/lib/social";
+import { articleUi } from "@/lib/article-ui";
+import type { Locale } from "@/lib/i18n";
 
 export function generateStaticParams() {
   return notes.map((n) => ({ slug: n.slug }));
@@ -81,12 +83,18 @@ function RenderBlock({ block }: { block: NoteBlock }) {
 
 export default async function Note({
   params,
+  fallbackHref = "/",
+  locale = "en",
 }: {
   params: Promise<{ slug: string }>;
+  fallbackHref?: string;
+  locale?: Locale;
 }) {
   const { slug } = await params;
   const note = getNote(slug);
   if (!note) notFound();
+  const ui = articleUi[locale];
+  const prefix = locale === "en" ? "" : `/${locale}`;
 
   const base = site.url.replace(/\/$/, "");
   const url = `${base}/notes/${note.slug}/`;
@@ -117,8 +125,8 @@ export default async function Note({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: base + "/" },
-      { "@type": "ListItem", position: 2, name: "Notes", item: base + "/notes/" },
+      { "@type": "ListItem", position: 1, name: ui.home, item: base + `${prefix}/` },
+      { "@type": "ListItem", position: 2, name: ui.notes, item: base + `${prefix}/notes/` },
       { "@type": "ListItem", position: 3, name: note.title, item: url },
     ],
   };
@@ -139,17 +147,17 @@ export default async function Note({
       <nav aria-label="Breadcrumb" className="mb-4">
         <ol className="m-0 flex list-none flex-wrap items-center gap-x-2 p-0 text-sm text-gray-1000">
           <li>
-            <Link href="/" className="transition-colors hover:text-gray-1200">
-              Home
+            <Link href={`${prefix}/`} className="transition-colors hover:text-gray-1200">
+              {ui.home}
             </Link>
           </li>
           <li aria-hidden="true">·</li>
           <li>
             <Link
-              href="/notes/"
+              href={`${prefix}/notes/`}
               className="transition-colors hover:text-gray-1200"
             >
-              Notes
+              {ui.notes}
             </Link>
           </li>
           <li aria-hidden="true">·</li>
@@ -160,15 +168,9 @@ export default async function Note({
       </nav>
       <header className="mb-16 flex flex-wrap items-center justify-between gap-4 sm:mb-24">
         <div className="flex items-center gap-4">
-          <Link
-            href="/"
-            aria-label="Go back home"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-300 transition-colors hover:bg-gray-400"
-          >
-            <ArrowUpLeftIcon size={16} />
-          </Link>
-          <Link href="/notes/" className="text-sm text-gray-1000">
-            Notes
+          <HistoryBackButton fallbackHref={fallbackHref} fallbackLabel={ui.back} />
+          <Link href={`${prefix}/notes/`} className="text-sm text-gray-1000">
+            {ui.notes}
           </Link>
         </div>
         <span className="text-sm text-gray-1000">
@@ -196,10 +198,10 @@ export default async function Note({
 
       <RelatedList
         id="more-notes"
-        heading="More notes"
+        heading={ui.moreNotes}
         items={relatedNotes.map((n) => ({
           slug: n.slug,
-          href: `/notes/${n.slug}/`,
+          href: `${prefix}/notes/${n.slug}/`,
           title: n.title,
           meta: n.date,
         }))}
@@ -207,23 +209,23 @@ export default async function Note({
 
       <RelatedList
         id="thoughts"
-        heading="Thoughts"
+        heading={ui.thoughts}
         className="mt-16"
         items={relatedPosts.map((p) => ({
           slug: p.slug,
-          href: `/thoughts/${p.slug}/`,
+          href: `${prefix}/thoughts/${p.slug}/`,
           title: p.title,
           meta: `${p.category} · ${p.date}`,
         }))}
       />
 
-      <nav aria-label="All notes" className="mt-8 border-t border-gray-300">
+      <nav aria-label={ui.allNotes} className="mt-8 border-t border-gray-300">
         <Link
-          href="/notes/"
+          href={`${prefix}/notes/`}
           className="group flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1.5 py-3.5"
         >
-          <span className="text-gray-1000">Notes</span>
-          <span className="font-medium">All notes</span>
+          <span className="text-gray-1000">{ui.notes}</span>
+          <span className="font-medium">{ui.allNotes}</span>
         </Link>
       </nav>
     </main>

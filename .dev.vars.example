@@ -1,6 +1,8 @@
 # Copy this file to .dev.vars for `npm run dev:pages`.
 # Use a local-only token, not the production ADMIN_TOKEN.
 ADMIN_TOKEN=replace-with-a-long-local-token
+# Dedicated secret used only at /admin/feedback/?reset=1 to revoke all TOTP state.
+ADMIN_TOTP_RESET_TOKEN=replace-with-a-different-reset-secret
 LOCAL_ADMIN=1
 SUPABASE_URL=https://kthtavvhjharmluqfdzn.supabase.co
 SUPABASE_SERVICE_ROLE_KEY=replace-with-a-server-only-service-role-key

@@ -54,6 +54,7 @@ interface Env {
   FEEDBACK?: Store;
   RATE_LIMIT?: Store;
   ADMIN_TOKEN?: string;
+  ADMIN_TOTP_RESET_TOKEN?: string;
   COFOUNDER_TOKEN?: string;
   LOCAL_ADMIN?: string;
   SUPABASE_URL?: string;
@@ -67,8 +68,22 @@ interface PagesContext {
 
 type AdminRole = "ceo";
 const ADMIN_EMAIL = "ceo@usepayle.com" as const;
+const JOBS_KEY = "content:jobs";
 
-type StoredSession = { created_at: string; role: AdminRole };
+type AdminJob = {
+  slug: string;
+  title: string;
+  department: string;
+  location: string;
+  type: string;
+  compensation: string;
+  status: "open" | "coming-soon" | "closed";
+  shortPitch: string;
+  description: string;
+  questions?: Array<{ id: string; label: string; type: "text" | "textarea" | "url"; required: boolean; minimum: number }>;
+};
+
+type StoredSession = { created_at: string; role: AdminRole; epoch?: string };
 
 interface FeedbackRecord {
   id: string;
@@ -89,6 +104,7 @@ const SESSION_PREFIX = "adm:";
 const TOTP_CONFIG_KEY = "auth:totp:config";
 const TOTP_BOOTSTRAP_KEY = "auth:totp:bootstrap-used";
 const TOTP_PENDING_PREFIX = "auth:totp:pending:";
+const TOTP_EPOCH_KEY = "auth:totp:epoch";
 const TOTP_SETUP_SECONDS = 900; // 15 minutes to scan and confirm the first code
 const TOTP_WINDOW_SECONDS = 600;
 // La forma di una chiave di feedback (`fb:<timestamp>:<random>`, vedi
@@ -110,7 +126,7 @@ const MAX_INDEX = 500;
 const COOKIE = "__Host-mattia_feedback_admin";
 
 type TotpConfig = { secret: string; enabled_at: string };
-type PendingSetup = { secret: string; created_at: string };
+type PendingSetup = { secret: string; created_at: string; epoch: string };
 
 // `next dev` is only the static page renderer and never runs Pages Functions.
 // `npm run dev:pages` uses this bounded in-memory store so the full token + TOTP
@@ -131,6 +147,17 @@ const localFeedback: Store = {
   },
   async delete(key) { localStore.delete(key); },
 };
+
+function isLoopbackRequest(request: Request): boolean {
+  const hostname = new URL(request.url).hostname;
+  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+}
+
+// This bypass is intentionally double-gated: the explicit local flag and a
+// loopback URL are both required. It can never authorize a deployed hostname.
+function localAdminEnabled(request: Request, env: Env): boolean {
+  return env.LOCAL_ADMIN === "1" && isLoopbackRequest(request);
+}
 
 function withLocalStore(env: Env): Env {
   // The Cloudflare KV binding is authoritative for the review queue and its
@@ -245,6 +272,19 @@ async function setupUsed(env: Env): Promise<boolean> {
   return env.FEEDBACK ? (await env.FEEDBACK.get(TOTP_BOOTSTRAP_KEY)) === "1" : false;
 }
 
+async function totpEpoch(env: Env): Promise<string> {
+  if (!env.FEEDBACK) return "0";
+  return (await env.FEEDBACK.get(TOTP_EPOCH_KEY)) || "0";
+}
+
+async function invalidateTotpState(env: Env): Promise<void> {
+  if (!env.FEEDBACK) return;
+  const current = Number.parseInt(await totpEpoch(env), 10);
+  await env.FEEDBACK.put(TOTP_EPOCH_KEY, String(Number.isFinite(current) ? current + 1 : 1));
+  await env.FEEDBACK.delete?.(TOTP_CONFIG_KEY);
+  await env.FEEDBACK.delete?.(TOTP_BOOTSTRAP_KEY);
+}
+
 async function authRateAllowed(env: Env, ip: string, kind: string, max: number): Promise<boolean> {
   const store = env.RATE_LIMIT || supabaseKv(env);
   if (!store) return true;
@@ -262,10 +302,10 @@ async function sessionRole(request: Request, env: Env): Promise<AdminRole | null
   if (!raw) return null;
   try {
     const session = JSON.parse(raw) as StoredSession;
-    return session.role === "ceo" ? "ceo" : null;
+    return session.role === "ceo" && (session.epoch || "0") === (await totpEpoch(env)) ? "ceo" : null;
   } catch {
-    // Sessions created before role support belonged to the CEO account.
-    return "ceo";
+    // Sessions created before epoch support are valid only before the first reset.
+    return (await totpEpoch(env)) === "0" ? "ceo" : null;
   }
 }
 
@@ -311,6 +351,40 @@ type AnalyticsViews = {
   conversions: Array<Record<string, unknown>>;
   available: boolean;
 };
+
+const DEFAULT_JOBS: AdminJob[] = [{
+  slug: "agent-runtime-founding-engineer",
+  title: "Founding Engineer, Agent Runtime",
+  department: "Engineering",
+  location: "Remote, Europe / US time zones",
+  type: "Full-time",
+  compensation: "Equity-led, discussed openly",
+  status: "coming-soon",
+  shortPitch: "Build the execution layer for AI agents.",
+  description: "The role will sit close to Payle's agent runtime, where every action needs a bounded, auditable path.",
+}];
+
+async function adminJobs(env: Env): Promise<AdminJob[]> {
+  if (!env.FEEDBACK) return DEFAULT_JOBS;
+  const raw = await env.FEEDBACK.get(JOBS_KEY);
+  if (!raw) return DEFAULT_JOBS;
+  try {
+    const jobs = JSON.parse(raw) as AdminJob[];
+    return Array.isArray(jobs) ? jobs : DEFAULT_JOBS;
+  } catch {
+    return DEFAULT_JOBS;
+  }
+}
+
+function validJobs(value: unknown): value is AdminJob[] {
+  return Array.isArray(value) && value.length <= 100 && value.every((job) => (
+    job && typeof job === "object" &&
+    /^[a-z0-9-]{3,80}$/.test(String((job as AdminJob).slug)) &&
+    ["open", "coming-soon", "closed"].includes(String((job as AdminJob).status)) &&
+    ["title", "department", "location", "type", "shortPitch", "description"].every((key) => typeof (job as Record<string, unknown>)[key] === "string") &&
+    (!job.questions || (Array.isArray(job.questions) && job.questions.length <= 30 && job.questions.every((question: { id: string; label: string; type: string; required: boolean; minimum: number }) => question && typeof question.id === "string" && typeof question.label === "string" && ["text", "textarea", "url"].includes(question.type) && typeof question.required === "boolean" && Number.isInteger(question.minimum) && question.minimum >= 0 && question.minimum <= 10000)))
+  ));
+}
 
 /**
  * Le viste sono interrogate solo dopo l'autenticazione e mai dal browser
@@ -359,7 +433,7 @@ function sessionCookies(session: string): Array<[string, string]> {
 
 async function createSession(env: Env, role: AdminRole): Promise<string> {
   const session = newSessionId();
-  await env.FEEDBACK!.put(SESSION_PREFIX + session, JSON.stringify({ created_at: new Date().toISOString(), role } satisfies StoredSession), {
+  await env.FEEDBACK!.put(SESSION_PREFIX + session, JSON.stringify({ created_at: new Date().toISOString(), role, epoch: await totpEpoch(env) } satisfies StoredSession), {
     expirationTtl: SESSION_SECONDS,
   });
   return session;
@@ -371,13 +445,14 @@ export const onRequestGet = async ({ request, env: incomingEnv }: PagesContext):
   // an unconfigured administrator. Keep this distinct from the one-time TOTP
   // setup state so the UI and monitoring can diagnose the deployment correctly.
   if (!env.FEEDBACK) return json({ code: "unavailable" }, 503);
-  const role = await isAuthorized(request, env);
+  const localAdmin = localAdminEnabled(request, env);
+  const role = localAdmin ? "ceo" : await isAuthorized(request, env);
   if (!role) {
     return json({ code: "unauthorized", setup_required: !(await configOf(env)) }, 401);
   }
   if (!env.FEEDBACK) return json({ code: "unavailable" }, 503);
-  const [records, analytics] = await Promise.all([queue(env), analyticsViews(env)]);
-  return json({ records, role, analytics });
+  const [records, analytics, jobs] = await Promise.all([queue(env), analyticsViews(env), adminJobs(env)]);
+  return json({ records, role, analytics, jobs });
 };
 
 export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext): Promise<Response> => {
@@ -414,6 +489,7 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
     setup_id?: unknown;
     id?: unknown;
     reason?: unknown;
+    jobs?: unknown;
   };
   try {
     body = JSON.parse(payload) as typeof body;
@@ -425,6 +501,21 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
   }
 
   const ip = ipOf(request);
+
+  if (body.action === "reset_setup") {
+    if (!env.FEEDBACK) return json({ code: "unavailable" }, 503);
+    if (!(await authRateAllowed(env, ip, "login", LOGIN_MAX_ATTEMPTS))) {
+      return json({ code: "rate_limited" }, 429, [["Retry-After", String(LOGIN_WINDOW_SECONDS)]]);
+    }
+    const resetToken = typeof body.token === "string" ? body.token : "";
+    if (!(await sameSecret(resetToken, env.ADMIN_TOTP_RESET_TOKEN || ""))) {
+      console.log(JSON.stringify({ event: "admin_totp_reset", outcome: "unauthorized" }));
+      return json({ code: "unauthorized" }, 401);
+    }
+    await invalidateTotpState(env);
+    console.log(JSON.stringify({ event: "admin_totp_reset", outcome: "completed" }));
+    return json({ ok: true, setup_required: true });
+  }
 
   // Il token è un bootstrap **monouso**: il primo uso crea il secret TOTP e lo
   // blocca subito in KV, prima ancora che l'utente confermi il primo codice.
@@ -445,7 +536,7 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
     await env.FEEDBACK.put(TOTP_BOOTSTRAP_KEY, "1");
     await env.FEEDBACK.put(
       TOTP_PENDING_PREFIX + setupId,
-      JSON.stringify({ secret, created_at: new Date().toISOString() } satisfies PendingSetup),
+      JSON.stringify({ secret, created_at: new Date().toISOString(), epoch: await totpEpoch(env) } satisfies PendingSetup),
       { expirationTtl: TOTP_SETUP_SECONDS },
     );
     console.log(JSON.stringify({ event: "admin_setup", outcome: "issued" }));
@@ -471,6 +562,7 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
     if (!pendingRaw) return json({ code: "setup_expired" }, 410);
     let pending: PendingSetup;
     try { pending = JSON.parse(pendingRaw) as PendingSetup; } catch { return json({ code: "setup_expired" }, 410); }
+    if (pending.epoch !== await totpEpoch(env)) return json({ code: "setup_expired" }, 410);
     if (!(await verifyTotp(pending.secret, code))) {
       console.log(JSON.stringify({ event: "admin_setup", outcome: "invalid_code" }));
       return json({ code: "invalid_code" }, 401);
@@ -509,7 +601,13 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
     return json({ ok: true, two_factor: true, role }, 200, sessionCookies(session));
   }
 
-  if (!await isAuthorized(request, env)) return json({ code: "unauthorized" }, 401);
+  if (!localAdminEnabled(request, env) && !await isAuthorized(request, env)) return json({ code: "unauthorized" }, 401);
+
+  if (body.action === "jobs_save") {
+    if (!env.FEEDBACK || !validJobs(body.jobs)) return json({ code: "invalid_jobs" }, 422);
+    await env.FEEDBACK.put(JOBS_KEY, JSON.stringify(body.jobs));
+    return json({ ok: true, jobs: body.jobs });
+  }
 
   if (body.action === "create_test") {
     if (!env.FEEDBACK) return json({ code: "unavailable" }, 503);

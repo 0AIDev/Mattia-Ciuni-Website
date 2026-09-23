@@ -3,6 +3,7 @@ import Link from "next/link";
 import { founderVideos } from "@/lib/videos";
 import { VideoPlayer } from "@/components/MediaPlayers";
 import { site } from "@/lib/site";
+import { HistoryBackButton } from "@/components/HistoryBackButton";
 import { socialImages } from "@/lib/social";
 
 const pageTitle = "Videos | Mattia Ciuni | Building Payle in public";
@@ -98,8 +99,8 @@ export default function VideosPage() {
   return (
     <main id="content" className="mx-auto max-w-[692px] px-6 py-12 leading-relaxed sm:py-24">
       <VideoStructuredData />
-      <nav aria-label="Breadcrumb" className="mb-16 text-sm text-gray-1000">
-        <Link href="/" className="article-underline">Home</Link> <span aria-hidden="true">·</span> <span aria-current="page">Videos</span>
+      <nav aria-label="Breadcrumb" className="mb-16 flex items-center gap-3 text-sm text-gray-1000">
+        <HistoryBackButton fallbackLabel="Go back" /> <span aria-hidden="true">·</span> <span aria-current="page">Videos</span>
       </nav>
       <header className="mb-16 sm:mb-24">
         <p className="mb-3 text-sm text-gray-1000">Founder log</p>

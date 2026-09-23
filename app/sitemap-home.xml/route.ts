@@ -3,6 +3,7 @@ import { latestOf, urlsetXml } from "@/lib/sitemap";
 import { posts } from "@/lib/posts";
 import { notes } from "@/lib/notes";
 import { LOCALES } from "@/lib/i18n";
+import { publicJobs as publicCareerJobs } from "@/lib/careers/jobs";
 
 export const dynamic = "force-static";
 
@@ -10,7 +11,7 @@ export async function GET() {
   const base = site.url.replace(/\/$/, "");
   const localized = LOCALES.flatMap((locale) => [
     { loc: `${base}/${locale}/`, lastmod: "2026-09-22", changeFrequency: "monthly", priority: "0.9" },
-    ...["about", "work", "thoughts", "notes", "feedback", "privacy", "terms", "cookies", "legal", "newsletter", "link", "voice-notes", "videos"].map((path) => ({
+    ...["about", "work", "thoughts", "notes", "feedback", "privacy", "terms", "cookies", "legal", "newsletter", "link", "voice-notes", "videos", "careers"].map((path) => ({
       loc: `${base}/${locale}/${path}/`, lastmod: "2026-09-22", changeFrequency: "monthly", priority: "0.6",
     })),
   ]);
@@ -42,13 +43,23 @@ export async function GET() {
       lastmod: "2026-09-21",
       changeFrequency: "monthly",
       priority: "0.5",
-    },
-    {
-      loc: `${base}/videos/`,
+    },      { loc: `${base}/videos/`,
       lastmod: "2026-09-21",
       changeFrequency: "monthly",
       priority: "0.5",
     },
+    {
+      loc: `${base}/careers/`,
+      lastmod: "2026-09-23",
+      changeFrequency: "monthly",
+      priority: "0.7",
+    },
+    ...publicCareerJobs().map((job) => ({
+      loc: `${base}/careers/${job.slug}/`,
+      lastmod: "2026-09-23",
+      changeFrequency: "weekly",
+      priority: job.status === "open" ? "0.8" : "0.5",
+    })),
     ...localized,
   ]);
   return new Response(xml, {

@@ -2,6 +2,8 @@
 
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { currentPath, track } from "@/lib/analytics";
+import type { Locale } from "@/lib/i18n";
+import { feedbackUi } from "@/lib/feedback-ui";
 
 /**
  * Il pulsante "Give feedback" che apre un modal centrale: il form non sta più
@@ -12,25 +14,19 @@ import { currentPath, track } from "@/lib/analytics";
  * Manda a /api/feedback, che salva il messaggio in KV per la review.
  */
 
-const COPY = {
-  successTitle: "Feedback received",
-  success:
-    "Thank you. Your feedback is now in review. If it is selected, I will publish it here with your name or just an initial, your choice.",
-  genericError: "Something broke on my side. Try again in a minute.",
-  rateLimited: "Too many submissions. Try again in a few minutes.",
-  tooShort: "Tell me a little more about what you think.",
-  invalidEmail: "That email doesn't look right.",
-};
 
 export function FeedbackModalButton({
   label = "Give feedback",
   variant = "solid",
   className = "",
+  locale = "en",
 }: {
   label?: string;
   variant?: "solid" | "outline";
   className?: string;
+  locale?: Locale;
 }) {
+  const text = feedbackUi[locale];
   const [open, setOpen] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
@@ -119,14 +115,14 @@ export function FeedbackModalButton({
     const trimmed = message.trim();
     if (trimmed.length < 20) {
       setState("error");
-      setError(COPY.tooShort);
+      setError(text.tooShort);
       track("form_error", { form_id: "feedback", reason: "too_short", form_location: formLocation });
       track("feedback_error", { reason: "too_short", form_location: formLocation });
       return;
     }
     if (email.trim() && !/^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(email.trim())) {
       setState("error");
-      setError(COPY.invalidEmail);
+      setError(text.invalidEmail);
       track("form_error", { form_id: "feedback", reason: "invalid_email", form_location: formLocation });
       track("feedback_error", { reason: "invalid_email", form_location: formLocation });
       return;
@@ -165,17 +161,17 @@ export function FeedbackModalButton({
         });
       } else if (response.status === 429) {
         setState("error");
-        setError(COPY.rateLimited);
+        setError(text.rateLimited);
         track("form_error", { form_id: "feedback", reason: "rate_limited", form_location: formLocation });
         track("feedback_error", { reason: "rate_limited", form_location: formLocation });
       } else {
         setState("error");
         setError(
           result.code === "unavailable" || result.code === "rate_limit_unavailable"
-            ? "Feedback is temporarily unavailable. Try again shortly."
+            ? text.genericError
             : result.code === "provider_error"
-              ? "The feedback could not be saved. Try again shortly."
-              : COPY.genericError,
+              ? text.genericError
+              : text.genericError,
         );
         track("form_error", { form_id: "feedback", reason: result.code || "server", form_location: formLocation });
         track("feedback_error", { reason: result.code || "server", form_location: formLocation });
@@ -183,7 +179,7 @@ export function FeedbackModalButton({
     } catch (caught) {
       setState("error");
       const aborted = caught instanceof DOMException && caught.name === "AbortError";
-      setError(aborted ? "The request took too long. Try again." : COPY.genericError);
+      setError(aborted ? text.genericError : text.genericError);
       track("form_error", { form_id: "feedback", reason: aborted ? "timeout" : "network", form_location: formLocation });
       track("feedback_error", { reason: aborted ? "timeout" : "network", form_location: formLocation });
     }
@@ -227,9 +223,9 @@ export function FeedbackModalButton({
           >
             <div className="flex items-start justify-between gap-4">
               <div className="text-left">
-                <h2 id="feedback-dialog-title" className="m-0 font-serif text-2xl leading-tight text-gray-1200">Give feedback</h2>
+                <h2 id="feedback-dialog-title" className="m-0 font-serif text-2xl leading-tight text-gray-1200">{text.title}</h2>
                 <p id="feedback-dialog-description" className="mt-1 text-sm leading-relaxed text-gray-1000">
-                  Tell me what you think, what interests you, or what you&apos;d like to see next.
+                  {text.description}
                 </p>
               </div>
               <button
@@ -237,7 +233,7 @@ export function FeedbackModalButton({
                 ref={closeRef}
                 onClick={close}
                 className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xl leading-none text-gray-1000"
-                aria-label="Close"
+                aria-label={text.close}
               >
                 ×
               </button>
@@ -245,15 +241,12 @@ export function FeedbackModalButton({
 
                     {state === "success" ? (
               <div role="status" aria-live="polite" className="mt-6 rounded-2xl bg-gray-100 px-5 py-5">
-                <p className="font-sans text-sm font-semibold text-gray-1200">{COPY.successTitle}</p>
-                <p className="mt-2 font-serif text-lg leading-relaxed text-gray-1200">{COPY.success}</p>
+                <p className="font-sans text-sm font-semibold text-gray-1200">{text.successTitle}</p>
+                <p className="mt-2 font-serif text-lg leading-relaxed text-gray-1200">{text.success}</p>
                 <button
                   type="button"
                   onClick={close}
-                  className="mt-5 rounded-full bg-gray-1200 px-5 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-80"
-                >
-                  Done
-                </button>
+                  className="mt-5 rounded-full bg-gray-1200 px-5 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-80">{text.done}</button>
               </div>
             ) : (
               <form onSubmit={submit} onFocus={(event) => fieldFocus((event.target as unknown as HTMLInputElement).name || "message")} noValidate aria-busy={state === "loading"} className="mt-6 flex flex-col gap-3">
@@ -270,8 +263,8 @@ export function FeedbackModalButton({
                 />
                 <input
                   type="text"
-                  placeholder="Name (optional)"
-                  aria-label="Name, optional"
+                  placeholder={text.name}
+                  aria-label={text.name}
                   autoComplete="name"
                   maxLength={80}
                   className={field}
@@ -282,8 +275,8 @@ export function FeedbackModalButton({
                 />
                 <input
                   type="email"
-                  placeholder="Email (optional)"
-                  aria-label="Email, optional"
+                  placeholder={text.email}
+                  aria-label={text.email}
                   autoComplete="email"
                   inputMode="email"
                   maxLength={254}
@@ -294,8 +287,8 @@ export function FeedbackModalButton({
                   disabled={state === "loading"}
                 />
                 <textarea
-                  placeholder="What would you like to see, try, or improve?"
-                  aria-label="Your feedback"
+                  placeholder={text.message}
+                  aria-label={text.message}
                   rows={5}
                   maxLength={4000}
                   required
@@ -307,14 +300,14 @@ export function FeedbackModalButton({
                 />
                 <div className="mt-1 flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
                   <p role="status" aria-live="polite" className="min-h-5 max-w-[240px] text-xs leading-relaxed text-gray-1000">
-                    {state === "error" ? error : "Reviewed by Mattia, published if it holds."}
+                    {state === "error" ? error : "{text.reviewed}"}
                   </p>
                   <button
                     type="submit"
                     disabled={state === "loading"}
                     className="min-h-11 shrink-0 rounded-full bg-gray-1200 px-6 text-sm font-semibold text-white transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gray-1200 disabled:cursor-wait disabled:opacity-50"
                   >
-                    {state === "loading" ? "Sending…" : "Send feedback"}
+                    {state === "loading" ? text.sending : text.send}
                   </button>
                 </div>
               </form>

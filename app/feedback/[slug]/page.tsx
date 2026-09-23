@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
+import { HistoryBackButton } from "@/components/HistoryBackButton";
 import { GithubIcon } from "@/components/ui/github";
 import { InlineText } from "@/components/RichText";
 import SectionCopyLink from "@/components/SectionCopyLink";
@@ -16,6 +16,8 @@ import {
 import { slugify } from "@/lib/slug";
 import { socialImages } from "@/lib/social";
 import { FeedbackModalButton } from "@/components/FeedbackForm";
+import { articleUi } from "@/lib/article-ui";
+import type { Locale } from "@/lib/i18n";
 
 /**
  * La pagina di un feedback non è un post del blog, e non deve sembrarlo.
@@ -117,12 +119,18 @@ function RenderBlock({ block }: { block: FeedbackBlock }) {
 
 export default async function FeedbackPost({
   params,
+  fallbackHref = "/",
+  locale = "en",
 }: {
   params: Promise<{ slug: string }>;
+  fallbackHref?: string;
+  locale?: Locale;
 }) {
   const { slug } = await params;
   const post = getFeedback(slug);
   if (!post) notFound();
+  const ui = articleUi[locale];
+  const prefix = locale === "en" ? "" : `/${locale}`;
 
   const base = site.url.replace(/\/$/, "");
   const url = `${base}/feedback/${post.slug}/`;
@@ -154,8 +162,8 @@ export default async function FeedbackPost({
     "@context": "https://schema.org",
     "@type": "BreadcrumbList",
     itemListElement: [
-      { "@type": "ListItem", position: 1, name: "Home", item: base + "/" },
-      { "@type": "ListItem", position: 2, name: "Feedback", item: base + "/feedback/" },
+      { "@type": "ListItem", position: 1, name: ui.home, item: base + `${prefix}/` },
+      { "@type": "ListItem", position: 2, name: ui.feedback, item: base + `${prefix}/feedback/` },
       { "@type": "ListItem", position: 3, name: post.title, item: url },
     ],
   };
@@ -176,17 +184,17 @@ export default async function FeedbackPost({
       <nav aria-label="Breadcrumb" className="mb-4">
         <ol className="m-0 flex list-none flex-wrap items-center gap-x-2 p-0 text-sm text-gray-1000">
           <li>
-            <Link href="/" className="transition-colors hover:text-gray-1200">
-              Home
+            <Link href={`${prefix}/`} className="transition-colors hover:text-gray-1200">
+              {ui.home}
             </Link>
           </li>
           <li aria-hidden="true">·</li>
           <li>
             <Link
-              href="/feedback/"
+              href={`${prefix}/feedback/`}
               className="transition-colors hover:text-gray-1200"
             >
-              Feedback
+              {ui.feedback}
             </Link>
           </li>
           <li aria-hidden="true">·</li>
@@ -198,19 +206,13 @@ export default async function FeedbackPost({
 
       <header className="mb-10 flex flex-wrap items-center justify-between gap-4">
         <div className="flex min-w-0 items-center gap-4">
-          <Link
-            href="/"
-            aria-label="Go back home"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-300 transition-colors hover:bg-gray-400"
-          >
-            <ArrowUpLeftIcon size={16} />
-          </Link>
-          <Link href="/feedback/" className="text-sm text-gray-1000">
-            Feedback
+          <HistoryBackButton fallbackHref={fallbackHref} fallbackLabel={ui.back} />
+          <Link href={`${prefix}/feedback/`} className="text-sm text-gray-1000">
+            {ui.feedback}
           </Link>
         </div>
         <span className="text-sm text-gray-1000">
-          Exchange {exchange} · {readTime}
+          {ui.exchange} {exchange} · {readTime}
         </span>
       </header>
 
@@ -256,28 +258,24 @@ export default async function FeedbackPost({
 
       <section aria-labelledby="send-feedback" className="mt-16 border-t border-gray-300 pt-8">
         <h2 id="send-feedback" className="mb-3 font-serif text-xl font-medium">
-          Send your feedback
+          {ui.sendFeedback}
         </h2>
-        <p className="m-0 max-w-[600px] text-text-paragraph">
-          Every submission is read and reviewed. If it holds up, it gets
-          published here, with your name or just an initial, your choice. The
-          next Feedback post might be about your comment.
-        </p>
+        <p className="m-0 max-w-[600px] text-text-paragraph">{ui.feedbackPrompt}</p>
         <div className="mt-6">
-          <FeedbackModalButton variant="outline" label="Send your feedback" />
+          <FeedbackModalButton variant="outline" label={ui.sendFeedback} locale={locale} />
         </div>
         <p className="mt-4 text-sm text-gray-1000">
-          Reviewed by Mattia before publication; credited your way or not at all.
+          {ui.feedbackReviewed}
         </p>
       </section>
 
-      <nav aria-label="All feedback" className="mt-8 border-t border-gray-300">
+      <nav aria-label={ui.allFeedback} className="mt-8 border-t border-gray-300">
         <Link
-          href="/feedback/"
+          href={`${prefix}/feedback/`}
           className="group flex items-baseline justify-between py-3.5"
         >
-          <span className="text-gray-1000">Feedback</span>
-          <span className="font-medium">All feedback</span>
+          <span className="text-gray-1000">{ui.feedback}</span>
+          <span className="font-medium">{ui.allFeedback}</span>
         </Link>
       </nav>
     </main>

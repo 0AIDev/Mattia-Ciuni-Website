@@ -6,6 +6,7 @@ import { contentKindOf, currentPath, flushCollect, markPageEnter, markScroll, no
 import { attributionParams, captureAttribution } from "@/lib/attribution";
 
 const MEASUREMENT_ID = "G-YQS0R94ZQP";
+const CONSENT_EVENT_KEY = "mattia-ciuni-consent-event-v1";
 const CONSENT_KEY = "mattia-ciuni-analytics-consent";
 
 /**
@@ -239,6 +240,10 @@ export function GoogleAnalytics() {
   function choose(value: "accepted" | "declined") {
     window.localStorage.setItem(CONSENT_KEY, value);
     window.dispatchEvent(new Event("mattia-analytics-consent"));
+    if (!window.sessionStorage.getItem(CONSENT_EVENT_KEY)) {
+      window.sessionStorage.setItem(CONSENT_EVENT_KEY, "1");
+      track("analytics_consent_choice", { consent_state: value });
+    }
   }
 
   if (consent !== "unset") return null;

@@ -2,9 +2,11 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
-import { LOCALES, localeMeta, localizedPath, type Locale } from "@/lib/i18n";
+import { track } from "@/lib/analytics";
+import { LANGUAGE_STORAGE_KEY, LOCALES, localeMeta, localizedPath, type Locale } from "@/lib/i18n";
 
-const STORAGE_KEY = "mattia-ciuni-language-choice-v1";
+const STORAGE_KEY = LANGUAGE_STORAGE_KEY;
+const DISMISS_MS = 30 * 24 * 60 * 60 * 1000;
 const COUNTRY_TO_LOCALE: Record<string, Locale> = {
   IT: "it", FR: "fr", ES: "es", DE: "de", AT: "de", CH: "de", BE: "fr", LU: "fr",
 };
@@ -13,6 +15,10 @@ const LANGUAGE_TO_LOCALE: Record<string, Locale> = { en: "en", it: "it", fr: "fr
 function localeFromPath(pathname: string): Locale {
   const candidate = pathname.split("/")[1];
   return LOCALES.includes(candidate as Locale) ? (candidate as Locale) : "en";
+}
+
+function hasLocalePrefix(pathname: string): boolean {
+  return LOCALES.includes((pathname.split("/")[1] || "") as Locale);
 }
 
 function pathForLocale(locale: Locale, pathname: string, search: string) {
@@ -25,19 +31,40 @@ function pathForLocale(locale: Locale, pathname: string, search: string) {
 export function LanguageSuggestion() {
   const [suggested, setSuggested] = useState<Locale | null>(null);
   const [dismissed, setDismissed] = useState(false);
+  const [consent, setConsent] = useState<"unset" | "accepted" | "declined">("unset");
   const currentPath = typeof window === "undefined" ? "/" : window.location.pathname;
   const current = useMemo(() => localeFromPath(currentPath), [currentPath]);
 
   useEffect(() => {
-    if (window.location.pathname.startsWith("/admin")) return;
+    if (window.location.pathname.startsWith("/admin") || window.location.pathname.includes("/careers/") && window.location.pathname.endsWith("/apply/")) return;
+    const readConsent = () => {
+      const value = window.localStorage.getItem("mattia-ciuni-analytics-consent");
+      setConsent(value === "accepted" || value === "declined" ? value : "unset");
+    };
+    readConsent();
+    window.addEventListener("storage", readConsent);
+    window.addEventListener("mattia-analytics-consent", readConsent);
+    return () => {
+      window.removeEventListener("storage", readConsent);
+      window.removeEventListener("mattia-analytics-consent", readConsent);
+    };
+  }, []);
 
-    const savedChoice = window.localStorage.getItem(STORAGE_KEY);
-    const savedLocale = savedChoice && LOCALES.includes(savedChoice as Locale) ? (savedChoice as Locale) : null;
-    if (savedLocale && savedLocale !== "en" && localeFromPath(window.location.pathname) === "en") {
-      window.location.replace(pathForLocale(savedLocale, window.location.pathname, window.location.search));
-      return;
+  useEffect(() => {
+    if (consent === "unset" || window.location.pathname.startsWith("/admin") || (window.location.pathname.includes("/careers/") && window.location.pathname.endsWith("/apply/"))) return;
+
+    // A locale in the URL is authoritative. Never let a stored country/browser
+    // preference move an explicitly localized page back to another language.
+    if (hasLocalePrefix(window.location.pathname)) return;
+    const saved = window.localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        const remembered = JSON.parse(saved) as { locale?: Locale; dismissedAt?: number };
+        if (remembered.dismissedAt && Date.now() - remembered.dismissedAt < DISMISS_MS) return;
+      } catch {
+        window.localStorage.removeItem(STORAGE_KEY);
+      }
     }
-    if (savedLocale) return;
 
     const browserLocale = LANGUAGE_TO_LOCALE[navigator.language.slice(0, 2).toLowerCase()];
     const fallback = browserLocale || "en";
@@ -46,19 +73,20 @@ export function LanguageSuggestion() {
       .then((data: { country?: string } | null) => {
         const countryLocale = data?.country ? COUNTRY_TO_LOCALE[data.country.toUpperCase()] : undefined;
         const detected = countryLocale || browserLocale || "en";
-        // On the bare English site, an Italian/European visitor is redirected
-        // immediately. Other language changes remain an explicit suggestion.
-        if (detected !== "en" && localeFromPath(window.location.pathname) === "en") {
-          const destination = pathForLocale(detected, window.location.pathname, window.location.search);
-          window.location.replace(destination);
-          return;
-        }
+        // Detection is advisory only. Language changes happen after an
+        // explicit click, never as a surprise redirect.
         setSuggested(detected);
       })
       .catch(() => setSuggested(fallback));
-  }, []);
+  }, [consent]);
 
-  if (!suggested || suggested === current || dismissed || typeof window === "undefined") return null;
+  useEffect(() => {
+    if (consent === "unset" || typeof window === "undefined") return;
+    const browserLocale = LANGUAGE_TO_LOCALE[navigator.language.slice(0, 2).toLowerCase()] || "en";
+    track("language_suggestion_ready", { consent_state: consent, browser_locale: browserLocale });
+  }, [consent]);
+
+  if (consent === "unset" || !suggested || suggested === current || dismissed || typeof window === "undefined") return null;
 
   const from = localeMeta[current];
   const to = localeMeta[suggested];
@@ -66,8 +94,14 @@ export function LanguageSuggestion() {
     ? { heading: "Seleziona la lingua preferita", body: `Abbiamo notato che stai navigando in ${from.label}. Preferiresti visualizzare il sito in`, action: `Passa a ${to.native}`, dismiss: "Chiudi suggerimento lingua" }
     : { heading: "Select your preferred language", body: `We noticed that you are browsing in ${from.label}. Prefer to view the site in`, action: `Switch to ${to.native}`, dismiss: "Dismiss language suggestion" };
 
-  function remember() {
-    window.localStorage.setItem(STORAGE_KEY, suggested as Locale);
+  function remember(locale: Locale = current) {
+    window.localStorage.setItem(STORAGE_KEY, JSON.stringify({ locale, dismissedAt: Date.now() }));
+  }
+
+  function dismissSuggestion() {
+    setDismissed(true);
+    remember(current);
+    track("language_suggestion_dismiss", { from_locale: current, suggested_locale: suggested });
   }
 
   return (
@@ -76,7 +110,7 @@ export function LanguageSuggestion() {
         <p className="mb-5 font-serif text-xl leading-tight text-gray-1200">{prompt.heading}</p>
         <p className="m-0 text-sm leading-relaxed text-gray-1000">{prompt.body} <strong className="text-gray-1200">{to.native}</strong>?</p>
       </div>
-      <button type="button" onClick={() => { setDismissed(true); remember(); }} aria-label={prompt.dismiss} className="absolute right-2 top-2 flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-1200 shadow-sm transition-colors hover:bg-gray-100">
+      <button type="button" onClick={dismissSuggestion} aria-label={prompt.dismiss} className="absolute right-2 top-2 flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-1200 shadow-sm transition-colors hover:bg-gray-100">
         <span aria-hidden="true" className="text-xl leading-none">×</span>
       </button>
       <div className="h-px bg-gray-200" />
@@ -90,7 +124,7 @@ export function LanguageSuggestion() {
             <Image src={`/flags/${to.country.toLowerCase()}.svg`} alt={to.label} className="language-flag" width={28} height={28} unoptimized />
           </span>
         </div>
-        <a href={pathForLocale(suggested, window.location.pathname, window.location.search)} onClick={remember} className="rounded-full bg-gray-1200 px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-80">{prompt.action}</a>
+        <a href={pathForLocale(suggested, window.location.pathname, window.location.search)} onClick={() => { remember(suggested); track("language_suggestion_switch", { from_locale: current, to_locale: suggested }); }} className="rounded-full bg-gray-1200 px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-80">{prompt.action}</a>
       </div>
     </aside>
   );

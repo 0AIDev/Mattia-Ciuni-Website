@@ -78,10 +78,13 @@ export type ContentKind =
   | "videos"
   | "newsletter"
   | "legal"
+  | "careers"
+  | "career"
+  | "application"
   | "other";
 
 export function contentKindOf(pathname: string): ContentKind {
-  const [first, second] = pathname.split("/").filter(Boolean);
+  const [first, second, third] = pathname.split("/").filter(Boolean);
   switch (first) {
     case undefined:
       return "home";
@@ -101,6 +104,8 @@ export function contentKindOf(pathname: string): ContentKind {
       return "about";
     case "work":
       return "work";
+    case "careers":
+      return second ? (second === "apply" || third === "apply" ? "application" : "career") : "careers";
     case "newsletter":
       return "newsletter";
     case "privacy":

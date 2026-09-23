@@ -23,6 +23,22 @@
   flex-basis: 2rem;
 }
 
+/* The footer switcher follows the compact rectangular flag treatment from the
+   language menu, while article headers keep their circular flag artwork. */
+.language-switcher-flag {
+  display: inline-block;
+  width: 1.25rem !important;
+  height: 0.875rem !important;
+  flex: 0 0 1.25rem;
+  overflow: hidden;
+  border-radius: 2px;
+  object-fit: cover;
+  background-size: cover !important;
+  background-position: center;
+  background-repeat: no-repeat;
+  line-height: 1;
+}
+
 html {
   scroll-behavior: smooth;
   background: #FCFCFC;
@@ -76,6 +92,20 @@ body:has(#admin-feedback-page) > footer {
 
 ::selection {
   background: rgba(22, 22, 22, 0.14);
+}
+
+/* Every editable control follows the same rounded language. Individual
+ * components can still choose a softer radius for long text areas. */
+input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.sr-only) {
+  border-radius: 9999px;
+}
+
+textarea {
+  border-radius: 1rem;
+}
+
+select {
+  border-radius: 9999px;
 }
 
 /* Il focus da tastiera: solo il contorno, mai la forma.
@@ -212,6 +242,18 @@ html {
   background: radial-gradient(120% 92% at 50% 0%, #ffffff 0%, #ffffff 46%, rgba(255, 255, 255, 0.66) 72%, rgba(255, 255, 255, 0) 100%);
 }
 
+.admin-logo-black {
+  display: inline-block;
+  flex: 0 0 auto;
+  background: #111;
+  -webkit-mask: url("/logo.svg") no-repeat center / contain;
+  mask: url("/logo.svg") no-repeat center / contain;
+}
+
+.admin-card {
+  border-radius: 20px;
+}
+
 .link-hero-cutout {
   -webkit-mask-image: linear-gradient(to bottom, #000 78%, transparent);
   mask-image: linear-gradient(to bottom, #000 78%, transparent);
@@ -220,6 +262,55 @@ html {
 @media (min-width: 640px) {
   .link-hero-glow {
     height: 560px;
+  }
+}
+
+/* Career detail: keep exactly one application CTA visible at each viewport.
+   This is explicit CSS rather than breakpoint-only utilities because the page is
+   also reviewed inside narrow desktop preview panes. */
+.career-toc-viewport {
+  display: none;
+}
+@media (min-width: 1024px) {
+  .career-toc-viewport {
+    display: flex;
+  }
+}
+.career-main-grid {
+  display: block;
+}
+.career-sidebar {
+  display: none !important;
+}
+@media (min-width: 1024px) {
+  .career-main-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 692px) 280px;
+    align-items: start;
+    gap: 4rem;
+  }
+}
+@media (min-width: 1024px) {
+  .career-sidebar {
+    display: block !important;
+    position: sticky !important;
+    top: 1.5rem;
+    align-self: start;
+    width: 280px;
+    height: fit-content;
+  }
+}
+.career-mobile-apply {
+  display: none !important;
+}
+@media (max-width: 1023px) {
+  .career-mobile-apply {
+    display: block !important;
+  }
+}
+@media (min-width: 1024px) {
+  .career-mobile-apply {
+    display: none !important;
   }
 }
 

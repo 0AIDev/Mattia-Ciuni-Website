@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
+import { HistoryBackButton } from "@/components/HistoryBackButton";
 import { AudioPlayer } from "@/components/MediaPlayers";
 import { voiceNotes } from "@/lib/voice-notes";
 import { site } from "@/lib/site";
@@ -31,9 +31,7 @@ export default function VoiceNotesPage() {
   return (
     <main id="content" className="mx-auto max-w-[692px] px-6 py-12 leading-relaxed sm:py-24">
       <nav aria-label="Breadcrumb" className="mb-16 flex items-center gap-3 text-sm text-gray-1000">
-        <Link href="/" aria-label="Go back home" className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-300">
-          <ArrowUpLeftIcon size={16} />
-        </Link>
+        <HistoryBackButton fallbackLabel="Go back" />
         <span aria-hidden="true">·</span>
         <span aria-current="page">Voice Notes</span>
       </nav>

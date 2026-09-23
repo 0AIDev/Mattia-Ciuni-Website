@@ -14,6 +14,7 @@ import { feedback } from "@/lib/feedback";
 import { FeedbackModalButton } from "@/components/FeedbackForm";
 import { LocalizedSection } from "@/components/LocalizedSection";
 import { NewsletterSection } from "@/components/NewsletterSection";
+import { uiCopy } from "@/lib/i18n-ui";
 
 const SECTIONS = ["about", "work", "thoughts", "notes", "feedback", "privacy", "terms", "cookies", "legal", "newsletter", "link", "voice-notes", "videos"] as const;
 type Section = (typeof SECTIONS)[number];
@@ -32,7 +33,9 @@ const homeCopy: Record<Locale, HomeCopy> = {
   de: { who: "Wer ist Mattia Ciuni?", whoBody: "Mattia Ciuni ist ein italienischer Gründer und Gründer und CEO von Payle, einem Unternehmen, das die Geldschicht für KI-Agenten entwickelt. Er arbeitet an Regeln, Autorisierung und Belegen, mit denen Software sicher im Namen von Menschen ausgeben kann.", whoBody2: "Was macht Mattia Ciuni? Vor Payle entwickelte er Celeste, einen KI-Browser. Heute verbindet seine Arbeit KI-Agenten, Zahlungsinfrastruktur, Fintech und Softwareentwicklung.", principles: "Prinzipien", principleItems: [["Zuerst den schwierigen Teil bauen.", "Alle liefern die Demo; am Geldweg sterben Produkte. Ich beginne dort, wo das Risiko liegt."], ["Überprüfen statt glauben.", "Wenn eine Behauptung kein Audit, keinen Test oder einen skeptischen Ingenieur übersteht, kommt sie nicht ins Internet. Auch nicht hier."], ["Kleine Teams, große Wirkung.", "KI-Tools haben meinen Output vervielfacht; Disziplin hat die KI vervielfacht. Zwei Menschen mit Tests schlagen zehn in Meetings."], ["Die besten Ideen überstehen Angriffe.", "Ich veröffentliche meine Architektur vor dem Pitch. Was Kommentare übersteht, wird gebaut."]], now: "Jetzt", nowBody: "Ich entwickle bei Payle die Geldschicht für KI-Agenten. YC-Bewerbung und Umzug nach San Francisco.", projects: "Projekte", payle: "Die Geldschicht für KI-Agenten.", payleBody: "Notizen über KI-Agenten und den Aufbau von Payle.", thoughtsBody: "Gedanken über KI-Agenten und den Aufbau von Payle.", notesBody: "Längere Texte über die Systeme, Menschen und Ideen hinter der Arbeit.", feedbackBody: "Ingenieure greifen Payles Architektur öffentlich an. Ich veröffentliche, was ihre Kritik verändert hat, inklusive Korrekturen.", fieldNotes: "Feldnotizen", fieldBody: "Manche Dinge hört man besser. Andere sieht man besser. Ich schaffe Raum für beides.", voice: "Sprachnotizen", voiceBody: "Unbearbeitete Gedanken, gesprochen bevor sie zu Essays werden.", videos: "Videos", videosBody: "Ein visuelles Protokoll vom Bauen, Denken und Umdenken." },
 };
 
-export function generateStaticParams() { return LOCALES.flatMap((locale) => [{ locale, slug: undefined }, ...SECTIONS.map((slug) => ({ locale, slug: [slug] }))]); }
+export function generateStaticParams() {
+  return LOCALES.flatMap((locale) => SECTIONS.map((slug) => ({ locale, slug })));
+}
 
 function sectionText(locale: Locale, section: Section) {
   const text = copy[locale];
@@ -43,18 +46,16 @@ function sectionText(locale: Locale, section: Section) {
   return content[section];
 }
 
-export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug?: string[] }> }): Promise<Metadata> {
+export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
   const { locale: raw, slug } = await params;
-  if (!isLocale(raw)) return {};
-  const languages = Object.fromEntries(LOCALES.map((item) => [item, `/${item}${slug?.length ? `/${slug.join("/")}/` : "/"}`]));
-  if (!slug?.length) { const title = `Mattia Ciuni | ${copy[raw].founder}`; return { title, description: copy[raw].homeBody, alternates: { canonical: `/${raw}/`, languages }, openGraph: { type: "website", url: `/${raw}/`, siteName: "Mattia Ciuni", title, description: copy[raw].homeBody, images: socialImages("/og.png", title).og } }; }
-  if (slug.length !== 1 || !SECTIONS.includes(slug[0] as Section)) return {};
-  const item = sectionText(raw, slug[0] as Section);
-  return { title: item.title, description: item.body, alternates: { canonical: `/${raw}/${slug[0]}/`, languages }, openGraph: { type: "website", url: `/${raw}/${slug[0]}/`, siteName: "Mattia Ciuni", title: item.title, description: item.body, images: socialImages("/og.png", item.title).og } };
+  if (!isLocale(raw) || !SECTIONS.includes(slug as Section)) return {};
+  const languages = Object.fromEntries(LOCALES.map((item) => [item, `/${item}/${slug}/`]));
+  const item = sectionText(raw, slug as Section);
+  return { title: item.title, description: item.body, alternates: { canonical: `/${raw}/${slug}/`, languages }, openGraph: { type: "website", url: `/${raw}/${slug}/`, siteName: "Mattia Ciuni", title: item.title, description: item.body, images: socialImages("/og.png", item.title).og } };
 }
 
-function LocalizedHome({ locale }: { locale: Locale }) {
-  const text = copy[locale]; const home = homeCopy[locale];
+export function LocalizedHome({ locale }: { locale: Locale }) {
+  const text = copy[locale]; const home = homeCopy[locale]; const ui = uiCopy[locale];
   return (
     <>
       <header className="mb-14 flex flex-wrap items-center gap-x-4 gap-y-2 sm:mb-24"><Image src="/mattia.webp" alt="" width={80} height={80} className="h-10 w-10 shrink-0 rounded-full object-cover" /><h1 className="m-0 font-serif text-lg font-semibold">Mattia Ciuni</h1><p className="m-0 w-full text-sm text-gray-1000 sm:w-auto sm:text-base">Founder &amp; CEO at <a href={site.payleUrl} rel="noopener noreferrer" className="font-semibold text-gray-1200">Payle</a></p></header>
@@ -65,21 +66,18 @@ function LocalizedHome({ locale }: { locale: Locale }) {
       <section aria-labelledby="localized-projects" className="mb-16 sm:mb-24"><h2 id="localized-projects" className="mb-2 font-serif font-medium">{home.projects}</h2><ul className="m-0 list-none divide-y divide-gray-300 p-0"><li><a href={site.payleUrl} rel="noopener noreferrer" className="group grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-3 py-3.5"><span className="font-medium">Payle</span><span className="text-gray-1000">{home.payle}</span><ChevronRight className="h-4 w-4 self-center text-gray-1000" /></a></li><li><Link href={`/${locale}/thoughts/`} className="group grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-3 py-3.5"><span className="font-medium">{text.thoughts}</span><span className="text-gray-1000">{home.payleBody}</span><ChevronRight className="h-4 w-4 self-center text-gray-1000" /></Link></li></ul></section>
       <section aria-labelledby="localized-thoughts" className="mb-16 sm:mb-24"><h2 id="localized-thoughts" className="mb-2 font-serif font-medium">{text.thoughts}</h2><p className="mb-6 max-w-[600px] text-text-paragraph">{home.thoughtsBody}</p><ul className="m-0 list-none divide-y divide-gray-300 p-0">{posts.map((post) => <li key={post.slug}><Link href={`/${locale}/thoughts/${post.slug}/`}
  className="group flex min-w-0 flex-col items-start gap-1.5 py-3.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"><span className="min-w-0 font-serif font-[450]">{post.title}</span><span className="flex items-center gap-2 text-sm text-gray-1000">{post.category}<ChevronRight className="h-4 w-4" /></span></Link></li>)}</ul></section>
-      <section aria-labelledby="localized-notes" className="mb-16 sm:mb-24"><div className="mb-2 flex flex-wrap items-baseline justify-between gap-4"><h2 id="localized-notes" className="font-serif font-medium">{text.notes}</h2><Link href={`/${locale}/notes/`} className="text-sm text-gray-1000">{locale === "it" ? "Tutte le note" : "All notes"}</Link></div><p className="mb-6 max-w-[600px] text-text-paragraph">{home.notesBody}</p><ul className="m-0 list-none divide-y divide-gray-300 p-0">{notes.slice(0, 5).map((note) => <li key={note.slug}><Link href={`/${locale}/notes/${note.slug}/`}
+      <section aria-labelledby="localized-notes" className="mb-16 sm:mb-24"><div className="mb-2 flex flex-wrap items-baseline justify-between gap-4"><h2 id="localized-notes" className="font-serif font-medium">{text.notes}</h2><Link href={`/${locale}/notes/`} className="text-sm text-gray-1000">{ui.allNotes}</Link></div><p className="mb-6 max-w-[600px] text-text-paragraph">{home.notesBody}</p><ul className="m-0 list-none divide-y divide-gray-300 p-0">{notes.slice(0, 5).map((note) => <li key={note.slug}><Link href={`/${locale}/notes/${note.slug}/`}
  className="group flex flex-wrap items-baseline justify-between gap-4 py-3.5"><span className="font-serif">{note.title}</span><span className="text-sm text-gray-1000">{note.date}<ChevronRight className="ml-2 inline h-4 w-4" /></span></Link></li>)}</ul></section>
-      <section aria-labelledby="localized-feedback" className="mb-16 sm:mb-24"><div className="mb-2 flex flex-wrap items-baseline justify-between gap-4"><h2 id="localized-feedback" className="font-serif font-medium">{text.feedback}</h2><Link href={`/${locale}/feedback/`} className="text-sm text-gray-1000">{locale === "it" ? "Tutti i feedback" : "All feedback"}</Link></div><p className="mb-6 max-w-[600px] text-text-paragraph">{home.feedbackBody}</p><ul className="m-0 list-none rounded-3xl bg-gray-100 p-0">{feedback.map((item) => <li key={item.slug}><Link href={`/${locale}/feedback/${item.slug}/`}
- className="group flex min-w-0 flex-wrap items-baseline justify-between gap-4 px-5 py-4"><span className="font-serif font-[450]">{item.title}</span><span className="flex items-center gap-2 text-sm text-gray-1000">{item.author}<ChevronRight className="h-4 w-4" /></span></Link></li>)}</ul><div className="mt-6"><FeedbackModalButton label={text.sendFeedback} /></div></section>
+      <section aria-labelledby="localized-feedback" className="mb-16 sm:mb-24"><div className="mb-2 flex flex-wrap items-baseline justify-between gap-4"><h2 id="localized-feedback" className="font-serif font-medium">{text.feedback}</h2><Link href={`/${locale}/feedback/`} className="text-sm text-gray-1000">{ui.allFeedback}</Link></div><p className="mb-6 max-w-[600px] text-text-paragraph">{home.feedbackBody}</p><ul className="m-0 list-none rounded-3xl bg-gray-100 p-0">{feedback.map((item) => <li key={item.slug}><Link href={`/${locale}/feedback/${item.slug}/`}
+ className="group flex min-w-0 flex-wrap items-baseline justify-between gap-4 px-5 py-4"><span className="font-serif font-[450]">{item.title}</span><span className="flex items-center gap-2 text-sm text-gray-1000">{item.author}<ChevronRight className="h-4 w-4" /></span></Link></li>)}</ul><div className="mt-6"><FeedbackModalButton label={text.sendFeedback} locale={locale} /></div></section>
       <section aria-labelledby="localized-newsletter" className="mb-16 sm:mb-24"><h2 id="localized-newsletter" className="mb-2 font-serif font-medium">{text.newsletter}</h2><p className="mb-5 max-w-[600px] text-text-paragraph">{locale === "it" ? "Una email a settimana: cosa ho spedito, cosa si è rotto, cosa ho deciso e perché." : locale === "fr" ? "Un e-mail par semaine : ce que j'ai livré, cassé, décidé et pourquoi." : locale === "es" ? "Un email a la semana: lo que lancé, lo que falló, lo que decidí y por qué." : locale === "de" ? "Eine E-Mail pro Woche: was ich gebaut, kaputt gemacht und entschieden habe und warum." : "One email a week: what I shipped, what broke, what I decided and why."}</p><NewsletterSection locale={locale} /></section>
-      <section aria-labelledby="localized-field-notes" className="mb-16 sm:mb-24"><div className="mb-2 flex flex-wrap items-baseline justify-between gap-4"><h2 id="localized-field-notes" className="font-serif font-medium">{home.fieldNotes}</h2><span className="text-sm text-gray-1000">{locale === "it" ? "in corso" : "in progress"}</span></div><p className="mb-6 max-w-[600px] text-text-paragraph">{home.fieldBody}</p><div className="grid gap-4 sm:grid-cols-2"><Link href={`/${locale}/voice-notes/`} className="group border-t border-gray-300 pt-4"><span className="font-serif text-2xl">{home.voice}</span><p className="mt-2 text-sm leading-relaxed text-gray-1000">{home.voiceBody}</p></Link><Link href={`/${locale}/videos/`} className="group border-t border-gray-300 pt-4"><span className="font-serif text-2xl">{home.videos}</span><p className="mt-2 text-sm leading-relaxed text-gray-1000">{home.videosBody}</p></Link></div></section>
+      <section aria-labelledby="localized-field-notes" className="mb-16 sm:mb-24"><div className="mb-2 flex flex-wrap items-baseline justify-between gap-4"><h2 id="localized-field-notes" className="font-serif font-medium">{home.fieldNotes}</h2><span className="text-sm text-gray-1000">{ui.inProgress}</span></div><p className="mb-6 max-w-[600px] text-text-paragraph">{home.fieldBody}</p><div className="grid gap-4 sm:grid-cols-2"><Link href={`/${locale}/voice-notes/`} className="group border-t border-gray-300 pt-4"><span className="font-serif text-2xl">{home.voice}</span><p className="mt-2 text-sm leading-relaxed text-gray-1000">{home.voiceBody}</p></Link><Link href={`/${locale}/videos/`} className="group border-t border-gray-300 pt-4"><span className="font-serif text-2xl">{home.videos}</span><p className="mt-2 text-sm leading-relaxed text-gray-1000">{home.videosBody}</p></Link></div></section>
     </>
   );
 }
 
-export default async function LocalizedRoute({ params }: { params: Promise<{ locale: string; slug?: string[] }> }) {
+export default async function LocalizedSectionRoute({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { locale: raw, slug } = await params;
-  if (!isLocale(raw) || (slug && slug.length > 1) || (slug?.[0] && !SECTIONS.includes(slug[0] as Section))) notFound();
-  const locale = raw as Locale;
-  const section = slug?.[0] as Section | undefined;
-  if (section) return <LocalizedSection locale={locale} section={section} />;
-  return <main id="content" className="mx-auto w-full min-w-0 max-w-[692px] overflow-hidden px-5 py-10 leading-relaxed sm:px-6 sm:py-24"><LocalizedHome locale={locale} /></main>;
+  if (!isLocale(raw) || !SECTIONS.includes(slug as Section)) notFound();
+  return <LocalizedSection locale={raw as Locale} section={slug as Section} />;
 }

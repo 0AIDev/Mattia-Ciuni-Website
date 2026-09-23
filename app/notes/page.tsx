@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Image from "next/image";
 import Link from "next/link";
 import { ChevronRight } from "@/components/icons";
-import { ArrowUpLeftIcon } from "@/components/ui/arrow-up-left";
+import { HistoryBackButton } from "@/components/HistoryBackButton";
 import { notes } from "@/lib/notes";
 import { socialImages } from "@/lib/social";
 
@@ -46,13 +46,7 @@ export default function NotesIndex() {
       className="mx-auto max-w-[692px] px-6 py-12 leading-relaxed sm:py-24"
     >
       <header className="mb-16 flex items-center gap-4 sm:mb-24">
-        <Link
-          href="/"
-          aria-label="Go back home"
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-300 transition-colors hover:bg-gray-400"
-        >
-          <ArrowUpLeftIcon size={16} />
-        </Link>
+        <HistoryBackButton fallbackLabel="Go back" />
         <span className="text-sm text-gray-1000">Notes</span>
       </header>
 
