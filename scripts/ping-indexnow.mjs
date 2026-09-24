@@ -1,7 +1,18 @@
-import { mkdirSync, writeFileSync } from "node:fs";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 
-const origin = (process.env.NEXT_PUBLIC_SITE_URL || "https://mattiaciuni.pages.dev").replace(/\/$/, "");
+const out = join(process.cwd(), "out");
+const home = join(out, "index.html");
+if (!existsSync(home)) {
+  console.log("indexnow: skipped (build output is missing)");
+  process.exit(0);
+}
+const origin = (readFileSync(home, "utf8").match(/<link rel="canonical" href="([^"]+)"/)?.[1] || "")
+  .replace(/\/$/, "");
+if (!/^https:\/\//.test(origin)) {
+  console.warn("indexnow: skipped (the export has no absolute production canonical)");
+  process.exit(0);
+}
 const key = process.env.INDEXNOW_KEY?.trim();
 
 if (!key) {
@@ -9,7 +20,6 @@ if (!key) {
   process.exit(0);
 }
 
-const out = join(process.cwd(), "out");
 mkdirSync(out, { recursive: true });
 writeFileSync(join(out, `${key}.txt`), key + "\n", "utf8");
 

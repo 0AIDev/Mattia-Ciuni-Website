@@ -1,16 +1,13 @@
 // Il controllo che guarda il sito **dal vivo**, non l'export.
 //
-// `verify.js` è offline, e per questo non poteva vedere il guasto del 2026-09-21:
-// il sito dichiarava `https://mattiaciuni.xyz` — un dominio senza DNS (NXDOMAIN
-// dal registro `.xyz`) — mentre rispondeva su un altro host. Dentro il build era
-// tutto verde; fuori, la sitemap elencava indirizzi che non risolvono e Discord e
-// X non mostravano nessuna anteprima, perché chiedevano la card a un dominio
-// inesistente.
+// `verify.js` è offline, e per questo non può vedere un export che dichiara un
+// origin diverso dal sito pubblicato. Il controllo deve continuare a leggere
+// l'origine dal sito vivo e a confrontarla con sitemap, canonical e OG.
 //
-// Da allora il dominio segue l'host che serve la pagina (`functions/_middleware.ts`),
-// quindi questo controllo non dovrebbe più trovare quel guasto. Resta perché è
-// l'unico che guarda **da fuori**: il DNS, il deploy che serve l'export di un
-// altro commit, un dominio custom che dichiara il `.pages.dev`.
+// Il dominio SEO production non segue l'host della richiesta: il middleware
+// preserva l'origine dichiarata dal build. Questo controllo resta necessario
+// perché guarda da fuori il DNS, il deploy effettivamente servito e la
+// coerenza tra sitemap, canonical e OG.
 //
 // Per questo si legge **prima dal sito pubblicato**: la sitemap viva dice qual è
 // il dominio che il deploy dichiara davvero, le pagine vive dicono quale

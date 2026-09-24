@@ -4,7 +4,7 @@ PASS content: no markdown link nested inside bold
 PASS post: single h1
 PASS index: lang=en
 PASS index: canonical
-PASS origin: l'export dichiara https://mattiaciuni.pages.dev (il dominio che il middleware riscrive)
+PASS origin: l'export dichiara https://mattiaciuni.pages.dev (il dominio SEO production che il middleware preserva)
 PASS post: canonical
 PASS index: og:image absolute
 PASS index: og:site_name

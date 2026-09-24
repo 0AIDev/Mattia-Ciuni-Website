@@ -2,9 +2,9 @@
 # salvare, e non c'e' ancora un dominio custom con un www da raddrizzare.
 #
 # Su Cloudflare Pages le regole possono avere un dominio dentro (a differenza dei
-# Worker con static assets, che le scartano in silenzio: "Only relative URLs are
-# allowed. Skipping absolute URL https://www.mattiaciuni.xyz/*."). Quando il
-# dominio esiste davvero, il www -> apex e' una riga qui:
+# Worker con static assets, che le scartano in silenzio quando la destinazione
+# contiene un altro origin). Se in futuro esiste un dominio custom autorizzato,
+# il www -> apex si aggiunge qui come regola esplicita.
 #
 #     https://www.<dominio>/*  https://<dominio>/${1}  301
 #

@@ -21,19 +21,21 @@ const blog = read("thoughts/index.html");
 const post = read("thoughts/money-layer-for-ai-agents/index.html");
 const note = read("notes/on-boring-systems/index.html");
 
-// Il dominio: dalla variabile del progetto Pages se c'è, altrimenti dalla
-// stringa scritta in `lib/site-origin.ts` — la **stessa** che legge il
-// middleware. Non una seconda copia qui dentro: è esattamente così che il sito
-// ha finito per dichiarare `mattiaciuni.xyz` (un dominio che non esiste) mentre
-// rispondeva su un altro host, con tutti i controlli verdi.
-const SITE_ORIGIN = /export const SITE_ORIGIN = "([^"]+)"/.exec(
+// Il dominio SEO production: la costante in `lib/site-origin.ts`, che il build
+// usa come unica origine consentita. `NEXT_PUBLIC_SITE_URL` viene verificata
+// come configurazione del progetto, ma non può sostituire la costante.
+const SITE_ORIGIN = /const PRODUCTION_ORIGIN = "([^"]+)"/.exec(
   readFileSync(path.join(__dirname, "..", "lib", "site-origin.ts"), "utf8"),
 )?.[1];
 if (!SITE_ORIGIN) {
   console.error("verify: lib/site-origin.ts non dichiara SITE_ORIGIN");
   process.exit(1);
 }
-const PROD = (process.env.NEXT_PUBLIC_SITE_URL || SITE_ORIGIN).replace(/\/$/, "");
+const PROD = SITE_ORIGIN.replace(/\/$/, "");
+if (process.env.NEXT_PUBLIC_SITE_URL && process.env.NEXT_PUBLIC_SITE_URL.replace(/\/$/, "") !== PROD) {
+  console.error(`verify: NEXT_PUBLIC_SITE_URL deve essere ${PROD} (trovato ${process.env.NEXT_PUBLIC_SITE_URL})`);
+  process.exit(1);
+}
 
 check("index: single h1", (index.match(/<h1/g) || []).length === 1);
 check("index: h1 Mattia Ciuni", index.includes("<h1") && index.includes("Mattia Ciuni"));
@@ -70,15 +72,11 @@ check("post: single h1", (post.match(/<h1/g) || []).length === 1);
 check("index: lang=en", index.includes('<html lang="en"'));
 check("index: canonical", index.includes(`rel="canonical" href="${PROD}/"`));
 
-// Il build può essere fatto per un dominio diverso da quello scritto in
-// `lib/site-origin.ts`: succede quando il progetto Pages ha
-// `NEXT_PUBLIC_SITE_URL`. Il middleware sostituisce l'host a chi serve la
-// pagina, ma per farlo deve sapere **quale** dominio sta dentro l'export: se i
-// due non coincidono la sostituzione non trova niente da sostituire, e ogni
-// pagina dichiara un host che non è quello che qualcuno ha scelto.
+// L'export deve dichiarare sempre la costante production: il middleware non
+// sostituisce più l'host con quello della richiesta.
 const builtFor = index.match(/rel="canonical" href="(https?:\/\/[^/"]+)/)?.[1];
 check(
-  `origin: l'export dichiara ${SITE_ORIGIN} (il dominio che il middleware riscrive)`,
+  `origin: l'export dichiara ${SITE_ORIGIN}`,
   builtFor === SITE_ORIGIN
 );
 if (builtFor !== SITE_ORIGIN) {

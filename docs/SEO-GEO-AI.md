@@ -211,7 +211,7 @@ però pubblicato da un Worker con static assets, che quelle regole le accetta so
 relative e **scarta in silenzio** le altre — provato, non dedotto:
 
 ```text
-▶︎ Only relative URLs are allowed. Skipping absolute URL https://www.mattiaciuni.xyz/*.
+▶︎ Only relative URLs are allowed. Skipping absolute URL with a different origin.
 ```
 
 È una trappola che vale la pena ricordare se un giorno si tornasse su un Worker:
@@ -416,20 +416,17 @@ conversione fatta al momento: convertire sarebbe un secondo modo di dire la stes
 pagina, e prima o poi direbbe qualcosa di diverso — la card invece nasce
 dall'HTML appena esportato.
 
-**La seconda** è il dominio, ed è la cura del guasto del 21/09 (il sito dichiarava
-`https://mattiaciuni.xyz`, che non esiste in DNS, mentre rispondeva altrove: la
-sitemap elencava otto indirizzi irraggiungibili e Discord e X non mostravano
-nessuna anteprima). Gli indirizzi assoluti che l'export dichiara — `canonical`,
-`og:url`, `og:image`, JSON-LD, `<loc>` delle sitemap, il `Sitemap:` di
-`robots.txt` — vengono riscritti con **l'host che sta servendo la pagina**
-(`new URL(request.url).origin`). Così il dominio segue il deploy invece di essere
-una cosa che qualcuno deve ricordarsi di aggiornare: oggi il `.pages.dev`, domani
-il dominio custom, senza un rebuild. Se nel progetto è impostata `SITE_URL` il
-dominio invece si **fissa** su quello, ed è quello che serve quando esistono due
-host e uno solo deve essere quello dichiarato.
+**La seconda** è il dominio: la fonte SEO production è
+`https://mattiaciuni.pages.dev`, dichiarata una sola volta in
+`lib/site-origin.ts` e verificata contro `NEXT_PUBLIC_SITE_URL` nelle impostazioni
+Cloudflare Pages. Il middleware preserva quel dominio anche quando la richiesta
+arriva da un deploy di anteprima: `SITE_URL` resta una configurazione delle API
+per link applicativi e non può cambiare canonical, sitemap, robots, metadata,
+Open Graph o JSON-LD. Gli indirizzi assoluti dell'export devono quindi essere
+verificati contro la stessa origine production, non contro l'host della richiesta.
 
-La parte che conta è cosa **non** riscrivere: si riscrivono solo risposte
-testuali (`TEXTUAL`, l'elenco dei tipi), e il corpo ricostruito perde
+La parte che conta è non alterare il contenuto delle risposte testuali
+(`TEXTUAL`, l'elenco dei tipi), mentre il corpo ricostruito perde
 `Content-Encoding` e `Content-Length` della risposta originale (una `br` con
 dentro testo già decodificato è un file corrotto). Le immagini passano intatte:
 provato confrontando i byte di `og.png` servito con il file su disco, non
@@ -463,7 +460,7 @@ perché né `next dev` né un server statico fanno girare quel pezzo.
 | `npm run lint` | ESLint flat config (fra cui: link interni con `next/link`) |
 | `npx tsc --noEmit` | i tipi |
 | `npm run build` | `next build` + `scripts/gen-cards.mjs` (8 pagine, 8 card) |
-| `node scripts/verify.js` | **94 controlli** sul costruito: un solo `h1` per pagina, canonical, OG, JSON-LD parseabile (Person, WebSite, BlogPosting, Article, `BreadcrumbList` **anche per le note**), breadcrumb visibile, `robots.txt` (agenti AI per nome + `Content-Signal`), sitemap (indice + figlie, **date che seguono i contenuti**, indice datato come le figlie), `lastmod`, l'**OG card di ogni articolo e nota** (ricavata dai registri, con il conteggio confrontato con le pagine costruite, e nessuna card orfana) e l'**`og:image` che ogni pagina dichiara** (letto dall'`<head>` di tutte le pagine costruite, e deve esistere: quando cade stampa il file mancante), annuncio della card markdown nella `<head>` **e** nel piè di pagina, link interni fra articoli e sezioni, TOC con gli anchor giusti, card `.md` (struttura e copia in `public/`), i **documenti di scoperta** (il `Link` di ogni pagina che punta a file che esistono, il linkset dell'`api-catalog`, il **digest ricalcolato** della skill, il documento RFC 9728 che deve restare **senza issuer**), le pagine legali che devono descrivere quello che il sito fa davvero (newsletter, form di feedback, chat AI, analytics), **nessun `<a>` dentro un `<a>`** e **nessun link interno rotto** su tutte le pagine esportate (la card del feedback conteneva il link al GitHub dell'autore dentro il link della card: HTML non valido, idratazione buttata via e pagina ricostruita sul client), 404 `noindex`, **nessuna traccia della dashboard privata** negli indici macchina (`sitemap*.xml`, `llms.txt`, `feed.xml`, `rag/index.json`) né un file scritto **intorno** alla pagina (la card `admin/feedback.md` era servita come asset statico — quel percorso non passa dalla Function — e raccontava la pagina privata a chi la chiedeva; `gen-cards.mjs` e `gen-rag.mjs` ora la saltano, `ForAICard` non annuncia una card che non esiste, e il controllo cade se torna), il **link della notifica** che segue l'host invece di una costante, gli **id di moderazione** confinati ai record `fb:`, il **focus ring** che non cambia la forma del controllo (una `border-radius` dentro una regola `:focus*` raddrizzava ogni pillola al focus), **la chat pubblica che non si disegna sulla dashboard** privata, **nessuna card sotto un percorso privato** (il 404 il middleware lo dà prima degli asset: la copia in cache di `admin/feedback.md` è sopravvissuta al deploy), il pannello Feedback della home senza il filetto nero doppio, peso dell'homepage (html+css < 118KB raw — alzato il 21/09 quando le `@font-face` del serif sono entrate nel CSS al posto del foglio di Google, che il conto non faceva) |
+| `node scripts/verify.js` | **94 controlli** sul costruito: un solo `h1` per pagina, canonical, OG, JSON-LD parseabile (Person, WebSite, BlogPosting, Article, `BreadcrumbList` **anche per le note**), breadcrumb visibile, `robots.txt` (agenti AI per nome + `Content-Signal`), sitemap (indice + figlie, **date che seguono i contenuti**, indice datato come le figlie), `lastmod`, l'**OG card di ogni articolo e nota** (ricavata dai registri, con il conteggio confrontato con le pagine costruite, e nessuna card orfana) e l'**`og:image` che ogni pagina dichiara** (letto dall'`<head>` di tutte le pagine costruite, e deve esistere: quando cade stampa il file mancante), annuncio della card markdown nella `<head>` **e** nel piè di pagina, link interni fra articoli e sezioni, TOC con gli anchor giusti, card `.md` (struttura e copia in `public/`), i **documenti di scoperta** (il `Link` di ogni pagina che punta a file che esistono, il linkset dell'`api-catalog`, il **digest ricalcolato** della skill, il documento RFC 9728 che deve restare **senza issuer**), le pagine legali che devono descrivere quello che il sito fa davvero (newsletter, form di feedback, chat AI, analytics), **nessun `<a>` dentro un `<a>`** e **nessun link interno rotto** su tutte le pagine esportate (la card del feedback conteneva il link al GitHub dell'autore dentro il link della card: HTML non valido, idratazione buttata via e pagina ricostruita sul client), 404 `noindex`, **nessuna traccia della dashboard privata** negli indici macchina (`sitemap*.xml`, `llms.txt`, `feed.xml`, `rag/index.json`) né un file scritto **intorno** alla pagina (la card `admin/feedback.md` era servita come asset statico — quel percorso non passa dalla Function — e raccontava la pagina privata a chi la chiedeva; `gen-cards.mjs` e `gen-rag.mjs` ora la saltano, `ForAICard` non annuncia una card che non esiste, e il controllo cade se torna), il **link applicativo della notifica** che segue l'host del deploy invece di una costante SEO, gli **id di moderazione** confinati ai record `fb:`, il **focus ring** che non cambia la forma del controllo (una `border-radius` dentro una regola `:focus*` raddrizzava ogni pillola al focus), **la chat pubblica che non si disegna sulla dashboard** privata, **nessuna card sotto un percorso privato** (il 404 il middleware lo dà prima degli asset: la copia in cache di `admin/feedback.md` è sopravvissuta al deploy), il pannello Feedback della home senza il filetto nero doppio, peso dell'homepage (html+css < 118KB raw — alzato il 21/09 quando le `@font-face` del serif sono entrate nel CSS al posto del foglio di Google, che il conto non faceva) |
 
 `verify.js` è deliberatamente **una cosa sola**: non è una suite, è un file che si
 legge in un minuto e che aggiunge una riga per ogni regola che ci è già costata
@@ -505,8 +502,8 @@ npm run build && npx wrangler pages dev out    # workerd vero: Functions, _heade
 `/thoughts/<slug>` **308** verso quella con la barra, un indirizzo inventato 404 con
 il corpo di `out/404.html`, su `/og.png` il `Content-Type` e il `Cache-Control` di
 `_headers`, `Accept: text/markdown` che restituisce la card, e la canonical che
-dichiara `http://127.0.0.1:8788` — cioè l'host che serve la pagina, che in locale è
-proprio quello.
+dichiara sempre `https://mattiaciuni.pages.dev` — anche quando la richiesta locale
+arriva da `http://127.0.0.1:8788`.
 
 Qui è anche il posto in cui è stata **misurata** la scelta di `trailingSlash`:
 con le pagine come file (`out/thoughts/<slug>.html`) Pages risponde 200 su
@@ -537,7 +534,7 @@ canonica è quella che Pages serve da sé, senza reindirizzare.
   regola che ha già morso.
 
 **Dato di questo sito (si sostituisce, non si copia):** il dominio in
-`lib/site-origin.ts` e in `NEXT_PUBLIC_SITE_URL`; email e social in `lib/site.ts`; la riga `en`; i 32 nomi dei bot (si aggiornano, l'elenco non è
+`lib/site-origin.ts` e la stessa variabile `NEXT_PUBLIC_SITE_URL` del progetto Pages; email e social in `lib/site.ts`; la riga `en`; i 32 nomi dei bot (si aggiornano, l'elenco non è
 sacro); i contenuti e i loro keyword; le immagini OG; il testo di `llms.txt`.
 
 ### 6.2 L'ordine minimo (quello che serve davvero, in sette passi)
@@ -558,20 +555,20 @@ sacro); i contenuti e i loro keyword; le immagini OG; il testo di `llms.txt`.
 
 - **Il dominio scritto in due posti.** Qui la stringa sta in un file solo
   (`lib/site-origin.ts`), le card (`scripts/gen-cards.mjs`) leggono solo `out/`,
-  che è già canonico, e nessuno script Node ricopia il dominio. Il middleware ha
-  bisogno di sapere quale dominio sta **dentro** l'export per poterlo sostituire:
-  se quel file e l'export divergono, la sostituzione non trova niente — e`
-  `verify.js` lo pretende uguale, con un controllo che spiega cosa aggiornare.
+  che è già canonico, e nessuno script Node ricopia il dominio. Il middleware non
+  sostituisce più quell'origine con l'host della richiesta: il suo compito è
+  preservare l'export. `verify.js` controlla che l'export e la configurazione
+  `NEXT_PUBLIC_SITE_URL` restino allineati.
 - **Un file generato che nessuno rigenera** dice una verità vecchia. Qui le card
   girano in `postbuild` **e** in `predev`, e `verify.js` controlla sia la copia
   di produzione sia quella di sviluppo: non esiste il caso «l'ho aggiornata a
   mano solo questa volta».
 - **Il dominio che nessuno raggiunge.** È la trappola di questa giornata, e non
   la si vede da dentro: il build era verde, `verify.js` era verde, e il sito
-dichiarava un dominio inesistente (`mattiaciuni.xyz`, NXDOMAIN dal registro
-  `.xyz`) mentre rispondeva su un altro host. Le anteprime social erano l'unico
-  sintomo visibile, e sono arrivate dagli utenti. La cura è doppia: il dominio
-  segue l'host (§4.4) **e** `check-live.mjs` lo chiede al DNS (§5.2).
+  dichiarava un dominio diverso da quello production mentre rispondeva su un
+  altro host. La cura è una sola fonte `lib/site-origin.ts`, il controllo
+  `.env.example`/Pages e `check-live.mjs` sul dominio effettivamente dichiarato
+  e servito.
 - **`_redirects` di Cloudflare ignora in silenzio oltre la centesima regola** (e
   su un Worker con static assets ignora anche le regole con un dominio dentro).
   Qui il file è vuoto; se un giorno serviranno, vanno in `functions/_middleware.ts`.
@@ -627,7 +624,7 @@ scripts/gen-cards.mjs          le card markdown, dal costruito
 scripts/verify.js              i 58 controlli locali (offline)
 scripts/check-live.mjs         i controlli sul sito pubblicato (DNS, sitemap, canonical, card)
 lib/site-origin.ts             l'unica stringa del dominio, letta da build, Function e controlli
-functions/_middleware.ts       l'unico codice: markdown a richiesta + il dominio che segue l'host
+functions/_middleware.ts       l'unico codice: markdown a richiesta + l'origine SEO production fissa
 public/_routes.json            quali rotte invocano la Function
 agent-skills/<nome>/SKILL.md   la fonte a mano delle skill per gli agenti (una sola)
 scripts/gen-agent-files.mjs    i documenti di scoperta, dai dati veri

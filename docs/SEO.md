@@ -39,12 +39,11 @@ Due dettagli che valgono come regole:
   è pronto: finché non c'è, non esiste da nessuna parte (niente rotta, niente
   card, niente riga nel sitemap, niente JSON-LD, niente ingresso in `llms.txt`);
 - **l'indirizzo canonico è una costante** (`SITE_ORIGIN` in `lib/site-origin.ts`,
-  oppure `NEXT_PUBLIC_SITE_URL` del progetto Pages): sitemap, `canonical`,
-  `og:url`, `llms.txt`, RSS, JSON-LD e card la leggono tutti dallo stesso posto.
-  Cambiare dominio è un numero solo — e se ci si dimentica, il dominio dichiarato
-  non è quello che risponde: `functions/_middleware.ts` riscrive gli indirizzi
-  con l'host che sta servendo la pagina, e `scripts/check-live.mjs` lo chiede al
-  DNS (§5 di `docs/SEO-GEO-AI.md`).
+  con `NEXT_PUBLIC_SITE_URL` del progetto Pages obbligatoramente uguale): sitemap,
+  `canonical`, `og:url`, `llms.txt`, RSS, JSON-LD e card la leggono tutti dallo
+  stesso posto. Il middleware preserva quell'origine invece di sostituirla con
+  l'host della richiesta, mentre `scripts/check-live.mjs` verifica il dominio
+  effettivamente servito (§5 di `docs/SEO-GEO-AI.md`).
 
 **Niente `hreflang`**, perché il sito è in una lingua sola: dichiararlo per sé
 stessi più `x-default` è rumore. Il giorno in cui esistono due lingue, il gruppo
@@ -68,7 +67,7 @@ sitemap è la riga che fa smettere Chrome di disegnarlo come albero dei tag).
 | la `<head>` di ogni pagina | `generateMetadata` nella pagina, dai campi del registro | titolo, description, canonical, OG, JSON-LD, annuncio della card |
 | `public/_headers`, `public/_redirects` | **a mano** | le regole che legge l'host (header di sicurezza, redirect, tipo dei file senza estensione): riguardano il dominio, non la pagina, e sono l'unica cosa qui che nessuno rigenera |
 | `public/_routes.json` | **a mano** | quali rotte invocano la Pages Function: le sole in cui compaiono indirizzi assoluti (pagine, sitemap, robots, feed, `llms.txt`, card, `/.well-known/`) |
-| `functions/_middleware.ts` | **a mano** | l'unico codice: markdown a richiesta, e gli indirizzi assoluti riscritti sull'host che serve la pagina |
+| `functions/_middleware.ts` | **a mano** | l'unico codice: markdown a richiesta e conservazione dell'origine SEO production dichiarata dal build |
 | `public/og.png`, `public/thoughts/og.png`, `public/notes/og.png` | `scripts/og.ps1` | i master disegnati in root (`og.png`, `thoughts-og.png`, `notesog.png`) ridotti a 1200×630 |
 | `public/thoughts/<slug>/og.png`, `public/notes/<slug>/og.png` | `scripts/og.ps1` | articoli e note dal template: `og-sfondo.png` + Instrument Serif + Inter Light (font in `scripts/fonts/`) |
 | `public/thoughts/<slug>/cover.png`, `public/notes/<slug>/cover.png` | `scripts/og.ps1` (stesso giro) | la stessa card **senza il logo**, ed è quella che la pagina mostra sopra il `h1` (`components/CoverImage.tsx`): dentro il sito, non nella `<head>` |

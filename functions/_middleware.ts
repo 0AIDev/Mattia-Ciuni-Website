@@ -11,30 +11,25 @@
  *     poi direbbe qualcosa di diverso (le card si generano dall'HTML appena
  *     esportato, non da un template a parte).
  *
- * 2 · **Il dominio segue l'host che serve la pagina.** L'export nasce per un
- *     dominio (`SITE_ORIGIN`, via `NEXT_PUBLIC_SITE_URL`), ma chi risponde può
- *     essere un altro: il progetto Pages, un dominio custom, un deploy di
- *     anteprima. Qui gli indirizzi assoluti che il file dichiara — `canonical`,
- *     `og:url`, `og:image`, JSON-LD, `<loc>` delle sitemap, il `Sitemap:` di
- *     robots.txt, i link delle card — vengono riscritti con l'host che sta
- *     servendo davvero. È la cura del guasto del 2026-09-21: il sito dichiarava
- *     `https://mattiaciuni.xyz` (che non esiste in DNS) mentre rispondeva su un
- *     altro host, e Discord e X non mostravano nessuna anteprima perché chiedevano
- *     la card a un dominio inesistente. Con `SITE_URL` impostata nel progetto il
- *     dominio si **fissa** invece di seguire l'host: è quello che si vuole quando
- *     esiste un dominio custom e il `.pages.dev` deve rimandare a lui.
+ * 2 · **Il dominio SEO production è fisso e sicuro.** L'export nasce per
+ *     `SITE_ORIGIN`; gli indirizzi assoluti che il file dichiara — `canonical`,
+ *     `og:url`, `og:image`, JSON-LD, `<loc>` delle sitemap e il `Sitemap:` di
+ *     robots.txt — restano esattamente sull'origine dichiarata dal build.
+ *     Gli host di anteprima possono ricevere l'export, ma non possono cambiare
+ *     il dominio SEO con una variabile d'ambiente. `SITE_URL` resta disponibile
+ *     alle API che costruiscono link applicativi, separatamente dalla
+ *     configurazione SEO.
  *
  * Tutto il resto passa agli asset, come se questa funzione non ci fosse: gli
  * header di `public/_headers`, il 404, le regole di `_redirects`. E grazie a
  * `public/_routes.json` la funzione **non viene nemmeno invocata** per immagini,
  * CSS, font e JS.
  */
-import { SITE_ORIGIN } from "../lib/site-origin";
 
 /** Il minimo che serve: gli asset del progetto e le variabili d'ambiente. */
 interface Env {
   ASSETS: { fetch(request: Request): Promise<Response> };
-  /** Se c'è, il dominio dichiarato non segue l'host: è questo. */
+  /** Riservato alle API; non modifica mai il dominio SEO production. */
   SITE_URL?: string;
 }
 
@@ -70,21 +65,14 @@ function cardOf(pathname: string): string {
   return clean === "" ? "/index.md" : clean + ".md";
 }
 
-/** L'host che deve comparire negli indirizzi dichiarati: quello che serve la pagina. */
-function servingOrigin(url: URL, env: Env): string {
-  return (env.SITE_URL || "").replace(/\/+$/, "") || url.origin;
-}
-
-/** Scambia il dominio per cui l'export è nato con quello che sta servendo. */
-function followHost(body: string, origin: string): string {
-  if (origin === SITE_ORIGIN) return body;
-  return body.split(SITE_ORIGIN).join(origin);
+/** Il dominio dichiarato resta quello del build production. */
+function preserveSeoOrigin(body: string): string {
+  return body;
 }
 
 export const onRequest = async (context: Context): Promise<Response> => {
   const { request, env, next } = context;
   const url = new URL(request.url);
-  const origin = servingOrigin(url, env);
 
   // Sotto un percorso privato non esiste nessuna card, e va detto **qui**, non
   // solo nel generatore: il file è sparito dall'export, ma la copia che l'edge
@@ -135,7 +123,7 @@ export const onRequest = async (context: Context): Promise<Response> => {
     // `card.ok` falso significa "questa pagina non ha una card": si torna agli
     // asset (immagini, .xml, .txt) invece di inventare un markdown che non c'è.
     if (card.ok) {
-      const body = followHost(await card.text(), origin);
+      const body = preserveSeoOrigin(await card.text());
       return new Response(body, {
         status: 200,
         headers: {
@@ -162,7 +150,7 @@ export const onRequest = async (context: Context): Promise<Response> => {
   // `Vary: Accept` anche sulla risposta HTML: senza, un deposito intermedio
   // servirebbe il markdown a un browser (o il contrario) alla prima richiesta.
   if (type.includes("text/html")) headers.set("Vary", "Accept");
-  return new Response(followHost(await res.text(), origin), {
+  return new Response(preserveSeoOrigin(await res.text()), {
     status: res.status,
     headers,
   });

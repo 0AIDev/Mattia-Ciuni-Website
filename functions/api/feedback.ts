@@ -144,11 +144,10 @@ async function allowed(store: RateLimitStore | FeedbackStore | undefined, ip: st
 /**
  * Quale dominio serve la pagina, per il link nella notifica.
  *
- * `SITE_URL` se il progetto la imposta (dominio custom), altrimenti l'host della
- * richiesta. Non una costante: il link deve portare alla dashboard **del deploy
- * che ha ricevuto il feedback**, e un dominio scritto a mano è esattamente il
- * guasto che questo sito ha già pagato una volta (indirizzi dichiarati su un host
- * e sito vivo su un altro).
+ * `SITE_URL` se il progetto la imposta per i link applicativi, altrimenti
+ * l'host della richiesta. Non è il dominio SEO, che resta fissato dal build:
+ * questo link deve portare alla dashboard del deploy che ha ricevuto il
+ * feedback.
  */
 function siteOrigin(request: Request, env: Env): string {
   const configured = (env.SITE_URL || "").trim().replace(/\/+$/, "");

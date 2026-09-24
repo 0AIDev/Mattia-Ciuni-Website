@@ -1,8 +1,26 @@
 import { createSign } from "node:crypto";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 
 const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL?.trim();
 const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, "\n");
-const siteUrl = (process.env.GOOGLE_SEARCH_CONSOLE_SITE_URL || process.env.NEXT_PUBLIC_SITE_URL || "https://mattiaciuni.pages.dev").replace(/\/$/, "");
+const home = join(process.cwd(), "out", "index.html");
+const exportedOrigin = existsSync(home)
+  ? (readFileSync(home, "utf8").match(/<link rel="canonical" href="([^"]+)"/)?.[1] || "").replace(/\/$/, "")
+  : "";
+const configuredSiteUrl = process.env.GOOGLE_SEARCH_CONSOLE_SITE_URL?.trim().replace(/\/+$/, "");
+const siteUrl = (configuredSiteUrl || exportedOrigin).replace(/\/$/, "");
+
+if (configuredSiteUrl && configuredSiteUrl !== exportedOrigin) {
+  console.warn(
+    `google search console: skipped (GOOGLE_SEARCH_CONSOLE_SITE_URL must match the export origin ${exportedOrigin || "missing"})`,
+  );
+  process.exit(0);
+}
+if (!siteUrl) {
+  console.warn("google search console: skipped (the export has no absolute production canonical)");
+  process.exit(0);
+}
 
 if (!email || !privateKey) {
   console.log("google search console: skipped (service-account credentials are not configured)");

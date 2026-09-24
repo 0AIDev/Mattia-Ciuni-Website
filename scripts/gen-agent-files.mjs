@@ -34,8 +34,8 @@ if (!existsSync(outDir)) {
 
 // Il dominio non si riscrive qui e non si indovina dal sorgente: si legge
 // dall'export appena costruito, dal `canonical` che la home dichiara di sé. Così
-// questi file seguono `NEXT_PUBLIC_SITE_URL` come tutto il resto (sitemap,
-// canonical, JSON-LD) invece di avere una seconda verità da tenere allineata.
+// questi file seguono l'origine SEO unica del build, senza avere una seconda
+// verità da tenere allineata.
 const homeHtml = readFileSync(join(outDir, "index.html"), "utf8");
 const base = (homeHtml.match(/<link rel="canonical" href="([^"]+)"/)?.[1] || "").replace(
   /\/$/,
