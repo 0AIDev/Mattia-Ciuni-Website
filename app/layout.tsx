@@ -75,6 +75,7 @@ export const metadata: Metadata = {
     google: "2Yp93wGXnpI1i5vhC09zwHdmGr1vY6rFCZIXptWOITI",
     other: {
       "p:domain_verify": "3d076b32843d0a076953fbb547fc68fc",
+      "msvalidate.01": "E92309EFCB0AD5D781A8C52D67B74DF2",
     },
   },
   alternates: { canonical: "/" },

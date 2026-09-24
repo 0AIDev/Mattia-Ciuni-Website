@@ -1,0 +1,114 @@
+PASS index: single h1
+PASS index: h1 Mattia Ciuni
+PASS content: no markdown link nested inside bold
+PASS post: single h1
+PASS index: lang=en
+PASS index: canonical
+PASS origin: l'export dichiara https://mattiaciuni.pages.dev (il dominio che il middleware riscrive)
+PASS post: canonical
+PASS index: og:image absolute
+PASS index: og:site_name
+PASS index: title uses entity and topic
+PASS index: role links bold Payle
+PASS index: WebSite identity
+PASS post: og:type article
+PASS post: article:published_time
+PASS blog: twitter title fixed
+PASS index: twitter large image
+PASS index: rel=me x3
+PASS index: mailto
+PASS index: theme-color
+PASS index: Google Search Console verification
+PASS index: Person JSON-LD valid
+PASS index: Payle Organization JSON-LD valid
+PASS post: BlogPosting JSON-LD valid
+PASS post: BreadcrumbList valid
+PASS post: breadcrumb visible
+PASS note: breadcrumb visible
+PASS note: BreadcrumbList valid
+PASS 404: noindex + home link
+PASS sitemap: index with 4 children
+PASS sitemap-home: base and localized urls
+PASS sitemap-thoughts: index + every post
+PASS sitemap-notes: 9 url
+PASS sitemap: lastmod follows content
+PASS sitemap: index dates are the children's
+PASS robots: allow everything
+PASS news sitemap: generated from articles
+PASS robots: AI agents by name
+PASS robots: standard directives only
+PASS robots: content signals declared and consistent
+PASS head: markdown card alternate
+PASS llms.txt: valid
+PASS card home: structured
+PASS cards: public copy for dev
+PASS card thoughts index: one line per post
+PASS card post: content
+PASS card notes index: 8 notes
+PASS feedback: index + post built
+PASS feedback: card with full article
+PASS index: feedback section
+PASS index: the feedback panel has no heavy rule
+PASS feedback admin: private dashboard scaffold
+PASS feedback admin: protected API and notification wiring
+PASS feedback: the author gets the frozen Resend confirmation
+PASS feedback: the notification link follows the serving host, never a constant
+PASS feedback admin: moderation ids are scoped to feedback records
+PASS admin: absent from every machine-readable index (9 files)
+PASS admin: the public chat is not rendered on the private dashboard
+PASS chat: Ask Mattia Ciuni AI is disabled site-wide
+PASS admin: no markdown card under a private path, cached or not
+PASS routes: all 11 endpoints under functions/api/ are invoked by Pages
+PASS admin: no file is written around the dashboard (no admin card, no admin asset)
+PASS admin: the dashboard is disallowed in every robots group
+PASS admin: the master secret never travels in a cookie (3 Set-Cookie)
+PASS admin: token compared in constant time, sessions in KV, real logout
+PASS admin: token+TOTP bootstrap is one-time, rate limited and never cached
+PASS admin: no hard-coded token anywhere in the tree
+PASS feedback: submission form wired
+PASS footer: section links
+PASS page: For AI link on home
+PASS page: For AI link on post
+PASS og: card files exist (home, indexes)
+PASS og: every article, note and feedback post has its card
+PASS covers: every article and note has its in-page image, no orphan feedback cover
+PASS feedback: exchange layout, not a blog post (1 page)
+PASS og: no card without an article
+PASS og: each section declares its own card
+PASS note: own og image declared
+PASS og: every page declares a complete card (187 pages)
+PASS meta: title uses "|" and og:site_name everywhere (187 pages)
+PASS og: every page's declared og:image exists (187 pages, 186 declarations)
+PASS well-known: api-catalog linkset, every href exists (2 link)
+PASS well-known: api-catalog served as a linkset too
+PASS well-known: ARD catalog, real public entries (3)
+PASS auth.md: H1 names the file, honest unauthenticated policy
+PASS well-known: oauth-protected-resource, public resource with no issuer
+PASS well-known: the skill follows the real domain
+PASS legal: privacy covers newsletter, feedback and analytics while chat is disabled
+PASS legal: cookies lists the real storage keys
+PASS legal: terms cover publishing feedback while chat is disabled
+PASS analytics: the owned copy is a real endpoint with a schema
+PASS analytics: the row that reaches the database has no address and no user agent
+PASS security: CSP allows the cookieless counter
+PASS legal: cookies says Umami writes nothing
+PASS security: production hardening headers are configured
+PASS security: vulnerability disclosure document is published
+PASS security: public forms reject cross-origin browser posts
+PASS accessibility: feedback dialog has a labelled focusable implementation
+PASS WebMCP: registration is present in the page
+PASS well-known: agent-skills index, digests match (1 skill)
+PASS well-known: Link header on every page, pointing at files that exist
+PASS index: favicon icon.png
+PASS index: avatar WebP, sotto i 4KB
+PASS index: footer + logo signature
+PASS links: no nested <a> across 187 exported pages
+PASS links: every internal href resolves in the export
+PASS css: a focus ring never reshapes its control (1 focus rules)
+PASS post: cross-links in content
+PASS post: related lists
+PASS note: cross-links + related
+PASS post: toc anchors
+all exported CSS: 49.9KB raw
+homepage html+css: 141.8KB raw | all JS chunks: 1107.7KB raw
+FAIL weight: homepage html+css < 128KB raw

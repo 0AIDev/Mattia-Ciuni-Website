@@ -3,7 +3,7 @@ export type JobStatus = "open" | "coming-soon" | "closed";
 export type CareerQuestion = {
   id: string;
   label: string;
-  type: "text" | "textarea" | "url";
+  type: "text" | "textarea" | "url" | "number";
   required: boolean;
   minimum: number;
 };
@@ -28,6 +28,15 @@ export interface CareerJob {
   employmentType?: "FULL_TIME" | "PART_TIME" | "CONTRACTOR";
   postedAt?: string;
   questions?: CareerQuestion[];
+  /** JobPosting structured data: real salary band when the role is open. */
+  salaryMin?: number;
+  salaryMax?: number;
+  /** Sidebar copy override for open roles (kept minimal: one sentence). */
+  applyNote?: string;
+  /** Highlighted note rendered under the challenge, with an optional asset link. */
+  datasetNote?: string;
+  datasetHref?: string;
+  datasetHrefLabel?: string;
 }
 
 /**
@@ -85,6 +94,67 @@ Your first artifact: a small agent with a hard boundary. Build an agent that doe
       deliverable: "A working repository, a short decision log, and tests that show where the boundary holds.",
     },
     employmentType: "FULL_TIME",
+    salaryMin: 2500,
+    salaryMax: 3000,
+  },
+  {
+    slug: "ml-engineer-risk",
+    title: "ML Engineer — Risk & Trust",
+    department: "Engineering",
+    location: "Remote (global)",
+    type: "Part-time → Full-time (YC acceptance)",
+    compensation: "€2,000-3,500/month + 0.5-1% equity",
+    status: "open",
+    postedAt: "2026-09-23",
+    shortPitch: "Build the trust layer for autonomous agent spending: fraud scoring, on a behavioral dataset that doesn't exist anywhere else.",
+    description: `### The role
+
+Payle's authorization engine decides, in milliseconds, whether an AI agent is allowed to spend money. It's deterministic, policy-driven, and live. What it doesn't have yet is a risk layer: the ML that scores transactions for fraud, scores merchants for quality, and builds trust profiles for agents over time.
+
+Phase 0 of that risk engine is rules-based and in final build. Phase 1 is yours: evolve it into real ML on a dataset nobody else on earth has: an append-only ledger of every agent authorization, payment, and outcome, with full context attached.
+
+### What you'd build
+
+- Risk scoring for agent transactions: fraud detection, merchant quality scoring, and per-agent trust profiles that evolve with every verified outcome
+- A feature store with point-in-time correctness: no leakage. Enforced in code, proven by test, not promised in a doc
+- Models: starting with LightGBM (explainable, fast, right for tabular data at 20ms latency budgets), evolving as labeled data grows. If a deep learning model earns its place, bring the evidence
+- Explainability on every decision: SHAP-derived factors, because credit-adjacent outputs must be explainable to users, merchants, and eventually regulators
+- Model discipline: registry, model cards, drift monitoring (PSI), shadow-mode deployments before anything influences a real decision, and fairness testing on underwriting-adjacent models
+- The honest constraint: you cannot train fraud detection on data that doesn't exist yet. Phase 1 is building the pipelines, the feature store, and the evaluation discipline. The models earn their deployment as the labeled data grows. If you'd rather pretend otherwise, we're the wrong company
+
+### You
+
+- Strong classical ML: LightGBM/XGBoost, feature engineering, proper validation. And you can explain why you'd pick classical over deep learning for tabular fraud scoring at 20ms latency
+- You've felt the pain of data leakage, or you're hungry to learn why it silently kills models that look perfect offline
+- You treat "AUC 0.99" as a red flag, not a win
+- Python strong, SQL competent, comfortable with point-in-time joins and event-time reasoning
+- Written communication: the team is distributed across four countries and writes everything down. You explain model decisions in text, cleanly
+
+### Compensation
+
+€2,000-3,500/month (part-time to start, full-time path at YC acceptance) + 0.5-1% equity (4-year vesting, 1-year cliff). Remote-first, async-friendly, Friday demos for the whole team.
+
+### The challenge
+
+Your first artifact: a fraud pattern hunt. We give you a synthetic agent ledger dataset with planted fraud patterns (some obvious, some subtle). Build the scoring model, find the patterns, and defend every feature, threshold, and model choice in a written analysis. We pay for your time. You keep the work.`,
+    challenge: {
+      title: "Fraud pattern hunt",
+      description: "Find the planted fraud pattern in a synthetic agent ledger dataset, build the scoring model, and defend every feature and threshold you choose.",
+      deliverable: "Jupyter notebook + written analysis: features used, model choice defended, explainability output, and the fraud pattern you found.",
+    },
+    employmentType: "PART_TIME",
+    salaryMin: 2000,
+    salaryMax: 3500,
+    applyNote: "Applications are open. First step: the fraud pattern hunt below.",
+    datasetNote: "**Note:** the synthetic dataset ships with the challenge. In production, you'd train on our real append-only ledger, a dataset of agent spending behavior that doesn't exist anywhere else.",
+    datasetHref: "/careers/ml-engineer-risk/fraud-hunt/ledger.csv",
+    datasetHrefLabel: "Download the dataset (CSV)",
+    questions: [
+      { id: "ml-models-deployed", label: "How many ML models have you deployed to production (serving real predictions to real users)?", type: "number", required: true, minimum: 0 },
+      { id: "ml-shadow-mode", label: "Your fraud/risk model scores a transaction 0.97 with great offline AUC. What do you do BEFORE deploying it to production?", type: "textarea", required: true, minimum: 200 },
+      { id: "ml-rules-vs-ml", label: "Pre-seed stage: our labeled fraud data is small. Rules first and evolve to ML, or ML immediately? Be concrete about the trade-off.", type: "textarea", required: true, minimum: 200 },
+      { id: "ml-lightgbm-or-deep", label: "Which would you pick for tabular fraud scoring at 20ms latency: LightGBM or a deep model? What would change your mind?", type: "textarea", required: true, minimum: 200 },
+    ],
   },
 ];
 

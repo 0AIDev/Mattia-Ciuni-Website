@@ -1,10 +1,10 @@
 # SEO page-by-page audit
 
-Generated from the static export on 2026-09-23. This is the repository/export audit. Run node scripts/audit-seo.mjs --site=https://mattiaciuni.pages.dev after deployment for a network-level check; DNS, Cloudflare headers, cache and Search Console are not provable from the export alone.
+Generated from the static export on 2026-09-24. This is the repository/export audit. Run node scripts/audit-seo.mjs --site=https://mattiaciuni.pages.dev after deployment for a network-level check; DNS, Cloudflare headers, cache and Search Console are not provable from the export alone.
 
 ## Executive summary
 
-The audit found **184 public HTML pages**. Every public page is checked for a title, canonical, Open Graph image, H1, structured data, image alt text and sitemap membership. The admin area is intentionally excluded from indexing and from this table. A CHECK is a prompt for review, not an automatic ranking failure: empty content pages such as Videos and Voice Notes can legitimately have no item-level schema when they are awaiting recordings.
+The audit found **196 public HTML pages**. Every public page is checked for a title, canonical, Open Graph image, H1, structured data, image alt text and sitemap membership. The admin area is intentionally excluded from indexing and from this table. A CHECK is a prompt for review, not an automatic ranking failure: empty content pages such as Videos and Voice Notes can legitimately have no item-level schema when they are awaiting recordings.
 
 ## Page inventory
 
@@ -14,14 +14,18 @@ The audit found **184 public HTML pages**. Every public page is checked for a ti
 | [/careers/agent-runtime-founding-engineer/apply/](/careers/agent-runtime-founding-engineer/apply/) | PASS Apply: Founding Engineer, Agent Runtime | Mattia Ciuni | CHECK | PASS JobPosting | PASS | PASS | 1 / all alt | 18 |
 | [/careers/agent-runtime-founding-engineer/](/careers/agent-runtime-founding-engineer/) | PASS Founding Engineer, Agent Runtime | Mattia Ciuni | PASS | PASS JobPosting | PASS | PASS | 1 / all alt | 17 |
 | [/careers/confirmed/](/careers/confirmed/) | PASS Application confirmed | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 1 / all alt | 16 |
-| [/careers/](/careers/) | PASS Build with Payle — Careers | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 20 |
+| [/careers/](/careers/) | PASS Build with Payle — Careers | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 21 |
+| [/careers/ml-engineer-risk/apply/](/careers/ml-engineer-risk/apply/) | PASS Apply: ML Engineer — Risk &amp; Trust | Mattia Ciuni | CHECK | PASS JobPosting | PASS | PASS | 1 / all alt | 19 |
+| [/careers/ml-engineer-risk/](/careers/ml-engineer-risk/) | PASS ML Engineer — Risk &amp; Trust | Mattia Ciuni | PASS | PASS JobPosting | PASS | PASS | 1 / all alt | 18 |
 | [/careers/preview/](/careers/preview/) | PASS Careers offer preview | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 1 / all alt | 16 |
 | [/careers/thank-you/](/careers/thank-you/) | PASS Almost done | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 1 / all alt | 16 |
 | [/cookies/](/cookies/) | PASS Cookies Policy | Browser storage on this site | Mattia Ciu | PASS | CHECK none | PASS | CHECK | 1 / all alt | 16 |
 | [/de/about/](/de/about/) | PASS Über mich | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/de/careers/agent-runtime-founding-engineer/apply/](/de/careers/agent-runtime-founding-engineer/apply/) | PASS Apply: Founding Engineer, Agent Runtime | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
 | [/de/careers/agent-runtime-founding-engineer/](/de/careers/agent-runtime-founding-engineer/) | PASS Founding Engineer, Agent Runtime | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 17 |
-| [/de/careers/](/de/careers/) | PASS Karriere — Payle | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 20 |
+| [/de/careers/](/de/careers/) | PASS Karriere — Payle | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 21 |
+| [/de/careers/ml-engineer-risk/apply/](/de/careers/ml-engineer-risk/apply/) | PASS Apply: ML Engineer — Risk &amp; Trust | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
+| [/de/careers/ml-engineer-risk/](/de/careers/ml-engineer-risk/) | PASS ML Engineer — Risk &amp; Trust | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 18 |
 | [/de/cookies/](/de/cookies/) | PASS Cookies | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/de/feedback/a-stranger-redesigned-my-pitch-in-one-comment/](/de/feedback/a-stranger-redesigned-my-pitch-in-one-comment/) | PASS A stranger redesigned my pitch in one comment | Mattia Ciu | PASS | PASS Article, BreadcrumbList | PASS | CHECK | 1 / all alt | 17 |
 | [/de/feedback/](/de/feedback/) | PASS Feedback | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 17 |
@@ -51,7 +55,9 @@ The audit found **184 public HTML pages**. Every public page is checked for a ti
 | [/en/about/](/en/about/) | PASS About | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 21 |
 | [/en/careers/agent-runtime-founding-engineer/apply/](/en/careers/agent-runtime-founding-engineer/apply/) | PASS Apply: Founding Engineer, Agent Runtime | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
 | [/en/careers/agent-runtime-founding-engineer/](/en/careers/agent-runtime-founding-engineer/) | PASS Founding Engineer, Agent Runtime | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 18 |
-| [/en/careers/](/en/careers/) | PASS Careers — Payle | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 20 |
+| [/en/careers/](/en/careers/) | PASS Careers — Payle | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 21 |
+| [/en/careers/ml-engineer-risk/apply/](/en/careers/ml-engineer-risk/apply/) | PASS Apply: ML Engineer — Risk &amp; Trust | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
+| [/en/careers/ml-engineer-risk/](/en/careers/ml-engineer-risk/) | PASS ML Engineer — Risk &amp; Trust | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 19 |
 | [/en/cookies/](/en/cookies/) | PASS Cookies | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 21 |
 | [/en/feedback/a-stranger-redesigned-my-pitch-in-one-comment/](/en/feedback/a-stranger-redesigned-my-pitch-in-one-comment/) | PASS A stranger redesigned my pitch in one comment | Mattia Ciu | PASS | PASS Article, BreadcrumbList | PASS | CHECK | 1 / all alt | 17 |
 | [/en/feedback/](/en/feedback/) | PASS Feedback | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 22 |
@@ -81,7 +87,9 @@ The audit found **184 public HTML pages**. Every public page is checked for a ti
 | [/es/about/](/es/about/) | PASS Sobre mí | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/es/careers/agent-runtime-founding-engineer/apply/](/es/careers/agent-runtime-founding-engineer/apply/) | PASS Apply: Founding Engineer, Agent Runtime | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
 | [/es/careers/agent-runtime-founding-engineer/](/es/careers/agent-runtime-founding-engineer/) | PASS Founding Engineer, Agent Runtime | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 17 |
-| [/es/careers/](/es/careers/) | PASS Carreras — Payle | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 20 |
+| [/es/careers/](/es/careers/) | PASS Carreras — Payle | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 21 |
+| [/es/careers/ml-engineer-risk/apply/](/es/careers/ml-engineer-risk/apply/) | PASS Apply: ML Engineer — Risk &amp; Trust | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
+| [/es/careers/ml-engineer-risk/](/es/careers/ml-engineer-risk/) | PASS ML Engineer — Risk &amp; Trust | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 18 |
 | [/es/cookies/](/es/cookies/) | PASS Cookies | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/es/feedback/a-stranger-redesigned-my-pitch-in-one-comment/](/es/feedback/a-stranger-redesigned-my-pitch-in-one-comment/) | PASS A stranger redesigned my pitch in one comment | Mattia Ciu | PASS | PASS Article, BreadcrumbList | PASS | CHECK | 1 / all alt | 17 |
 | [/es/feedback/](/es/feedback/) | PASS Comentarios | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 17 |
@@ -113,7 +121,9 @@ The audit found **184 public HTML pages**. Every public page is checked for a ti
 | [/fr/about/](/fr/about/) | PASS À propos | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/fr/careers/agent-runtime-founding-engineer/apply/](/fr/careers/agent-runtime-founding-engineer/apply/) | PASS Apply: Founding Engineer, Agent Runtime | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
 | [/fr/careers/agent-runtime-founding-engineer/](/fr/careers/agent-runtime-founding-engineer/) | PASS Founding Engineer, Agent Runtime | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 17 |
-| [/fr/careers/](/fr/careers/) | PASS Carrières — Payle | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 20 |
+| [/fr/careers/](/fr/careers/) | PASS Carrières — Payle | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 21 |
+| [/fr/careers/ml-engineer-risk/apply/](/fr/careers/ml-engineer-risk/apply/) | PASS Apply: ML Engineer — Risk &amp; Trust | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
+| [/fr/careers/ml-engineer-risk/](/fr/careers/ml-engineer-risk/) | PASS ML Engineer — Risk &amp; Trust | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 18 |
 | [/fr/cookies/](/fr/cookies/) | PASS Cookies | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/fr/feedback/a-stranger-redesigned-my-pitch-in-one-comment/](/fr/feedback/a-stranger-redesigned-my-pitch-in-one-comment/) | PASS A stranger redesigned my pitch in one comment | Mattia Ciu | PASS | PASS Article, BreadcrumbList | PASS | CHECK | 1 / all alt | 17 |
 | [/fr/feedback/](/fr/feedback/) | PASS Retours | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 17 |
@@ -144,7 +154,9 @@ The audit found **184 public HTML pages**. Every public page is checked for a ti
 | [/it/about/](/it/about/) | PASS Chi sono | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/it/careers/agent-runtime-founding-engineer/apply/](/it/careers/agent-runtime-founding-engineer/apply/) | PASS Apply: Founding Engineer, Agent Runtime | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
 | [/it/careers/agent-runtime-founding-engineer/](/it/careers/agent-runtime-founding-engineer/) | PASS Founding Engineer, Agent Runtime | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 17 |
-| [/it/careers/](/it/careers/) | PASS Lavora con me — Payle | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 20 |
+| [/it/careers/](/it/careers/) | PASS Lavora con me — Payle | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 21 |
+| [/it/careers/ml-engineer-risk/apply/](/it/careers/ml-engineer-risk/apply/) | PASS Apply: ML Engineer — Risk &amp; Trust | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
+| [/it/careers/ml-engineer-risk/](/it/careers/ml-engineer-risk/) | PASS ML Engineer — Risk &amp; Trust | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 18 |
 | [/it/cookies/](/it/cookies/) | PASS Cookie | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/it/feedback/a-stranger-redesigned-my-pitch-in-one-comment/](/it/feedback/a-stranger-redesigned-my-pitch-in-one-comment/) | PASS A stranger redesigned my pitch in one comment | Mattia Ciu | PASS | PASS Article, BreadcrumbList | PASS | CHECK | 1 / all alt | 17 |
 | [/it/feedback/](/it/feedback/) | PASS Feedback | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 17 |

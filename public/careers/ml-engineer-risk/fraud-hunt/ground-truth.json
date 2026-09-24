@@ -1,0 +1,118 @@
+{
+  "generated_at": "2026-09-23T17:36:23.077Z",
+  "seed": 20260923,
+  "total_rows": 5000,
+  "agent_count": 40,
+  "merchant_count": 25,
+  "patterns": [
+    {
+      "name": "velocity_burst",
+      "agent_id": "agent-01",
+      "description": "15 transactions within a 10-minute window; clean agents never exceed 3 per hour.",
+      "row_indices": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6,
+        7,
+        8,
+        9,
+        10,
+        11,
+        12,
+        13,
+        14,
+        15
+      ]
+    },
+    {
+      "name": "amount_anomaly",
+      "agent_id": "agent-02",
+      "description": "6 transactions at >= 8x the agent's own p95 (18709 minor).",
+      "row_indices": [
+        313,
+        373,
+        428,
+        478,
+        541,
+        593
+      ]
+    },
+    {
+      "name": "new_merchant_high_value",
+      "agent_id": "agent-03",
+      "description": "First-time merchant (granite-crm) combined with unusually large amounts.",
+      "row_indices": [
+        204,
+        439,
+        471,
+        512,
+        550,
+        586,
+        877
+      ]
+    },
+    {
+      "name": "structuring",
+      "agent_id": "agent-04",
+      "description": "12 repeated transactions just under the 5000-minor approval threshold.",
+      "row_indices": [
+        228,
+        232,
+        235,
+        237,
+        240,
+        241,
+        244,
+        245,
+        248,
+        250,
+        253,
+        254,
+        381,
+        943,
+        1236
+      ]
+    }
+  ],
+  "clean_agent_ids": [
+    "agent-21",
+    "agent-38",
+    "agent-14",
+    "agent-13",
+    "agent-31",
+    "agent-23",
+    "agent-25",
+    "agent-11",
+    "agent-05",
+    "agent-32",
+    "agent-15",
+    "agent-30",
+    "agent-06",
+    "agent-34",
+    "agent-19",
+    "agent-22",
+    "agent-33",
+    "agent-39",
+    "agent-35",
+    "agent-16",
+    "agent-12",
+    "agent-26",
+    "agent-24",
+    "agent-20",
+    "agent-37",
+    "agent-27",
+    "agent-28",
+    "agent-18",
+    "agent-07",
+    "agent-36",
+    "agent-40",
+    "agent-09",
+    "agent-10",
+    "agent-08",
+    "agent-17",
+    "agent-29"
+  ]
+}
