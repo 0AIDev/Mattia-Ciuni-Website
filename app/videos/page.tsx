@@ -5,6 +5,7 @@ import { VideoPlayer } from "@/components/MediaPlayers";
 import { site } from "@/lib/site";
 import { HistoryBackButton } from "@/components/HistoryBackButton";
 import { socialImages } from "@/lib/social";
+import { languageAlternates } from "@/lib/seo";
 
 const pageTitle = "Videos | Mattia Ciuni | Building Payle in public";
 // La card si dichiara con lo stesso helper di tutte le altre pagine: `width`,
@@ -29,6 +30,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/videos/",
     types: { "text/markdown": "/videos.md" },
+    languages: languageAlternates("/videos/"),
   },
   robots: { index: true, follow: true },
   openGraph: {

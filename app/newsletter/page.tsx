@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import { NewsletterSection } from "@/components/NewsletterSection";
+import { languageAlternates } from "@/lib/seo";
 
 export const metadata: Metadata = {
   title: "Newsletter",
   description:
     "One email a week: what I shipped, what broke, what I decided and why. Building Payle in public.",
-  alternates: { canonical: "/newsletter/" },
+  alternates: { canonical: "/newsletter/", languages: languageAlternates("/newsletter/") },
 };
 
 export default function Page() {

@@ -10,8 +10,10 @@ import { GithubIcon } from "@/components/ui/github";
 import { LinkedinIcon } from "@/components/ui/linkedin";
 import { CrunchbaseIcon } from "@/components/ui/crunchbase";
 import { InstagramIcon } from "@/components/ui/instagram";
+import { SpotifyIcon, YoutubeIcon } from "@/components/ui/static-icons";
 import { TwitterIcon } from "@/components/ui/twitter";
 import { site } from "@/lib/site";
+import { languageAlternates } from "@/lib/seo";
 import { posts } from "@/lib/posts";
 import { notes } from "@/lib/notes";
 import { feedback } from "@/lib/feedback";
@@ -19,7 +21,7 @@ import { feedback } from "@/lib/feedback";
 export const metadata: Metadata = {
   // La card markdown della pagina si annuncia nella <head>, non solo nel piè di
   // pagina: chi legge la testata (un crawler) non esegue la pagina.
-  alternates: { canonical: "/", types: { "text/markdown": "/index.md" } },
+  alternates: { canonical: "/", types: { "text/markdown": "/index.md" }, languages: languageAlternates("/") },
 };
 
 const personJsonLd = {
@@ -94,7 +96,7 @@ export default function Home() {
             il file, e la fa `scripts/gen-avatar.mjs`. */}
         <Image
           src="/mattia.webp"
-          alt=""
+          alt="Mattia Ciuni"
           width={80}
           height={80}
           className="h-10 w-10 shrink-0 rounded-full object-cover"
@@ -169,6 +171,24 @@ export default function Home() {
           >
             <InstagramIcon size={15} className="inline-flex shrink-0" />
             Instagram
+          </a>
+          ,{" "}
+          <a
+            href={site.social.youtube}
+            rel="me noopener noreferrer"
+            className="article-underline inline-flex items-center gap-1.5"
+          >
+            <YoutubeIcon size={15} className="inline-flex shrink-0" />
+            YouTube
+          </a>
+          ,{" "}
+          <a
+            href={site.social.spotify}
+            rel="me noopener noreferrer"
+            className="article-underline inline-flex items-center gap-1.5"
+          >
+            <SpotifyIcon size={15} className="inline-flex shrink-0" />
+            the Spotify podcast
           </a>{" "}
           and{" "}
           <a
@@ -286,7 +306,11 @@ export default function Home() {
         <p className="mb-6 max-w-[600px] text-text-paragraph">
           Longer, slower pieces on the systems, people and ideas behind the work.
         </p>
-        <NotesCarousel notes={notes} />
+        {/* Solo le ultime tre note in home: l'archivio completo ha portato la
+            pagina fuori dal budget di peso di `verify.js` (147KB contro 128),
+            perché l'idratazione ripete il testo di ogni voce. Le altre sono a un
+            click, nella pagina che esiste per elencarle. */}
+        <NotesCarousel notes={notes.slice(0, 3)} />
       </section>
 
       <section aria-labelledby="feedback" className="mb-16 sm:mb-24">

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LegalPage, type LegalSection } from "@/components/LegalPage";
 import { site } from "@/lib/site";
 import { socialImages } from "@/lib/social";
+import { languageAlternates } from "@/lib/seo";
 
 const pageTitle = "Privacy Policy | Mattia Ciuni";
 const card = socialImages("/og.png", "Privacy Policy | Mattia Ciuni");
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
   title: "Privacy Policy | What I collect and why",
   description:
     "What this site collects: newsletter subscriptions, feedback submissions, and the analytics you can turn on or off.",
-  alternates: { canonical: "/privacy/" },
+  alternates: { canonical: "/privacy/", languages: languageAlternates("/privacy/") },
   openGraph: {
     type: "website",
     url: "/privacy/",

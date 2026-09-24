@@ -73,6 +73,9 @@ export async function GET() {
     ]),
     `Sitemap: ${base}/sitemap.xml`,
     `Sitemap: ${base}/news-sitemap.xml`,
+    // I feed dei ruoli aperti (formato Indeed, RSS, Atom): gli aggregatori li
+    // leggono da qui, le candidature tornano sempre sul sito.
+    `# Job feeds for aggregators: ${base}/jobs.xml, ${base}/jobs.rss.xml, ${base}/jobs.atom.xml`,
     "",
   ].join("\n");
 

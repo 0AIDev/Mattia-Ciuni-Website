@@ -14,7 +14,7 @@
     "preview": "npm run dev:pages",
     "predev": "node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs && node scripts/gen-rag.mjs",
     "build": "next build",
-    "postbuild": "node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs && node scripts/gen-rag.mjs && node scripts/submit-google-sitemap.mjs && node scripts/ping-indexnow.mjs",
+    "postbuild": "node scripts/fix-localized-html-lang.mjs && node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs && node scripts/gen-rag.mjs && node scripts/submit-google-sitemap.mjs && node scripts/ping-indexnow.mjs",
     "start": "next start",
     "lint": "eslint .",
     "test:newsletter": "node scripts/test-newsletter.mjs",
@@ -22,13 +22,15 @@
     "test:feedback": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-feedback.mjs",
     "test:security": "node scripts/security-audit.mjs",
     "audit:seo": "node scripts/audit-seo.mjs",
+    "test:sitemap": "node scripts/check-sitemap-coverage.mjs",
     "email:preview": "tsx emails/render-preview.tsx",
     "email:template": "tsx emails/gen-template.tsx",
     "test:analytics": "node scripts/test-analytics.mjs",
     "test:collect": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-collect.mjs",
     "test:macbook-gate": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-macbook-gate.mjs",
     "test:macbook-search": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-macbook-search.mjs",
-    "test:careers": "tsx scripts/test-careers.mjs"
+    "test:careers": "tsx scripts/test-careers.mjs",
+    "test:job-feeds": "tsx scripts/test-job-feeds.mjs"
   },
   "dependencies": {
     "@animateicons/react": "^0.5.0",

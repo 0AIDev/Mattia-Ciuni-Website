@@ -8,6 +8,7 @@ import { ChevronRight } from "@/components/icons";
 import { copy, LOCALES, isLocale, type Locale } from "@/lib/i18n";
 import { site } from "@/lib/site";
 import { socialImages } from "@/lib/social";
+import { languageAlternates } from "@/lib/seo";
 import { posts } from "@/lib/posts";
 import { notes } from "@/lib/notes";
 import { feedback } from "@/lib/feedback";
@@ -49,16 +50,15 @@ function sectionText(locale: Locale, section: Section) {
 export async function generateMetadata({ params }: { params: Promise<{ locale: string; slug: string }> }): Promise<Metadata> {
   const { locale: raw, slug } = await params;
   if (!isLocale(raw) || !SECTIONS.includes(slug as Section)) return {};
-  const languages = Object.fromEntries(LOCALES.map((item) => [item, `/${item}/${slug}/`]));
   const item = sectionText(raw, slug as Section);
-  return { title: item.title, description: item.body, alternates: { canonical: `/${raw}/${slug}/`, languages }, openGraph: { type: "website", url: `/${raw}/${slug}/`, siteName: "Mattia Ciuni", title: item.title, description: item.body, images: socialImages("/og.png", item.title).og } };
+  return { title: item.title, description: item.body, alternates: { canonical: `/${raw}/${slug}/`, languages: languageAlternates(`/${slug}/`) }, openGraph: { type: "website", url: `/${raw}/${slug}/`, siteName: "Mattia Ciuni", title: item.title, description: item.body, images: socialImages("/og.png", item.title).og } };
 }
 
 export function LocalizedHome({ locale }: { locale: Locale }) {
   const text = copy[locale]; const home = homeCopy[locale]; const ui = uiCopy[locale];
   return (
     <>
-      <header className="mb-14 flex flex-wrap items-center gap-x-4 gap-y-2 sm:mb-24"><Image src="/mattia.webp" alt="" width={80} height={80} className="h-10 w-10 shrink-0 rounded-full object-cover" /><h1 className="m-0 font-serif text-lg font-semibold">Mattia Ciuni</h1><p className="m-0 w-full text-sm text-gray-1000 sm:w-auto sm:text-base">Founder &amp; CEO at <a href={site.payleUrl} rel="noopener noreferrer" className="font-semibold text-gray-1200">Payle</a></p></header>
+      <header className="mb-14 flex flex-wrap items-center gap-x-4 gap-y-2 sm:mb-24"><Image src="/mattia.webp" alt="Mattia Ciuni" width={80} height={80} className="h-10 w-10 shrink-0 rounded-full object-cover" /><h1 className="m-0 font-serif text-lg font-semibold">Mattia Ciuni</h1><p className="m-0 w-full text-sm text-gray-1000 sm:w-auto sm:text-base">Founder &amp; CEO at <a href={site.payleUrl} rel="noopener noreferrer" className="font-semibold text-gray-1200">Payle</a></p></header>
       <div className="mb-16 space-y-6 text-text-paragraph sm:mb-24"><MilanClock className="text-gray-1000" /><p className="m-0">{text.homeLead} <a href={site.payleUrl} rel="noopener noreferrer" className="article-underline">Payle</a>. {text.homeBody}</p><p className="m-0">{home.whoBody2}</p><p className="m-0">{locale === "it" ? "Pubblico il lavoro con test di accettazione rigorosi e scelgo le persone per gli artefatti, non per i titoli. Scrivimi a " : locale === "fr" ? "Je publie le travail avec des tests d'acceptation rigoureux et je choisis les personnes pour leurs artefacts, pas leurs titres. Écrivez-moi à " : locale === "es" ? "Publico el trabajo con pruebas de aceptación rigurosas y elijo a las personas por sus artefactos, no por sus títulos. Escríbeme a " : locale === "de" ? "Ich veröffentliche Arbeit mit strengen Abnahmetests und wähle Menschen nach ihren Artefakten, nicht nach Titeln. Schreib mir an " : "I ship code under strict acceptance tests and hire on artifacts, not titles. Reach me at "}<CopyEmail />.</p></div>
       <section aria-labelledby="localized-about" className="mb-16 sm:mb-24"><h2 id="localized-about" className="mb-4 font-serif font-medium">{home.who}</h2><p className="m-0 text-text-paragraph">{home.whoBody}</p><p className="mt-4 m-0 text-text-paragraph">{home.whoBody2}</p></section>
       <section aria-labelledby="localized-principles" className="mb-16 sm:mb-24"><h2 id="localized-principles" className="mb-4 font-serif font-medium">{home.principles}</h2><ul className="m-0 list-disc space-y-5 pl-5">{home.principleItems.map(([title, body]) => <li key={title}><p className="m-0 font-serif italic">{title}</p><p className="m-0 text-gray-1000">{body}</p></li>)}</ul></section>
@@ -79,5 +79,5 @@ export function LocalizedHome({ locale }: { locale: Locale }) {
 export default async function LocalizedSectionRoute({ params }: { params: Promise<{ locale: string; slug: string }> }) {
   const { locale: raw, slug } = await params;
   if (!isLocale(raw) || !SECTIONS.includes(slug as Section)) notFound();
-  return <LocalizedSection locale={raw as Locale} section={slug as Section} />;
+  return <div lang={raw}><LocalizedSection locale={raw as Locale} section={slug as Section} /></div>;
 }

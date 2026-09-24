@@ -4,8 +4,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ForAICard } from "@/components/ForAICard";
 import { ArrowUpRightIcon } from "@/components/ui/arrow-up-right";
+import { SpotifyIcon, YoutubeIcon } from "@/components/ui/static-icons";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { copy, isLocale, type Locale } from "@/lib/i18n";
+import { site } from "@/lib/site";
 
 export function SiteFooter() {
   const pathname = usePathname();
@@ -28,6 +30,21 @@ export function SiteFooter() {
         <span>© 2026 Mattia Ciuni</span>
         <ForAICard />
       </div>
+      {/*
+        I due canali che non stavano in nessun'altra pagina: i video su YouTube
+        e il podcast su Spotify. Stanno nel footer perché il piè di pagina è
+        l'unico posto che ogni indirizzo del sito condivide, ed è quello che i
+        crawler (e i controlli dei tool SEO) leggono per capire dove si trova
+        questa persona.
+      */}
+      <nav aria-label="Channels" className="mt-5 flex flex-wrap items-center gap-x-5 gap-y-2 text-sm text-gray-1000">
+        <a href={site.social.youtube} rel="me noopener noreferrer" className="inline-flex items-center gap-1.5">
+          <YoutubeIcon size={15} className="shrink-0" aria-hidden="true" /> YouTube
+        </a>
+        <a href={site.social.spotify} rel="me noopener noreferrer" className="inline-flex items-center gap-1.5">
+          <SpotifyIcon size={15} className="shrink-0" aria-hidden="true" /> Spotify
+        </a>
+      </nav>
       <nav aria-label="Site" className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm text-gray-1000">
         <Link href={href("/about/")}>{text.about}</Link>
         <Link href={href("/work/")}>{text.work}</Link>

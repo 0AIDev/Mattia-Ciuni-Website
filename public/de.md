@@ -1,6 +1,6 @@
-# Mattia Ciuni | Founder & CEO at Payle, die Geldschicht für KI-Agenten. | Mattia Ciuni
+# Payle, die Geldschicht für KI-Agenten | Mattia Ciuni
 
-> KI-Agenten können bereits recherchieren, vergleichen und ganze Aufgaben ausführen. Dann stoppen sie und verlangen eine Kreditkarte. Payle bietet begrenzte Berechtigungen, deterministische Autorisierung und einen überprüfbaren Beleg für jede Transaktion.
+> Founder & CEO at Payle, die Geldschicht für KI-Agenten. KI-Agenten können bereits recherchieren, vergleichen und ganze Aufgaben ausführen.
 
 - URL: https://mattiaciuni.pages.dev/de
 - Type: Page

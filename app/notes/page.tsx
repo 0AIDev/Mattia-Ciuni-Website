@@ -5,6 +5,7 @@ import { ChevronRight } from "@/components/icons";
 import { HistoryBackButton } from "@/components/HistoryBackButton";
 import { notes } from "@/lib/notes";
 import { socialImages } from "@/lib/social";
+import { languageAlternates } from "@/lib/seo";
 
 // La card di questa sezione, dichiarata come su tutte le altre pagine: misure,
 // tipo e alt compresi (un'anteprima non indovina niente da sola).
@@ -20,6 +21,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/notes/",
     types: { "text/markdown": "/notes.md" },
+    languages: languageAlternates("/notes/"),
   },
   openGraph: {
     type: "website",

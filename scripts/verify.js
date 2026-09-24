@@ -675,6 +675,81 @@ check(
     })
 );
 
+// La description è la riga che i motori mostrano sotto il titolo: oltre ~160
+// caratteri la tagliano, e una frase tagliata a metà è peggio di una più corta.
+// Come per i titoli, la soglia vale per le pagine di **navigazione**: la
+// description di un articolo, di una nota o di uno scambio di feedback è testo
+// dell'autore e non si accorcia per far contenta una metrica. Lì resta
+// obbligatorio averne una.
+// Le pagine `noindex` (il flusso di candidatura, l'NDA, il 404) restano fuori:
+// una description o un hreflang su una pagina che i motori non mostrano non
+// serve a nessuno, e chiederla qui sarebbe un controllo che insegna a
+// scrivere metadati per il controllo invece che per la pagina.
+const isNoindex = (html) => {
+  const meta = (/<meta name="robots" content="([^"]*)"/.exec(html) || [])[1] || "";
+  return /noindex|none/i.test(meta);
+};
+const ARTICLE_DESCRIPTION = /(?:^|\/)(thoughts|notes|feedback)\/[^/]+\/$/;
+const descriptionAudit = [];
+for (const file of pages) {
+  const html = readFileSync(file, "utf8");
+  if (isNoindex(html)) continue;
+  const meta = (/<meta name="description" content="([^"]*)"/.exec(html) || [])[1];
+  const content = (meta || "").replace(/&amp;/g, "&").replace(/&quot;/g, '"').replace(/&#x27;/g, "'");
+  const rel = path.relative(out, file).split(path.sep).join("/");
+  const pagePath = `/${rel.replace(/index\.html$/, "")}`;
+  if (!content) descriptionAudit.push(`${rel}: senza description`);
+  else if (content.length > 160 && !ARTICLE_DESCRIPTION.test(pagePath)) {
+    descriptionAudit.push(`${rel}: ${content.length} caratteri`);
+  }
+}
+check(
+  `meta: every indexable page declares a description a SERP can show`,
+  descriptionAudit.length === 0
+);
+if (descriptionAudit.length) console.log("     " + descriptionAudit.slice(0, 10).join(", "));
+
+// hreflang: le cinque lingue del sito più `x-default`, su ogni pagina. Senza,
+// Google sceglie da sé quale indirizzo mostrare a chi cerca in italiano o in
+// tedesco; con, la scelta è dichiarata. Il controllo verifica tre cose: che le
+// sei annotazioni ci siano tutte, che nessun `href` esca dall'origine di
+// produzione, e che ogni `href` corrisponda a una pagina che nell'export esiste
+// davvero (un hreflang che punta al vuoto è un'annotazione che si perde).
+const LOCALE_LIST = ["en", "it", "fr", "es", "de"];
+const hreflangAudit = [];
+for (const file of pages) {
+  const rel = path.relative(out, file).split(path.sep).join("/");
+  // L'NDA e il 404 non hanno varianti: uno è privato, l'altro non ha lingua.
+  if (rel === "nda/index.html" || rel.startsWith("404")) continue;
+  const html = readFileSync(file, "utf8");
+  if (isNoindex(html)) continue;
+  // Next scrive l'attributo come `hrefLang` nell'export: in HTML i nomi degli
+  // attributi sono case-insensitive, quindi il browser legge `hreflang` e il
+  // controllo deve fare lo stesso.
+  const tags = [...html.matchAll(/<link rel="alternate" hreflang="([^"]+)" href="([^"]+)"/gi)].map((m) => ({ lang: m[1], href: m[2] }));
+  const byLanguage = new Map(tags.map((tag) => [tag.lang, tag.href]));
+  const problems = [];
+  for (const lang of [...LOCALE_LIST, "x-default"]) {
+    if (!byLanguage.has(lang)) problems.push(`senza ${lang}`);
+  }
+  if (byLanguage.size !== tags.length) problems.push("annotazioni duplicate");
+  const ownPath = rel.replace(/index\.html$/, "");
+  const [first, ...rest] = ownPath.split("/");
+  const unprefixed = LOCALE_LIST.includes(first) ? rest.join("/") : ownPath;
+  if (byLanguage.get("x-default") !== `${PROD}/${unprefixed}`) {
+    problems.push(`x-default ${byLanguage.get("x-default")} invece di ${PROD}/${unprefixed}`);
+  }
+  for (const tag of tags) {
+    if (!tag.href.startsWith(`${PROD}/`)) problems.push(`${tag.lang} fuori origine`);
+    else if (!fs.existsSync(path.join(out, tag.href.slice(PROD.length + 1), "index.html"))) {
+      problems.push(`${tag.lang} -> ${tag.href.slice(PROD.length)} assente`);
+    }
+  }
+  if (problems.length) hreflangAudit.push(`${rel}: ${problems.join(", ")}`);
+}
+check(`meta: every indexable page declares hreflang for the five locales and x-default`, hreflangAudit.length === 0);
+if (hreflangAudit.length) console.log("     " + hreflangAudit.slice(0, 10).join("; "));
+
 const broken = declared.flatMap((p) =>
   p.urls.length === 0 || p.urls.some((u) => !u.startsWith(PROD))
     ? (p.file === "nda\\index.html" ? [] : [p.file])

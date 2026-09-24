@@ -5,6 +5,7 @@ import { HistoryBackButton } from "@/components/HistoryBackButton";
 import { site } from "@/lib/site";
 import { posts } from "@/lib/posts";
 import { socialImages } from "@/lib/social";
+import { languageAlternates } from "@/lib/seo";
 
 // La card di questa sezione, dichiarata come su tutte le altre pagine: misure,
 // tipo e alt compresi (un'anteprima non indovina niente da sola).
@@ -18,6 +19,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/thoughts/",
     types: { "text/markdown": "/thoughts.md" },
+    languages: languageAlternates("/thoughts/"),
   },
   openGraph: {
     type: "website",

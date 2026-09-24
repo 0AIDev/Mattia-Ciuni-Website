@@ -5,6 +5,7 @@ import { AudioPlayer } from "@/components/MediaPlayers";
 import { voiceNotes } from "@/lib/voice-notes";
 import { site } from "@/lib/site";
 import { socialImages } from "@/lib/social";
+import { languageAlternates } from "@/lib/seo";
 
 const pageTitle = "Voice Notes | Mattia Ciuni | Spoken, unedited";
 // Stesso helper delle altre pagine: mancava il `type`, quindi niente
@@ -15,7 +16,7 @@ export const metadata: Metadata = {
   title: "Voice Notes | Spoken, unedited",
   description: "Unedited spoken notes from Mattia Ciuni on building Payle, work and the questions between decisions.",
   authors: [{ name: "Mattia Ciuni", url: site.url }],
-  alternates: { canonical: "/voice-notes/" },
+  alternates: { canonical: "/voice-notes/", languages: languageAlternates("/voice-notes/") },
   openGraph: {
     type: "website",
     url: "/voice-notes/",

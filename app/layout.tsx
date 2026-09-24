@@ -9,7 +9,6 @@ import { DeferredAnalytics } from "@/components/DeferredAnalytics";
 import { UmamiAnalytics } from "@/components/UmamiAnalytics";
 import { SiteFooter } from "@/components/SiteFooter";
 import { LanguageSuggestion } from "@/components/LanguageSuggestion";
-import { isLocale } from "@/lib/i18n";
 // Ask Mattia Ciuni AI is intentionally disabled for now. Keep the component
 // import commented so it can be re-enabled without rebuilding the feature.
 // import { DeferredSiteRagChat } from "@/components/DeferredSiteRagChat";
@@ -47,7 +46,11 @@ const homeCard = socialImages("/og.png", "Mattia Ciuni | Founder & CEO at Payle"
 export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
-    default: "Mattia Ciuni | Founder & CEO at Payle",
+    // Il titolo della home: il prefisso resta "Mattia Ciuni | Founder & CEO at
+    // Payle" (è il contratto che `verify.js` controlla), più la query che il
+    // sito vuole presidiare. A 37 caratteri la riga lasciava vuota metà della
+    // SERP; questa ne fa 57.
+    default: "Mattia Ciuni | Founder & CEO at Payle, AI agent payments",
     // Un solo divisore, sempre il trattino: mai puntini o punti di sospensione.
     template: "%s | Mattia Ciuni",
   },
@@ -84,7 +87,7 @@ export const metadata: Metadata = {
     type: "website",
     url: "/",
     siteName: "Mattia Ciuni",
-    title: "Mattia Ciuni | Founder & CEO at Payle",
+    title: "Mattia Ciuni | Founder & CEO at Payle, AI agent payments",
     description: site.description,
     locale: site.locale,
     images: homeCard.og,
@@ -92,7 +95,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     creator: "@mattiaciuni",
-    title: "Mattia Ciuni | Founder & CEO at Payle",
+    title: "Mattia Ciuni | Founder & CEO at Payle, AI agent payments",
     description: site.description,
     images: homeCard.twitter,
   },
@@ -106,9 +109,12 @@ export const viewport: Viewport = {
   interactiveWidget: "resizes-content",
 };
 
-export default async function RootLayout({ children, params }: { children: React.ReactNode; params: Promise<{ locale?: string }> }) {
-  const routeParams = await params;
-  const language = routeParams.locale && isLocale(routeParams.locale) ? routeParams.locale : site.language;
+export default function RootLayout({ children }: { children: React.ReactNode }) {
+  // Il percorso localizzato vive sotto il root layout condiviso, quindi qui non
+  // esiste un root param `locale` da cui ricavare la lingua del documento.
+  // Il post-export `fix-localized-html-lang.mjs` corregge il tag <html> delle
+  // pagine localizzate; il resto del sito resta sulla lingua predefinita.
+  const language = site.language;
   return (
     <html lang={language} className={`${inter.variable} ${instrumentSerif.className}`}>
       <head>

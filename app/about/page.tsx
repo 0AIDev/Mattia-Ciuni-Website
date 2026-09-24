@@ -3,6 +3,7 @@ import Link from "next/link";
 import { HistoryBackButton } from "@/components/HistoryBackButton";
 import { site } from "@/lib/site";
 import { socialImages } from "@/lib/social";
+import { languageAlternates } from "@/lib/seo";
 
 const pageTitle = "About Mattia Ciuni | Founder & CEO of Payle";
 const description =
@@ -12,7 +13,7 @@ const card = socialImages("/og.png", pageTitle);
 export const metadata: Metadata = {
   title: "About Mattia Ciuni | Founder & CEO of Payle",
   description,
-  alternates: { canonical: "/about/" },
+  alternates: { canonical: "/about/", languages: languageAlternates("/about/") },
   openGraph: {
     type: "profile",
     url: "/about/",

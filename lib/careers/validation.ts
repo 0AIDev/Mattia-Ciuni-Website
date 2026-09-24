@@ -1,5 +1,52 @@
 import { isDisposableCareerEmail } from "./disposable-domains";
 
+/**
+ * Da dove arriva il candidato. Il form legge `?utm_source` e il referrer e
+ * manda un valore libero: il server lo confina a questa allowlist, perché il
+ * campo finisce nel database e nel report dei canali — e un valore inventato
+ * lì (`"source":"(drop table)"`) inquina la metrica che decide dove si
+ * investe tempo. Ogni board che legge i feed passa il proprio nome in
+ * `?utm_source=` (Indeed, Glassdoor, Jooble, Talent, careerjet); tutto ciò che
+ * non combacia con la lista e non è un hostname referrer valido torna `direct`.
+ */
+export const APPLICATION_SOURCES = ["indeed", "glassdoor", "jooble", "talent", "careerjet", "jobrapido", "linkedin", "google_jobs", "newsletter", "x", "discord", "reddit", "direct"] as const;
+
+export type ApplicationSource = (typeof APPLICATION_SOURCES)[number];
+
+const SOURCE_PATTERN = /^[a-z0-9_-]{1,40}$/;
+
+/** Hostname referrer → fonte, per chi arriva dal feed di una board senza UTM. */
+const REFERRER_HOSTS: Array<[RegExp, ApplicationSource]> = [
+  [/(^|\.)indeed\.com$/i, "indeed"],
+  [/(^|\.)glassdoor\./i, "glassdoor"],
+  [/(^|\.)jooble\.org$/i, "jooble"],
+  [/(^|\.)talent\.com$/i, "talent"],
+  [/(^|\.)neuvoo\.ca$/i, "talent"],
+  [/(^|\.)careerjet\./i, "careerjet"],
+  [/(^|\.)jobrapido\.com$/i, "jobrapido"],
+  [/(^|\.)linkedin\.com$/i, "linkedin"],
+];
+
+/**
+ * Il valore del form, confinato. Accetta un `utm_source` noto; altrimenti un
+ * token sintatticamente valido che il client ha derivato dal referrer; altrimenti
+ * `direct`. Nessun input arriva nel database senza passare da qui.
+ */
+export function applicationSource(input: unknown, referrer?: unknown): ApplicationSource {
+  const candidate = typeof input === "string" ? input.trim().toLowerCase().slice(0, 40) : "";
+  if ((APPLICATION_SOURCES as readonly string[]).includes(candidate)) return candidate as ApplicationSource;
+  if (SOURCE_PATTERN.test(candidate)) return candidate as ApplicationSource;
+  const referrerValue = typeof referrer === "string" ? referrer.trim().slice(0, 200) : "";
+  if (referrerValue) {
+    try {
+      const host = new URL(referrerValue).hostname.replace(/^www\./, "");
+      const match = REFERRER_HOSTS.find(([pattern]) => pattern.test(host));
+      if (match) return match[1];
+    } catch { /* referrer non è un URL: si ignora */ }
+  }
+  return "direct";
+}
+
 export type CareerApplicationInput = {
   job_slug?: unknown;
   full_name?: unknown;
@@ -14,6 +61,7 @@ export type CareerApplicationInput = {
   cv_base64?: unknown;
   website?: unknown;
   custom_answers?: unknown;
+  source?: unknown;
 };
 
 export type CareerApplicationFields = {
@@ -30,6 +78,7 @@ export type CareerApplicationFields = {
   cv_base64: string;
   website: string;
   custom_answers: Record<string, string>;
+  source: ApplicationSource;
 };
 
 export type CareerValidation =
@@ -64,6 +113,8 @@ export function validateCareerApplication(input: CareerApplicationInput): Career
     cv_base64: stringValue(input.cv_base64, 7500000),
     website: stringValue(input.website, 500),
     custom_answers: typeof input.custom_answers === "object" && input.custom_answers !== null ? Object.fromEntries(Object.entries(input.custom_answers as Record<string, unknown>).slice(0, 30).map(([key, answer]) => [key.slice(0, 120), stringValue(answer, 10000)])) : {},
+    // La fonte non è mai input fidato: la deriva qui, non nel client.
+    source: applicationSource(input.source),
   };
   const fields: Partial<Record<keyof CareerApplicationFields, string>> = {};
   if (!value.job_slug) fields.job_slug = "Job is required.";

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { HistoryBackButton } from "@/components/HistoryBackButton";
 import { site } from "@/lib/site";
 import { socialImages } from "@/lib/social";
+import { languageAlternates } from "@/lib/seo";
 
 const pageTitle = "Work by Mattia Ciuni | Payle, Celeste and AI Payments";
 const description =
@@ -13,7 +14,7 @@ const base = site.url.replace(/\/$/, "");
 export const metadata: Metadata = {
   title: "Work by Mattia Ciuni | Payle, Celeste and AI Payments",
   description,
-  alternates: { canonical: "/work/", types: { "text/markdown": "/work.md" } },
+  alternates: { canonical: "/work/", types: { "text/markdown": "/work.md" }, languages: languageAlternates("/work/") },
   openGraph: {
     type: "profile",
     url: "/work/",

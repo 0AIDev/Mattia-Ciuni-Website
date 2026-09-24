@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LegalPage, type LegalSection } from "@/components/LegalPage";
 import { site } from "@/lib/site";
 import { socialImages } from "@/lib/social";
+import { languageAlternates } from "@/lib/seo";
 
 const pageTitle = "Legal Center | Privacy, Terms and Cookies";
 const card = socialImages("/og.png", "Legal Center | Mattia Ciuni");
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
   title: "Legal Center | Privacy, Terms and Cookies",
   description:
     "Privacy, terms, and cookies for Mattia Ciuni's website: the newsletter, feedback submissions, and the analytics you control.",
-  alternates: { canonical: "/legal/" },
+  alternates: { canonical: "/legal/", languages: languageAlternates("/legal/") },
   openGraph: {
     type: "website",
     url: "/legal/",

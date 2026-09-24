@@ -6,6 +6,7 @@ import { comingSoonJobs, openJobs, publicJobs, shouldShowRoleSearch } from "@/li
 import type { Locale } from "@/lib/i18n";
 import { careersUi } from "@/lib/careers/ui";
 import { socialImages } from "@/lib/social";
+import { languageAlternates } from "@/lib/seo";
 
 const careersTitle = "Build with Payle — Careers";
 const careersDescription = "I hire by artifact: ship something real, then we talk. Open roles at Payle.";
@@ -14,7 +15,7 @@ const careersCard = socialImages("/careers/og.png", careersTitle);
 export const metadata: Metadata = {
   title: careersTitle,
   description: careersDescription,
-  alternates: { canonical: "/careers/" },
+  alternates: { canonical: "/careers/", languages: languageAlternates("/careers/") },
   openGraph: { type: "website", url: "/careers/", siteName: "Mattia Ciuni", title: careersTitle, description: careersDescription, images: careersCard.og },
   twitter: { card: "summary_large_image", title: careersTitle, description: careersDescription, images: careersCard.twitter },
 };

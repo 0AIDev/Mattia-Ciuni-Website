@@ -5,6 +5,7 @@ import { GithubIcon } from "@/components/ui/github";
 import { site } from "@/lib/site";
 import { feedback } from "@/lib/feedback";
 import { socialImages } from "@/lib/social";
+import { languageAlternates } from "@/lib/seo";
 import { FeedbackModalButton } from "@/components/FeedbackForm";
 
 /**
@@ -23,6 +24,7 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/feedback/",
     types: { "text/markdown": "/feedback.md" },
+    languages: languageAlternates("/feedback/"),
   },
   openGraph: {
     type: "website",

@@ -16,6 +16,7 @@ import { posts } from "@/lib/posts";
 import { relatedArticles } from "@/lib/related";
 import { slugify } from "@/lib/slug";
 import { socialImages } from "@/lib/social";
+import { languageAlternates } from "@/lib/seo";
 import { articleUi } from "@/lib/article-ui";
 import type { Locale } from "@/lib/i18n";
 
@@ -41,6 +42,7 @@ export async function generateMetadata({
     alternates: {
       canonical: url,
       types: { "text/markdown": `/notes/${note.slug}.md` },
+      languages: languageAlternates(url),
     },
     openGraph: {
       type: "article",
@@ -178,7 +180,7 @@ export default async function Note({
         </span>
       </header>
 
-      <article className="relative min-w-0 max-w-full">
+      <article className="min-w-0 max-w-full">
         {toc.length > 0 ? <TableOfContents items={toc} /> : null}
         <MobileTableOfContents items={toc} />
         <div data-article-content className="min-w-0 max-w-full break-words [overflow-wrap:anywhere]">

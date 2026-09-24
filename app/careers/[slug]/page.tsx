@@ -14,6 +14,8 @@ import SectionCopyLink from "@/components/SectionCopyLink";
 import TableOfContents, { MobileTableOfContents, type TocItem } from "@/components/TableOfContents";
 import { slugify } from "@/lib/slug";
 import { socialImages } from "@/lib/social";
+import { languageAlternates } from "@/lib/seo";
+import { jobDescriptionHtml } from "@/lib/careers/feed";
 
 export const dynamicParams = false;
 
@@ -25,7 +27,7 @@ export async function generateMetadata({ params }: { params: Promise<{ slug: str
   const job = getJob((await params).slug);
   if (!job) return {};
   const card = socialImages(`/careers/${job.slug}/og.png`, job.title);
-  return { title: job.title, description: job.shortPitch, alternates: { canonical: `/careers/${job.slug}/` }, openGraph: { type: "website", url: `/careers/${job.slug}/`, siteName: "Mattia Ciuni", title: job.title, description: job.shortPitch, images: card.og }, twitter: { card: "summary_large_image", title: job.title, description: job.shortPitch, images: card.twitter } };
+  return { title: job.title, description: job.shortPitch, alternates: { canonical: `/careers/${job.slug}/`, languages: languageAlternates(`/careers/${job.slug}/`) }, openGraph: { type: "website", url: `/careers/${job.slug}/`, siteName: "Mattia Ciuni", title: job.title, description: job.shortPitch, images: card.og }, twitter: { card: "summary_large_image", title: job.title, description: job.shortPitch, images: card.twitter } };
 }
 
 function MinimalArrow({ direction = "right" }: { direction?: "left" | "right" }) { return <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4"><path d={direction === "left" ? "m12.5 4-6 6 6 6" : "m7.5 4 6 6-6 6"} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" /></svg>; }
@@ -75,18 +77,22 @@ export default async function CareerDetailPage({ params, locale = "en", basePath
     "@context": "https://schema.org",
     "@type": "JobPosting",
     title: job.title,
-    description: job.description,
+    // Google Jobs renderizza il campo come HTML: lo stesso markup pulito dei
+    // feed (`lib/careers/feed.ts`), non il testo del registro con i `###`.
+    description: jobDescriptionHtml(job),
     datePosted: job.postedAt,
     employmentType: job.employmentType || "FULL_TIME",
-    hiringOrganization: { "@type": "Organization", name: "Payle", url: site.payleUrl },
+    hiringOrganization: { "@type": "Organization", name: "Payle", url: site.payleUrl, logo: `${site.url.replace(/\/$/, "")}/logo.svg` },
     jobLocationType: "TELECOMMUTE",
     applicantLocationRequirements: { "@type": "AdministrativeArea", name: job.location },
     baseSalary: { "@type": "MonetaryAmount", currency: "EUR", value: { "@type": "QuantitativeValue", minValue: job.salaryMin ?? 2500, maxValue: job.salaryMax ?? 3000, unitText: "MONTH" } },
+    // Il form di candidatura è su questa pagina: è il campo che dice a Google
+    // Jobs che l'utente applica qui, non su un sito esterno.
+    directApply: true,
   } : null;
   return (
-    <main id="content" data-career-detail className="pb-20 lg:pb-0">
-      <article className="relative mx-auto grid w-full max-w-[1040px] gap-10 px-5 py-12 leading-relaxed sm:px-6 sm:py-24 lg:grid-cols-[minmax(0,692px)_280px] lg:items-start lg:gap-16">
-        {toc.length > 0 ? <TableOfContents items={toc} locale={locale} /> : null}
+    <main id="content" data-career-detail className="pb-20 lg:pb-0"><TableOfContents items={toc} locale={locale} placement="viewport-left" />
+      <article className="mx-auto grid w-full max-w-[1040px] gap-10 px-5 py-12 leading-relaxed sm:px-6 sm:py-24 lg:grid-cols-[minmax(0,692px)_280px] lg:items-start lg:gap-16">
         {jsonLd ? <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }} /> : null}
         <header className="lg:col-span-2">
           <div className="flex items-center gap-3"><HistoryBackButton fallbackHref={`${basePath}/`} fallbackLabel={text.back} /><Link href={`${basePath}/`} className="text-sm text-gray-1000 underline-offset-4 hover:underline">{text.careers}</Link></div>

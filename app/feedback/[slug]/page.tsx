@@ -15,6 +15,7 @@ import {
 } from "@/lib/feedback";
 import { slugify } from "@/lib/slug";
 import { socialImages } from "@/lib/social";
+import { languageAlternates } from "@/lib/seo";
 import { FeedbackModalButton } from "@/components/FeedbackForm";
 import { articleUi } from "@/lib/article-ui";
 import type { Locale } from "@/lib/i18n";
@@ -62,6 +63,7 @@ export async function generateMetadata({
     alternates: {
       canonical: url,
       types: { "text/markdown": `/feedback/${post.slug}.md` },
+      languages: languageAlternates(url),
     },
     openGraph: {
       type: "article",

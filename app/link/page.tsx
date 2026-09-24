@@ -3,6 +3,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { site } from "@/lib/site";
 import { socialImages } from "@/lib/social";
+import { languageAlternates } from "@/lib/seo";
 import { ChevronRight } from "@/components/icons";
 import { ArrowUpRightIcon } from "@/components/ui/arrow-up-right";
 import { CrunchbaseIcon } from "@/components/ui/crunchbase";
@@ -11,6 +12,7 @@ import { GlobeIcon } from "@/components/ui/globe";
 import { InstagramIcon } from "@/components/ui/instagram";
 import { LinkIcon } from "@/components/ui/link";
 import { NewsletterSection } from "@/components/NewsletterSection";
+import { SpotifyIcon, YoutubeIcon } from "@/components/ui/static-icons";
 import { LinkedinIcon } from "@/components/ui/linkedin";
 import { MailCheckIcon } from "@/components/ui/mail-check";
 import { TwitterIcon } from "@/components/ui/twitter";
@@ -20,13 +22,13 @@ import { TwitterIcon } from "@/components/ui/twitter";
 // Il contenuto è corto e lo è apposta: profilo, icone dei profili, e i pochi
 // posti che valgono un tocco.
 const description =
-  "Everywhere Mattia Ciuni is: Payle, LinkedIn, X, GitHub, Instagram, Crunchbase, and the writing published on this site.";
+  "Everywhere Mattia Ciuni is: Payle, LinkedIn, X, GitHub, Instagram, YouTube, the Spotify podcast, Crunchbase, and the writing published on this site.";
 const card = socialImages("/og.png", "Mattia Ciuni | Founder & CEO at Payle");
 
 export const metadata: Metadata = {
   title: "Links",
   description,
-  alternates: { canonical: "/link/" },
+  alternates: { canonical: "/link/", languages: languageAlternates("/link/") },
   openGraph: {
     type: "profile",
     url: "/link/",
@@ -64,6 +66,8 @@ const profiles = [
   { label: "X", note: "@mattiaciuni", href: site.social.x, Icon: TwitterIcon, color: "#000000" },
   { label: "GitHub", note: "@0AIDev", href: site.social.github, Icon: GithubIcon, color: "#181717" },
   { label: "Instagram", note: "@mciunim", href: site.social.instagram, Icon: InstagramIcon, color: "#E1306C" },
+  { label: "YouTube", note: "@mattiaciuni", href: site.social.youtube, Icon: YoutubeIcon, color: "#FF0000" },
+  { label: "Spotify", note: "Podcast", href: site.social.spotify, Icon: SpotifyIcon, color: "#1DB954" },
   { label: "Crunchbase", note: "person/mattia-ciuni", href: site.social.crunchbase, Icon: CrunchbaseIcon, color: "#1460FF" },
 ];
 

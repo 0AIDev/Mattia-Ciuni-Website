@@ -42,6 +42,8 @@
 html {
   scroll-behavior: smooth;
   background: #FCFCFC;
+  /* Sull'elemento radice `hidden` e' quello che serve: il taglio orizzontale
+     e' del viewport, che resta l'unico contenitore di scroll. */
   overflow-x: hidden;
   -webkit-text-size-adjust: 100%;
 }
@@ -50,7 +52,12 @@ body {
   min-height: 100vh;
   display: flex;
   min-width: 0;
-  overflow-x: hidden;
+  /* `clip` invece di `hidden`: `overflow-x: hidden` rende il `body` un
+     contenitore di scroll, e un antenato che scrolla rompe `position: sticky`
+     per tutto quello che sta dentro (la TOC e il riquadro di candidatura di
+     Careers smettevano di restare agganciati). `clip` taglia l'eccesso
+     orizzontale senza creare un contenitore di scroll. */
+  overflow-x: clip;
   background: #FCFCFC;
 
   flex-direction: column;
@@ -268,6 +275,18 @@ html {
 /* Career detail: keep exactly one application CTA visible at each viewport.
    This is explicit CSS rather than breakpoint-only utilities because the page is
    also reviewed inside narrow desktop preview panes. */
+/* Il rail e' `fixed` sul bordo sinistro del viewport, quindi sotto i 1280px
+   cadrebbe sopra la prima riga della colonna (l'articolo e' largo 1040 e a
+   1024 riempie lo schermo): da 1024 a 1279 l'indice resta quello ripiegato in
+   cima all'articolo, lo stesso che vedono tablet e telefono. */
+.career-toc-viewport {
+  display: none;
+}
+@media (min-width: 1280px) {
+  .career-toc-viewport {
+    display: flex;
+  }
+}
 .career-main-grid {
   display: block;
 }

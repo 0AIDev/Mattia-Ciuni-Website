@@ -49,9 +49,11 @@ Tre file, e sono il contratto del sito — non si scrive un articolo senza il se
 npm install
 npm run dev     # http://localhost:3000 (static UI only; Pages Functions/API are not mounted)
 npm run dev:pages # checks .dev.vars, builds, and runs Cloudflare Pages locally at http://localhost:8787; copy .dev.vars.example to .dev.vars first for admin/TOTP
-npm run build   # static export in ./out
+npm run build   # static export in ./out; postbuild also fixes localized <html lang>
 npm run lint    # ESLint flat config (eslint.config.mjs)
-node scripts/verify.js  # controlli SEO/GEO (meta, JSON-LD, canonical, sitemap, robots, card For AI, OG card per ogni articolo, ogni `og:image` dichiarata che esiste davvero, documenti di scoperta, link interni, nessun `<a>` dentro un `<a>`, nessun link interno rotto, pagine legali coerenti con quello che il sito fa, TOC, dominio coerente con l'export, peso, e nessuna traccia della dashboard privata negli indici macchina — sitemap, llms.txt, feed, indice della chat — né un file scritto intorno alla pagina)
+node scripts/verify.js
+  # controlli SEO/GEO (meta, JSON-LD, canonical, sitemap, robots, card For AI, OG card per ogni articolo, ogni `og:image` dichiarata che esiste davvero, documenti di scoperta, link interni, nessun `<a>` dentro un `<a>`, nessun link interno rotto, pagine legali coerenti con quello che il sito fa, TOC, dominio coerente con l'export, peso, e nessuna traccia della dashboard privata negli indici macchina — sitemap, llms.txt, feed, indice della chat — né un file scritto intorno alla pagina)
+npm run test:sitemap  # crawl dell'export: ogni pagina indicizzabile deve essere in sitemap, ogni URL sitemap deve essere raggiungibile e ogni pagina localizzata deve dichiarare il proprio lang
 npm run test:newsletter  # copy, accessibilità, honeypot/rate-limit contract e presenza su ogni pagina
 npm run test:admin       # attacchi offline al login della dashboard (token a confronto costante, sessioni KV, logout vero, rate limit, id di moderazione confinati ai feedback)
 npm run test:feedback    # attacchi offline all'endpoint pubblico del feedback (honeypot, tetto del corpo sui byte arrivati, dati IP non persistiti, link della notifica sull'host che ha servito la pagina)

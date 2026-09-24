@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LegalPage, type LegalSection } from "@/components/LegalPage";
 import { site } from "@/lib/site";
 import { socialImages } from "@/lib/social";
+import { languageAlternates } from "@/lib/seo";
 
 const pageTitle = "Terms of Service | Mattia Ciuni";
 const card = socialImages("/og.png", "Terms of Service | Mattia Ciuni");
@@ -11,7 +12,7 @@ export const metadata: Metadata = {
   title: "Terms of Service | Reading and newsletter rules",
   description:
     "Terms for using Mattia Ciuni's website: reading and citing the content, the newsletter and feedback submissions.",
-  alternates: { canonical: "/terms/" },
+  alternates: { canonical: "/terms/", languages: languageAlternates("/terms/") },
   openGraph: {
     type: "website",
     url: "/terms/",

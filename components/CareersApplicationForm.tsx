@@ -6,6 +6,22 @@ import { track } from "@/lib/analytics";
 import type { CareerQuestion } from "@/lib/careers/jobs";
 
 const initial = { full_name: "", email: "", country_timezone: "", github_url: "", portfolio_url: "", artifact_link: "", artifact_description: "", motivation: "", custom_answers: {} as Record<string, string>, cv_filename: "", cv_base64: "", website: "" };
+
+/**
+ * Da dove arriva il candidato. Il link del feed di ogni board porta
+ * `?utm_source=<board>`; senza UTM si deriva dall'hostname del referrer. Il
+ * valore è una **dritta**, non un dato fidato: il server lo confina alla
+ * allowlist di `validation.ts` prima di scriverlo. Qui si può mentire; lì no.
+ */
+function applicationSourceHint(): string {
+  if (typeof window === "undefined") return "";
+  const utm = new URLSearchParams(window.location.search).get("utm_source");
+  if (utm) return utm.trim().toLowerCase().slice(0, 40);
+  if (document.referrer) {
+    try { return new URL(document.referrer).hostname.replace(/^www\./, "").slice(0, 40); } catch { /* referrer malformato: si lascia al server */ }
+  }
+  return "";
+}
 type Values = typeof initial;
 type FieldErrors = Partial<Record<keyof Values, string>>;
 function MinimalArrow({ direction = "right" }: { direction?: "left" | "right" }) { return <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4"><path d={direction === "left" ? "m12.5 4-6 6 6 6" : "m7.5 4 6 6-6 6"} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" /></svg>; }
@@ -87,10 +103,10 @@ export function CareersApplicationForm({ jobSlug, questions = [] }: { jobSlug: s
     if (!validateCurrent()) return;
     setState("submitting"); setMessage(""); track("form_submit", { form_id: "careers_application", job_slug: jobSlug });
     try {
-      const response = await fetch("/api/careers/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_slug: jobSlug, ...values }) });
+      const response = await fetch("/api/careers/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_slug: jobSlug, ...values, source: applicationSourceHint() }) });
       const data = (await response.json().catch(() => ({}))) as { code?: string; fields?: FieldErrors };
       if (!response.ok) { setErrors(data.fields || {}); setState("error"); setMessage(response.status === 429 ? text.tooMany : data.code === "duplicate" ? text.duplicate : text.failed); return; }
-      setState("success"); setMessage(text.verify); track("form_success", { form_id: "careers_application", job_slug: jobSlug });
+      setState("success"); setMessage(text.verify); track("form_success", { form_id: "careers_application", job_slug: jobSlug, source: applicationSourceHint() || "direct" });
     } catch { setState("error"); setMessage(text.timeout); }
   }
   if (state === "success") return <div role="status" className="border-y border-gray-300 py-8"><h2 className="font-serif text-3xl">{text.almost}</h2><p className="mt-3 text-text-paragraph">{message}</p><p className="mt-3 text-sm text-gray-1000">{text.expires}</p></div>;

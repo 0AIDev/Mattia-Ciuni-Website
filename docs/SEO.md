@@ -29,9 +29,9 @@ riferimento a sé stessa, l'Open Graph e la card, l'HTML, il JSON-LD, la riga ne
 **figlia giusta** del sitemap, la **card markdown** (`/thoughts/<slug>` →
 `/thoughts/<slug>.md`), l'ingresso in `llms.txt`, la riga nell'RSS, e i correlati
 di tutti gli altri articoli. Una pagina dimenticata dalla SEO è quindi una pagina
-che nessuno ha registrato — e `scripts/verify.js` cade sulle pagine che stanno nel
-costruito e non in una figlia del sitemap, e su quelle che il sitemap annuncia e
-non esistono.
+che nessuno ha registrato — e `scripts/verify.js` e
+`npm run test:sitemap` cadono sia sulle pagine indicizzabili che non sono in una
+figlia del sitemap, sia sugli URL che il sitemap annuncia e non esistono.
 
 Due dettagli che valgono come regole:
 
@@ -45,21 +45,39 @@ Due dettagli che valgono come regole:
   l'host della richiesta, mentre `scripts/check-live.mjs` verifica il dominio
   effettivamente servito (§5 di `docs/SEO-GEO-AI.md`).
 
-**Niente `hreflang`**, perché il sito è in una lingua sola: dichiararlo per sé
-stessi più `x-default` è rumore. Il giorno in cui esistono due lingue, il gruppo
-va **nella `<head>`** e non nel sitemap (un elemento XHTML dentro il file del
-sitemap è la riga che fa smettere Chrome di disegnarlo come albero dei tag).
+**`hreflang` su ogni pagina indicizzabile**, perché il sito esiste in cinque
+lingue (`lib/i18n.ts`) e ognuna ha i suoi indirizzi. Le sei annotazioni (le
+cinque lingue più `x-default`) nascono tutte da `languageAlternates` in
+`lib/seo.ts`, così non si scrivono a mano pagina per pagina e non possono
+divergere. Tre regole:
+
+- il gruppo sta **nella `<head>`** e non nel sitemap (un elemento XHTML dentro il
+  file del sitemap è la riga che fa smettere Chrome di disegnarlo come albero dei
+  tag);
+- `en` punta **sempre** all'URL prefissato (`/en/...`), anche da una pagina senza
+  prefisso. L'URL senza prefisso non è una sesta lingua: è la versione
+  predefinita. Se `en` puntasse a sé stesso da una pagina e a `/en/...` da
+  un'altra, la stessa lingua avrebbe due candidati e i motori tendono a scartare
+  l'annotazione intera;
+- `x-default` punta all'URL senza prefisso: è la pagina che si apre a chi non ha
+  ancora scelto una lingua.
+
+`verify.js` controlla le tre cose che possono rompersi da sole: che le sei
+annotazioni ci siano su ogni pagina indicizzabile, che restino sull'origine di
+produzione, e che ognuna nomini una pagina che nell'export esiste davvero (un
+`hreflang` che punta al vuoto è un'annotazione che si perde).
 
 ## 2 · Chi scrive i file, e quali non si toccano a mano
 
 | File pubblico | Chi lo scrive | Nota |
 | --- | --- | --- |
-| `out/**/*.html` | `next build` | una pagina per indirizzo, testata completa già dentro |
+| `out/**/*.html` | `next build` + `scripts/fix-localized-html-lang.mjs` | una pagina per indirizzo, testata completa già dentro; il postbuild imposta `<html lang>` sul locale delle route localizzate |
 | `out/**/*.md` | `scripts/gen-cards.mjs` (`postbuild`, e `predev`) | la card di ogni pagina, ricavata **dall'HTML esportato** |
-| `out/sitemap.xml` | `app/sitemap.xml/route.ts` + `lib/sitemap.ts` | **l'indice** (`<sitemapindex>`): nomina le tre figlie |
-| `out/sitemap-home.xml` | idem | la home (1 URL) |
-| `out/sitemap-thoughts.xml` | idem | l'indice Thoughts e i post (3 URL) |
-| `out/sitemap-notes.xml` | idem | l'indice Notes e le note (4 URL) |
+| `out/sitemap.xml` | `app/sitemap.xml/route.ts` + `lib/sitemap.ts` | **l'indice** (`<sitemapindex>`): nomina le quattro figlie |
+| `out/sitemap-home.xml` | `app/sitemap-home.xml/route.ts` | home, sezioni, ruoli e tutte le route localizzate indicizzabili |
+| `out/sitemap-thoughts.xml` | idem | l'indice Thoughts e i post |
+| `out/sitemap-notes.xml` | idem | l'indice Notes e le note |
+| `out/sitemap-feedback.xml` | idem | l'indice Feedback e i feedback pubblicati |
 | `out/robots.txt` | `app/robots.txt/route.ts` | trentatré blocchi, di cui trentadue agenti AI per nome |
 | `out/llms.txt` | `app/llms.txt/route.ts` | vedi §4 |
 | `out/feed.xml` | `app/feed.xml/route.ts` | RSS |
@@ -101,8 +119,9 @@ Tutto quello che si può controllare senza rete, in un comando:
 ```bash
 npm run lint          # ESLint
 npx tsc --noEmit      # i tipi
-npm run build         # next build + le card
-node scripts/verify.js   # 56 controlli sul costruito
+npm run build         # next build + le card + il lang delle route localizzate
+node scripts/verify.js   # 113 controlli sul costruito
+npm run test:sitemap    # export + crawl + sitemap: copertura, raggiungibilità, noindex e lang
 ```
 
 `verify.js` è deliberatamente **una cosa sola**: un file che si legge in un
@@ -119,15 +138,26 @@ la TOC con gli anchor che esistono davvero, l'**OG card di ogni articolo e nota*
 build ha prodotto, così il controllo non può passare a vuoto; e nessuna card può
 restare orfana di un articolo che non esiste più), le card `.md` (struttura e
 copia per lo sviluppo), il 404 `noindex`, il news sitemap, il contratto newsletter
-Resend/Brevo, il consenso analytics, e il peso della homepage (HTML+CSS **raw** sotto i
-70KB: un tetto, non un desiderio; newsletter e consenso sono inclusi nel budget).
+Resend/Brevo, il consenso analytics, la **description di ogni pagina indicizzabile
+(titolo e description sono le due righe che una SERP mostra: la soglia è 160
+caratteri e vale per le pagine di navigazione — la description di un articolo, di
+una nota o di uno scambio di feedback è testo dell'autore e non si accorcia per
+far contenta una metrica, lì si controlla solo che ci sia)**, e il peso della
+homepage (HTML+CSS **raw** sotto i 128KB: un tetto, non un desiderio; newsletter e
+consenso sono inclusi nel budget).
 I font sono self-hosted e Google Analytics non viene caricato finché l'utente non
 sceglie di consentire la misurazione.
 
-**Niente suite di test unitari, per ora, e vale la pena dirlo**: non c'è logica
-pura da provare separatamente (`lib/related.ts` è l'unica candidata). Il giorno in
-cui si aggiunge un calcolo — un'attribuzione, un ordinamento, una deduzione — il
-suo test è la prima riga di quel lavoro.
+`npm run test:sitemap` confronta il crawl dei link interni con tutte le pagine
+HTML dell'export e con le quattro sitemap figlie: segnala ogni pagina indicizzabile
+non elencata, ogni URL inesistente, non raggiungibile, duplicato, con origine non
+production o `noindex`, e verifica `<html lang>` contro il locale della URL. I flussi
+applicativi Careers restano esclusi per contratto.
+
+**Non c'è ancora una suite di test unitari**: la logica SEO è qui verificata sul
+contratto dell'export, che è ciò che viene pubblicato. Il giorno in cui si
+aggiunge un calcolo puro — un'attribuzione, un ordinamento, una deduzione — il suo
+test dedicato è la prima riga di quel lavoro.
 
 **I controlli dal vivo non ci sono ancora, ed è la lacuna più onesta da
 scrivere.** Il `dist` può essere perfetto e il file arrivare sul dominio tagliato
@@ -280,8 +310,9 @@ privacy di chi legge: va presa sapendo cosa si paga.
 
 1. Voce nel registro giusto (`lib/posts.ts` per un articolo, `lib/notes.ts` per
    una nota), con `title`, `description`, `date` e `keywords`.
-2. Titolo entro i settanta caratteri, description entro i 170.
-3. `npm run build` e `node scripts/verify.js`.
+2. Titolo entro i settanta caratteri; description entro i 160 se è una pagina di
+   navigazione, e comunque una description che dica la cosa concreta della pagina.
+3. `npm run build`, `npm run test:sitemap` e `node scripts/verify.js`.
 4. Guardare nel costruito: una delle figlie del sitemap nomina la pagina,
    `out/<path>.html` esiste, la `canonical` dice sé stessa, `out/<path>.md` è la
    card della stessa pagina, e `verify.js` non ha avuto niente da dire.

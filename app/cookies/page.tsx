@@ -3,6 +3,7 @@ import Link from "next/link";
 import { LegalPage, type LegalSection } from "@/components/LegalPage";
 import { site } from "@/lib/site";
 import { socialImages } from "@/lib/social";
+import { languageAlternates } from "@/lib/seo";
 
 const pageTitle = "Cookies Policy | Mattia Ciuni";
 // La card si dichiara con lo stesso helper del resto del sito: mancava il `type`,
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
   title: "Cookies Policy | Browser storage on this site",
   description:
     "Every cookie, local storage key and session value this site uses, what each one is for, and how to change your choice.",
-  alternates: { canonical: "/cookies/" },
+  alternates: { canonical: "/cookies/", languages: languageAlternates("/cookies/") },
   openGraph: {
     type: "website",
     url: "/cookies/",

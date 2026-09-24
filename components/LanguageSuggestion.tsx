@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
+import { usePathname } from "next/navigation";
 import { track } from "@/lib/analytics";
 import { LANGUAGE_STORAGE_KEY, LOCALES, localeMeta, localizedPath, type Locale } from "@/lib/i18n";
 
@@ -32,8 +33,14 @@ export function LanguageSuggestion() {
   const [suggested, setSuggested] = useState<Locale | null>(null);
   const [dismissed, setDismissed] = useState(false);
   const [consent, setConsent] = useState<"unset" | "accepted" | "declined">("unset");
-  const currentPath = typeof window === "undefined" ? "/" : window.location.pathname;
-  const current = useMemo(() => localeFromPath(currentPath), [currentPath]);
+  const pathname = usePathname() || "/";
+  const current = useMemo(() => localeFromPath(pathname), [pathname]);
+
+  // The static export is corrected after build; keep the live document in sync
+  // during development and client-side navigation as well.
+  useEffect(() => {
+    document.documentElement.lang = current;
+  }, [current]);
 
   useEffect(() => {
     if (window.location.pathname.startsWith("/admin") || window.location.pathname.includes("/careers/") && window.location.pathname.endsWith("/apply/")) return;
