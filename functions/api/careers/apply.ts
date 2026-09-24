@@ -84,7 +84,16 @@ export const onRequestPost = async ({ request, env }: Context): Promise<Response
     if (!duplicate.response.ok) return json({ code: "provider_error" }, 502);
     if (duplicate.data?.length) return json({ code: "duplicate" }, 409);
     const cvPath = `careers/${value.job_slug}/${crypto.randomUUID()}-${value.cv_filename.replace(/[^a-zA-Z0-9._-]/g, "_")}`;
-    const inserted = await supabaseRequest<Array<{ id: string }>>(env, "careers_applications", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ job_slug: value.job_slug, full_name: value.full_name, email: value.email, email_hash: emailHash, country_timezone: value.country_timezone, github_url: value.github_url || null, portfolio_url: value.portfolio_url || null, artifact_link: value.artifact_link, artifact_description: value.artifact_description, motivation: value.motivation, custom_answers: value.custom_answers, cv_filename: value.cv_filename, cv_path: cvPath, verification_token: tokenHash, verification_expires_at: expires, ip_hash: ipHash, source: value.source }) });
+    const row = { job_slug: value.job_slug, full_name: value.full_name, email: value.email, email_hash: emailHash, country_timezone: value.country_timezone, github_url: value.github_url || null, portfolio_url: value.portfolio_url || null, artifact_link: value.artifact_link, artifact_description: value.artifact_description, motivation: value.motivation, custom_answers: value.custom_answers, cv_filename: value.cv_filename, cv_path: cvPath, verification_token: tokenHash, verification_expires_at: expires, ip_hash: ipHash };
+    // La colonna `source` esiste solo dopo la migrazione (docs/job-distribution.md).
+    // Finché non è applicata, PostgREST risponde 400 all'INSERT che la nomina e
+    // il form mostrerebbe un errore per una colonna di analytics: si riprova
+    // senza, e la candidatura passa. Con la colonna, il primo tentativo la
+    // registra e il fallback non parte mai.
+    let inserted = await supabaseRequest<Array<{ id: string }>>(env, "careers_applications", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify({ ...row, source: value.source }) });
+    if (!inserted.response.ok && inserted.response.status === 400) {
+      inserted = await supabaseRequest<Array<{ id: string }>>(env, "careers_applications", { method: "POST", headers: { Prefer: "return=representation" }, body: JSON.stringify(row) });
+    }
     if (!inserted.response.ok) return json({ code: inserted.response.status === 409 ? "duplicate" : "provider_error" }, inserted.response.status === 409 ? 409 : 502);
     const applicationId = inserted.data?.[0]?.id;
     if (!await uploadCv(env, cvPath, value.cv_base64)) {

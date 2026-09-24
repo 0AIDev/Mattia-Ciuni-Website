@@ -56,7 +56,10 @@ tornano `direct`).
 
 > **Migrazione database (una volta, manuale):**
 > `alter table careers_applications add column source text not null default 'direct';`
-> Le righe precedenti alla colonna restano `direct`: è la verità (nessun feed
+> L'endpoint è autosufficiente nel frattempo: se la colonna manca, l'INSERT con
+> `source` prende un 400 e il codice riprova senza — la candidatura non si perde
+> mai per una colonna di analytics. Dopo la migrazione, il primo tentativo la
+> registra e le righe precedenti restano `direct`: è la verità (nessun feed
 > esisteva prima).
 
 Dopo tre mesi il report è una query:

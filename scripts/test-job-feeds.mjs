@@ -88,6 +88,11 @@ check("sources: known utm values pass through", applicationSource("indeed") === 
 check("sources: unknown tokens fall back to direct", applicationSource("(drop table)") === "direct" && applicationSource("xyz!hack") === "direct");
 check("sources: empty input is direct", applicationSource(undefined) === "direct" && applicationSource("") === "direct");
 check("sources: apply endpoint stores the validated column", readFileSync(join(root, "functions", "api", "careers", "apply.ts"), "utf8").includes("source: value.source"));
+// La colonna può non esistere ancora (migrazione manuale): un 400 all'INSERT
+// con `source` deve degradare a INSERT senza, non a un form rotto.
+const applySource = readFileSync(join(root, "functions", "api", "careers", "apply.ts"), "utf8");
+check("sources: insert falls back when the source column is not migrated yet", applySource.includes("inserted.response.status === 400") && /JSON\.stringify\(row\)/.test(applySource));
+check("sources: validation accepts the source field from the form", (() => { try { return applicationSource("indeed") === "indeed" && applicationSource("(drop table)") === "direct"; } catch { return false; } })());
 check("sources: form sends the hint from utm_source/referrer", readFileSync(join(root, "components", "CareersApplicationForm.tsx"), "utf8").includes("applicationSourceHint()"));
 
 // --- Il feed segue jobs.ts senza rigenerazione manuale -----------------------
