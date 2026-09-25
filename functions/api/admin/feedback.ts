@@ -408,16 +408,25 @@ async function adminJobs(env: Env): Promise<AdminJob[]> {
  * solo la service role nella Function tocca la tabella, e un errore non nasconde
  * il resto della dashboard. Qui non c'è nessun documento: il CV resta in Storage
  * e la dashboard mostra solo i campi che servono a fare la review.
+ *
+ * Le colonne seguono la migrazione `20260923_000006` (+`000007` per
+ * custom_answers): la tabella non ha `created_at`, il timestamp è `submitted_at`.
+ * Nominare una colonna inesistente fa rispondere 400 a PostgREST, e senza il log
+ * qui sotto il vuoto risultante sembrerebbe "nessuna candidatura".
  */
 async function applicants(env: Env): Promise<Array<Record<string, unknown>>> {
   if (!supabaseConfigured(env)) return [];
   try {
     const result = await supabaseRequest<Array<Record<string, unknown>>>(
       env,
-      "careers_applications?select=id,job_slug,full_name,email,country_timezone,github_url,portfolio_url,artifact_link,artifact_description,motivation,custom_answers,cv_filename,email_verified,submitted_at,created_at&order=id.desc&limit=200",
+      "careers_applications?select=id,job_slug,full_name,email,country_timezone,github_url,portfolio_url,artifact_link,artifact_description,motivation,custom_answers,cv_filename,email_verified,status,submitted_at&order=submitted_at.desc&limit=200",
       { headers: { Accept: "application/json" } },
     );
-    return result.response.ok && result.data ? result.data : [];
+    if (!result.response.ok) {
+      console.log(JSON.stringify({ event: "admin_applicants", outcome: "query_failed", status: result.response.status }));
+      return [];
+    }
+    return result.data || [];
   } catch {
     return [];
   }
