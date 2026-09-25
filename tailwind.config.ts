@@ -28,6 +28,14 @@ const config: Config = {
       boxShadow: {
         custom: "0 2px 4px rgba(0, 0, 0, 0.08)",
       },
+      // Il ring di default e' il blu di Tailwind (#3b82f6): ogni `ring-*` senza
+      // colore esplicito diventava un alone blu, in aperta guerra con il design
+      // system monocromatico del sito. Il default qui lo riporta al nero del
+      // sito alla stessa opacita' usata dal form newsletter (1200/15): vale per
+      // tutti i ring futuri dimenticati, non solo per quelli presenti.
+      ringColor: {
+        DEFAULT: "rgba(22, 22, 22, 0.15)",
+      },
     },
   },
   plugins: [],

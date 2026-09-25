@@ -26,7 +26,7 @@ type Values = typeof initial;
 type FieldErrors = Partial<Record<keyof Values, string>>;
 function MinimalArrow({ direction = "right" }: { direction?: "left" | "right" }) { return <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4"><path d={direction === "left" ? "m12.5 4-6 6 6 6" : "m7.5 4 6 6-6 6"} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" /></svg>; }
 
-const fieldClass = "box-border min-h-12 w-full max-w-full min-w-0 appearance-none rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-[15px] text-gray-1200 outline-none transition-[border-color,background-color,box-shadow] placeholder:text-gray-1000 hover:border-gray-400 hover:bg-white focus:border-gray-1200 focus:bg-white focus:outline-none focus:ring-4 focus:ring-gray-1200/8";
+const fieldClass = "box-border min-h-12 w-full max-w-full min-w-0 appearance-none rounded-xl border border-gray-300 bg-gray-50 px-4 py-3 text-[15px] text-gray-1200 outline-none transition-[border-color,background-color,box-shadow] placeholder:text-gray-1000 hover:border-gray-400 hover:bg-white focus:border-gray-1200 focus:bg-white focus:outline-none focus:ring-2 focus:ring-gray-1200/15";
 function validHttps(value: string) { try { return new URL(value).protocol === "https:"; } catch { return false; } }
 
 function formCopy() {
