@@ -1,0 +1,30 @@
+# Normalizzazione dei fine riga.
+#
+# Senza questo, `git status` mostra come modificati file il cui contenuto e'
+# identico: su Windows il checkout scrive CRLF, il generatore li scrive LF, e Git
+# li confronta byte per byte. Il risultato e' un elenco di file "modificati" che
+# non sono stati toccati, che e' il modo migliore per far imparare a ignorare
+# `git status`.
+#
+# `text=auto` lascia Git decidere cosa e' testo e cosa no: i file binari
+# (immagini, audio, PDF) non vengono toccati, quindi non si corrompono.
+
+* text=auto
+
+# I sorgenti e gli script sono testo con fine riga Unix anche su Windows.
+*.ts        text eol=lf
+*.tsx       text eol=lf
+*.mjs       text eol=lf
+*.mts       text eol=lf
+*.js        text eol=lf
+*.cjs       text eol=lf
+*.json      text eol=lf
+*.md        text eol=lf
+*.css       text eol=lf
+*.mjs       text eol=lf
+*.yml       text eol=lf
+*.sql       text eol=lf
+
+# I file generati dal postbuild e dal prebuild sono artefatti: si vede il
+# diff, ma non si deve litigare con i fine riga.
+lib/generated/*.ts  text eol=lf
