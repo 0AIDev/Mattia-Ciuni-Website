@@ -223,9 +223,13 @@ check(
   index.includes("rounded-3xl bg-gray-100") && !index.includes("border-t-2 border-gray-1200")
 );
 const adminPage = read("admin/feedback/index.html");
+// Il titolo del documento non e' un buon appiglio per questo controllo: e' una
+// stringa di copy, e il pannello e' cambiato due volte senza che la pagina
+// cambiasse natura. L'identificatore della pagina invece e' il contratto vero,
+// perche' e' lo stesso che la CSS usa per nascondere newsletter e footer.
 check(
-  "feedback admin: private dashboard scaffold",
-  adminPage.includes("Feedback review") &&
+  "admin: private dashboard scaffold, never indexed",
+  adminPage.includes('id="admin-feedback-page"') &&
     adminPage.includes('name="robots" content="noindex, nofollow, nocache"') &&
     fs.existsSync(path.join(__dirname, "..", "functions", "api", "admin", "feedback.ts"))
 );
@@ -413,14 +417,30 @@ const chatDisabled =
   !/^\s*import .*DeferredSiteRagChat/m.test(layoutSource) &&
   !/^\s*<DeferredSiteRagChat\s*\/>/m.test(layoutSource) &&
   !/^\s*<SiteRagChat\s*\/>/m.test(layoutSource);
+// Un endpoint e' instradato se compare per esteso **o** se una regola con
+// wildcard lo copre: `/api/admin/*` copre `/api/admin/feedback`. Chiedere la
+// riga esatta sarebbe chiedere una regola in piu' di quelle necessarie, ed e'
+// esattamente cosi' che il deploy e' caduto: con entrambe le righe Cloudflare
+// risponde "Overlapping rules in _routes.json are not allowed" e non pubblica
+// **nessuna** Function. Il controllo qui sotto rende quella classe di errore
+// impossibile prima del push, invece di farla scoprire al deploy.
+const covers = (rule, route) => rule === route || (rule.endsWith("/*") && route.startsWith(rule.slice(0, -1)));
 const unrouted = apiRoutes.filter(
-  (r) => !routes.include.includes(r) && !(chatDisabled && r === "/api/chat"),
+  (r) => !routes.include.some((rule) => covers(rule, r)) && !(chatDisabled && r === "/api/chat"),
 );
 check(
   `routes: all ${apiRoutes.length} endpoints under functions/api/ are invoked by Pages`,
   unrouted.length === 0,
 );
 if (unrouted.length) console.log("     non instradati in _routes.json: " + unrouted.join(", "));
+// E nessuna regola puo' contenerne un'altra: Cloudflare rifiuta il deploy
+// intero, non la singola regola, quindi il costo dell'errore e' un sito fermo.
+const overlapping = routes.include.filter((rule) => routes.include.some((other) => other !== rule && covers(other, rule)));
+check(
+  "routes: no _routes.json rule overlaps another",
+  overlapping.length === 0,
+);
+if (overlapping.length) console.log("     regole coperte da un'altra: " + overlapping.join(", "));
 if (leakedAdmin.length) console.log("     nominano admin: " + leakedAdmin.join(", "));
 // Nessun file si scrive **intorno** alla dashboard: `admin/feedback.md` era una
 // card servita come asset statico (quel percorso non passa dalla Function), e
