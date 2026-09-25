@@ -62,7 +62,7 @@ export function CustomDropdown({ value, options, onChange, label, className = ""
         onClick={() => setOpen((current) => !current)}
         className={compact
           ? "flex min-h-9 w-full items-center justify-between gap-2 rounded-full border border-gray-300 bg-transparent px-3 text-left text-sm text-gray-1200 transition-colors hover:bg-gray-100 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-1200"
-          : "flex min-h-11 w-full items-center justify-between gap-3 rounded-full border border-gray-300 bg-white px-4 text-left text-sm text-gray-1200 transition-colors hover:border-gray-1000 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-1200"}
+          : "flex min-h-11 w-full items-center justify-between gap-3 rounded-full border border-gray-300 bg-preview-bg px-4 text-left text-sm text-gray-1200 transition-colors hover:border-gray-1000 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-gray-1200"}
       >
         <span className="flex min-w-0 flex-1 items-center gap-2">
           {selected?.leading}
@@ -76,8 +76,8 @@ export function CustomDropdown({ value, options, onChange, label, className = ""
           role="listbox"
           aria-label={label}
           className={compact
-            ? "absolute bottom-[calc(100%+0.5rem)] left-1/2 z-30 w-[220px] -translate-x-1/2 overflow-hidden rounded-[18px] border border-gray-300 bg-white p-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
-            : "absolute left-0 right-0 top-[calc(100%+0.5rem)] z-30 overflow-hidden rounded-2xl border border-gray-300 bg-white p-1.5 shadow-[0_12px_35px_rgba(0,0,0,0.12)]"}
+            ? "absolute bottom-[calc(100%+0.5rem)] left-1/2 z-30 w-[220px] -translate-x-1/2 overflow-hidden rounded-[18px] border border-gray-300 bg-preview-bg p-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.12)]"
+            : "absolute left-0 right-0 top-[calc(100%+0.5rem)] z-30 overflow-hidden rounded-2xl border border-gray-300 bg-preview-bg p-1.5 shadow-[0_12px_35px_rgba(0,0,0,0.12)]"}
         >
           {options.map((option) => (
             <button

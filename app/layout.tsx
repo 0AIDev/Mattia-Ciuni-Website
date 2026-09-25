@@ -106,12 +106,27 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#FFFFFF",
+  // Il theme-color segue il tema: due meta con media query, una per il light e
+  // una per il dark. Il valore deve combaciare con --tc-background in
+  // globals.css, altrimenti la barra del browser cambia colore dopo la pagina.
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#FCFCFC" },
+    { media: "(prefers-color-scheme: dark)", color: "#0A0A0A" },
+  ],
   viewportFit: "cover",
   // On mobile, opening the keyboard must resize the content viewport instead
   // of leaving fixed dialogs behind the keyboard.
   interactiveWidget: "resizes-content",
 };
+
+// Il tema prima del primo paint: senza questo, chi sceglie dark vede un lampo
+// bianco a ogni navigazione (FOUC). La scelta sta in localStorage
+// (`mattia-ciuni-theme`: light | dark | null); senza scelta esplicita vince
+// prefers-color-scheme del device, cosi' il tema e' adattivo finché la persona
+// non decide. Il modulo e' inline e blocking di proposito: un modulo caricato
+// da file arriverebbe dopo il paint. La pagina resta statica: nessun provider,
+// nessun context, solo una classe su <html> che i token CSS leggono.
+const themeScript = `(function(){try{var s=localStorage.getItem("mattia-ciuni-theme");var dark=s==="dark"||(s!=="light"&&window.matchMedia("(prefers-color-scheme: dark)").matches);var root=document.documentElement;if(dark)root.classList.add("dark");root.style.colorScheme=dark?"dark":"light";}catch(e){}})();`;
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   // Il percorso localizzato vive sotto il root layout condiviso, quindi qui non
@@ -120,9 +135,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   // pagine localizzate; il resto del sito resta sulla lingua predefinita.
   const language = site.language;
   return (
-    <html lang={language} className={`${inter.variable} ${instrumentSerif.className}`}>
+    <html lang={language} className={`${inter.variable} ${instrumentSerif.className}`} suppressHydrationWarning>
       <head>
         <link rel="ai-catalog" href="/.well-known/ai-catalog.json" />
+        <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="bg-gray-background font-sans text-base leading-relaxed text-gray-1200">
         <Script id="webmcp-tools" src="/webmcp.js" strategy="afterInteractive" />
@@ -134,7 +150,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ClarityAnalytics />
         <a
           href="#content"
-          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:bg-gray-1200 focus:text-white focus:px-3 focus:py-1"
+          className="sr-only focus:not-sr-only focus:absolute focus:top-2 focus:left-2 focus:bg-gray-1200 focus:text-gray-background focus:px-3 focus:py-1"
         >
           Skip to content
         </a>

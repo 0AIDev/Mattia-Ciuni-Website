@@ -112,7 +112,7 @@ export function LanguageSwitcher({ currentLocale, label }: LanguageSwitcherProps
         </svg>
       </button>
       {open ? (
-        <div className="absolute bottom-[calc(100%+0.5rem)] left-1/2 z-30 w-[220px] -translate-x-1/2 overflow-hidden rounded-[18px] border border-gray-300 bg-white p-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.12)]">
+        <div className="absolute bottom-[calc(100%+0.5rem)] left-1/2 z-30 w-[220px] -translate-x-1/2 overflow-hidden rounded-[18px] border border-gray-300 bg-preview-bg p-1.5 shadow-[0_8px_24px_rgba(0,0,0,0.12)]">
           {LOCALES.map((locale) => (
             <Link
               key={locale}

@@ -137,13 +137,13 @@ export default function FeedbackIndex() {
 
       {/* La promessa, in una riga: chiudo con il gesto, non con la prosa. */}
       <section className="mt-14 rounded-3xl bg-gray-1200 px-6 py-10 text-center sm:py-12" aria-label="Send your feedback">
-        <p className="mx-auto max-w-[420px] font-serif text-xl leading-snug text-white sm:text-2xl">
+        <p className="mx-auto max-w-[420px] font-serif text-xl leading-snug text-gray-background sm:text-2xl">
           The next Feedback post might be about your perspective.
         </p>
         <div className="mt-5">
           <FeedbackModalButton
             variant="outline"
-            className="!border-white !bg-transparent !text-white hover:!border-white hover:!opacity-80"
+            className="!border-white !bg-transparent !text-gray-background hover:!border-white hover:!opacity-80"
           />
         </div>
       </section>

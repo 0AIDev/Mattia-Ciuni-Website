@@ -33,7 +33,7 @@ export function CareersApplicationModal({ job, basePath }: { job: CareerJob; bas
 
   return (
     <div className="fixed inset-0 z-50 h-[100dvh] w-screen max-w-[100vw] overflow-hidden bg-gray-1200/30 p-0 backdrop-blur-md sm:p-5" role="dialog" aria-modal="true" aria-label={`${text.applyingFor}: ${job.title}`}>
-      <div className="relative mx-auto flex h-[100dvh] max-h-[100dvh] min-w-0 w-full max-w-[900px] flex-col overflow-x-hidden overflow-y-hidden border border-gray-300 bg-white px-4 py-4 shadow-[0_24px_100px_rgba(0,0,0,0.22)] sm:h-[calc(100dvh-2.5rem)] sm:max-h-[calc(100dvh-2.5rem)] sm:rounded-[2rem] sm:px-10 sm:py-9">
+      <div className="relative mx-auto flex h-[100dvh] max-h-[100dvh] min-w-0 w-full max-w-[900px] flex-col overflow-x-hidden overflow-y-hidden border border-gray-300 bg-preview-bg px-4 py-4 shadow-[0_24px_100px_rgba(0,0,0,0.22)] sm:h-[calc(100dvh-2.5rem)] sm:max-h-[calc(100dvh-2.5rem)] sm:rounded-[2rem] sm:px-10 sm:py-9">
         <div className="flex min-w-0 items-center justify-between gap-3 border-b border-gray-300 pb-5">
           <Link href={detailPath} className="group flex items-center gap-3 text-sm text-gray-1000 transition-colors hover:text-gray-1200">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 transition-colors group-hover:bg-gray-200" aria-hidden="true"><BackIcon /></span>

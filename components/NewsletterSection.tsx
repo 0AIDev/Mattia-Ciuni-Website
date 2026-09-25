@@ -169,7 +169,7 @@ export function NewsletterSection({ variant = "section", locale = "en" }: { vari
       <button
         type="submit"
         disabled={state === "loading"}
-        className="min-h-11 min-w-0 shrink-0 whitespace-nowrap rounded-full bg-gray-1200 px-3 text-[13px] font-semibold text-white transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gray-1200 disabled:cursor-wait disabled:opacity-50 sm:px-5 sm:text-sm"
+        className="min-h-11 min-w-0 shrink-0 whitespace-nowrap rounded-full bg-gray-1200 px-3 text-[13px] font-semibold text-gray-background transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gray-1200 disabled:cursor-wait disabled:opacity-50 sm:px-5 sm:text-sm"
       >
         {state === "loading" ? copy.subscribing : copy.subscribe}
       </button>

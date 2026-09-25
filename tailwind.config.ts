@@ -1,21 +1,57 @@
 import type { Config } from "tailwindcss";
 
+// I colori passano da CSS variables: light e dark definiscono gli stessi nomi
+// con valori diversi (app/globals.css), quindi le classi del sito
+// (bg-gray-background, text-gray-1200, ...) restano identiche e la dark mode e'
+// solo un cambio di variabile su <html>. Il valore hex qui e' quello light: da
+// solo serve come fallback se le variabili non sono caricate, e dice a Tailwind
+// che il colore e' opaco (gli opacity modifier restano validi perche' il valore
+// della variabile e' un colore intero, non un canale).
+const varColor = (name: string, fallback: string) => `rgb(var(${name}) / <alpha-value>)`;
+
+// Esagono -> canali rgb per i fallback e per le variabili in globals.css.
+const rgbChannels = (hex: string) => {
+  const value = hex.replace("#", "");
+  return [0, 2, 4].map((i) => Number.parseInt(value.slice(i, i + 2), 16)).join(" ");
+};
+
+const light = {
+  background: "#FCFCFC",
+  previewBg: "#FFFFFF",
+  previewBorder: "#E4E4E4",
+  paragraph: "#262626",
+  gray50: "#F7F7F7",
+  gray100: "#EFEFEF",
+  gray200: "#E5E5E5",
+  gray300: "#E9E9E9",
+  gray400: "#DADADA",
+  gray1000: "#686868",
+  gray1100: "#3C3C3C",
+  gray1200: "#161616",
+};
+
 const config: Config = {
+  darkMode: "class",
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./lib/**/*.{ts,tsx}"],
   theme: {
     extend: {
       colors: {
-        "gray-background": "#FCFCFC",
-        "preview-bg": "#FFFFFF",
-        "preview-border": "#E4E4E4",
-        "text-text-paragraph": "#262626",
+        // Stessi nomi di prima: nessuna classe del sito cambia. I valori light
+        // sono anche i default delle variabili, dichiarati in globals.css su
+        // :root; .dark li ridefinisce.
+        "gray-background": varColor("--tc-background", rgbChannels(light.background)),
+        "preview-bg": varColor("--tc-preview-bg", rgbChannels(light.previewBg)),
+        "preview-border": varColor("--tc-preview-border", rgbChannels(light.previewBorder)),
+        "text-text-paragraph": varColor("--tc-paragraph", rgbChannels(light.paragraph)),
         gray: {
-          100: "#EFEFEF",
-          300: "#E9E9E9",
-          400: "#DADADA",
-          1000: "#686868",
-          1100: "#3C3C3C",
-          1200: "#161616",
+          50: varColor("--tc-gray-50", rgbChannels(light.gray50)),
+          100: varColor("--tc-gray-100", rgbChannels(light.gray100)),
+          200: varColor("--tc-gray-200", rgbChannels(light.gray200)),
+          300: varColor("--tc-gray-300", rgbChannels(light.gray300)),
+          400: varColor("--tc-gray-400", rgbChannels(light.gray400)),
+          1000: varColor("--tc-gray-1000", rgbChannels(light.gray1000)),
+          1100: varColor("--tc-gray-1100", rgbChannels(light.gray1100)),
+          1200: varColor("--tc-gray-1200", rgbChannels(light.gray1200)),
         },
       },
       fontFamily: {

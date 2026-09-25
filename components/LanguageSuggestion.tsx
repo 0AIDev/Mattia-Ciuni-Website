@@ -112,12 +112,12 @@ export function LanguageSuggestion() {
   }
 
   return (
-    <aside className="fixed bottom-4 left-2 right-2 z-[9999] mx-auto max-w-[500px] rounded-[24px] border border-gray-300 bg-white/90 shadow-[0_0_20px_rgba(0,0,0,0.08)] backdrop-blur-lg sm:left-auto sm:right-4 sm:mx-0" aria-label={prompt.heading}>
+    <aside className="fixed bottom-4 left-2 right-2 z-[9999] mx-auto max-w-[500px] rounded-[24px] border border-gray-300 bg-preview-bg/90 shadow-[0_0_20px_rgba(0,0,0,0.08)] backdrop-blur-lg sm:left-auto sm:right-4 sm:mx-0" aria-label={prompt.heading}>
       <div className="p-5 pr-14">
         <p className="mb-5 font-serif text-xl leading-tight text-gray-1200">{prompt.heading}</p>
         <p className="m-0 text-sm leading-relaxed text-gray-1000">{prompt.body} <strong className="text-gray-1200">{to.native}</strong>?</p>
       </div>
-      <button type="button" onClick={dismissSuggestion} aria-label={prompt.dismiss} className="absolute right-2 top-2 flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white text-gray-1200 shadow-sm transition-colors hover:bg-gray-100">
+      <button type="button" onClick={dismissSuggestion} aria-label={prompt.dismiss} className="absolute right-2 top-2 flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-preview-bg text-gray-1200 shadow-sm transition-colors hover:bg-gray-100">
         <span aria-hidden="true" className="text-xl leading-none">×</span>
       </button>
       <div className="h-px bg-gray-200" />
@@ -131,7 +131,7 @@ export function LanguageSuggestion() {
             <Image src={`/flags/${to.country.toLowerCase()}.svg`} alt={to.label} className="language-flag" width={28} height={28} unoptimized />
           </span>
         </div>
-        <a href={pathForLocale(suggested, window.location.pathname, window.location.search)} onClick={() => { remember(suggested); track("language_suggestion_switch", { from_locale: current, to_locale: suggested }); }} className="rounded-full bg-gray-1200 px-4 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-80">{prompt.action}</a>
+        <a href={pathForLocale(suggested, window.location.pathname, window.location.search)} onClick={() => { remember(suggested); track("language_suggestion_switch", { from_locale: current, to_locale: suggested }); }} className="rounded-full bg-gray-1200 px-4 py-2.5 text-sm font-semibold text-gray-background transition-opacity hover:opacity-80">{prompt.action}</a>
       </div>
     </aside>
   );

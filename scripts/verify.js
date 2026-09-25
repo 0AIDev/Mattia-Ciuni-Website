@@ -94,7 +94,10 @@ check("blog: twitter title fixed", blog.includes('twitter:title" content="Though
 check("index: twitter large image", index.includes('twitter:card" content="summary_large_image"'));
 check("index: rel=me x3", (index.match(/rel="me noopener"/g) || []).length === 3);
 check("index: mailto", index.includes("mailto:ceo@usepayle.com"));
-check("index: theme-color", index.includes('name="theme-color" content="#FFFFFF"'));
+// Il theme-color segue il tema: due meta con media query (light #FCFCFC, dark
+// #0A0A0A), gli stessi valori di --tc-background in globals.css. Un solo valore
+// fisso lascerebbe la barra del browser del colore sbagliato in dark mode.
+check("index: theme-color", index.includes('name="theme-color" content="#FCFCFC" media="(prefers-color-scheme: light)"') && index.includes('name="theme-color" content="#0A0A0A" media="(prefers-color-scheme: dark)"'));
 check("index: Google Search Console verification", index.includes('name="google-site-verification" content="2Yp93wGXnpI1i5vhC09zwHdmGr1vY6rFCZIXptWOITI"'));
 
 const person = ldJson(index).find((j) => j["@type"] === "Person");
@@ -1147,11 +1150,13 @@ console.log("homepage html+css: " + (bytes / 1024).toFixed(1) + "KB raw | all JS
 // strutturale (ultimi N in home + link "All thoughts", come fanno gia' Notes e
 // Feedback) e non l'ennesima deroga al numero. Quel cambio e' una decisione di
 // prodotto, quindi resta aperto qui invece di essere preso di nascosto.
-// Perche' il limite sale a 129.5KB: due cause insieme, 2026-09-25. (1) Il post
-// di Raj e' il quinto Thought in home: ~1.6KB come da misura qui sopra. (2) Il
+// Perche' il limite sale a 132KB: tre cause insieme, 2026-09-25. (1) Il post di
+// Raj e' il quinto Thought in home: ~1.6KB come da misura qui sopra. (2) Il
 // corsivo vera di Instrument Serif entra nel CSS della home come due @font-face
 // (659 byte): prima il browser inclinava i glyph sinteticamente e il testo delle
-// citazioni si vedeva male. Il prossimo articolo deve prendere la strada
-// strutturale (ultimi N in home + link "All thoughts"), non questo numero.
-check("weight: homepage html+css < 129.5KB raw", bytes < 129.5 * 1024);
+// citazioni si vedeva male. (3) La dark mode: i token colore passano da CSS
+// variables (rgb(var(--tc-…))) e ogni utility colore paga la sintassi della
+// variabile, ~1.5KB su tutta la pagina. Il prossimo articolo deve prendere la
+// strada strutturale (ultimi N in home + link "All thoughts"), non questo numero.
+check("weight: homepage html+css < 132KB raw", bytes < 132 * 1024);
 process.exit(fail ? 1 : 0);

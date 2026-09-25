@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Application confirmed", robots: { in
 // lato client, vedi ConfirmedMessage): senza slug resta il testo generico.
 export default function ConfirmedPage() {
   return (
-    <main id="content" className="min-h-[70vh] bg-white text-gray-1200">
+    <main id="content" className="min-h-[70vh] bg-preview-bg text-gray-1200">
       <div className="mx-auto w-full max-w-[640px] px-5 py-24 sm:px-6">
         <div className="rounded-3xl bg-gray-100 p-8 sm:p-12">
           <ConfirmedMessage />

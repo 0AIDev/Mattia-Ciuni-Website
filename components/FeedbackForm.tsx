@@ -187,10 +187,10 @@ export function FeedbackModalButton({
 
   const baseTrigger =
     variant === "solid"
-      ? "rounded-full bg-gray-1200 px-6 py-2.5 text-sm font-semibold text-white transition-opacity hover:opacity-80"
-      : "rounded-full border border-gray-300 bg-white px-6 py-2.5 text-sm font-semibold text-gray-1200 transition-colors hover:border-gray-1200";
+      ? "rounded-full bg-gray-1200 px-6 py-2.5 text-sm font-semibold text-gray-background transition-opacity hover:opacity-80"
+      : "rounded-full border border-gray-300 bg-preview-bg px-6 py-2.5 text-sm font-semibold text-gray-1200 transition-colors hover:border-gray-1200";
   const field =
-    "min-h-11 w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-2.5 text-base text-gray-1200 shadow-none outline-none transition-colors placeholder:text-gray-1000/60 hover:border-gray-1000 focus:border-gray-1200 focus:outline-none focus-visible:outline-none disabled:opacity-60";
+    "min-h-11 w-full appearance-none rounded-full border border-gray-400 bg-preview-bg px-5 py-2.5 text-base text-gray-1200 shadow-none outline-none transition-colors placeholder:text-gray-1000/60 hover:border-gray-1000 focus:border-gray-1200 focus:outline-none focus-visible:outline-none disabled:opacity-60";
 
   return (
     <>
@@ -218,7 +218,7 @@ export function FeedbackModalButton({
             aria-modal="true"
             aria-labelledby="feedback-dialog-title"
             aria-describedby="feedback-dialog-description"
-            className="my-auto max-h-[calc(100dvh-1.5rem)] w-full max-w-[460px] overflow-y-auto overscroll-contain rounded-3xl bg-white p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:p-8"
+            className="my-auto max-h-[calc(100dvh-1.5rem)] w-full max-w-[460px] overflow-y-auto overscroll-contain rounded-3xl bg-preview-bg p-5 pb-[max(1.5rem,env(safe-area-inset-bottom))] shadow-[0_24px_80px_rgba(0,0,0,0.24)] sm:p-8"
             onClick={(event) => event.stopPropagation()}
           >
             <div className="flex items-start justify-between gap-4">
@@ -246,7 +246,7 @@ export function FeedbackModalButton({
                 <button
                   type="button"
                   onClick={close}
-                  className="mt-5 rounded-full bg-gray-1200 px-5 py-2 text-sm font-semibold text-white transition-opacity hover:opacity-80">{text.done}</button>
+                  className="mt-5 rounded-full bg-gray-1200 px-5 py-2 text-sm font-semibold text-gray-background transition-opacity hover:opacity-80">{text.done}</button>
               </div>
             ) : (
               <form onSubmit={submit} onFocus={(event) => fieldFocus((event.target as unknown as HTMLInputElement).name || "message")} noValidate aria-busy={state === "loading"} className="mt-6 flex flex-col gap-3">
@@ -292,7 +292,7 @@ export function FeedbackModalButton({
                   rows={5}
                   maxLength={4000}
                   required
-                  className="min-h-32 w-full appearance-none resize-y rounded-2xl border border-gray-400 bg-white px-5 py-3 text-base leading-relaxed text-gray-1200 shadow-none outline-none transition-colors placeholder:text-gray-1000/60 hover:border-gray-1000 focus:border-gray-1200 focus:outline-none focus-visible:outline-none disabled:opacity-60"
+                  className="min-h-32 w-full appearance-none resize-y rounded-2xl border border-gray-400 bg-preview-bg px-5 py-3 text-base leading-relaxed text-gray-1200 shadow-none outline-none transition-colors placeholder:text-gray-1000/60 hover:border-gray-1000 focus:border-gray-1200 focus:outline-none focus-visible:outline-none disabled:opacity-60"
                   name="message"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
@@ -305,7 +305,7 @@ export function FeedbackModalButton({
                   <button
                     type="submit"
                     disabled={state === "loading"}
-                    className="min-h-11 shrink-0 rounded-full bg-gray-1200 px-6 text-sm font-semibold text-white transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gray-1200 disabled:cursor-wait disabled:opacity-50"
+                    className="min-h-11 shrink-0 rounded-full bg-gray-1200 px-6 text-sm font-semibold text-gray-background transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-2 focus-visible:outline-gray-1200 disabled:cursor-wait disabled:opacity-50"
                   >
                     {state === "loading" ? text.sending : text.send}
                   </button>

@@ -2,6 +2,68 @@
 @tailwind components;
 @tailwind utilities;
 
+/* ------------------------------------------------------------------ */
+/* Tema: light di default, dark via classe su <html> (`.dark`).        */
+/* ------------------------------------------------------------------ */
+/* Ogni token del design system diventa una variabile: i nomi delle    */
+/* classi Tailwind restano quelli che il sito ha sempre usato, cambiano */
+/* solo i valori sotto `.dark`. Canali RGB + / <alpha-value>: le        */
+/* classi con slash (bg-gray-1200/8, ring-gray-1200/15) continuano a    */
+/* funzionare in entrambi i temi.                                       */
+:root {
+  --tc-background: 252 252 252;      /* #FCFCFC */
+  --tc-preview-bg: 255 255 255;      /* #FFFFFF */
+  --tc-preview-border: 228 228 228;  /* #E4E4E4 */
+  --tc-paragraph: 38 38 38;          /* #262626 */
+  --tc-gray-50: 247 247 247;         /* #F7F7F7 */
+  --tc-gray-100: 239 239 239;        /* #EFEFEF */
+  --tc-gray-200: 229 229 229;        /* #E5E5E5 */
+  --tc-gray-300: 233 233 233;        /* #E9E9E9 */
+  --tc-gray-400: 218 218 218;        /* #DADADA */
+  --tc-gray-1000: 104 104 104;       /* #686868 */
+  --tc-gray-1100: 60 60 60;          /* #3C3C3C */
+  --tc-gray-1200: 22 22 22;          /* #161616 */
+  /* Le ombre si leggono solo su sfondo chiaro: in dark la elevazione si */
+  /* vede con il bordo, non con l'ombra (che su nero e' invisibile).     */
+  --tc-shadow-strength: 0.08;
+  --tc-signature: #161616;
+  color-scheme: light;
+}
+
+.dark {
+  /* Stessa scala, invertita: la pagina resta monocromatica, i ruoli si     */
+  /* scambiano. 100/300 diventano le superfici in elevate, 1200 diventa    */
+  /* il testo. Sfondo e superfici non sono nero puro (#0A0A0A / #161616):  */
+  /* il nero assoluto brucia su OLED e rende il grigio illeggibile.        */
+  --tc-background: 10 10 10;         /* #0A0A0A */
+  --tc-preview-bg: 22 22 22;         /* #161616 */
+  --tc-preview-border: 60 60 60;     /* #3C3C3C */
+  --tc-paragraph: 212 212 212;       /* #D4D4D4 */
+  --tc-gray-50: 18 18 18;            /* #121212 */
+  --tc-gray-100: 26 26 26;           /* #1A1A1A */
+  --tc-gray-200: 34 34 34;           /* #222222 */
+  --tc-gray-300: 42 42 42;           /* #2A2A2A */
+  --tc-gray-400: 72 72 72;           /* #484848 */
+  --tc-gray-1000: 156 156 156;       /* #9C9C9C */
+  --tc-gray-1100: 196 196 196;       /* #C4C4C4 */
+  --tc-gray-1200: 244 244 244;       /* #F4F4F4 */
+  --tc-shadow-strength: 0;
+  --tc-signature: #f4f4f4;
+  color-scheme: dark;
+}
+
+html {
+  scroll-behavior: smooth;
+  /* Le due dichiarazioni dopo `@tailwind base` ricevono il valore dal tema: */
+  /* qui la variabile, non il colore, cosi' il cambio tema non tocca questo  */
+  /* blocco. */
+  background: rgb(var(--tc-background));
+  /* Sull'elemento radice `hidden` e' quello che serve: il taglio orizzontale
+     e' del viewport, che resta l'unico contenitore di scroll. */
+  overflow-x: hidden;
+  -webkit-text-size-adjust: 100%;
+}
+
 /* Flag-icons supplies the country artwork; this wrapper makes the artwork a
    true circular flag instead of the library's default rectangular ratio. */
 .language-flag {
@@ -41,7 +103,7 @@
 
 html {
   scroll-behavior: smooth;
-  background: #FCFCFC;
+  background: rgb(var(--tc-background));
   /* Sull'elemento radice `hidden` e' quello che serve: il taglio orizzontale
      e' del viewport, che resta l'unico contenitore di scroll. */
   overflow-x: hidden;
@@ -58,7 +120,7 @@ body {
      Careers smettevano di restare agganciati). `clip` taglia l'eccesso
      orizzontale senza creare un contenitore di scroll. */
   overflow-x: clip;
-  background: #FCFCFC;
+  background: rgb(var(--tc-background));
 
   flex-direction: column;
   -webkit-font-smoothing: antialiased;
@@ -240,6 +302,9 @@ html {
   background: linear-gradient(#6f6f6f, #585858 46%, #454545);
   -webkit-mask: url("/logo.svg") no-repeat center / contain;
   mask: url("/logo.svg") no-repeat center / contain;
+}
+.dark .site-signature {
+  background: linear-gradient(#a8a8a8, #909090 46%, #787878);
 }
 
 @media (min-width: 640px) {

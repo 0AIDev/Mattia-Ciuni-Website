@@ -119,7 +119,7 @@ export function SiteRagChat() {
   return (
     <aside className="fixed bottom-4 right-4 z-40 flex flex-col items-end sm:bottom-6 sm:right-6" aria-label="Ask Mattia Ciuni AI">
       {open && (
-        <section className="mb-3 flex h-[min(720px,calc(100dvh-96px))] max-h-[calc(100dvh-1rem)] w-[min(390px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-gray-300 bg-white shadow-[0_18px_70px_rgba(0,0,0,0.16)]" aria-label="Ask Mattia Ciuni AI">
+        <section className="mb-3 flex h-[min(720px,calc(100dvh-96px))] max-h-[calc(100dvh-1rem)] w-[min(390px,calc(100vw-2rem))] flex-col overflow-hidden rounded-2xl border border-gray-300 bg-preview-bg shadow-[0_18px_70px_rgba(0,0,0,0.16)]" aria-label="Ask Mattia Ciuni AI">
           <header className="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4">
             <div>
               <p className="font-serif text-xl leading-none">Ask Mattia Ciuni AI</p>
@@ -140,7 +140,7 @@ export function SiteRagChat() {
             )}
             {messages.map((message, index) => (
               <div key={`${message.role}-${index}`} className={message.role === "user" ? "flex justify-end" : "flex justify-start"}>
-                <div className={message.role === "user" ? "max-w-[84%] rounded-2xl rounded-br-md bg-gray-1200 px-4 py-2.5 text-sm leading-relaxed text-white" : "max-w-[94%] text-[15px] leading-relaxed text-gray-1200"}>
+                <div className={message.role === "user" ? "max-w-[84%] rounded-2xl rounded-br-md bg-gray-1200 px-4 py-2.5 text-sm leading-relaxed text-gray-background" : "max-w-[94%] text-[15px] leading-relaxed text-gray-1200"}>
                   {message.role === "assistant" && index === typingIndex ? <TypingText text={message.text} /> : message.text}
                   {message.sources?.length ? <div className="mt-3 space-y-1.5 border-t border-gray-200 pt-2 text-xs text-gray-1000">{message.sources.slice(0, 3).map((source) => <Link key={source.url} href={source.url} onClick={() => setOpen(false)} className="block underline decoration-gray-300 underline-offset-2 hover:text-gray-1200">Read: {source.title}</Link>)}</div> : null}
                 </div>
@@ -156,13 +156,13 @@ export function SiteRagChat() {
             <form onSubmit={submit} className="flex items-center gap-2 rounded-xl border border-gray-300 px-3 py-2 focus-within:border-gray-1200">
               <label htmlFor="site-rag-question" className="sr-only">Ask Mattia Ciuni AI a question</label>
               <input id="site-rag-question" value={question} onChange={(event) => setQuestion(event.target.value)} placeholder="Message Mattia Ciuni AI..." maxLength={500} className="min-w-0 flex-1 bg-transparent py-1 text-base outline-none placeholder:text-gray-1000/60" disabled={busy} />
-              <button type="submit" disabled={busy || !question.trim()} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-1200 text-sm text-white transition-opacity disabled:opacity-25" aria-label="Send message">↑</button>
+              <button type="submit" disabled={busy || !question.trim()} className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-gray-1200 text-sm text-gray-background transition-opacity disabled:opacity-25" aria-label="Send message">↑</button>
             </form>
             <p className="mt-2 text-center text-[11px] text-gray-1000">Answers come from the published site.</p>
           </div>
         </section>
       )}
-      <button type="button" onClick={() => setOpen((value) => !value)} className="flex h-11 items-center gap-2 rounded-full bg-gray-1200 px-4 text-sm text-white shadow-[0_5px_25px_rgba(0,0,0,0.16)] transition-opacity hover:opacity-80" aria-expanded={open} aria-controls="site-guide">
+      <button type="button" onClick={() => setOpen((value) => !value)} className="flex h-11 items-center gap-2 rounded-full bg-gray-1200 px-4 text-sm text-gray-background shadow-[0_5px_25px_rgba(0,0,0,0.16)] transition-opacity hover:opacity-80" aria-expanded={open} aria-controls="site-guide">
         <span>Ask Mattia Ciuni AI</span><span aria-hidden="true">↗</span>
       </button>
     </aside>

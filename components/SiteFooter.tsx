@@ -6,6 +6,7 @@ import { ForAICard } from "@/components/ForAICard";
 import { ArrowUpRightIcon } from "@/components/ui/arrow-up-right";
 import { SpotifyIcon, YoutubeIcon } from "@/components/ui/static-icons";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { ThemeToggle } from "@/components/ThemeToggle";
 import { copy, isLocale, type Locale } from "@/lib/i18n";
 import { site } from "@/lib/site";
 
@@ -62,6 +63,8 @@ export function SiteFooter() {
       <div className="mt-6 flex items-center gap-3 text-sm text-gray-1000">
         <span>{text.language}</span>
         <LanguageSwitcher currentLocale={locale} label={text.language} />
+        <span aria-hidden="true" className="text-gray-400">·</span>
+        <ThemeToggle />
       </div>
       <div aria-hidden="true" className="site-signature mx-auto mt-16" />
     </footer>

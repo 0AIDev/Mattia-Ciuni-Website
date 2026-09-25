@@ -70,7 +70,7 @@ function Progress({
       step="0.1"
       value={Math.min(current, duration || 0)}
       onChange={(event) => onChange(Number(event.target.value))}
-      className={`h-1 min-w-0 flex-1 cursor-pointer appearance-none rounded-full accent-current ${dark ? "text-white" : "text-gray-1200"}`}
+      className={`h-1 min-w-0 flex-1 cursor-pointer appearance-none rounded-full accent-current ${dark ? "text-gray-background" : "text-gray-1200"}`}
     />
   );
 }
@@ -172,7 +172,7 @@ export function AudioPlayer({ src, title }: PlayerProps) {
           type="button"
           onClick={state.togglePlay}
           aria-label={state.playing ? `Pause ${title}` : `Play ${title}`}
-          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-1200 text-white transition-opacity hover:opacity-80 focus-visible:outline"
+          className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-1200 text-gray-background transition-opacity hover:opacity-80 focus-visible:outline"
         >
           <PlayIcon playing={state.playing} />
         </button>
@@ -232,12 +232,12 @@ export function VideoPlayer({ src, title, poster }: PlayerProps) {
           type="button"
           onClick={state.togglePlay}
           aria-label={`Play ${title}`}
-          className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-white/95 text-gray-1200 shadow-sm transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-white"
+          className="absolute left-1/2 top-1/2 flex h-14 w-14 -translate-x-1/2 -translate-y-1/2 items-center justify-center rounded-full bg-preview-bg/95 text-gray-1200 shadow-sm transition-opacity hover:opacity-80 focus-visible:outline focus-visible:outline-white"
         >
           <PlayIcon playing={false} />
         </button>
       ) : null}
-      <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 bg-gray-1200/90 px-3 py-2 text-white opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
+      <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 bg-gray-1200/90 px-3 py-2 text-gray-background opacity-100 transition-opacity sm:opacity-0 sm:group-hover:opacity-100 sm:focus-within:opacity-100">
         <button
           type="button"
           onClick={state.togglePlay}

@@ -131,7 +131,7 @@ export function CareersRoleSearch({
           aria-haspopup="dialog"
           aria-expanded={open}
           aria-keyshortcuts="Meta+K Control+K"
-          className="flex min-h-11 w-full items-center justify-between rounded-full border border-gray-300 bg-white px-4 text-sm text-gray-1000 transition-colors hover:border-gray-1200"
+          className="flex min-h-11 w-full items-center justify-between rounded-full border border-gray-300 bg-preview-bg px-4 text-sm text-gray-1000 transition-colors hover:border-gray-1200"
         >
           <span className="flex items-center gap-3">
             <SearchIcon />
@@ -174,7 +174,7 @@ export function CareersRoleSearch({
             role="dialog"
             aria-modal="true"
             aria-label={text.searchRoles}
-            className="w-full max-w-[620px] overflow-hidden rounded-3xl border border-gray-300 bg-white shadow-[0_24px_80px_rgba(0,0,0,0.18)]"
+            className="w-full max-w-[620px] overflow-hidden rounded-3xl border border-gray-300 bg-preview-bg shadow-[0_24px_80px_rgba(0,0,0,0.18)]"
           >
             <div className="flex items-center gap-3 border-b border-gray-300 px-5">
               <SearchIcon />
@@ -211,7 +211,7 @@ export function CareersRoleSearch({
                       setActiveIndex(0);
                     }}
                     aria-pressed={status === filter}
-                    className={`rounded-full border px-3 py-1 text-xs transition-colors ${status === filter ? "border-gray-1200 bg-gray-1200 text-white" : "border-gray-300 text-gray-1000 hover:border-gray-1200"}`}
+                    className={`rounded-full border px-3 py-1 text-xs transition-colors ${status === filter ? "border-gray-1200 bg-gray-1200 text-gray-background" : "border-gray-300 text-gray-1000 hover:border-gray-1200"}`}
                   >
                     {label}
                   </button>

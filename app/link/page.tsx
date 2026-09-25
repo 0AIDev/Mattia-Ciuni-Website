@@ -156,7 +156,7 @@ export default function Page() {
               sizes="560px"
               className="link-hero-cutout h-[240px] w-auto select-none sm:h-[280px]"
             />
-            <h1 className="absolute inset-x-0 bottom-0 font-serif text-[30px] font-semibold leading-none text-white sm:text-4xl">
+            <h1 className="absolute inset-x-0 bottom-0 font-serif text-[30px] font-semibold leading-none text-gray-background sm:text-4xl">
               Mattia Ciuni
             </h1>
           </div>
@@ -181,7 +181,7 @@ export default function Page() {
               target="_blank"
               rel="me noopener noreferrer"
               aria-label={`Mattia Ciuni on ${label}`}
-              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-white transition-colors hover:border-gray-1200"
+              className="inline-flex h-10 w-10 items-center justify-center rounded-full border border-gray-300 bg-preview-bg transition-colors hover:border-gray-1200"
             >
               <Icon size={19} color={color} />
             </a>
