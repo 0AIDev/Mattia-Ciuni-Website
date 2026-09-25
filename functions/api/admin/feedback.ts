@@ -1,7 +1,7 @@
 // @ts-expect-error Cloudflare bundles extensionless TS imports; Node's native strip loader needs `.ts` for the offline test.
 import { newTotpSecret, otpauthUri, verifyTotp } from "../../../lib/totp.ts";
 // @ts-expect-error Pages bundles extensionless function imports; Node's offline loader needs `.ts`.
-import { supabaseConfigured, supabaseRequest } from "../../lib/supabase.ts";
+import { supabaseConfigured, supabaseRequest, supabaseTablesReady } from "../../lib/supabase.ts";
 // @ts-expect-error Pages bundles extensionless function imports; Node's native strip loader needs `.ts` for the offline test.
 import { supabaseKv } from "../../lib/supabase-kv.ts";
 // @ts-expect-error Cloudflare bundles extensionless function imports; Node's offline loader needs `.ts`.
@@ -941,10 +941,15 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
     // Lo stato di configurazione e' utile al pannello anche quando GitHub non e'
     // configurato: e' il modo per capire *perche'* il publish non parte senza
     // dover leggere i log del deploy.
+    //
+    // `tables` e' un controllo separato da `supabase` perche' "le chiavi ci
+    // sono" e "lo schema c'e'" sono due cose diverse: con le chiavi e senza le
+    // tabelle il pannello diceva pronto e il primo salvataggio falliva.
     return json({
       github: githubConfigured(env),
       deploy_hook: Boolean(env.CLOUDFLARE_DEPLOY_HOOK),
       supabase: supabaseConfigured(env),
+      tables: await supabaseTablesReady(env),
       storage: Boolean((env as Env & { MEDIA?: unknown }).MEDIA),
       branch: env.GITHUB_BRANCH || null,
       repository: env.GITHUB_REPOSITORY || null,

@@ -272,6 +272,18 @@ check(
   panel.redirectBuild.includes("_redirects") && panel.redirectBuild.includes("CLOUDFLARE_REDIRECT_LIMIT") &&
     adminApiSource.includes("content_restore") && adminApiSource.includes("contentHistory"),
 );
+// "Pronto" e' una promessa, e il pannello la manteneva male: con le chiavi
+// Supabase presenti e le tabelle mai migrate diceva `ready` e il primo
+// salvataggio falliva. Le due cose sono ora due controlli distinti, e questo
+// check impedisce di rimetterle insieme in un `Boolean()`.
+const supabaseLibSource = readFileSync(path.join(__dirname, "..", "functions", "lib", "supabase.ts"), "utf8");
+check(
+  "admin settings: Supabase keys and schema are reported separately",
+  adminApiSource.includes("tables: await supabaseTablesReady(env)") &&
+    supabaseLibSource.includes("export async function supabaseTablesReady") &&
+    supabaseLibSource.includes("admin_content") &&
+    panel.workspace.includes("config.tables === false"),
+);
 // L'elenco canonico vive in `lib/cms-types.ts` e l'editor lo legge da li', quindi
 // il check confronta i due elenchi invece di cercare i letterali nel componente:
 // altrimenti il menu potrebbe perdere un kind e il check continuare a passare.

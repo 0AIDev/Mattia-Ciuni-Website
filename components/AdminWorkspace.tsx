@@ -139,7 +139,7 @@ export function AdminWorkspace(props: Props) {
   }
 
   const config = props.config;
-  const offline = config ? [!config.github, !config.deploy_hook, !config.supabase, !config.storage].filter(Boolean).length : 0;
+  const offline = config ? [!config.github, !config.deploy_hook, !config.supabase, config.tables === false, !config.storage].filter(Boolean).length : 0;
 
   return (
     <main id="admin-feedback-page" className="flex h-[100dvh] overflow-hidden bg-admin-bg font-sans text-admin-ink">

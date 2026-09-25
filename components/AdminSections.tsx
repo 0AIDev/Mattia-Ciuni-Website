@@ -28,7 +28,7 @@ export type AdminJob = {
   slug: string; title: string; department: string; location: string; type: string; compensation: string;
   status: "open" | "coming-soon" | "closed"; shortPitch: string; description: string; questions?: CareerQuestion[];
 };
-export type ConfigStatus = { github: boolean; deploy_hook: boolean; supabase: boolean; storage: boolean; branch: string | null; repository: string | null };
+export type ConfigStatus = { github: boolean; deploy_hook: boolean; supabase: boolean; tables: boolean | null; storage: boolean; branch: string | null; repository: string | null };
 
 function number(row: AnalyticsRow | undefined, key: string, fallback = "0") {
   const item = row?.[key];
@@ -314,7 +314,8 @@ export function SettingsView({
   const checks: Array<[string, boolean | null, string]> = [
     ["GitHub publishing", config?.github ?? null, "Commits the published JSON"],
     ["Cloudflare deploy hook", config?.deploy_hook ?? null, "Triggers a build after a publish"],
-    ["Supabase", config?.supabase ?? null, "Drafts, media metadata, analytics"],
+    ["Supabase connection", config?.supabase ?? null, "URL and service role key, server-only"],
+    ["Supabase tables", config?.tables ?? null, "Where a draft is written; without them the save fails"],
     ["R2 media", config?.storage ?? null, "Images, audio and documents"],
   ];
 
@@ -335,6 +336,7 @@ export function SettingsView({
             ))}
             {config?.repository ? <p className="pt-0.5 font-mono text-[11px] text-admin-faint">{config.repository} @ {config.branch}</p> : null}
             {!config?.github ? <Notice tone="bad">Publishing is off: without the GitHub token the panel can save drafts, but nothing reaches the public site.</Notice> : null}
+            {config && config.supabase && config.tables === false ? <Notice tone="bad">The Supabase tables are missing, so no draft can be written. Run the two migrations in supabase/migrations (20260925_000006 and 20260925_000007) in the Supabase SQL editor; they only create tables.</Notice> : null}
           </div>
         </Card>
 

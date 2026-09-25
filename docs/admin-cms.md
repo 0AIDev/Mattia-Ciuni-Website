@@ -86,18 +86,28 @@ limite.
 
 ## Configurazione necessaria
 
-Variabili d'ambiente del progetto Cloudflare Pages:
+Progetto Cloudflare Pages `mattiaciuni`. Variabili d'ambiente in produzione:
 
-| Variabile | Serve per |
-| --- | --- |
-| `GITHUB_TOKEN` | token fine-grained con Contents read/write sul repo |
-| `GITHUB_REPOSITORY` | es. `0AIDev/Mattia-Ciuni-Website` |
-| `GITHUB_BRANCH` | `main` |
-| `CLOUDFLARE_DEPLOY_HOOK` | richiede il rebuild dopo il publish |
-| Binding R2 `MEDIA` | la libreria media |
+| Variabile | Valore | Serve per |
+| --- | --- | --- |
+| `GITHUB_TOKEN` | **da creare** | token fine-grained con Contents read/write sul repo |
+| `GITHUB_REPOSITORY` | `0AIDev/Mattia-Ciuni-Website` | endpoint della Contents API |
+| `GITHUB_BRANCH` | `main` | branch su cui committare |
+| `CLOUDFLARE_DEPLOY_HOOK` | deploy hook `admin-content-publish` (branch `main`) | rebuild dopo il publish |
 
-La sezione **Settings** mostra lo stato di ciascuno: senza `GITHUB_TOKEN` il
-pannello salva draft ma non pubblica, e lo dice invece di fallire al primo click.
+Binding in produzione **e** in preview:
+
+| Tipo | Nome | Valore |
+| --- | --- | --- |
+| R2 | `MEDIA` | bucket `mattiaciuni-media` (privato) |
+| KV | `FEEDBACK`, `RATE_LIMIT` | gia' presenti |
+
+Un deploy hook si crea dalla dashboard (**Settings → Builds & deployments →
+Deploy hooks**) oppure via API, e il suo URL e'
+`https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/<hook_id>`.
+Va creato **con un branch**: senza, il trigger risponde
+`8000032: Unable to find a branch with the provided name` e non parte nessuna
+build. Un `POST` senza corpo e' quello che fa il pannello.
 
 Migration da applicare una volta sola:
 
@@ -107,6 +117,17 @@ Migration da applicare una volta sola:
 
 Entrambe hanno RLS attivo e nessun accesso dal browser: scrive solo la Function,
 con la service role lato server.
+
+**Le due cose sono indipendenti, e il pannello le separa.** `Supabase
+connection` dice che `SUPABASE_URL` e la service role key esistono; `Supabase
+tables` dice che le tabelle rispondono. Con la prima e non la seconda il
+pannello elenca ancora i contenuti (la lista ha un ripiego su KV e sul seed) ma
+**il primo salvataggio fallisce**, perche' `saveContentItem` scrive sulla tabella
+e non ripiega. La sezione Settings lo dichiara invece di dire `ready`.
+
+La sezione **Settings** mostra lo stato di ognuna di queste voci: senza
+`GITHUB_TOKEN` il pannello salva draft ma non pubblica, e lo dice invece di
+fallire al primo click.
 
 ## Limiti, detti chiaramente
 
