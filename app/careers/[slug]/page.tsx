@@ -112,9 +112,26 @@ export default async function CareerDetailPage({ params, locale = "en", basePath
         </div>
 
         <aside className="career-sidebar">
+          {/* La card segue l'articolo (sticky): mentre si scorre, il titolo e i
+              dati chiave del ruolo restano visibili invece di finire in cima alla
+              pagina. Gli stessi quattro dati della griglia in header, in forma
+              compatta, più lo stato delle candidature e il CTA. */}
           <div className="rounded-2xl border border-gray-300 bg-white p-5">
             <p className="font-serif text-2xl leading-tight">{job.title}</p>
             <p className="mt-4 text-sm leading-relaxed text-gray-1000">{job.status === "open" ? (job.applyNote || (locale === "it" ? "Le candidature sono aperte." : locale === "fr" ? "Les candidatures sont ouvertes." : locale === "es" ? "Las candidaturas están abiertas." : locale === "de" ? "Bewerbungen sind offen." : "Applications are open.")) : (locale === "it" ? "Le candidature non sono ancora aperte." : "Applications are not open yet.")}</p>
+            <dl className="mt-5 space-y-3 border-t border-gray-300 pt-4 text-sm">
+              {[
+                [job.department, job.location],
+                [locale === "it" ? "Contratto" : locale === "fr" ? "Contrat" : locale === "es" ? "Contrato" : locale === "de" ? "Vertrag" : "Type", job.type],
+                [locale === "it" ? "Compenso" : locale === "fr" ? "Rémunération" : locale === "es" ? "Compensación" : locale === "de" ? "Vergütung" : "Compensation", job.compensation || "—"],
+                [locale === "it" ? "Disponibilità" : locale === "fr" ? "Disponibilité" : locale === "es" ? "Disponibilidad" : locale === "de" ? "Verfügbarkeit" : "Availability", meta.availability],
+              ].map(([label, value]) => (
+                <div key={label}>
+                  <dt className="text-xs uppercase tracking-[.1em] text-gray-1000">{label}</dt>
+                  <dd className="mt-0.5 break-words leading-snug text-gray-1200">{value}</dd>
+                </div>
+              ))}
+            </dl>
             {job.status === "open" ? <Link href={`${basePath}/${job.slug}/apply/`} className="group mt-6 flex min-h-11 items-center justify-center gap-2 rounded-full bg-gray-1200 px-5 text-center text-sm font-medium text-white transition-opacity hover:opacity-80"><span>{(locale === "en" ? "Start your application" : locale === "it" ? "Inizia la candidatura" : locale === "fr" ? "Commencer la candidature" : locale === "es" ? "Empezar la candidatura" : "Bewerbung starten")}</span><MinimalArrow /></Link> : null}
           </div>
         </aside>
