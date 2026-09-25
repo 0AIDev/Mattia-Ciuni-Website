@@ -178,6 +178,8 @@ const raw: Post[] = [
           "GitHub: [github.com/Rajkoli145](https://github.com/Rajkoli145)",
           "LinkedIn: [linkedin.com/in/raj-koli-626008318](https://www.linkedin.com/in/raj-koli-626008318)",
           "X: [x.com/koli_raj57974](https://x.com/koli_raj57974)",
+          "Website: [rajkoli-27.vercel.app](https://rajkoli-27.vercel.app/)",
+          "Research logs: [rajkoli-27.vercel.app/research](https://rajkoli-27.vercel.app/research)",
         ],
       },
     ],
