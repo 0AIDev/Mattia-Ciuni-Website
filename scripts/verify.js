@@ -1063,6 +1063,32 @@ check(
 );
 if (focusReshapes.length) console.log("     " + focusReshapes.map((r) => r.selector).join(", "));
 
+// Dark mode: i token foreground devono restare bianchi anche quando una pagina
+// usa un componente senza classe esplicita. Il problema pero' e' invisibile
+// nel layout statico: il colore applicato era #D4D4D4/#9C9C9C, quindi il build
+// passava mentre frecce, etichette e modali risultavano grigi. Questo contratto
+// legge il sorgente del tema e controlla anche i due punti che piu' spesso
+// sfuggono: il testo nativo dei button e la classe del pulsante indietro.
+const darkThemeBlock = globalsCss.match(/\.dark\s*\{([\s\S]*?)\n\}/)?.[1] || "";
+const whiteForegroundTokens = ["--tc-paragraph", "--tc-gray-1000", "--tc-gray-1100", "--tc-gray-1200"];
+const historyButtonSource = readFileSync(
+  path.join(__dirname, "..", "components", "HistoryBackButton.tsx"),
+  "utf8",
+);
+check(
+  "theme: dark foreground tokens stay white",
+  whiteForegroundTokens.every((token) => new RegExp(`${token}:\\s*255 255 255`).test(darkThemeBlock)),
+);
+check(
+  "theme: native controls and paragraph copy follow the theme",
+  /body\s*\{[\s\S]*?color:\s*rgb\(var\(--tc-gray-1200\)\)/.test(globalsCss) &&
+    /\.text-text-paragraph\s*\{\s*color:\s*rgb\(var\(--tc-paragraph\)\)/.test(globalsCss),
+);
+check(
+  "theme: back button keeps a theme-aware white arrow",
+  historyButtonSource.includes("text-gray-1200") && historyButtonSource.includes('stroke="currentColor"'),
+);
+
 // Collegamenti interni (blog): testo → note/altri articoli, sezioni, correlati
 // I link interni hanno la barra finale, come la canonical: con
 // `trailingSlash: true` li scrive Next, ed è la forma che Pages serve senza

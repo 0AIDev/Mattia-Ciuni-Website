@@ -28,7 +28,7 @@ export function HistoryBackButton({
       type="button"
       onClick={goBack}
       aria-label={fallbackLabel}
-      className={`flex h-9 w-9 items-center justify-center rounded-full bg-gray-300 transition-colors hover:bg-gray-400 ${className}`}
+      className={`flex h-9 w-9 items-center justify-center rounded-full bg-gray-300 text-gray-1200 transition-colors hover:bg-gray-400 ${className}`}
     >
       <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4"><path d="M13 4 7 10l6 6" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" /></svg>
     </button>

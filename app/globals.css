@@ -38,15 +38,15 @@
   --tc-background: 10 10 10;         /* #0A0A0A */
   --tc-preview-bg: 22 22 22;         /* #161616 */
   --tc-preview-border: 60 60 60;     /* #3C3C3C */
-  --tc-paragraph: 212 212 212;       /* #D4D4D4 */
+  --tc-paragraph: 255 255 255;       /* testo leggibile in dark */
   --tc-gray-50: 18 18 18;            /* #121212 */
   --tc-gray-100: 26 26 26;           /* #1A1A1A */
   --tc-gray-200: 34 34 34;           /* #222222 */
   --tc-gray-300: 42 42 42;           /* #2A2A2A */
   --tc-gray-400: 72 72 72;           /* #484848 */
-  --tc-gray-1000: 156 156 156;       /* #9C9C9C */
-  --tc-gray-1100: 196 196 196;       /* #C4C4C4 */
-  --tc-gray-1200: 244 244 244;       /* #F4F4F4 */
+  --tc-gray-1000: 255 255 255;       /* testo secondario: bianco in dark */
+  --tc-gray-1100: 255 255 255;       /* etichette e testi di supporto */
+  --tc-gray-1200: 255 255 255;       /* titoli e testo principale */
   --tc-shadow-strength: 0;
   --tc-signature: #f4f4f4;
   color-scheme: dark;
@@ -123,6 +123,10 @@ body {
   background: rgb(var(--tc-background));
 
   flex-direction: column;
+  /* In dark il testo senza classe esplicita, incluse le icone che usano
+     currentColor, deve essere bianco. Senza questo i button nativi (freccia
+     indietro, close, toggle dei menu) restano neri anche su fondo scuro. */
+  color: rgb(var(--tc-gray-1200));
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -214,7 +218,7 @@ a:hover {
 }
 
 .text-text-paragraph {
-  color: #262626;
+  color: rgb(var(--tc-paragraph));
 }
 
 .article-underline {
