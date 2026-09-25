@@ -65,6 +65,16 @@ body {
   text-rendering: optimizeLegibility;
 }
 
+/* Il serif ai corpi piccoli non regge l'antialiasing sottile: `antialiased` sul
+   body serve al sans (Inter) per non venire grasso, ma su Instrument Serif a
+   16-20px mangia i tratti e i titoli sembrano stampati con la penna secca. Il
+   serif torna allo smoothing di sistema (`auto`, subpixel) e i titoli di sezione
+   hanno una loro dimensione: il preflight Tailwind azzera gli h2 a `inherit`,
+   quindi senza una classe esplicita un h2 serif arriva a 16px, come il body. */
+.font-serif {
+  -webkit-font-smoothing: auto;
+}
+
 /* Keep the deferred newsletter visually below the page content even while its
    client boundary streams in. This also protects older cached shells. */
 body > main,

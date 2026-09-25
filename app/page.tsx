@@ -204,7 +204,7 @@ export default function Home() {
       </div>
 
       <section aria-labelledby="about-mattia-ciuni" className="mb-16 sm:mb-24">
-        <h2 id="about-mattia-ciuni" className="mb-4 font-serif font-medium">Who is Mattia Ciuni?</h2>
+        <h2 id="about-mattia-ciuni" className="mb-4 font-serif text-3xl font-medium">Who is Mattia Ciuni?</h2>
         <p className="m-0 text-text-paragraph">
           Mattia Ciuni is an Italian founder and the founder and CEO of Payle, a company building the money layer for AI agents. He works on the rules, authorization and receipts that let software spend money safely on behalf of people.
         </p>
@@ -214,7 +214,7 @@ export default function Home() {
       </section>
 
       <section aria-labelledby="principles" className="mb-16 sm:mb-24">
-        <h2 id="principles" className="mb-4 font-serif font-medium">Principles</h2>
+        <h2 id="principles" className="mb-4 font-serif text-3xl font-medium">Principles</h2>
         <ul className="m-0 list-disc space-y-5 pl-5">
           <li>
             <p className="m-0 font-serif italic">Build the hard part first.</p>
@@ -250,7 +250,7 @@ export default function Home() {
       <NowSection />
 
       <section aria-labelledby="projects" className="mb-16 sm:mb-24">
-        <h2 id="projects" className="mb-2 font-serif font-medium">Projects</h2>
+        <h2 id="projects" className="mb-2 font-serif text-3xl font-medium">Projects</h2>
         <ul className="m-0 list-none divide-y divide-gray-300 p-0">
           <li>
             <a
@@ -279,7 +279,7 @@ export default function Home() {
       </section>
 
       <section aria-labelledby="thoughts" className="mb-16 sm:mb-24">
-        <h2 id="thoughts" className="mb-2 font-serif font-medium">Thoughts</h2>
+        <h2 id="thoughts" className="mb-2 font-serif text-3xl font-medium">Thoughts</h2>
         <ul className="m-0 list-none divide-y divide-gray-300 p-0">
           {posts.map((p) => (
             <li key={p.slug}>
@@ -300,7 +300,7 @@ export default function Home() {
 
       <section aria-labelledby="notes" className="mb-16 sm:mb-24">
         <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <h2 id="notes" className="font-serif font-medium">Notes</h2>
+          <h2 id="notes" className="font-serif text-3xl font-medium">Notes</h2>
           <Link href="/notes/" className="text-sm text-gray-1000 article-underline">All notes</Link>
         </div>
         <p className="mb-6 max-w-[600px] text-text-paragraph">
@@ -315,7 +315,7 @@ export default function Home() {
 
       <section aria-labelledby="feedback" className="mb-16 sm:mb-24">
         <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <h2 id="feedback" className="font-serif font-medium">Feedback</h2>
+          <h2 id="feedback" className="font-serif text-3xl font-medium">Feedback</h2>
           <Link href="/feedback/" className="text-sm text-gray-1000 article-underline">All feedback</Link>
         </div>
         <p className="mb-6 max-w-[600px] text-text-paragraph">
@@ -348,7 +348,7 @@ export default function Home() {
 
       <section aria-labelledby="field-notes" className="mb-16 sm:mb-24">
         <div className="mb-2 flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-          <h2 id="field-notes" className="font-serif font-medium">Field notes</h2>
+          <h2 id="field-notes" className="font-serif text-3xl font-medium">Field notes</h2>
           <span className="text-sm text-gray-1000">in progress</span>
         </div>
         <p className="mb-6 max-w-[600px] text-text-paragraph">
