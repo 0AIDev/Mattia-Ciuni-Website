@@ -1,4 +1,6 @@
 // @ts-expect-error Pages bundles extensionless TS imports; Node's offline loader needs `.ts`.
+import { confirmationForSlug } from "../../../lib/careers/confirmation.ts";
+// @ts-expect-error Pages bundles extensionless TS imports; Node's offline loader needs `.ts`.
 import { getJob } from "../../../lib/careers/jobs.ts";
 // @ts-expect-error Pages bundles extensionless TS imports; Node's offline loader needs `.ts`.
 import { validateCareerApplication, type CareerApplicationInput } from "../../../lib/careers/validation.ts";
@@ -56,11 +58,9 @@ export const onRequestPost = async ({ request, env }: Context): Promise<Response
   const validation = validateCareerApplication(body);
   if (!validation.ok) return json({ code: "validation_error", fields: validation.fields }, 422);
   const { value } = validation;
-  const staticJob = getJob(value.job_slug);
-  const configured = await configuredJob(env, value.job_slug);
+  const staticJob = getJob(value.job_slug);  const configured = await configuredJob(env, value.job_slug);
   const job = configured ? { ...staticJob, ...configured } : staticJob;
-  if (!job || job.status !== "open") return json({ code: "job_unavailable" }, 422);
-  const customErrors: Record<string, string> = {};
+  if (!job || job.status !== "open") return json({ code: "job_unavailable" }, 422);  const customErrors: Record<string, string> = {};
   for (const question of (job.questions || []) as Array<{ id: string; type: "text" | "textarea" | "url"; required: boolean; minimum: number }>) {
     const answer = value.custom_answers[question.id] || "";
     if ((question.required && !answer) || answer.length < question.minimum) customErrors[`custom_${question.id}`] = `This answer must contain at least ${question.minimum} characters.`;
@@ -105,7 +105,12 @@ export const onRequestPost = async ({ request, env }: Context): Promise<Response
     const safeName = escapeHtml(value.full_name);
     const title = String(job.title || "the role");
     const safeTitle = escapeHtml(title);
-    const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json", "Idempotency-Key": `careers-verification:${tokenHash}` }, body: JSON.stringify({ from, to: [value.email], reply_to: "ceo@usepayle.com", subject: "Verify your application - Build with Payle", html: `<p>Hey ${safeName},</p><p>Thanks for applying for <strong>${safeTitle}</strong>.</p><p>One click to confirm. After that, I read everything personally:</p><p><a href="${verifyUrl}">Verify application</a></p><p>If it wasn't you, ignore this. Nothing gets published, nothing gets shared.</p><p>Mattia<br/>ceo@usepayle.com</p>`, text: `Hey ${value.full_name},\n\nThanks for applying for ${title}.\n\nVerify your application: ${verifyUrl}\n\nIf it wasn't you, ignore this.\n\nMattia\nceo@usepayle.com` }) });
+    // Email di verifica per ruolo: soggetto con il titolo del ruolo e una riga
+    // che parla del ruolo, non di una candidatura generica. La copia viene da
+    // confirmationForSlug (lib/careers/confirmation.ts), la stessa mappa della
+    // pagina di conferma: pagina ed email non possono divergere. Mai em-dashes.
+    const roleLine = escapeHtml(confirmationForSlug(value.job_slug).emailLine);
+    const response = await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json", "Idempotency-Key": `careers-verification:${tokenHash}` }, body: JSON.stringify({ from, to: [value.email], reply_to: "ceo@usepayle.com", subject: `Verify your application - ${title}`, html: `<p>Hey ${safeName},</p><p>Thanks for applying for <strong>${safeTitle}</strong>.</p><p>${roleLine}</p><p>One click to confirm. After that, I read everything personally:</p><p><a href="${verifyUrl}">Verify application</a></p><p>If it wasn't you, ignore this. Nothing gets published, nothing gets shared.</p><p>Mattia<br/>ceo@usepayle.com</p>`, text: `Hey ${value.full_name},\n\nThanks for applying for ${title}.\n\n${confirmationForSlug(value.job_slug).emailLine}\n\nVerify your application: ${verifyUrl}\n\nIf it wasn't you, ignore this.\n\nMattia\nceo@usepayle.com` }) });
     if (!response.ok) { if (applicationId) await supabaseRequest(env, `careers_applications?id=eq.${encodeURIComponent(applicationId)}`, { method: "DELETE" }); return json({ code: "provider_error" }, 502); }
     const notifyTo = env.CAREERS_NOTIFY_TO || "ceo@usepayle.com";
     await fetch("https://api.resend.com/emails", { method: "POST", headers: { Authorization: `Bearer ${env.RESEND_API_KEY}`, "Content-Type": "application/json", "Idempotency-Key": `careers-notification:${applicationId || tokenHash}` }, body: JSON.stringify({ from, to: [notifyTo], reply_to: value.email, subject: `New application - ${title} - ${value.full_name}`, text: `New application\n\nJob: ${value.job_slug}\nName: ${value.full_name}\nEmail: ${value.email}\nCountry/timezone: ${value.country_timezone}\nSource: ${value.source}\nArtifact: ${value.artifact_link}\n\nArtifact description (first 200 characters):\n${value.artifact_description.slice(0, 200)}\n\nApplication ID: ${applicationId || "unavailable"}` }) });

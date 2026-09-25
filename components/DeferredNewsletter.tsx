@@ -17,6 +17,9 @@ export function DeferredNewsletter() {
   // /link ha la sua, in forma di scheda dentro la lista dei link: qui sotto
   // sarebbe un secondo form identico, staccato dal resto della pagina.
   if (pathname?.startsWith("/link")) return null;
+  // La conferma candidatura è una pagina solo di conferma: la newsletter la
+  // distrae e allunga una pagina che deve finire in un gesto.
+  if (pathname?.startsWith("/careers/confirmed")) return null;
   // Localized routes own their translated page content; do not append the
   // English global newsletter form beneath them.
   if (/^\/(it|fr|es|de)(\/|$)/.test(pathname || "")) return null;
