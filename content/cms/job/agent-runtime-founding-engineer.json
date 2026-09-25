@@ -1,0 +1,57 @@
+{
+  "slug": "agent-runtime-founding-engineer",
+  "title": "Founding Engineer, Agent Runtime",
+  "department": "Engineering",
+  "location": "Remote, flexible time zones",
+  "type": "Full-time (contractor now)",
+  "compensation": "€2,500-3,000/month + 0.75-1% equity",
+  "status": "open",
+  "shortPitch": "Build the execution layer that lets AI agents act without losing the rules that keep money safe.",
+  "description": "Build the execution layer that lets AI agents act without losing the rules that keep money safe.",
+  "questions": [],
+  "content": [
+    {
+      "type": "p",
+      "text": "Payle's authorization engine is live: agents ask for permission, a deterministic policy engine decides, every transaction lands in a hash-chained ledger that anyone can verify. The money path is audited, money-tested under concurrency, and finished."
+    },
+    {
+      "type": "p",
+      "text": "What's missing is the layer agents run on. You would own it end to end: the agent runtime that searches real retailers, captures evidence, compares offers, attempts purchases through the authorization gate, and verifies outcomes. Your work is the reason the gate exists: without the runtime, the engine is a vault with no hands."
+    },
+    {
+      "type": "list",
+      "items": [
+        "The Go authorization core: policy DSL, idempotent under concurrent agent retries (proven: 100 parallel identical requests, exactly one decision), hash-chained append-only ledger, kill switch, reconciliation. Externally audited; findings fixed with regression tests in CI.",
+        "A live demo: our agent buys real domains through the gate at mattiaciuni.pages.dev/agent: real search, real policy decline, real receipts.",
+        "The OpenAPI contract between engine and runtime: your layer consumes it, and helps us evolve it."
+      ]
+    },
+    {
+      "type": "list",
+      "items": [
+        "The full agent runtime: planning loops with frontier LLMs (tool calling, structured outputs), search connectors across retailers (Apple, Amazon, Back Market for the launch campaign; broader catalog over time), a browser pipeline for evidence capture (screenshots, extraction hashes, freshness checks)",
+        "Deterministic comparison and ranking: same input, same ranking, every time: with written explanations for every recommendation. The LLM plans; it never ranks silently",
+        "The MacBook Gate: our launch campaign where the agent tries to buy a MacBook 2,000 times under policy, declines every time, and buys one real one for the draw winner. Your runtime powers it",
+        "Outcome verification: the charge is not the task. You build the checks that prove the domain registered, the order shipped, the subscription cancelled"
+      ]
+    },
+    {
+      "type": "list",
+      "items": [
+        "TypeScript/Node strong: the runtime lives in TypeScript. Go familiarity is a plus (the engine you'll talk to is Go)",
+        "LLM orchestration in production: tool calling, structured outputs, planning loops: and you know where agents break: retries that double-charge, silent prompt injection, workflows that look fine in demo and die at scale",
+        "Web automation real experience: Playwright, anti-bot realities, evidence capture without faking anything",
+        "You understand money: idempotency, the difference between a timeout and a decline, why \"it worked in the demo\" is not a deployment standard",
+        "Written communication: the team is distributed and writes everything down. You explain decisions in text, cleanly"
+      ]
+    },
+    {
+      "type": "p",
+      "text": "€2,500-3,000/month + 0.75-1% equity (4-year vesting, 1-year cliff). Contractor now, full-time at YC acceptance, relocation possible with sponsorship."
+    },
+    {
+      "type": "p",
+      "text": "Your first artifact: a small agent with a hard boundary. Build an agent that does useful work while keeping authorization deterministic and inspectable. Deliverable: a working repository, a short decision log, and tests that show where the boundary holds. We pay for your time."
+    }
+  ]
+}
