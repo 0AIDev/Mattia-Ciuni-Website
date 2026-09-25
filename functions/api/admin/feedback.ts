@@ -524,6 +524,24 @@ function githubConfigured(env: Env): boolean {
   return Boolean(env.GITHUB_TOKEN && env.GITHUB_REPOSITORY && env.GITHUB_BRANCH);
 }
 
+/**
+ * Gli header di ogni chiamata alla Contents API.
+ *
+ * `User-Agent` non e' decorativo: senza, GitHub risponde
+ * **403 "Request forbidden by administrative rules"**, con un messaggio che
+ * parla di regole amministrative e sembra un problema di permessi del token.
+ * Il runtime delle Workers non ne manda uno suo, quindi va dichiarato qui, una
+ * volta, invece di scoprirlo al primo publish fallito.
+ */
+function githubHeaders(env: Env): Record<string, string> {
+  return {
+    Accept: "application/vnd.github+json",
+    Authorization: `Bearer ${env.GITHUB_TOKEN}`,
+    "X-GitHub-Api-Version": "2022-11-28",
+    "User-Agent": "mattia-ciuni-admin (mattiaciuni.pages.dev)",
+  };
+}
+
 function base64Utf8(value: string): string {
   const bytes = new TextEncoder().encode(value);
   let binary = "";
@@ -537,7 +555,7 @@ async function publishContentToGit(env: Env, item: AdminContentItem): Promise<{ 
   if (!githubConfigured(env)) throw new Error("github_not_configured");
   const path = `content/cms/${item.kind}/${item.slug}.json`;
   const endpoint = `https://api.github.com/repos/${env.GITHUB_REPOSITORY}/contents/${path}`;
-  const headers = { Accept: "application/vnd.github+json", Authorization: `Bearer ${env.GITHUB_TOKEN}`, "X-GitHub-Api-Version": "2022-11-28" };
+  const headers = githubHeaders(env);
   const current = await fetch(`${endpoint}?ref=${encodeURIComponent(env.GITHUB_BRANCH!)}`, { headers });
   let sha: string | undefined;
   if (current.ok) {
@@ -572,7 +590,7 @@ async function triggerDeploy(env: Env): Promise<boolean> {
  */
 async function contentHistory(env: Env, limit: number): Promise<Array<{ sha: string; message: string; date: string; url: string }>> {
   if (!githubConfigured(env)) return [];
-  const headers = { Accept: "application/vnd.github+json", Authorization: `Bearer ${env.GITHUB_TOKEN}`, "X-GitHub-Api-Version": "2022-11-28" };
+  const headers = githubHeaders(env);
   const url = `https://api.github.com/repos/${env.GITHUB_REPOSITORY}/commits?sha=${encodeURIComponent(env.GITHUB_BRANCH!)}&path=content/cms&per_page=${limit}`;
   const response = await fetch(url, { headers });
   if (!response.ok) return [];
@@ -593,7 +611,7 @@ async function contentHistory(env: Env, limit: number): Promise<Array<{ sha: str
 async function restoreContentFromGit(env: Env, kind: CmsKind, slug: string, sha: string): Promise<{ sha?: string }> {
   if (!githubConfigured(env)) throw new Error("github_not_configured");
   const path = `content/cms/${kind}/${slug}.json`;
-  const headers = { Accept: "application/vnd.github+json", Authorization: `Bearer ${env.GITHUB_TOKEN}`, "X-GitHub-Api-Version": "2022-11-28" };
+  const headers = githubHeaders(env);
   const current = await fetch(`https://api.github.com/repos/${env.GITHUB_REPOSITORY}/contents/${path}?ref=${encodeURIComponent(env.GITHUB_BRANCH!)}`, { headers });
   if (!current.ok) throw new Error(`github_read_${current.status}`);
   const previous = await fetch(`https://api.github.com/repos/${env.GITHUB_REPOSITORY}/contents/${path}?ref=${encodeURIComponent(sha)}`, { headers });

@@ -291,6 +291,19 @@ check(
 // pubblicazione. Il codice `content_table_missing` e' l'altra meta': dire
 // *cosa* fare quando manca la tabella, invece di un errore generico.
 const adminPanelSource = readFileSync(path.join(__dirname, "..", "app", "admin", "feedback", "page.tsx"), "utf8");
+// GitHub risponde 403 "Request forbidden by administrative rules" a una
+// richiesta senza `User-Agent`, e il messaggio sembra un problema di permessi
+// del token: e' il tipo di errore che si scopre al primo publish, quando il
+// token e' appena stato creato e non si sa cosa incolpare. Le tre chiamate alla
+// Contents API passano da un helper solo, e questo check lo tiene cosi': un
+// secondo `Accept: application/vnd.github+json` scritto a mano significa una
+// chiamata che si e' dimenticata l'header.
+check(
+  "admin CMS: every GitHub call goes through one header set, User-Agent included",
+  /function githubHeaders\(env: Env\)/.test(adminApiSource) &&
+    adminApiSource.includes('"User-Agent"') &&
+    (adminApiSource.match(/Accept: "application\/vnd\.github\+json"/g) || []).length === 1,
+);
 check(
   "admin CMS: a committed publish still deploys, and says what was missing",
   /outcome: "publish_committed_not_stored"/.test(adminApiSource) &&
