@@ -356,12 +356,12 @@ export default function Home() {
         </p>
         <div className="grid gap-4 sm:grid-cols-2">
           <Link href="/voice-notes/" className="group border-t border-gray-300 pt-4">
-            <span className="font-serif text-2xl">Voice Notes</span>
+            <span className="font-serif text-3xl font-medium">Voice Notes</span>
             <p className="mt-2 text-sm leading-relaxed text-gray-1000">Unedited thoughts, spoken before they become essays.</p>
             <span className="mt-4 inline-flex items-center gap-2 text-sm text-gray-1000">Listen when ready <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></span>
           </Link>
           <Link href="/videos/" className="group border-t border-gray-300 pt-4">
-            <span className="font-serif text-2xl">Videos</span>
+            <span className="font-serif text-3xl font-medium">Videos</span>
             <p className="mt-2 text-sm leading-relaxed text-gray-1000">A visual log of building, thinking and changing my mind.</p>
             <span className="mt-4 inline-flex items-center gap-2 text-sm text-gray-1000">Watch when ready <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" /></span>
           </Link>

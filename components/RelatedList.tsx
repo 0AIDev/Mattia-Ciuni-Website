@@ -22,7 +22,7 @@ export function RelatedList({
   if (!items.length) return null;
   return (
     <section aria-labelledby={id} className={className}>
-      <h2 id={id} className="mb-2 font-medium">
+      <h2 id={id} className="mb-2 font-serif text-3xl font-medium">
         {heading}
       </h2>
       <ul className="m-0 list-none divide-y divide-gray-300 p-0">

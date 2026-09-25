@@ -19,7 +19,7 @@ export default function NowSection() {
 
   return (
     <section aria-labelledby="now" className="mb-16 sm:mb-24">
-      <h2 id="now" className="mb-2 font-serif font-medium">Now</h2>
+      <h2 id="now" className="mb-2 font-serif text-3xl font-medium">Now</h2>
       <p className="m-0 mb-1 text-text-paragraph">
         Building the{" "}
         <a

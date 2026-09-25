@@ -77,7 +77,7 @@ function RenderBlock({ block }: { block: Block }) {
     return (
       <h2
         id={anchor}
-        className="group mt-20 mb-5 flex min-w-0 items-center gap-3 scroll-mt-20"
+        className="group mt-20 mb-5 flex min-w-0 items-center gap-3 scroll-mt-20 font-serif text-xl font-medium leading-snug text-gray-1200"
       >
         <SectionCopyLink anchor={anchor} label={block.text} />
         <span className="min-w-0 break-words font-serif leading-tight">{block.text}</span>

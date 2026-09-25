@@ -13,6 +13,7 @@
     "dev:pages": "node scripts/dev-pages.mjs",
     "preview": "npm run dev:pages",
     "predev": "node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs && node scripts/gen-rag.mjs",
+    "prebuild": "node scripts/check-heading-sizes.mjs",
     "build": "next build",
     "postbuild": "node scripts/fix-localized-html-lang.mjs && node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs && node scripts/gen-rag.mjs && node scripts/submit-google-sitemap.mjs && node scripts/ping-indexnow.mjs",
     "start": "next start",
@@ -30,7 +31,8 @@
     "test:macbook-gate": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-macbook-gate.mjs",
     "test:macbook-search": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-macbook-search.mjs",
     "test:careers": "tsx scripts/test-careers.mjs",
-    "test:job-feeds": "tsx scripts/test-job-feeds.mjs"
+    "test:job-feeds": "tsx scripts/test-job-feeds.mjs",
+    "test:visual": "playwright test"
   },
   "dependencies": {
     "@animateicons/react": "^0.5.0",
@@ -47,6 +49,7 @@
     "world-atlas": "^2.0.2"
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "@react-email/components": "^1.0.12",
     "@react-email/render": "^2.1.0",
     "@types/d3-geo": "^3.1.1",
