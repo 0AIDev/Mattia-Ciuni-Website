@@ -284,6 +284,21 @@ check(
     supabaseLibSource.includes("admin_content") &&
     panel.workspace.includes("config.tables === false"),
 );
+// Un commit senza deploy e' la peggiore delle due meta': il file e' su Git, la
+// pagina non cambia, e il pannello dice "publish failed". Lo stato del pannello
+// si salva quindi dentro un `try` suo, il deploy parte comunque, e il flag
+// `stored` dice cosa non e' riuscito senza far sembrare fallita la
+// pubblicazione. Il codice `content_table_missing` e' l'altra meta': dire
+// *cosa* fare quando manca la tabella, invece di un errore generico.
+const adminPanelSource = readFileSync(path.join(__dirname, "..", "app", "admin", "feedback", "page.tsx"), "utf8");
+check(
+  "admin CMS: a committed publish still deploys, and says what was missing",
+  /outcome: "publish_committed_not_stored"/.test(adminApiSource) &&
+    /content: saved, stored/.test(adminApiSource) &&
+    adminApiSource.includes('code: "content_table_missing"') &&
+    adminPanelSource.includes("content_table_missing") &&
+    adminPanelSource.includes("data.stored === false"),
+);
 // L'elenco canonico vive in `lib/cms-types.ts` e l'editor lo legge da li', quindi
 // il check confronta i due elenchi invece di cercare i letterali nel componente:
 // altrimenti il menu potrebbe perdere un kind e il check continuare a passare.

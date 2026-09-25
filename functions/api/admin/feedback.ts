@@ -890,7 +890,12 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
       const saved = await saveContentItem(env, withData);
       return json({ ok: true, content: saved });
     } catch (caught) {
-      console.log(JSON.stringify({ event: "admin_content", outcome: "save_failed", code: caught instanceof Error ? caught.message : "unknown" }));
+      const code = caught instanceof Error ? caught.message : "unknown";
+      console.log(JSON.stringify({ event: "admin_content", outcome: "save_failed", code }));
+      // 404 da PostgREST significa una cosa sola: la tabella non esiste. E'
+      // l'unico caso in cui il pannello puo' dire *cosa* fare, perche' l'azione
+      // e' una migration, non un altro clic.
+      if (code === "content_save_404") return json({ code: "content_table_missing" }, 503);
       return json({ code: "provider_error" }, 502);
     }
   }
@@ -904,9 +909,21 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
     const published: AdminContentItem = { ...existing, data, status: "published", published_at: new Date().toISOString() };
     try {
       const commit = await publishContentToGit(env, published);
-      const saved = await saveContentItem(env, published);
+      // Il commit e' fatto, e da qui in poi un errore non deve piu' far sembrare
+      // fallita la pubblicazione ne' fermare il deploy. Il file su Git e' quello
+      // che rende la pagina vera; la riga in Supabase e' lo stato del pannello,
+      // e se non si scrive lo si dice (`stored: false`) invece di lasciare
+      // l'utente con "publish failed" e un commit che nessuno ha costruito.
+      let saved = published;
+      let stored = true;
+      try {
+        saved = await saveContentItem(env, published);
+      } catch (caught) {
+        stored = false;
+        console.log(JSON.stringify({ event: "admin_content", outcome: "publish_committed_not_stored", code: caught instanceof Error ? caught.message : "unknown" }));
+      }
       const deployTriggered = await triggerDeploy(env);
-      return json({ ok: true, content: saved, commit_sha: commit.sha || null, deploy_triggered: deployTriggered });
+      return json({ ok: true, content: saved, stored, commit_sha: commit.sha || null, deploy_triggered: deployTriggered });
     } catch (caught) {
       console.log(JSON.stringify({ event: "admin_content", outcome: "publish_failed", code: caught instanceof Error ? caught.message : "unknown" }));
       return json({ code: "publish_failed" }, 502);

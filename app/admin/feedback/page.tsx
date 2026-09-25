@@ -515,7 +515,10 @@ export default function FeedbackAdminPage() {
     try {
       const response = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "content_save", content: item }) });
       const data = (await response.json().catch(() => ({}))) as { content?: AdminContentItem; code?: string };
-      if (!response.ok || !data.content) throw new Error(data.code === "github_not_configured" ? "GitHub publishing is not configured." : "The CMS draft could not be saved.");
+      if (!response.ok || !data.content) {
+        if (data.code === "content_table_missing") throw new Error("The Supabase tables are missing, so nothing can be saved. Run the two migrations in supabase/migrations, then reload this page.");
+        throw new Error(data.code === "github_not_configured" ? "GitHub publishing is not configured." : "The CMS draft could not be saved.");
+      }
       setContent((current) => [data.content!, ...current.filter((entry) => !(entry.kind === data.content!.kind && entry.slug === data.content!.slug))]);
       return data.content;
     } catch (caught) {
@@ -548,9 +551,15 @@ export default function FeedbackAdminPage() {
     setError("");
     try {
       const response = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "content_publish", id }) });
-      const data = (await response.json().catch(() => ({}))) as { content?: AdminContentItem; code?: string; deploy_triggered?: boolean };
+      const data = (await response.json().catch(() => ({}))) as { content?: AdminContentItem; code?: string; deploy_triggered?: boolean; stored?: boolean };
       if (!response.ok || !data.content) throw new Error(data.code === "github_not_configured" ? "GitHub publishing is not configured." : "The content could not be published.");
       setContent((current) => [data.content!, ...current.filter((entry) => !(entry.kind === data.content!.kind && entry.slug === data.content!.slug))]);
+      // Pubblicato e committato, ma la riga di stato non si e' scritta: non e' un
+      // fallimento, ed e' comunque qualcosa da sapere subito, perche' il prossimo
+      // salvataggio su quell'item partira' dalla versione su Git e non da questa.
+      if (data.stored === false) {
+        setError("Published: the commit is on Git and the build has been requested. The draft row could not be written (Supabase tables missing), so the library still shows the previous version.");
+      }
       return true;
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "The content could not be published.");
