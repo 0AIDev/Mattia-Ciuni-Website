@@ -7,7 +7,7 @@ import { supabaseKv } from "../../lib/supabase-kv.ts";
 // @ts-expect-error Cloudflare bundles extensionless function imports; Node's offline loader needs `.ts`.
 import { jobs as jobsRegistry } from "../../../lib/careers/jobs.ts";
 // @ts-expect-error Cloudflare bundles extensionless function imports; Node's offline loader needs `.ts`.
-import { contentDataWithBody, markdownToBlocks } from "../../../lib/cms-format.ts";
+import { blocksToMarkdown, contentDataWithBody, markdownToBlocks, parsePublishedJson } from "../../../lib/cms-format.ts";
 // @ts-expect-error Cloudflare bundles extensionless function imports; Node's offline loader needs `.ts`.
 import { isCmsKind, isCmsStatus, type AdminContentItem, type CmsContentData, type CmsKind } from "../../../lib/cms-types.ts";
 // @ts-expect-error Pages bundles extensionless function imports; Node's offline loader needs `.ts`.
@@ -135,7 +135,26 @@ const LOGIN_WINDOW_SECONDS = 600;
 const LOGIN_MAX_ATTEMPTS = 15;
 const TOTP_RATE_MAX_ATTEMPTS = 8;
 const LOGIN_RATE_VERSION = "v2"; // resetta i contatori precedenti dopo il cambio di policy
+// Due tetti, non uno.
+//
+// `MAX_BODY_BYTES` vale per tutto cio' che non e' una scrittura di contenuto:
+// login, conferma, moderazione, NDA creation. `MAX_CONTENT_BODY_BYTES` vale per
+// un item CMS, ed esiste perche' il validatore accetta 200.000 caratteri di
+// markdown: con un tetto solo da 8KB, tre dei diciassette contenuti gia'
+// pubblicati non si potevano salvare, e il pannello diceva "The CMS draft could
+// not be saved" su un articolo lungo senza dire perche'.
+//
+// L'ordine dei controlli conta. Il tetto grande si applica alla `Content-Length`
+// dichiarata, prima di bufferizzare, perche' l'azione sta *dentro* il corpo e
+// non si conosce finche' il corpo non e' letto. Il tetto piccolo si riapplica
+// dopo il parsing, sull'azione reale, e vale anche per una lunghezza dichiarata
+// che mente (una login con `Content-Length: 20000` risponde 413, non 401).
 const MAX_BODY_BYTES = 8192;
+const MAX_CONTENT_BODY_BYTES = 1024 * 1024;
+// Le uniche azioni che trasportano contenuto: `content_save` porta un item (un
+// articolo intero), `jobs_save` porta l'intero registry, che oggi pesa 7.7KB e
+// cresce con ogni offerta. Tutto il resto resta sotto il tetto piccolo.
+const CONTENT_WRITE_ACTIONS = new Set(["content_save", "jobs_save"]);
 const MAX_INDEX = 500;
 // `__Host-`: il cookie vale solo per questo host, mai per un sottodominio, e solo
 // su HTTPS con Path=/ — così nessuno può "lanciarlo" da un dominio figlio.
@@ -551,6 +570,54 @@ function base64Utf8(value: string): string {
   return btoa(binary);
 }
 
+function decodeBase64Utf8(value: string): string {
+  const binary = atob(value.replace(/\s/g, ""));
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index += 1) bytes[index] = binary.charCodeAt(index);
+  return new TextDecoder().decode(bytes);
+}
+
+/**
+ * Il file come sta su Git ora.
+ *
+ * Serve al pulsante "revert": il draft locale si butta e si riparte da cio' che
+ * il sito sta pubblicando davvero. E' una lettura, non un rollback: non crea un
+ * commit e non chiede un deploy, perche' la versione su Git e' gia' quella
+ * online. Il rollback a un commit precedente e' `content_restore`, che invece
+ * scrive e deploya: due operazioni diverse che sembravano una sola, ed e' il
+ * motivo per cui il pulsante mandava uno sha inventato.
+ */
+async function readPublishedFromGit(env: Env, kind: CmsKind, slug: string): Promise<AdminContentItem | null> {
+  const path = `content/cms/${kind}/${slug}.json`;
+  const headers = githubHeaders(env);
+  const response = await fetch(`https://api.github.com/repos/${env.GITHUB_REPOSITORY}/contents/${path}?ref=${encodeURIComponent(env.GITHUB_BRANCH!)}`, { headers });
+  if (response.status === 404) return null;
+  if (!response.ok) throw new Error(`github_read_${response.status}`);
+  const file = await response.json() as { content?: string; encoding?: string };
+  if (!file.content || file.encoding !== "base64") throw new Error("github_read_payload");
+  let data: CmsContentData;
+  try {
+    data = parsePublishedJson<CmsContentData>(decodeBase64Utf8(file.content));
+  } catch {
+    throw new Error("github_read_payload");
+  }
+  const { content, ...rest } = data;
+  return {
+    id: "",
+    kind,
+    slug,
+    status: "published",
+    title: String(rest.title || slug),
+    description: String(rest.description || ""),
+    // Il file su Git tiene i blocchi, non il markdown: il pannello edita
+    // markdown, quindi la conversione si fa qui, con lo stesso parser del
+    // publish, invece di mostrare al pannello una struttura che non sa editare.
+    body_markdown: blocksToMarkdown(content),
+    data: rest,
+    version: 1,
+  };
+}
+
 async function publishContentToGit(env: Env, item: AdminContentItem): Promise<{ sha?: string }> {
   if (!githubConfigured(env)) throw new Error("github_not_configured");
   const path = `content/cms/${item.kind}/${item.slug}.json`;
@@ -566,7 +633,11 @@ async function publishContentToGit(env: Env, item: AdminContentItem): Promise<{ 
   const response = await fetch(endpoint, {
     method: "PUT",
     headers: { ...headers, "Content-Type": "application/json" },
-    body: JSON.stringify({ message: `content: publish ${item.kind}/${item.slug}`, content: base64Utf8(JSON.stringify(data, null, 2) + "\\n"), branch: env.GITHUB_BRANCH, ...(sha ? { sha } : {}) }),
+    // `"\n"` e non `"\\n"`: la seconda e' una stringa di due caratteri, e un file
+    // che finisce con `}` + backslash + n non e' JSON valido. Il loader della
+    // build lo scartava con un warning, quindi il contenuto pubblicato non
+    // arrivava mai online mentre publish e deploy sembravano riusciti.
+    body: JSON.stringify({ message: `content: publish ${item.kind}/${item.slug}`, content: base64Utf8(JSON.stringify(data, null, 2) + "\n"), branch: env.GITHUB_BRANCH, ...(sha ? { sha } : {}) }),
   });
   if (!response.ok) throw new Error(`github_write_${response.status}`);
   const result = await response.json() as { content?: { sha?: string } };
@@ -669,7 +740,7 @@ function validJobs(value: unknown): value is AdminJob[] {
     /^[a-z0-9-]{3,80}$/.test(String((job as AdminJob).slug)) &&
     ["open", "coming-soon", "closed"].includes(String((job as AdminJob).status)) &&
     ["title", "department", "location", "type", "shortPitch", "description"].every((key) => typeof (job as Record<string, unknown>)[key] === "string") &&
-    (!job.questions || (Array.isArray(job.questions) && job.questions.length <= 30 && job.questions.every((question: { id: string; label: string; type: string; required: boolean; minimum: number }) => question && typeof question.id === "string" && typeof question.label === "string" && ["text", "textarea", "url"].includes(question.type) && typeof question.required === "boolean" && Number.isInteger(question.minimum) && question.minimum >= 0 && question.minimum <= 10000)))
+    (!job.questions || (Array.isArray(job.questions) && job.questions.length <= 30 && job.questions.every((question: { id: string; label: string; type: string; required: boolean; minimum: number }) => question && typeof question.id === "string" && typeof question.label === "string" && ["text", "textarea", "url", "number"].includes(question.type) && typeof question.required === "boolean" && Number.isInteger(question.minimum) && question.minimum >= 0 && question.minimum <= 10000)))
   ));
 }
 
@@ -746,8 +817,8 @@ export const onRequestGet = async ({ request, env: incomingEnv }: PagesContext):
 
 export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext): Promise<Response> => {
   const env = withLocalStore(incomingEnv);
-  const length = Number.parseInt(request.headers.get("Content-Length") || "0", 10);
-  if (Number.isFinite(length) && length > MAX_BODY_BYTES) {
+  const declaredLength = Number.parseInt(request.headers.get("Content-Length") || "0", 10);
+  if (Number.isFinite(declaredLength) && declaredLength > MAX_CONTENT_BODY_BYTES) {
     return json({ code: "invalid_request" }, 413);
   }
 
@@ -768,7 +839,7 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
   } catch {
     return json({ code: "invalid_request" }, 400);
   }
-  if (payload.length > MAX_BODY_BYTES) return json({ code: "invalid_request" }, 413);
+  if (payload.length > MAX_CONTENT_BODY_BYTES) return json({ code: "invalid_request" }, 413);
 
   let body: {
     action?: unknown;
@@ -793,6 +864,13 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
   }
   if (!body || typeof body !== "object" || Array.isArray(body)) {
     return json({ code: "invalid_request" }, 400);
+  }
+
+  // Qui l'azione si conosce, quindi il tetto piccolo torna a valere: le
+  // scritture di contenuto sono le uniche che possono superare gli 8KB.
+  if (!(typeof body.action === "string" && CONTENT_WRITE_ACTIONS.has(body.action))
+    && (payload.length > MAX_BODY_BYTES || (Number.isFinite(declaredLength) && declaredLength > MAX_BODY_BYTES))) {
+    return json({ code: "invalid_request" }, 413);
   }
 
   const ip = ipOf(request);
@@ -945,6 +1023,37 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
     } catch (caught) {
       console.log(JSON.stringify({ event: "admin_content", outcome: "publish_failed", code: caught instanceof Error ? caught.message : "unknown" }));
       return json({ code: "publish_failed" }, 502);
+    }
+  }
+
+  if (body.action === "content_discard") {
+    // "Rimetti questo file come sta su Git": butta il draft locale e ricarica la
+    // versione pubblicata. Non e' un rollback (nessun commit, nessun deploy) e
+    // non prende uno sha: prende l'ultima versione del file sul branch.
+    const kind = typeof body.kind === "string" && isCmsKind(body.kind) ? body.kind : "";
+    const slug = typeof body.slug === "string" ? body.slug : "";
+    if (!kind || !/^[a-z0-9][a-z0-9-]{1,119}$/.test(slug)) return json({ code: "invalid_request" }, 400);
+    if (!githubConfigured(env)) return json({ code: "github_not_configured" }, 503);
+    let published: AdminContentItem | null;
+    try {
+      published = await readPublishedFromGit(env, kind, slug);
+    } catch (caught) {
+      const code = caught instanceof Error ? caught.message : "unknown";
+      console.log(JSON.stringify({ event: "admin_content", outcome: "discard_read_failed", code }));
+      return json({ code: "discard_failed" }, 502);
+    }
+    if (!published) return json({ code: "not_found" }, 404);
+    // Se la riga di stato non si scrive, la lettura e' comunque riuscita: il
+    // pannello riceve il contenuto da Git e lo sa (`stored: false`), invece di
+    // un errore che nasconde una versione pubblicata che esiste davvero.
+    try {
+      const existing = (await contentItems(env)).find((item) => item.kind === kind && item.slug === slug);
+      const saved = await saveContentItem(env, { ...published, id: existing?.id || crypto.randomUUID(), created_at: existing?.created_at, version: existing?.version || 0 });
+      return json({ ok: true, item: saved, stored: true });
+    } catch (caught) {
+      const code = caught instanceof Error ? caught.message : "unknown";
+      console.log(JSON.stringify({ event: "admin_content", outcome: "discard_not_stored", code }));
+      return json({ ok: true, item: { ...published, id: crypto.randomUUID() }, stored: false });
     }
   }
 

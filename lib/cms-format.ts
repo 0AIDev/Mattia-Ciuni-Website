@@ -2,6 +2,26 @@ import type { CmsContentData } from "./cms-types";
 
 type UnknownBlock = Record<string, unknown>;
 
+/**
+ * Il JSON di un file pubblicato su Git.
+ *
+ * La prima versione di `publishContentToGit` aggiungeva `"\\n"` invece di un
+ * ritorno a capo: due caratteri, backslash e n, dopo la graffa finale. Il file
+ * risultava corrotto, il loader della build lo scartava con un `console.warn` e
+ * il contenuto pubblicato non arrivava mai online, mentre il publish e il deploy
+ * sembravano riusciti. Il writer e' corretto, e questa funzione accetta anche la
+ * forma sbagliata: un file gia' scritto cosi' non deve sparire dal sito.
+ */
+export function parsePublishedJson<T>(text: string): T {
+  try {
+    return JSON.parse(text) as T;
+  } catch (error) {
+    const healed = text.replace(/\\+n\s*$/, "");
+    if (healed === text) throw error;
+    return JSON.parse(healed) as T;
+  }
+}
+
 export function blocksToMarkdown(blocks: unknown): string {
   if (!Array.isArray(blocks)) return "";
   return blocks.map((block) => {

@@ -1,5 +1,6 @@
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 import { join } from "node:path";
+import { parsePublishedJson } from "./cms-format";
 
 /**
  * I file JSON sono il punto d'incontro tra l'admin e la build statica:
@@ -31,7 +32,11 @@ export function loadCmsCollection<T>(kind: string): T[] {
     .filter((file) => file.endsWith(".json"))
     .map((file) => {
       try {
-        return JSON.parse(readFileSync(join(directory, file), "utf8")) as T;
+        // `parsePublishedJson` e non `JSON.parse`: un file scritto dalla prima
+        // versione del publish finiva con un `"\\n"` letterale e non era
+        // parseable. Qui si scartava con un warning, e il contenuto pubblicato
+        // non arrivava online senza che nessuno lo sapesse.
+        return parsePublishedJson<T>(readFileSync(join(directory, file), "utf8"));
       } catch (error) {
         console.warn(`cms: invalid ${kind}/${file}`, error);
         return null;

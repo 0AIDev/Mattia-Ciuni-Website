@@ -271,7 +271,7 @@ export function JobsView({ jobs: initialJobs, loading, onSaveJobs }: { jobs: Adm
                   {(current.questions || []).map((question, index) => (
                     <div key={question.id} className="grid gap-2 rounded-md border border-admin-line p-2.5 sm:grid-cols-[1fr_120px_80px_70px]">
                       <TextInput value={question.label} onChange={(value) => updateQuestion(index, "label", value)} placeholder="Question" />
-                      <Select value={question.type} onChange={(value) => updateQuestion(index, "type", value)} label="Answer type" options={[{ value: "text", label: "Short text" }, { value: "textarea", label: "Long text" }, { value: "url", label: "URL" }]} />
+                      <Select value={question.type} onChange={(value) => updateQuestion(index, "type", value)} label="Answer type" options={[{ value: "text", label: "Short text" }, { value: "textarea", label: "Long text" }, { value: "url", label: "URL" }, { value: "number", label: "Number" }]} />
                       <input type="number" min={0} value={question.minimum} onChange={(event) => updateQuestion(index, "minimum", event.target.value)} aria-label="Minimum characters" className="w-full rounded-md border border-admin-line px-2.5 py-1.5 text-[13px] text-admin-ink outline-none transition-colors hover:border-[#dbdbd8]" />
                       <label className="flex items-center gap-2 text-[12px] text-admin-muted"><input type="checkbox" className="h-3.5 w-3.5 accent-[#282a30]" checked={question.required} onChange={(event) => updateQuestion(index, "required", event.target.checked)} />Required</label>
                     </div>

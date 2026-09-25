@@ -35,7 +35,8 @@
     "test:visual": "playwright test",
     "test:cms": "tsx scripts/test-cms.mjs",
     "test:media": "tsx scripts/test-media.mjs && tsx scripts/test-media-api.mjs",
-    "test:admin-panel": "node scripts/check-heading-sizes.mjs && tsx scripts/test-media.mjs && tsx scripts/test-media-api.mjs"
+    "test:admin-actions": "tsx scripts/test-admin-actions.mjs",
+    "test:admin-panel": "node scripts/check-heading-sizes.mjs && tsx scripts/test-media.mjs && tsx scripts/test-media-api.mjs && tsx scripts/test-admin-actions.mjs"
   },
   "dependencies": {
     "@animateicons/react": "^0.5.0",

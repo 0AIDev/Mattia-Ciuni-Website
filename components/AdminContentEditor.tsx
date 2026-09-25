@@ -50,7 +50,11 @@ function newItem(kind: CmsKind = "post"): AdminContentItem {
   return {
     id: crypto.randomUUID(),
     kind,
-    slug: kind === "settings" ? "site" : `new-${kind}`,
+    // Lo slug finisce in un URL, dove il trattino e' il separatore: `new-site_copy`
+    // non passa il validatore (che accetta solo lettere, numeri e trattini),
+    // quindi il default di un kind con underscore era un salvataggio che
+    // falliva prima ancora di cominciare.
+    slug: kind === "settings" ? "site" : `new-${kind.replace(/_/g, "-")}`,
     status: "draft",
     title: "",
     description: "",
@@ -89,7 +93,7 @@ export function AdminContentEditor({
   onFocusHandled?: () => void;
   onSave: (item: AdminContentItem) => Promise<AdminContentItem | null>;
   onPublish: (id: string) => Promise<boolean>;
-  onRestore?: (kind: CmsKind, slug: string) => Promise<boolean>;
+  onRestore?: (kind: CmsKind, slug: string) => Promise<AdminContentItem | null>;
 }) {
   const [filter, setFilter] = useState<CmsKind | "all">("all");
   const [selectedId, setSelectedId] = useState<string>("");
@@ -191,6 +195,23 @@ export function AdminContentEditor({
     } else {
       setNotice({ text: "The draft could not be saved.", tone: "bad" });
     }
+  }
+
+  // Carica la versione pubblicata e la mette **nel draft**, non solo nella
+  // lista: senza questo l'editor continuerebbe a mostrare le modifiche appena
+  // buttate e il pulsante sembrerebbe non fare niente.
+  async function loadPublished() {
+    if (!onRestore) return;
+    setNotice(null);
+    const item = await onRestore(kind, draft.slug);
+    if (!item) {
+      setNotice({ text: "The published version could not be loaded.", tone: "bad" });
+      return;
+    }
+    setDraft(item);
+    setDataText(dataTextOf(item.data));
+    setSelectedId(item.id);
+    setNotice({ text: "Loaded the version published on Git. Nothing was committed.", tone: "neutral" });
   }
 
   async function publish() {
@@ -382,9 +403,16 @@ export function AdminContentEditor({
           <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-admin-line pt-3.5">
             <Button onClick={() => void save()} disabled={loading || !draft.title || !draft.slug}>Save draft</Button>
             <Button tone="primary" onClick={() => void publish()} disabled={loading || !draft.title || !draft.slug}>Publish to Git</Button>
-            {onRestore && draft.status === "published" ? (
-              <Button disabled={loading} onClick={() => void onRestore(kind, draft.slug)} title="Revert this file to the last published commit">
-                Revert published version
+            {/* Sempre visibile quando c'e' uno slug, anche su un item in draft:
+                `content_save` riporta l'item a `draft`, quindi una condizione sul
+                `status` faceva sparire il pulsante nel momento esatto in cui
+                serve, cioe' subito dopo aver salvato una modifica sbagliata. La
+                libreria e' seminata dal registry in codice, quindi molti slug non
+                sono ancora su Git: in quel caso il server risponde `not_found` e
+                il pannello lo dice a parole, invece di fallire in silenzio. */}
+            {onRestore && draft.slug ? (
+              <Button disabled={loading} onClick={() => void loadPublished()} title="Replace these edits with the version currently published on Git">
+                Load published version
               </Button>
             ) : null}
           </div>

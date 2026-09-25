@@ -139,6 +139,19 @@ let secret;
   check("the panel can read why publishing is off", configStatus.status === 200 && configData.github === false && configData.deploy_hook === false);
   const badRestore = await onRequestPost({ request: request({ method: "POST", cookie: session, body: { action: "content_restore", kind: "not-a-kind", slug: "../escape", sha: "zz" } }), env: configuredEnv });
   check("CMS restore refuses a malformed target before touching GitHub", badRestore.status === 400);
+  // Il tetto del corpo non e' uno solo. 8KB vale per login e moderazione, un
+  // megabyte per un item CMS: con un tetto solo, i tre contenuti gia' pubblicati
+  // sopra gli 8KB non si potevano salvare, e il pannello diceva "could not be
+  // saved" su un articolo lungo senza dire perche'.
+  const longBody = "x".repeat(30000);
+  const longSave = await onRequestPost({ request: request({ method: "POST", cookie: session, body: { action: "content_save", content: { id: crypto.randomUUID(), kind: "post", slug: "long-article", status: "draft", title: "Long article", description: "Long", body_markdown: longBody, data: { category: "Thoughts", tags: [], keywords: [] } } } }), env: configuredEnv });
+  check("a 30KB content_save is accepted where a 30KB login is not", longSave.status === 200, `got ${longSave.status}`);
+  const longJobs = await onRequestPost({ request: request({ method: "POST", cookie: session, body: { action: "jobs_save", jobs: [{ slug: "long-role", title: "Long role", department: "Engineering", location: "Remote", type: "Full-time", status: "open", shortPitch: "Short", description: longBody, questions: [{ id: "q", label: "Label", type: "number", required: true, minimum: 0 }] }] } }), env: configuredEnv });
+  check("a jobs registry over 8KB is accepted", longJobs.status === 200, `got ${longJobs.status}`);
+  const declaredHuge = await onRequestPost({ request: request({ method: "POST", cookie: session, length: 2 * 1024 * 1024, body: { action: "content_save" } }), env: configuredEnv });
+  check("a declared body over 1MB is refused before it is read", declaredHuge.status === 413, `got ${declaredHuge.status}`);
+  const longLogin = await onRequestPost({ request: request({ method: "POST", length: 30000, body: { action: "login", email: "ceo@usepayle.com", code: "000000" } }), env: configuredEnv });
+  check("the small limit still applies to a login that declares 30KB", longLogin.status === 413, `got ${longLogin.status}`);
   const testFeedback = await onRequestPost({ request: request({ method: "POST", body: { action: "create_test" }, cookie: session }), env: configuredEnv });
   const testFeedbackData = await testFeedback.json();
   check("authenticated dashboard can create a pending test feedback", testFeedback.status === 200 && testFeedbackData.record?.status === "pending_review" && testFeedbackData.record?.name === "Test submission");

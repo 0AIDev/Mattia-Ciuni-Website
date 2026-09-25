@@ -500,7 +500,14 @@ export default function FeedbackAdminPage() {
     setError("");
     try {
       const response = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "jobs_save", jobs: nextJobs }) });
-      if (!response.ok) throw new Error("The job offers could not be saved.");
+      if (!response.ok) {
+        const data = (await response.json().catch(() => ({}))) as { code?: string };
+        // Il 422 qui e' quasi sempre un'unica offerta invalida che fa fallire
+        // l'intero elenco: dirlo evita di cercare il problema in tutte.
+        if (data.code === "invalid_jobs") throw new Error("One offer has a slug or a status the server refuses: slugs take lowercase letters, numbers and hyphens (3-80 characters), the status must be open, coming-soon or closed, and every answer type must be text, textarea, url or number.");
+        if (response.status === 413) throw new Error("The offer list is over the request limit. Shorten the descriptions and save again.");
+        throw new Error("The job offers could not be saved.");
+      }
       setJobs(nextJobs);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "The job offers could not be saved.");
@@ -517,6 +524,11 @@ export default function FeedbackAdminPage() {
       const data = (await response.json().catch(() => ({}))) as { content?: AdminContentItem; code?: string };
       if (!response.ok || !data.content) {
         if (data.code === "content_table_missing") throw new Error("The Supabase tables are missing, so nothing can be saved. Run the two migrations in supabase/migrations, then reload this page.");
+        // Un 413 e un 422 non sono la stessa cosa per chi sta scrivendo: il primo
+        // si risolve accorciando il testo, il secondo correggendo un campo. Un
+        // "could not be saved" generico mandava a cercare il problema sbagliato.
+        if (response.status === 413) throw new Error("This content is over the 1 MB request limit, so it was not saved. Shorten the body or split it into two items.");
+        if (data.code === "invalid_content") throw new Error("The server rejected these fields: the slug takes lowercase letters, numbers and hyphens only (2-120 characters), and title, description and body must be text.");
         throw new Error(data.code === "github_not_configured" ? "GitHub publishing is not configured." : "The CMS draft could not be saved.");
       }
       setContent((current) => [data.content!, ...current.filter((entry) => !(entry.kind === data.content!.kind && entry.slug === data.content!.slug))]);
@@ -529,18 +541,30 @@ export default function FeedbackAdminPage() {
     }
   }
 
-  async function restoreContent(kind: CmsKind, slug: string): Promise<boolean> {
+  // Il pulsante carica la versione pubblicata; non fa un rollback. Prima mandava
+  // `sha: "HEAD"` all'azione che riscrive la storia su Git: il server rifiutava
+  // quello sha (400) e il pulsante non ha mai funzionato. Le due operazioni sono
+  // separate perche' sono diverse: questa legge, il rollback scrive e deploya.
+  async function discardContent(kind: CmsKind, slug: string): Promise<AdminContentItem | null> {
     setLoading(true);
     setError("");
     try {
-      const response = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "content_restore", kind, slug, sha: "HEAD" }) });
-      const data = (await response.json().catch(() => ({}))) as { ok?: boolean; code?: string };
-      if (!response.ok || !data.ok) throw new Error(data.code === "github_not_configured" ? "GitHub publishing is not configured." : "The published version could not be restored.");
-      await load();
-      return true;
+      const response = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "content_discard", kind, slug }) });
+      const data = (await response.json().catch(() => ({}))) as { ok?: boolean; item?: AdminContentItem; code?: string; stored?: boolean };
+      if (!response.ok || !data.ok || !data.item) {
+        if (data.code === "not_found") throw new Error("There is no published file for this slug yet, so there is nothing to load.");
+        if (data.code === "github_not_configured") throw new Error("GitHub publishing is not configured.");
+        throw new Error("The published version could not be loaded.");
+      }
+      setContent((current) => [data.item!, ...current.filter((entry) => !(entry.kind === data.item!.kind && entry.slug === data.item!.slug))]);
+      if (data.stored === false) setError("Loaded the published file, but the draft row could not be written (Supabase tables missing).");
+      // L'item torna all'editor: la lista aggiornata da sola non basta, l'editor
+      // tiene il proprio draft e continuerebbe a mostrare le modifiche appena
+      // buttate, come se il pulsante non avesse fatto niente.
+      return data.item;
     } catch (caught) {
-      setError(caught instanceof Error ? caught.message : "The published version could not be restored.");
-      return false;
+      setError(caught instanceof Error ? caught.message : "The published version could not be loaded.");
+      return null;
     } finally {
       setLoading(false);
     }
@@ -586,7 +610,7 @@ export default function FeedbackAdminPage() {
       onSaveJobs={(nextJobs) => void saveJobs(nextJobs)}
       onSaveContent={saveContent}
       onPublishContent={publishContent}
-      onRestoreContent={restoreContent}
+      onRestoreContent={discardContent}
       onCreateNda={createNda}
     />;
 }

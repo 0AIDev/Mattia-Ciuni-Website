@@ -27,7 +27,7 @@ stessa griglia, invece di un pacchetto da 1500 icone per usarne dodici.
 | Sezione | Cosa fa | Endpoint |
 | --- | --- | --- |
 | Overview | metriche, stato dei draft, coda | GET `/api/admin/feedback` |
-| Content | articoli, note, feedback, pagine, voice note, video, job, redirect, tassonomie, meta media, impostazioni | `content_save`, `content_publish`, `content_restore`, `content_history` |
+| Content | articoli, note, feedback, pagine, voice note, video, job, redirect, tassonomie, meta media, impostazioni | `content_save`, `content_publish`, `content_discard`, `content_restore`, `content_history` |
 | Site copy | override di copy per lingua, tassonomie, impostazioni del sito | come Content, con il filtro kind |
 | Media | upload su R2, alt text, caption, URL pubblico, delete | `/api/admin/media` |
 | SEO | redirect, pagine e lingue, metadata da rivedere | kind `redirect` e `page` in Content |
@@ -46,8 +46,39 @@ stessa griglia, invece di un pacchetto da 1500 icone per usarne dodici.
    sempre reversibile cancellando il file.
 4. **Deploy** su Cloudflare Pages, che ricostruisce e serve l'export statico.
 
-Il rollback non e' un pulsante separato dal publish: e' la stessa operazione
-al contrario, e riporta un file allo stato di un commit scelto.
+Tornare indietro sono **due** operazioni, e sembravano una sola:
+
+- `content_discard` — *Load published version*: rilegge il file dal branch e
+  sostituisce il draft locale. Non crea commit, non chiede deploy, perche' la
+  versione su Git e' gia' quella online.
+- `content_restore` — riporta il file allo stato di un commit scelto e quindi
+  **scrive**: nuovo commit, nuovo deploy. E' l'operazione "questo publish mi ha
+  rotto la pagina".
+
+Il pulsante mandava `sha: "HEAD"` alla seconda: il validatore rifiutava quello
+sha con un 400 e il pulsante non ha mai funzionato.
+
+### Due tetti di corpo, non uno
+
+`8KB` vale per login, moderazione, NDA e logout. `1MB` vale per `content_save` e
+`jobs_save`, le due sole azioni che trasportano contenuto. Con un tetto unico da
+8KB, tre dei diciassette contenuti gia' pubblicati (12KB, 10KB, 8.4KB) non si
+potevano salvare: il pannello diceva "The CMS draft could not be saved" su un
+articolo lungo, senza dire perche'.
+
+L'ordine dei controlli: il tetto grande si applica alla `Content-Length`
+dichiarata, prima di bufferizzare (l'azione sta dentro il corpo); il tetto
+piccolo si riapplica dopo il parsing sull'azione reale, e vale anche per una
+lunghezza dichiarata che mente.
+
+### Il file pubblicato deve essere JSON leggibile
+
+Il publish aggiungeva `"\\n"` invece di un ritorno a capo: due caratteri,
+backslash e n, dopo la graffa finale. Il file era corrotto, il loader della
+build lo scartava con un `console.warn` e **il contenuto pubblicato non arrivava
+mai online**, mentre publish, commit e deploy sembravano tutti riusciti.
+`lib/cms-format.ts` ha ora un `parsePublishedJson` che accetta anche quella
+forma, cosi' un file gia' scritto male non sparisce dal sito.
 
 ## Pagine nuove, senza toccare il codice
 
@@ -155,7 +186,8 @@ npm run build                 # export + prebuild/postbuild
 node scripts/verify.js        # include i check del pannello e i titoli
 npm run test:media            # validazione + endpoint media
 npm run test:cms              # parser e merge
-npm run test:admin            # auth, TOTP, draft, publish, rollback
+npm run test:admin            # auth, TOTP, draft, publish, tetto dei corpi
+npm run test:admin-actions    # ogni azione del pannello, round-trip GET → POST
 npm run test:visual           # Playwright: dark mode e dimensioni titoli
 npm run test:sitemap          # copertura sitemap e hreflang
 ```

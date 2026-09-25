@@ -105,7 +105,7 @@ type Props = {
   onSaveJobs: (jobs: AdminJob[]) => void;
   onSaveContent: (item: AdminContentItem) => Promise<AdminContentItem | null>;
   onPublishContent: (id: string) => Promise<boolean>;
-  onRestoreContent: (kind: CmsKind, slug: string) => Promise<boolean>;
+  onRestoreContent: (kind: CmsKind, slug: string) => Promise<AdminContentItem | null>;
   onCreateNda: (fullName: string, email: string) => Promise<string | null>;
 };
 
