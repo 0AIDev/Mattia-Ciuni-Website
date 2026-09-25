@@ -61,8 +61,9 @@ const sections: LegalSection[] = [
         the feedback form stores your message and, if you add them, your name and email; Google Analytics is off until
         you allow it, and when it is on it measures pages, how you arrived, how long a page stayed open, how far you
         scrolled, and where you went next. Beside them a cookieless counter (Umami) records visits while storing nothing
-        about you at all, which is why it asks nothing and the notice never mentions it. Nothing is sold, nothing is
-        shared with advertisers, and there are no social pixels.
+        about you at all, which is why it asks nothing and the notice never mentions it, and Microsoft Clarity records
+        how pages are used (clicks, scrolls, heatmaps) while masking everything typed into any field. Nothing is sold,
+        nothing is shared with advertisers, and there are no social pixels.
       </p>
     ),
   },

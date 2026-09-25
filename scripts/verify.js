@@ -881,14 +881,14 @@ const storageKeys = [
 const terms = read("terms/index.html");
 check(
   "legal: privacy covers newsletter, feedback and analytics while chat is disabled",
-  ["Brevo", "Beehiiv", "Resend", "Workers KV", "Supabase", "Google Analytics 4", "Umami", "a copy in my own database", "transiently", "Garante"].every(
+  ["Brevo", "Beehiiv", "Resend", "Workers KV", "Supabase", "Google Analytics 4", "Umami", "Microsoft Clarity", "a copy in my own database", "transiently", "Garante"].every(
     (needle) => privacy.includes(needle),
   )
 );
 check(
   "legal: cookies lists the real storage keys",
   storageKeys.length >= 5 &&
-  [...storageKeys, "mattia_feedback_admin", "_ga_G-YQS0R94ZQP"].every(
+  [...storageKeys, "mattia_feedback_admin", "_ga_G-YQS0R94ZQP", "_clck", "_clsk"].every(
     (needle) => cookies.includes(needle),
   )
 );
@@ -931,6 +931,10 @@ check(
 );
 // Umami non e' dietro il consenso: se la CSP non lo autorizza, lo script viene bloccato in silenzio e il contatore resta a zero senza che nessuno se ne accorga. Per questo l'origine e' verificata sia nello `script-src` (lo script) sia nel `connect-src` (l'endpoint che riceve i dati).
 check("security: CSP allows the cookieless counter", /script-src[^;]*https:\/\/cloud\.umami\.is/.test(headersFile) && /connect-src[^;]*https:\/\/cloud\.umami\.is/.test(headersFile));
+// Clarity e' sempre attivo come Umami: se la CSP non nomina lo script e l'endpoint,
+// le registrazioni spariscono in silenzio e nessuno se ne accorge.
+check("security: CSP allows Clarity", /script-src[^;]*https:\/\/www\.clarity\.ms/.test(headersFile) && /connect-src[^;]*https:\/\/\*\.clarity\.ms/.test(headersFile));
+check("legal: cookies lists the Clarity session cookies", cookies.includes("_clck") && cookies.includes("_clsk") && cookies.includes("Microsoft Clarity"));
 check("legal: cookies says Umami writes nothing", cookies.includes("Umami") && cookies.includes("no cookie, no local storage"));
 check("security: production hardening headers are configured", headersFile.includes("Content-Security-Policy:") && headersFile.includes("Strict-Transport-Security:") && headersFile.includes("Cross-Origin-Opener-Policy:") && headersFile.includes("X-Frame-Options: DENY") && headersFile.includes("X-Content-Type-Options: nosniff") && headersFile.includes("frame-ancestors 'none'"));
 check("security: vulnerability disclosure document is published", fs.existsSync(path.join(out, ".well-known", "security.txt")) && read(".well-known/security.txt").includes("Contact: mailto:ceo@usepayle.com") && read(".well-known/security.txt").includes("Canonical:"));

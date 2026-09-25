@@ -136,11 +136,11 @@ const sections: LegalSection[] = [
   },
   {
     id: "analytics",
-    title: "Measurement: two tools, two rules",
+    title: "Measurement: three tools, three rules",
     content: (
       <>
         <p>
-          Two things measure this site and they are deliberately not the same kind of thing. The first is{" "}
+          Three things measure this site and they are deliberately not the same kind of thing. The first is{" "}
           <strong>Umami</strong>, a counter that runs from the first page view without asking anything: it writes no
           cookie and no identifier on your device, it does not keep your IP address, it does not follow you to other
           sites and it cannot recognise you on a later visit. It counts the page, the referring domain, the country, the
@@ -148,7 +148,7 @@ const sections: LegalSection[] = [
           and the notice on this site does not ask about it.
         </p>
         <p>
-          Beside those two, every event is written to <strong>a copy in my own database</strong>, on Supabase. It is the
+          Beside those, every event is written to <strong>a copy in my own database</strong>, on Supabase. It is the
           one piece of this that does not depend on a provider staying in business: the measurement of the site cannot
           be lost because a plan changed or a service closed. That copy is anonymous by construction. Your address is
           read once, to compute a one-way fingerprint of that visit and that day, truncated, and is then discarded: the
@@ -158,7 +158,23 @@ const sections: LegalSection[] = [
           you arrived. It is kept without a deadline: the whole point of the copy is that nothing is deleted from it.
         </p>
         <p>
-          The second is <strong>Google Analytics 4</strong>, and it is <strong>optional and off until you allow
+          The second is <strong>Microsoft Clarity</strong>, a session-recording and heatmap tool that runs from the
+          first page view, like Umami, without asking anything. It records how pages are used: clicks, scrolls, dead
+          clicks, rage clicks, and the movement of the mouse on the page, in aggregate heatmaps and per-session
+          recordings. It is never used for advertising and Microsoft does not sell its data or run it for ad targeting.
+          What it keeps: a session identifier in your browser (the cookies <strong>_clck</strong> and <strong>_clsk</strong>,
+          listed on the Cookies page with their durations), your IP address and browser data in truncated, aggregated
+          form on Microsoft&apos;s servers, and the interactions listed above. What it never sees: passwords or anything
+          typed into any field on this site, which Clarity masks by default, and there are no forms on this site that
+          Clarity is allowed to read. If a recording would capture a page containing personal text you submitted, the
+          pages that render your own submissions are outside what the recordings replay, and no recording is ever
+          linked to a name or an email address. The legal basis is my legitimate interest in understanding how the site
+          is used, which does not conflict with your rights because the content you read and the text you type are
+          masked and the identifier is not used to follow you anywhere else. You can read exactly what Microsoft
+          keeps in Clarity&apos;s own documentation.
+        </p>
+        <p>
+          The third is <strong>Google Analytics 4</strong>, and it is <strong>optional and off until you allow
           it</strong>: it does keep an identifier in your browser, and that identifier is exactly the reason consent is
           required. If you choose &ldquo;Allow&rdquo; in the notice, it receives a measurement of how the site is used.
           Concretely, and completely, that is:
@@ -203,13 +219,15 @@ const sections: LegalSection[] = [
           and feedback submitted. There is no customer, revenue or advertising conversion in this site yet.
         </p>
         <p>
-          The purpose is editorial for both: knowing which pages are read, which are abandoned halfway, where people
-          arrive from and where they leave tells me what to keep writing and what to fix, which is the whole point of a
-          site like this one. Neither tool is used for advertising, profiling or decisions about you, and neither is
-          shared with anyone. Google retains its measurement for up to 14 months and acts as an independent controller
-          for its own processing, described in Google&apos;s privacy policy; Umami keeps aggregate counts, not visits.
+          The purpose is editorial for all of them: knowing which pages are read, which are abandoned halfway, where
+          people arrive from and where they leave tells me what to keep writing and what to fix, which is the whole
+          point of a site like this one. None of the three is used for advertising, profiling or decisions about you,
+          and none is shared with anyone. Google retains its measurement for up to 14 months and acts as an independent
+          controller for its own processing, described in Google&apos;s privacy policy; Umami keeps aggregate counts,
+          not visits; Microsoft retains Clarity recordings for up to 12 months, under its own data protection terms.
           If you decline Google Analytics, nothing of it is loaded and nothing of it is measured, while the cookieless
-          counter keeps its anonymous count. You can change your choice at any time by clearing this site&apos;s
+          counter and Clarity keep running as described above. You can change your choice at any time by clearing this
+          site&apos;s
           browser storage, as described in the{" "}
           <Link href="/cookies/" className="article-underline">
             Cookies
@@ -236,11 +254,16 @@ const sections: LegalSection[] = [
     id: "browser-storage",
     title: "What stays in your browser",
     content: (
-      <p>          A few values are stored locally so the site remembers your choices instead of asking again: the newsletter
+      <p>
+        A few values are stored locally so the site remembers your choices instead of asking again: the newsletter
         state, the analytics choice, the source of your first visit, and a handful of visit counters that measure one
         visit inside one tab (how many pages it has touched, when the current page was opened, and a flag that stops
-        the same source from being counted twice). None of them identify you, none of them survives the tab, and none
-        of them leaves your device on its own. The complete list is on the{" "}
+        the same source from being counted twice). Microsoft Clarity keeps its own session cookies, <strong>_clck</strong> and
+        <strong>_clsk</strong>, in the same browser: they are described on the{" "}
+        <Link href="/cookies/" className="article-underline">
+          Cookies
+        </Link>{" "}
+        page with their durations. None of them identify you personally, and the complete list is on the{" "}
         <Link href="/cookies/" className="article-underline">
           Cookies
         </Link>{" "}
@@ -254,7 +277,7 @@ const sections: LegalSection[] = [
     content: (
       <p>
         The processors listed above (Cloudflare, Supabase, Resend, Brevo, Beehiiv, Umami for the cookieless counter,
-        Google for the optional analytics) are the only third parties involved. They may process data outside the European Union, under their standard contractual
+        Microsoft Clarity for session recordings and heatmaps, Google for the optional analytics) are the only third parties involved. They may process data outside the European Union, under their standard contractual
         clauses or an equivalent safeguard. There are no advertising networks, no trackers from social platforms, no
         data brokers, and no sale or rental of personal data ever. If I add a provider, this page is updated before it
         starts processing anything.
@@ -270,8 +293,9 @@ const sections: LegalSection[] = [
         again. Feedback: until you ask me to delete it, or while it stays in the review queue; published reviews stay
         published until you ask me to remove them. Email delivery logs: metadata only, with the address hashed.
         Measurement: aggregate counts at Umami, the copy in my own database kept without a deadline because that is the
-        reason it exists, and up to 14 months at Google for the optional analytics. Hosting logs: Cloudflare&apos;s own
-        retention period. Nothing is kept &ldquo;just in case&rdquo;.
+        reason it exists, session recordings and heatmaps at Microsoft Clarity for up to 12 months, and up to 14 months
+        at Google for the optional analytics. Hosting logs: Cloudflare&apos;s own retention period. Nothing is kept
+        &ldquo;just in case&rdquo;.
       </p>
     ),
   },

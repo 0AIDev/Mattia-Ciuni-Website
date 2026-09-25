@@ -7,12 +7,16 @@
 # una macchina) e `alternate` per il feed. Ogni indirizzo qui sotto risponde 200:
 # verify.js lo controlla insieme al resto.
 #
-# La CSP nomina due strumenti di misura e sono due cose diverse. Google Analytics
+# La CSP nomina gli strumenti di misura e sono cose diverse. Google Analytics
 # (`googletagmanager.com`, `google-analytics.com`) si carica solo dopo il consenso,
 # quindi la sua origine serve al `script-src` di chi accetta. Umami
 # (`cloud.umami.is`) non conserva niente sul dispositivo e non chiede permesso: il
 # suo script e il suo endpoint di raccolta devono essere sempre raggiungibili,
-# altrimenti il contatore non parte e non se ne accorge nessuno. Il Web Analytics
+# altrimenti il contatore non parte e non se ne accorge nessuno. Microsoft Clarity
+# (`clarity.ms`, `*.clarity.ms`) e' sempre attivo per scelta ma conserva cookie
+# propri (_clck, _clsk) e riceve le registrazioni di sessione: anche qui script e
+# endpoint devono essere raggiungibili, e privacy/cookies lo dichiarano per nome.
+# Il Web Analytics
 # automatico di Cloudflare è disattivato nel progetto Pages, quindi la CSP non
 # autorizza più il beacon `cloudflareinsights.com`.
 /*
@@ -25,7 +29,7 @@
   Cross-Origin-Resource-Policy: same-site
   X-Permitted-Cross-Domain-Policies: none
   X-Download-Options: noopen
-  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; frame-src 'none'; form-action 'self'; manifest-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://cloud.umami.is; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://cloud.umami.is https://gateway.umami.is; media-src 'self' blob:; worker-src 'self' blob:; upgrade-insecure-requests
+  Content-Security-Policy: default-src 'self'; base-uri 'self'; object-src 'none'; frame-ancestors 'none'; frame-src 'none'; form-action 'self'; manifest-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://www.google-analytics.com https://cloud.umami.is https://www.clarity.ms; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self'; connect-src 'self' https://www.google-analytics.com https://*.google-analytics.com https://*.analytics.google.com https://cloud.umami.is https://gateway.umami.is https://*.clarity.ms https://c.bing.com; media-src 'self' blob:; worker-src 'self' blob:; upgrade-insecure-requests
   Link: </llms.txt>; rel="describedby"; type="text/plain", </index.md>; rel="service-doc"; type="text/markdown", </feed.xml>; rel="alternate"; type="application/rss+xml", </sitemap.xml>; rel="alternate"; type="application/xml"
 
 # I documenti di scoperta: il tipo lo decidono le regole, non l'estensione

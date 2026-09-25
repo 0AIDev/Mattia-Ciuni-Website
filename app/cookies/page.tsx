@@ -47,14 +47,14 @@ const sections: LegalSection[] = [
     content: (
       <>
         <p>
-          This site sets no advertising cookies and no tracking cookies from social platforms. There is no cookie
-          banner because there is nothing to sell you: the notice you see once asks permission for Google Analytics,
-          the only tool here that keeps an identifier in your browser.
+          This site sets no advertising cookies and no tracking cookies from social platforms. The notice you see once
+          asks permission for Google Analytics, the only tool here that waits for your consent before loading at all.
         </p>
         <p>
           What the site stores by itself is small and functional: your own choices, kept in your own browser so the
-          site stops asking, plus three counters that measure one visit inside one tab. Everything is listed below by
-          its real name, so you can find it and delete it.
+          site stops asking, three counters that measure one visit inside one tab, and the two session cookies of
+          Microsoft Clarity, the recording and heatmap tool described on the Privacy page. Everything is listed below
+          by its real name, so you can find it and delete it.
         </p>
         <p>
           The cookieless counter (Umami) is the one exception to the “only with your consent” rule, and it earns
@@ -66,11 +66,29 @@ const sections: LegalSection[] = [
   },
   {
     id: "always-on",
-    title: "Always on, and it holds no identity",
+    title: "Always on",
     content: (
       <>
+        <p>
+          Microsoft Clarity records how pages are used (clicks, scrolls, rage clicks, heatmaps) and keeps two cookies
+          of its own. It runs from the first page view, without asking, because the legal basis is legitimate interest
+          and the identifiers are not used to follow you anywhere else. Everything typed into a field is masked and
+          never leaves the browser. You can read the full description on the{" "}
+          <Link href="/privacy/" className="article-underline">
+            Privacy Policy
+          </Link>{" "}
+          page.
+        </p>
         <StorageList
           items={[
+            {
+              name: "_clck",
+              body: "Microsoft Clarity session cookie: it ties the recordings of one visit together and remembers that this browser was seen before, so returning visits are not counted as new users. 12 months.",
+            },
+            {
+              name: "_clsk",
+              body: "Microsoft Clarity session cookie: it connects consecutive page views inside the same visit into one session recording. 30 minutes, renewed on activity.",
+            },
             {
               name: "mattia-ciuni-newsletter-subscribed",
               body: "remembers that you already subscribed, so the newsletter section shows the confirmation instead of the form again. Local storage, no expiry, removed when you use “Use another email” or clear site data.",
@@ -186,13 +204,13 @@ const sections: LegalSection[] = [
     title: "Third parties",
     content: (
       <p>
-        The only third-party code that can set anything is Google Analytics, and only with your consent. Umami is
-        loaded too, and it is the reason nothing of it appears in the lists above: it receives the page you are on and
-        a signature of your browser, and returns nothing to your device. The copy of the measurement in my own database
-        is not in those lists either, and for the same reason: the page sends it on its way out and nothing is written
-        here or read back. Everything else runs on this site&apos;s own domain or on Cloudflare, which serves the pages.
-        There are no pixels, no social embeds, no advertising identifiers.          What each provider does with the data is
-        described in the{" "}
+        The third-party code that can set something in your browser is Google Analytics, and only with your consent,
+        and Microsoft Clarity, which keeps the two cookies listed above. Umami is loaded too, and it is the reason
+        nothing of it appears in the lists above: it receives the page you are on and a signature of your browser, and
+        returns nothing to your device. The copy of the measurement in my own database is not in those lists either,
+        and for the same reason: the page sends it on its way out and nothing is written here or read back. Everything
+        else runs on this site&apos;s own domain or on Cloudflare, which serves the pages. There are no pixels, no
+        social embeds, no advertising identifiers. What each provider does with the data is described in the{" "}
         <Link href="/privacy/" className="article-underline">
           Privacy Policy
         </Link>

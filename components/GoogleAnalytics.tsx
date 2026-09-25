@@ -259,7 +259,7 @@ export function GoogleAnalytics() {
     <aside aria-label="Analytics choice" className="fixed inset-x-4 bottom-4 z-50 mx-auto flex max-w-xl items-center justify-between gap-4 rounded-2xl border border-gray-300 bg-white p-4 text-sm text-gray-1000 shadow-lg">
       <p className="m-0 leading-relaxed">
         May I load Google Analytics? It is optional, anonymous, and off until you allow it. Visits are already counted
-        without cookies, and that needs no permission.
+        without cookies, and sessions are recorded with masked inputs; this permission is only for Analytics.
       </p>
       <div className="flex shrink-0 gap-2">
         <button type="button" onClick={() => choose("declined")} className="rounded-full px-3 py-2 text-xs underline decoration-gray-400 underline-offset-4">No thanks</button>
