@@ -262,6 +262,34 @@ html {
   scrollbar-color: #d6d6d6 #fcfcfc;
 }
 
+/* Nessuna barra di scorrimento visibile nel pannello admin.
+ *
+ * Il contenuto scorre eccome — rotella, trackpad, PageDown — quello che sparisce
+ * e' il binario grigio. Nel pannello le aree che scorrono sono almeno tre (la
+ * sezione, la lista della libreria, la cronologia di un commit) e tre barre
+ * accese insieme erano la cosa piu' rumorosa dello schermo, oltre che l'unica
+ * cosa che il pannello non avesse in comune con un editor desktop.
+ *
+ * Due regole e non una: Firefox legge `scrollbar-width`, Chromium disegna
+ * `::-webkit-scrollbar`, e nessuna proprieta' copre entrambi. La pagina intera
+ * entra nel conto perche' le schermate di accesso non sono `overflow: hidden`.
+ */
+html:has(#admin-feedback-page),
+body:has(#admin-feedback-page),
+#admin-feedback-page,
+#admin-feedback-page * {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+
+html:has(#admin-feedback-page)::-webkit-scrollbar,
+body:has(#admin-feedback-page)::-webkit-scrollbar,
+#admin-feedback-page::-webkit-scrollbar,
+#admin-feedback-page *::-webkit-scrollbar {
+  width: 0;
+  height: 0;
+}
+
 /* Long editorial copy must wrap inside narrow mobile columns, including
    titles and URLs produced by inline content. */
 [data-article-content],
