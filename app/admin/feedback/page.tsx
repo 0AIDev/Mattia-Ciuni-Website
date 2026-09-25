@@ -34,7 +34,26 @@ type AnalyticsData = {
   flow: AnalyticsRow[];
   acquisition: AnalyticsRow[];
   conversions: AnalyticsRow[];
+  geo: AnalyticsRow[];
   available: boolean;
+};
+
+type ApplicantRecord = {
+  id: string;
+  job_slug: string;
+  full_name: string;
+  email: string;
+  country_timezone?: string;
+  github_url?: string | null;
+  portfolio_url?: string | null;
+  artifact_link?: string;
+  artifact_description?: string;
+  motivation?: string;
+  custom_answers?: Record<string, unknown>;
+  cv_filename?: string;
+  email_verified?: boolean;
+  submitted_at?: string;
+  created_at?: string;
 };
 
 type AdminJobsResponse = { jobs?: AdminJob[] };
@@ -54,7 +73,7 @@ const IDENTITIES: Record<AdminRole, AdminIdentity> = {
 };
 
 const API = "/api/admin/feedback";
-const EMPTY_ANALYTICS: AnalyticsData = { daily: [], pages: [], flow: [], acquisition: [], conversions: [], available: false };
+const EMPTY_ANALYTICS: AnalyticsData = { daily: [], pages: [], flow: [], acquisition: [], conversions: [], geo: [], available: false };
 
 function localPreviewEnabled() {
   if (typeof window === "undefined") return false;
@@ -70,6 +89,7 @@ export default function FeedbackAdminPage() {
   const [records, setRecords] = useState<FeedbackRecord[]>([]);
   const [analytics, setAnalytics] = useState<AnalyticsData>(EMPTY_ANALYTICS);
   const [jobs, setJobs] = useState<AdminJob[]>([]);
+  const [applicants, setApplicants] = useState<ApplicantRecord[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
@@ -122,10 +142,11 @@ export default function FeedbackAdminPage() {
         }
         throw new Error(localApiMessage(response));
       }
-      const data = (await response.json()) as { records?: FeedbackRecord[]; role?: AdminRole; analytics?: AnalyticsData } & AdminJobsResponse;
+      const data = (await response.json()) as { records?: FeedbackRecord[]; role?: AdminRole; analytics?: AnalyticsData; applicants?: ApplicantRecord[] } & AdminJobsResponse;
       setRecords(data.records || []);
       setAnalytics(data.analytics || EMPTY_ANALYTICS);
       setJobs(data.jobs || []);
+      setApplicants(data.applicants || []);
       setIdentity(IDENTITIES.ceo);
       setAuthenticated(true);
       setMode("login");
@@ -467,6 +488,7 @@ export default function FeedbackAdminPage() {
       records={records}
       analytics={analytics}
       jobs={jobs}
+      applicants={applicants}
       identity={identity}
       loading={loading}
       error={error}
@@ -477,100 +499,5 @@ export default function FeedbackAdminPage() {
       onCreateNda={createNda}
       localMode={localPreviewEnabled()}
     />;
-
-  return (
-    <main id="admin-feedback-page" className="mx-auto w-full max-w-[760px] min-w-0 px-5 py-8 sm:px-6 sm:py-20">
-      <header className="flex items-start justify-between gap-6">
-        <div>
-          <h1 className="font-serif text-3xl text-gray-1200">Feedback review</h1>
-          <p className="mt-2 font-sans text-sm text-gray-1000">
-            {identity?.name || "Admin"} <span aria-hidden="true">·</span> {identity?.role || "Authorized reviewer"}
-          </p>
-          <p className="mt-1 font-sans text-sm text-gray-1000">{records.length} item{records.length === 1 ? "" : "s"} in the queue</p>
-        </div>
-        <div className="flex flex-wrap items-center justify-end gap-2">
-          <button type="button" onClick={() => void createTestFeedback()} disabled={loading} className="rounded-full border border-gray-300 px-4 py-2 text-sm text-gray-1000 transition-colors hover:border-gray-1200 disabled:opacity-50">Send test feedback</button>
-          <button type="button" onClick={() => void logout()} disabled={loading} className="rounded-full border border-red-200 px-4 py-2 text-sm text-red-600 transition-colors hover:border-red-500 hover:bg-red-50 disabled:opacity-50">Log out</button>
-        </div>
-      </header>
-      {error ? <p role="alert" className="mt-5 text-sm text-gray-1000">{error}</p> : null}
-
-      <section aria-labelledby="analytics-heading" className="mt-10">
-        <div className="flex flex-wrap items-baseline justify-between gap-2">
-          <div>
-            <h2 id="analytics-heading" className="font-serif text-2xl text-gray-1200">Site analytics</h2>
-            <p className="mt-1 text-xs text-gray-1000">Anonymous copies from Supabase. No IP addresses or user agents.</p>
-          </div>
-          {analytics?.available ? <span className="text-xs text-gray-1000">Updated when this page loads</span> : null}
-        </div>
-        {!analytics?.available ? (
-          <p className="mt-4 rounded-2xl border border-gray-300 px-5 py-4 text-sm text-gray-1000">Analytics views are unavailable. Run the analytics migration or check the Supabase connection.</p>
-        ) : (
-          <div className="mt-4 grid gap-3 lg:grid-cols-3">
-            <div className="min-w-0 rounded-2xl border border-gray-300 p-4">
-              <h3 className="text-sm font-semibold text-gray-1200">Daily</h3>
-              <div className="mt-3 overflow-x-auto">
-                <table className="w-full min-w-[300px] text-left text-xs">
-                  <thead className="text-gray-1000"><tr><th className="pb-2 pr-3 font-medium">Day</th><th className="pb-2 pr-3 font-medium">Event</th><th className="pb-2 pr-3 font-medium">Events</th><th className="pb-2 font-medium">Visitors</th></tr></thead>
-                  <tbody>{analytics.daily.slice(0, 8).map((row, index) => <tr key={`${String(row.day)}-${String(row.event)}-${index}`} className="border-t border-gray-200"><td className="py-2 pr-3 whitespace-nowrap">{dateLabel(row.day)}</td><td className="py-2 pr-3">{String(row.event ?? "—")}</td><td className="py-2 pr-3">{metric(row.events)}</td><td className="py-2">{metric(row.visitors)}</td></tr>)}</tbody>
-                </table>
-                {!analytics.daily.length ? <p className="text-xs text-gray-1000">No daily data yet.</p> : null}
-              </div>
-            </div>
-            <div className="min-w-0 rounded-2xl border border-gray-300 p-4">
-              <h3 className="text-sm font-semibold text-gray-1200">Pages</h3>
-              <div className="mt-3 overflow-x-auto">
-                <table className="w-full min-w-[320px] text-left text-xs">
-                  <thead className="text-gray-1000"><tr><th className="pb-2 pr-3 font-medium">Page</th><th className="pb-2 pr-3 font-medium">Views</th><th className="pb-2 pr-3 font-medium">Time</th><th className="pb-2 font-medium">Scroll</th></tr></thead>
-                  <tbody>{analytics.pages.slice(0, 8).map((row, index) => <tr key={`${String(row.page_path)}-${index}`} className="border-t border-gray-200"><td className="max-w-[150px] truncate py-2 pr-3" title={String(row.page_path ?? "")}>{String(row.page_path ?? "—")}</td><td className="py-2 pr-3">{metric(row.views)}</td><td className="py-2 pr-3">{metric(row.avg_seconds, "s")}</td><td className="py-2">{metric(row.avg_scroll_percent, "%")}</td></tr>)}</tbody>
-                </table>
-                {!analytics.pages.length ? <p className="text-xs text-gray-1000">No page data yet.</p> : null}
-              </div>
-            </div>
-            <div className="min-w-0 rounded-2xl border border-gray-300 p-4">
-              <h3 className="text-sm font-semibold text-gray-1200">Flow</h3>
-              <div className="mt-3 overflow-x-auto">
-                <table className="w-full min-w-[300px] text-left text-xs">
-                  <thead className="text-gray-1000"><tr><th className="pb-2 pr-3 font-medium">From</th><th className="pb-2 pr-3 font-medium">To</th><th className="pb-2 pr-3 font-medium">Moves</th><th className="pb-2 font-medium">Time</th></tr></thead>
-                  <tbody>{analytics.flow.slice(0, 8).map((row, index) => <tr key={`${String(row.from_path)}-${String(row.next_page)}-${index}`} className="border-t border-gray-200"><td className="max-w-[110px] truncate py-2 pr-3" title={String(row.from_path ?? "")}>{String(row.from_path ?? "—")}</td><td className="max-w-[110px] truncate py-2 pr-3" title={String(row.next_page ?? "")}>{String(row.next_page ?? "—")}</td><td className="py-2 pr-3">{metric(row.moves)}</td><td className="py-2">{metric(row.avg_seconds_before_leaving, "s")}</td></tr>)}</tbody>
-                </table>
-                {!analytics.flow.length ? <p className="text-xs text-gray-1000">No flow data yet.</p> : null}
-              </div>
-            </div>
-            <div className="min-w-0 rounded-2xl border border-gray-300 p-4">
-              <h3 className="text-sm font-semibold text-gray-1200">Acquisition</h3>
-              <div className="mt-3 overflow-x-auto">
-                <table className="w-full min-w-[360px] text-left text-xs">
-                  <thead className="text-gray-1000"><tr><th className="pb-2 pr-3 font-medium">Source / medium</th><th className="pb-2 pr-3 font-medium">Campaign</th><th className="pb-2 pr-3 font-medium">Visitors</th><th className="pb-2 font-medium">Conv.</th></tr></thead>
-                  <tbody>{analytics.acquisition.slice(0, 8).map((row, index) => <tr key={`${String(row.source)}-${String(row.campaign)}-${index}`} className="border-t border-gray-200"><td className="max-w-[150px] truncate py-2 pr-3" title={`${String(row.source ?? "")} / ${String(row.medium ?? "")}`}>{String(row.source ?? "—")} / {String(row.medium ?? "—")}</td><td className="max-w-[130px] truncate py-2 pr-3" title={String(row.campaign ?? "")}>{String(row.campaign ?? "—")}</td><td className="py-2 pr-3">{metric(row.visitors)}</td><td className="py-2">{metric(row.conversions)}</td></tr>)}</tbody>
-                </table>
-                {!analytics.acquisition.length ? <p className="text-xs text-gray-1000">No acquisition data yet.</p> : null}
-              </div>
-            </div>
-            <div className="min-w-0 rounded-2xl border border-gray-300 p-4">
-              <h3 className="text-sm font-semibold text-gray-1200">Conversions</h3>
-              <div className="mt-3 overflow-x-auto">
-                <table className="w-full min-w-[360px] text-left text-xs">
-                  <thead className="text-gray-1000"><tr><th className="pb-2 pr-3 font-medium">Event</th><th className="pb-2 pr-3 font-medium">Page</th><th className="pb-2 pr-3 font-medium">Source</th><th className="pb-2 font-medium">Campaign</th></tr></thead>
-                  <tbody>{analytics.conversions.slice(0, 8).map((row, index) => <tr key={`${String(row.occurred_at)}-${index}`} className="border-t border-gray-200"><td className="py-2 pr-3 whitespace-nowrap">{String(row.conversion ?? "—")}</td><td className="max-w-[110px] truncate py-2 pr-3" title={String(row.page_path ?? "")}>{String(row.page_path ?? "—")}</td><td className="py-2 pr-3">{String(row.source ?? "—")}</td><td className="max-w-[110px] truncate py-2" title={String(row.campaign ?? "")}>{String(row.campaign ?? "—")}</td></tr>)}</tbody>
-                </table>
-                {!analytics.conversions.length ? <p className="text-xs text-gray-1000">No conversions yet.</p> : null}
-              </div>
-            </div>
-          </div>
-        )}
-      </section>
-
-      <div className="mt-10 grid gap-4">
-        {!records.length ? <p className="rounded-2xl border border-gray-300 px-5 py-6 text-gray-1000">The queue is empty.</p> : null}
-        {records.map((record) => (
-          <article key={record.id} className="rounded-2xl border border-gray-300 px-5 py-5 sm:px-6">
-            <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-gray-1000"><span className="font-medium text-gray-1200">{record.name || "Anonymous"}</span>{record.email ? <span>{record.email}</span> : null}<span>·</span><time dateTime={record.submitted_at}>{new Date(record.submitted_at).toLocaleString()}</time></div>
-            <p className="mt-4 whitespace-pre-wrap text-[15px] leading-relaxed text-gray-1200">{record.message}</p>
-            <div className="mt-5 flex flex-wrap items-center gap-2"><button type="button" onClick={() => void moderate(record.id, "publish")} disabled={loading} className="rounded-full bg-gray-1200 px-4 py-2 text-sm font-semibold text-white hover:opacity-80 disabled:opacity-50">Publish</button><button type="button" onClick={() => void moderate(record.id, "reject")} disabled={loading} className="rounded-full border border-gray-300 px-4 py-2 text-sm text-gray-1000 hover:border-gray-1200 disabled:opacity-50">Reject</button><span className="max-w-full break-all text-xs text-gray-1000">{record.page_url}</span></div>
-          </article>
-        ))}
-      </div>
-    </main>
-  );
 }
+

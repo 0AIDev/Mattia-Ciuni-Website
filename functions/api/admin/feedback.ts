@@ -4,6 +4,8 @@ import { newTotpSecret, otpauthUri, verifyTotp } from "../../../lib/totp.ts";
 import { supabaseConfigured, supabaseRequest } from "../../lib/supabase.ts";
 // @ts-expect-error Pages bundles extensionless function imports; Node's native strip loader needs `.ts` for the offline test.
 import { supabaseKv } from "../../lib/supabase-kv.ts";
+// @ts-expect-error Pages bundles extensionless function imports; Node's offline loader needs `.ts`.
+import { jobs as jobsRegistry } from "../../../lib/careers/jobs.ts";
 
 // GET/POST /api/admin/feedback — la coda di review dei feedback.
 //
@@ -360,30 +362,64 @@ type AnalyticsViews = {
   flow: Array<Record<string, unknown>>;
   acquisition: Array<Record<string, unknown>>;
   conversions: Array<Record<string, unknown>>;
+  geo: Array<Record<string, unknown>>;
   available: boolean;
 };
 
-const DEFAULT_JOBS: AdminJob[] = [{
-  slug: "agent-runtime-founding-engineer",
-  title: "Founding Engineer, Agent Runtime",
-  department: "Engineering",
-  location: "Remote, Europe / US time zones",
-  type: "Full-time",
-  compensation: "Equity-led, discussed openly",
-  status: "coming-soon",
-  shortPitch: "Build the execution layer for AI agents.",
-  description: "The role will sit close to Payle's agent runtime, where every action needs a bounded, auditable path.",
-}];
+// Il seed parte dal registry reale (`lib/careers/jobs.ts`): la dashboard deve
+// mostrare gli stessi ruoli del sito pubblico, con gli stessi campi. Una lista
+// hardcoded qui diverge appena Mattia tocca il registry, ed era esattamente il
+// bug: "cose vecchie" nel tab Job offers.
+function defaultJobs(): AdminJob[] {
+  return jobsRegistry.map((job) => ({
+    slug: job.slug,
+    title: job.title,
+    department: job.department,
+    location: job.location,
+    type: job.type,
+    compensation: job.compensation || "",
+    status: job.status,
+    shortPitch: job.shortPitch,
+    description: job.description,
+    questions: (job.questions || []).map((question) => ({
+      id: question.id,
+      label: question.label,
+      type: question.type as "text" | "textarea" | "url",
+      required: question.required,
+      minimum: question.minimum,
+    })),
+  }));
+}
 
 async function adminJobs(env: Env): Promise<AdminJob[]> {
-  if (!env.FEEDBACK) return DEFAULT_JOBS;
+  if (!env.FEEDBACK) return defaultJobs();
   const raw = await env.FEEDBACK.get(JOBS_KEY);
-  if (!raw) return DEFAULT_JOBS;
+  if (!raw) return defaultJobs();
   try {
     const jobs = JSON.parse(raw) as AdminJob[];
-    return Array.isArray(jobs) ? jobs : DEFAULT_JOBS;
+    return Array.isArray(jobs) && jobs.length ? jobs : defaultJobs();
   } catch {
-    return DEFAULT_JOBS;
+    return defaultJobs();
+  }
+}
+
+/**
+ * Le candidature careers, per il tab Applicants. Come per le viste analytics:
+ * solo la service role nella Function tocca la tabella, e un errore non nasconde
+ * il resto della dashboard. Qui non c'è nessun documento: il CV resta in Storage
+ * e la dashboard mostra solo i campi che servono a fare la review.
+ */
+async function applicants(env: Env): Promise<Array<Record<string, unknown>>> {
+  if (!supabaseConfigured(env)) return [];
+  try {
+    const result = await supabaseRequest<Array<Record<string, unknown>>>(
+      env,
+      "careers_applications?select=id,job_slug,full_name,email,country_timezone,github_url,portfolio_url,artifact_link,artifact_description,motivation,custom_answers,cv_filename,email_verified,submitted_at,created_at&order=id.desc&limit=200",
+      { headers: { Accept: "application/json" } },
+    );
+    return result.response.ok && result.data ? result.data : [];
+  } catch {
+    return [];
   }
 }
 
@@ -404,15 +440,16 @@ function validJobs(value: unknown): value is AdminJob[] {
  * la review anche quando la migrazione analytics non è stata ancora eseguita.
  */
 async function analyticsViews(env: Env): Promise<AnalyticsViews> {
-  const empty: AnalyticsViews = { daily: [], pages: [], flow: [], acquisition: [], conversions: [], available: false };
+  const empty: AnalyticsViews = { daily: [], pages: [], flow: [], acquisition: [], conversions: [], geo: [], available: false };
   if (!supabaseConfigured(env)) return empty;
   try {
-    const [daily, pages, flow, acquisition, conversions] = await Promise.all([
+    const [daily, pages, flow, acquisition, conversions, geo] = await Promise.all([
       supabaseRequest<Array<Record<string, unknown>>>(env, "analytics_daily?select=*&order=day.desc&limit=14"),
       supabaseRequest<Array<Record<string, unknown>>>(env, "analytics_pages?select=*&order=views.desc&limit=20"),
       supabaseRequest<Array<Record<string, unknown>>>(env, "analytics_flow?select=*&order=moves.desc&limit=20"),
       supabaseRequest<Array<Record<string, unknown>>>(env, "analytics_acquisition?select=*&order=conversions.desc,visitors.desc&limit=20"),
       supabaseRequest<Array<Record<string, unknown>>>(env, "analytics_conversions?select=*&order=occurred_at.desc&limit=20"),
+      supabaseRequest<Array<Record<string, unknown>>>(env, "analytics_geo?select=*&order=visitors.desc&limit=60"),
     ]);
     return {
       daily: daily.response.ok && daily.data ? daily.data : [],
@@ -420,6 +457,7 @@ async function analyticsViews(env: Env): Promise<AnalyticsViews> {
       flow: flow.response.ok && flow.data ? flow.data : [],
       acquisition: acquisition.response.ok && acquisition.data ? acquisition.data : [],
       conversions: conversions.response.ok && conversions.data ? conversions.data : [],
+      geo: geo.response.ok && geo.data ? geo.data : [],
       // Le tre viste originali tengono viva la dashboard anche durante la
       // finestra in cui la migrazione attribution non è ancora stata applicata.
       available: daily.response.ok && pages.response.ok && flow.response.ok,
@@ -462,8 +500,8 @@ export const onRequestGet = async ({ request, env: incomingEnv }: PagesContext):
     return json({ code: "unauthorized", setup_required: !(await configOf(env)) }, 401);
   }
   if (!env.FEEDBACK) return json({ code: "unavailable" }, 503);
-  const [records, analytics, jobs] = await Promise.all([queue(env), analyticsViews(env), adminJobs(env)]);
-  return json({ records, role, analytics, jobs });
+  const [records, analytics, jobs, applicantRows] = await Promise.all([queue(env), analyticsViews(env), adminJobs(env), applicants(env)]);
+  return json({ records, role, analytics, jobs, applicants: applicantRows });
 };
 
 export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext): Promise<Response> => {
