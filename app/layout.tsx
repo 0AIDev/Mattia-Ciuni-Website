@@ -27,10 +27,13 @@ const inter = Inter({
 // terzo (~200 ms di attesa prima ancora di disegnare il testo) più due
 // `preconnect` e ~249 KiB di woff2 da `fonts.gstatic.com`. Self-hostati sono
 // serviti dallo stesso host della pagina: nessun DNS, nessuna connessione nuova,
-// niente da precollegare. Instrument Serif è il serif editoriale unico del sito,
-// compreso il corsivo sintetico usato dalle emphasis inline.
+// niente da precollegare. Instrument Serif è il serif editoriale unico del sito.
+// Il corsivo vera è il corsivo disegnato dal font: prima arrivava solo il peso
+// 400 e il browser inclinava i glyph artificialmente (synthetic italic), che
+// rendeva male ogni citazione e ogni emphasis del sito.
 const instrumentSerif = Instrument_Serif({
   weight: "400",
+  style: ["normal", "italic"],
   subsets: ["latin"],
   display: "swap",
   // The serif is used above the fold across the editorial pages, so preload it
