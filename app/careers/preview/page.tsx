@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { getJob } from "@/lib/careers/jobs";
+import { getJob } from "@/lib/careers/jobs-public";
 
 export const metadata: Metadata = {
   title: "Careers offer preview",

@@ -120,6 +120,25 @@ let secret;
   const queueData = await queueResponse.json();
   check("session opens queue without returning token or secret", queueResponse.status === 200 && queueData.role === "ceo");
   check("queue response includes an unavailable-safe analytics payload", queueResponse.status === 200 && queueData.analytics?.available === false && Array.isArray(queueData.analytics?.daily) && Array.isArray(queueData.analytics?.pages) && Array.isArray(queueData.analytics?.flow) && Array.isArray(queueData.analytics?.acquisition) && Array.isArray(queueData.analytics?.conversions));
+  const contentSave = await onRequestPost({ request: request({ method: "POST", cookie: session, body: { action: "content_save", content: { id: "draft-1", kind: "post", slug: "draft-one", status: "draft", title: "Draft one", description: "A draft", body_markdown: "## Hello\\n\\nDraft body", data: { category: "Thoughts", tags: [], keywords: [] } } } }), env: configuredEnv });
+  const contentData = await contentSave.json();
+  check("authenticated dashboard can save a CMS draft", contentSave.status === 200 && contentData.content?.status === "draft" && Array.isArray(contentData.content?.data?.content));
+  // L'id restituito dal save, non quello inviato: `content_save` sostituisce un id
+  // non-UUID con uno nuovo, quindi pubblicare `draft-1` cercherebbe una riga che
+  // non esiste e riceverebbe 404. Il 503 che ci si aspetta viene dal fatto che
+  // GitHub non e' configurato, e per verificarlo serve arrivare davvero al
+  // controllo di configurazione.
+  const savedId = contentData.content?.id;
+  const contentPublish = await onRequestPost({ request: request({ method: "POST", cookie: session, body: { action: "content_publish", id: savedId } }), env: configuredEnv });
+  check("CMS publish refuses to pretend GitHub is configured", contentPublish.status === 503, `got ${contentPublish.status}`);
+  const contentHistory = await onRequestPost({ request: request({ method: "POST", cookie: session, body: { action: "content_history" } }), env: configuredEnv });
+  const historyData = await contentHistory.json();
+  check("CMS history is empty without GitHub instead of failing", contentHistory.status === 200 && historyData.github === false && Array.isArray(historyData.commits));
+  const configStatus = await onRequestPost({ request: request({ method: "POST", cookie: session, body: { action: "settings_read" } }), env: configuredEnv });
+  const configData = await configStatus.json();
+  check("the panel can read why publishing is off", configStatus.status === 200 && configData.github === false && configData.deploy_hook === false);
+  const badRestore = await onRequestPost({ request: request({ method: "POST", cookie: session, body: { action: "content_restore", kind: "not-a-kind", slug: "../escape", sha: "zz" } }), env: configuredEnv });
+  check("CMS restore refuses a malformed target before touching GitHub", badRestore.status === 400);
   const testFeedback = await onRequestPost({ request: request({ method: "POST", body: { action: "create_test" }, cookie: session }), env: configuredEnv });
   const testFeedbackData = await testFeedback.json();
   check("authenticated dashboard can create a pending test feedback", testFeedback.status === 200 && testFeedbackData.record?.status === "pending_review" && testFeedbackData.record?.name === "Test submission");

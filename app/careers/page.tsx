@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { CareersRoleSearch } from "@/components/CareersRoleSearch";
 import { HistoryBackButton } from "@/components/HistoryBackButton";
-import { comingSoonJobs, openJobs, publicJobs, shouldShowRoleSearch } from "@/lib/careers/jobs";
+import { comingSoonJobs, openJobs, publicJobs, shouldShowRoleSearch } from "@/lib/careers/jobs-public";
 import type { Locale } from "@/lib/i18n";
 import { careersUi } from "@/lib/careers/ui";
 import { socialImages } from "@/lib/social";

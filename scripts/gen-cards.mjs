@@ -108,6 +108,16 @@ function markdownArticle(html) {
 // togliere la pagina dagli indici non basta se poi le si scrive intorno un file.
 const isPrivate = (pagePath) => pagePath === "admin" || pagePath.startsWith("admin/");
 
+/** Vero quando il file non e' una pagina reale ma la risposta 404 per quel path. */
+function isNotFoundShell(pagePath, meta) {
+  if (!meta?.html) return false;
+  if (!/<meta name="robots" content="noindex"/.test(meta.html)) return false;
+  // La 404 dichiara la home come canonical: se il percorfo coincide con la
+  // canonical, la pagina e' reale e si limita a essere noindex di proposito.
+  const canonical = (meta.url || "").replace(/\/$/, "");
+  return canonical === "" || canonical !== pagePath;
+}
+
 const pages = listPages(outDir)
   .filter(({ rel }) => !["404", "_not-found"].includes(pagePathOf(rel)))
   .filter(({ rel }) => !isPrivate(pagePathOf(rel)))
@@ -115,6 +125,7 @@ const pages = listPages(outDir)
   .map(({ file, rel }) => {
     const pagePath = pagePathOf(rel);
     const segments = pagePath ? pagePath.split("/") : [];
+    const meta = parse(readFileSync(file, "utf8"));
     let type;
     if (!pagePath) type = "Home";
     else if (pagePath === "thoughts") type = "Thoughts index";
@@ -124,8 +135,15 @@ const pages = listPages(outDir)
     else if (segments[0] === "notes") type = "Note";
     else if (segments[0] === "feedback") type = "Feedback post";
     else type = "Page";
-    return { pagePath, segments, type, meta: parse(readFileSync(file, "utf8")) };
-  });
+    return { pagePath, segments, type, meta };
+  })
+  // Una pagina che porta la `canonical` della home e si dichiara `noindex` e' la
+  // shell 404: con `output: "export"` Next la scrive per ogni percorso che una
+  // route dinamica potrebbe generare, anche quando `generateStaticParams` non lo
+  // elenca. Indicizzarla qui significa pubblicare quattro link a una 404 nelle
+  // card e nel RAG, quindi si scarta alla fonte invece di fidarsi del fatto che
+  // il file esista.
+  .filter(({ pagePath, meta }) => !isNotFoundShell(pagePath, meta));
 
 const byPath = new Map(pages.map((p) => [p.pagePath, p]));
 const byKind = (kind) =>

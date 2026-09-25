@@ -1,9 +1,11 @@
 "use client";
 
 import Image from "next/image";
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import QRCode from "qrcode";
-import { AdminWorkspace, type AdminJob } from "@/components/AdminWorkspace";
+import { AdminWorkspace } from "@/components/AdminWorkspace";
+import type { AdminJob, ConfigStatus } from "@/components/AdminSections";
+import type { AdminContentItem, CmsKind } from "@/lib/cms-types";
 
 type FeedbackRecord = {
   id: string;
@@ -56,7 +58,7 @@ type ApplicantRecord = {
   created_at?: string;
 };
 
-type AdminJobsResponse = { jobs?: AdminJob[] };
+type AdminJobsResponse = { jobs?: AdminJob[]; content?: AdminContentItem[] };
 
 function metric(value: unknown, suffix = "") {
   if (value === null || value === undefined || value === "") return "—";
@@ -90,12 +92,17 @@ export default function FeedbackAdminPage() {
   const [analytics, setAnalytics] = useState<AnalyticsData>(EMPTY_ANALYTICS);
   const [jobs, setJobs] = useState<AdminJob[]>([]);
   const [applicants, setApplicants] = useState<ApplicantRecord[]>([]);
+  const [content, setContent] = useState<AdminContentItem[]>([]);
+  const [config, setConfig] = useState<ConfigStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [authenticated, setAuthenticated] = useState(false);
   const [identity, setIdentity] = useState<AdminIdentity | null>(null);
   const [sessionChecked, setSessionChecked] = useState(false);
   const [resetRequested, setResetRequested] = useState(false);
+  // Come `load`: una ref invece di uno stato, perché chiamarla non deve
+  // riprocessare l'intera dashboard.
+  const loadConfigRef = useRef<(() => Promise<void>) | null>(null);
 
   const readError = async (response: Response): Promise<ApiError> =>
     (await response.json().catch(() => ({}))) as ApiError;
@@ -147,7 +154,9 @@ export default function FeedbackAdminPage() {
       setAnalytics(data.analytics || EMPTY_ANALYTICS);
       setJobs(data.jobs || []);
       setApplicants(data.applicants || []);
+      setContent(data.content || []);
       setIdentity(IDENTITIES.ceo);
+      void loadConfigRef.current?.();
       setAuthenticated(true);
       setMode("login");
       setError("");
@@ -155,8 +164,11 @@ export default function FeedbackAdminPage() {
       if (localPreviewEnabled()) {
         setRecords([]);
         setAnalytics(EMPTY_ANALYTICS);
-        setJobs([]);
-        setIdentity(IDENTITIES.ceo);
+      setJobs([]);
+      setContent([]);
+      setConfig(null);
+      setIdentity(IDENTITIES.ceo);
+      void loadConfigRef.current?.();
         setAuthenticated(true);
         setMode("login");
         setError("");
@@ -172,6 +184,12 @@ export default function FeedbackAdminPage() {
       setSessionChecked(true);
     }
   }, []);
+
+  useEffect(() => {
+    // `loadConfig` è definita sotto e cambia a ogni render: la reference mantiene
+    // `load` stabile, che è la dipendenza di questo effetto.
+    loadConfigRef.current = loadConfig;
+  });
 
   useEffect(() => {
     // Revalidate the HttpOnly session after a refresh. An unauthenticated 401 is
@@ -307,6 +325,8 @@ export default function FeedbackAdminPage() {
       setRecords([]);
       setAnalytics(EMPTY_ANALYTICS);
       setJobs([]);
+      setContent([]);
+      setConfig(null);
       setAuthenticated(false);
       setIdentity(null);
       setMode("login");
@@ -330,6 +350,18 @@ export default function FeedbackAdminPage() {
       setError(caught instanceof Error ? caught.message : "The test feedback could not be created.");
     } finally {
       setLoading(false);
+    }
+  }
+
+  // Lo stato di configurazione arriva con i dati: senza di questo la sezione
+  // Settingsdirebbe "pronto" su un deploy dove GitHub non e' configurato, e il
+  // primo publish fallirebbe con un errore che sembrerebbe del pannello.
+  async function loadConfig() {
+    try {
+      const response = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "settings_read" }) });
+      if (response.ok) setConfig((await response.json()) as ConfigStatus);
+    } catch {
+      setConfig(null);
     }
   }
 
@@ -484,11 +516,64 @@ export default function FeedbackAdminPage() {
     }
   }
 
+  async function saveContent(item: AdminContentItem): Promise<AdminContentItem | null> {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "content_save", content: item }) });
+      const data = (await response.json().catch(() => ({}))) as { content?: AdminContentItem; code?: string };
+      if (!response.ok || !data.content) throw new Error(data.code === "github_not_configured" ? "GitHub publishing is not configured." : "The CMS draft could not be saved.");
+      setContent((current) => [data.content!, ...current.filter((entry) => !(entry.kind === data.content!.kind && entry.slug === data.content!.slug))]);
+      return data.content;
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "The CMS draft could not be saved.");
+      return null;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function restoreContent(kind: CmsKind, slug: string): Promise<boolean> {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "content_restore", kind, slug, sha: "HEAD" }) });
+      const data = (await response.json().catch(() => ({}))) as { ok?: boolean; code?: string };
+      if (!response.ok || !data.ok) throw new Error(data.code === "github_not_configured" ? "GitHub publishing is not configured." : "The published version could not be restored.");
+      await load();
+      return true;
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "The published version could not be restored.");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function publishContent(id: string): Promise<boolean> {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "content_publish", id }) });
+      const data = (await response.json().catch(() => ({}))) as { content?: AdminContentItem; code?: string; deploy_triggered?: boolean };
+      if (!response.ok || !data.content) throw new Error(data.code === "github_not_configured" ? "GitHub publishing is not configured." : "The content could not be published.");
+      setContent((current) => [data.content!, ...current.filter((entry) => !(entry.kind === data.content!.kind && entry.slug === data.content!.slug))]);
+      return true;
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "The content could not be published.");
+      return false;
+    } finally {
+      setLoading(false);
+    }
+  }
+
   return <AdminWorkspace
       records={records}
       analytics={analytics}
       jobs={jobs}
       applicants={applicants}
+      content={content}
+      config={config}
       identity={identity}
       loading={loading}
       error={error}
@@ -496,8 +581,10 @@ export default function FeedbackAdminPage() {
       onCreateTest={() => void createTestFeedback()}
       onModerate={(id, action) => void moderate(id, action)}
       onSaveJobs={(nextJobs) => void saveJobs(nextJobs)}
+      onSaveContent={saveContent}
+      onPublishContent={publishContent}
+      onRestoreContent={restoreContent}
       onCreateNda={createNda}
-      localMode={localPreviewEnabled()}
     />;
 }
 

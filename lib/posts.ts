@@ -1,3 +1,5 @@
+import { loadCmsCollection, mergeCmsCollection } from "./cms-content";
+
 export type Block =
   | { type: "p"; text: string }
   | { type: "h2"; text: string }
@@ -537,7 +539,10 @@ const raw: Post[] = [
   },
 ];
 
-export const posts: (Post & { readingMinutes: number })[] = raw
+const cmsPosts = loadCmsCollection<Post>("posts");
+const merged = mergeCmsCollection(raw, cmsPosts);
+
+export const posts: (Post & { readingMinutes: number })[] = merged
   .map((p) => ({ ...p, readingMinutes: minutesOf(p.content) }))
   .sort((a, b) => (a.date < b.date ? 1 : -1));
 

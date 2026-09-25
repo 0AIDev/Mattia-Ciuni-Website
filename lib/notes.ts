@@ -1,3 +1,5 @@
+import { loadCmsCollection, mergeCmsCollection } from "./cms-content";
+
 export type NoteBlock =
   | { type: "p"; text: string }
   | { type: "h2"; text: string };
@@ -486,8 +488,9 @@ const raw: Note[] = [
   },
 ];
 
-export const notes: Note[] = raw
-  .slice()
+const cmsNotes = loadCmsCollection<Note>("notes");
+
+export const notes: Note[] = mergeCmsCollection(raw, cmsNotes)
   .sort((a, b) => (a.date < b.date ? 1 : -1));
 
 export function getNote(slug: string) {

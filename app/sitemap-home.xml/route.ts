@@ -4,6 +4,7 @@ import { posts } from "@/lib/posts";
 import { notes } from "@/lib/notes";
 import { feedback } from "@/lib/feedback";
 import { LOCALES } from "@/lib/i18n";
+import { cmsPages, pageLocales } from "@/lib/cms-pages";
 import { publicJobs as publicCareerJobs } from "@/lib/careers/jobs";
 
 export const dynamic = "force-static";
@@ -45,6 +46,17 @@ export async function GET() {
       changeFrequency: "weekly",
       priority: job.status === "open" ? "0.8" : "0.5",
     })),
+    // Pagine create dal pannello. `noindex` le esclude di proposito: dichiarare
+    // in sitemap una pagina che chiede di non essere indicizzata e' un segnale
+    // contraddittorio, e i motori scelgono quasi sempre di fidarsi del primo.
+    ...cmsPages
+      .filter((page) => !page.noindex && pageLocales(page).includes(locale as (typeof LOCALES)[number]))
+      .map((page) => ({
+        loc: `${base}/${locale}/p/${page.slug}/`,
+        lastmod: page.updated ?? page.date ?? "2026-09-25",
+        changeFrequency: "monthly",
+        priority: "0.6",
+      })),
   ]);
   const xml = urlsetXml([
     {

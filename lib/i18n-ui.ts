@@ -1,4 +1,5 @@
 import type { Locale } from "@/lib/i18n";
+import { cmsUiOverrides } from "@/lib/generated/cms-copy";
 
 type LegalCopy = {
   privacy: [string, string];
@@ -35,7 +36,7 @@ export type UiCopy = {
   legal: LegalCopy;
 };
 
-export const uiCopy: Record<Locale, UiCopy> = {
+const baseUiCopy: Record<Locale, UiCopy> = {
   en: {
     careers: "Careers", home: "Home", back: "Go back", allNotes: "All notes", allFeedback: "All feedback", inProgress: "in progress", published: "published", whatPeopleSay: "What people are saying", feedbackHero: "You share what you see. It gets better. I publish it.", workHero: "I build the systems that let software act in the real world.", celeste: "Celeste", celesteBody: "Before Payle I built Celeste, an AI browser. The experience exposed the last-ten-percent problem: an agent can complete the work and still stop at the credit card form.", aboutWhat: "What Mattia Ciuni does", newsletterBody: "One email a week: what I shipped, what broke, what I decided and why.", searchRoles: "Search roles", filterRoles: "Filter by status", allRoles: "All roles", open: "Open", comingSoon: "Coming soon", noRoles: "No roles match your search.", closeSearch: "Close role search", navigate: "navigate", select: "select",
     legal: { privacy: ["This page describes how information is handled when you visit this site.", "Only information needed for feedback, the newsletter and aggregated product improvement is collected. Analytics are subject to consent where required."], terms: ["By using this site you agree to respect its public content and the rules described here.", "The public content describes Mattia Ciuni's work and Payle. It is not financial, legal or technical advice."], cookies: ["This site uses local storage to remember preferences such as language and to avoid showing the same suggestion twice.", "Analytics tools that require consent do not start before you choose."], legal: ["This page collects the legal documents, contacts and information for Mattia Ciuni's personal site.", "For questions, write to ceo@usepayle.com."], newsletter: ["Every Sunday I send one email: what I shipped, what broke, what I decided and why.", "No spam and no growth hacks. Just the log of building Payle."] },
@@ -57,3 +58,7 @@ export const uiCopy: Record<Locale, UiCopy> = {
     legal: { privacy: ["Diese Seite beschreibt, wie Informationen verarbeitet werden, wenn du diese Website besuchst.", "Wir erheben nur Informationen, die für Feedback, den Newsletter und die aggregierte Produktverbesserung nötig sind. Analytics unterliegen, wo erforderlich, deiner Zustimmung."], terms: ["Mit der Nutzung dieser Website stimmst du zu, ihre öffentlichen Inhalte und die hier beschriebenen Regeln zu respektieren.", "Die öffentlichen Inhalte beschreiben die Arbeit von Mattia Ciuni und Payle. Sie sind keine Finanz-, Rechts- oder technische Beratung."], cookies: ["Diese Website nutzt lokalen Speicher, um Präferenzen wie die Sprache zu merken und denselben Hinweis nicht zweimal zu zeigen.", "Analytics-Tools, die eine Zustimmung benötigen, starten nicht vor deiner Auswahl."], legal: ["Diese Seite sammelt die rechtlichen Dokumente, Kontakte und Informationen zur persönlichen Website von Mattia Ciuni.", "Bei Fragen schreibe an ceo@usepayle.com."], newsletter: ["Jeden Sonntag sende ich eine E-Mail: was ich gebaut, kaputt gemacht und entschieden habe und warum.", "Kein Spam und keine Growth Hacks. Nur das Protokoll vom Aufbau von Payle."] },
   },
 };
+
+export const uiCopy = Object.fromEntries(
+  (Object.keys(baseUiCopy) as Locale[]).map((locale) => [locale, { ...baseUiCopy[locale], ...(cmsUiOverrides[locale] || {}) }]),
+) as Record<Locale, UiCopy>;

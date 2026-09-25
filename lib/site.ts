@@ -1,6 +1,7 @@
 import { SITE_ORIGIN } from "./site-origin";
+import { withSiteSettings } from "./cms-settings";
 
-export const site = {
+const siteDefaults = {
   name: "Mattia Ciuni",
   role: "Founder & CEO at Payle",
   // Dominio di produzione. `lib/site-origin.ts` valida la configurazione
@@ -32,3 +33,11 @@ export const site = {
     spotify: "https://open.spotify.com/show/7n9YvyiUCS1xX4tp6518JQ",
   },
 } as const;
+
+/**
+ * `site` e' il default in codice con l'eventuale override del pannello applicato
+ * sopra. Il tipo resta quello del default (`as const` del literal): un override
+ * non puo' cambiare la forma dell'oggetto, solo i valori delle chiavi gia'
+ * dichiarate, quindi `site.social.linkedin` resta una stringa per il compilatore.
+ */
+export const site = withSiteSettings(siteDefaults);

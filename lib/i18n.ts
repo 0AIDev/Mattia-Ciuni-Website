@@ -1,3 +1,5 @@
+import { cmsCopyOverrides } from "./generated/cms-copy";
+
 export const LOCALES = ["en", "it", "fr", "es", "de"] as const;
 export const LANGUAGE_STORAGE_KEY = "mattia-ciuni-language-choice-v1";
 export type Locale = (typeof LOCALES)[number];
@@ -10,7 +12,7 @@ export const localeMeta: Record<Locale, { label: string; native: string; country
   de: { label: "German", native: "Deutsch", country: "DE" },
 };
 
-export const copy = {
+const baseCopy = {
   en: {
     home: "Home",
     about: "About",
@@ -66,6 +68,10 @@ export const copy = {
     home: "Startseite", about: "Über mich", work: "Arbeit", thoughts: "Gedanken", notes: "Notizen", feedback: "Feedback", newsletter: "Newsletter", link: "Links", privacy: "Datenschutz", terms: "Nutzungsbedingungen", cookies: "Cookies", legal: "Rechtliches", back: "Zur Startseite", choose: "Bevorzugte Sprache auswählen", detected: (language: string) => `Wir haben erkannt, dass du auf ${language} surfst. Möchtest du die Website auf`, switchTo: (language: string) => `Zu ${language} wechseln`, dismiss: "Sprachvorschlag schließen", close: "Schließen",    founder: "Founder & CEO at Payle, die Geldschicht für KI-Agenten.", homeTitle: "Payle, die Geldschicht für KI-Agenten", homeLead: "Ich entwickle bei Payle die Geldschicht für KI-Agenten.", homeBody: "KI-Agenten können bereits recherchieren, vergleichen und ganze Aufgaben ausführen. Dann stoppen sie und verlangen eine Kreditkarte. Payle bietet begrenzte Berechtigungen, deterministische Autorisierung und einen überprüfbaren Beleg für jede Transaktion.", aboutLead: "Mattia Ciuni entwickelt die Geldschicht für KI-Agenten.", aboutBody: "Ein italienischer Gründer, der an Regeln, Autorisierung und Belegen arbeitet, damit Software im Namen von Menschen handeln und ausgeben kann.", workLead: "Ich entwickle Systeme, mit denen Software in der realen Welt handeln kann.", workBody: "Der rote Faden ist kontrollierte Delegation: Software kann handeln, aber ihre Berechtigungen bleiben explizit, begrenzt und nachvollziehbar.", shortThoughts: "Gedanken über KI-Agenten, Zahlungen und den Aufbau von Payle.", longNotes: "Längere, langsamere Texte über KI-Agenten, Zahlungen und dauerhafte Systeme.", feedbackLead: "Du teilst, was du siehst. Es wird besser. Ich veröffentliche es.", feedbackBody: "Ein öffentliches Protokoll der Menschen, die Payle beobachten, und der Korrekturen, die die Prüfung überstehen.", subscribe: "Abonnieren", email: "E-Mail-Adresse", sendFeedback: "Feedback senden", language: "Sprache", feed: "Feed", careers: "Karriere",
   },
 } as const;
+
+export const copy = Object.fromEntries(
+  LOCALES.map((locale) => [locale, { ...baseCopy[locale], ...(cmsCopyOverrides[locale] || {}) }]),
+) as typeof baseCopy;
 
 export type Copy = (typeof copy)[Locale];
 

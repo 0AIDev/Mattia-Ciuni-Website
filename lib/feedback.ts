@@ -1,3 +1,5 @@
+import { loadCmsCollection, mergeCmsCollection } from "./cms-content";
+
 export type FeedbackBlock =
   | { type: "p"; text: string }
   | { type: "h2"; text: string }
@@ -145,7 +147,10 @@ const raw: FeedbackPost[] = [
   },
 ];
 
-export const feedback: FeedbackPost[] = raw;
+const cmsFeedback = loadCmsCollection<FeedbackPost>("feedback");
+
+export const feedback: FeedbackPost[] = mergeCmsCollection(raw, cmsFeedback)
+  .sort((a, b) => (a.date < b.date ? 1 : -1));
 
 export function getFeedback(slug: string): FeedbackPost | undefined {
   return feedback.find((f) => f.slug === slug);

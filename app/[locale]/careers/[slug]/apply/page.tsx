@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
-import { getJob, publicJobs } from "@/lib/careers/jobs";
+import { getJob, publicJobs } from "@/lib/careers/jobs-public";
 import { LOCALES, isLocale } from "@/lib/i18n";
 
 export const dynamicParams = false;

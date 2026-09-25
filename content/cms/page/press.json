@@ -1,0 +1,16 @@
+{
+  "slug": "press",
+  "title": "Press and talks",
+  "description": "Talks, podcast appearances and written pieces about building Payle and the money layer for AI agents.",
+  "date": "2026-09-25",
+  "updated": "2026-09-25",
+  "locales": ["en"],
+  "content": [
+    { "type": "p", "text": "This page is the one you are looking at: it was created from the admin panel, not from a file in the project. Anything you write here is committed to Git, built into static HTML and served on this domain." },
+    { "type": "h2", "text": "What lives here" },
+    { "type": "p", "text": "Talks, podcast appearances and written pieces. Each entry links out, because the useful version of a talk is the one someone else hosted." },
+    { "type": "h2", "text": "How to edit it" },
+    { "type": "list", "items": ["Open the admin panel and go to Content.", "Choose the type Page and this page.", "Edit the title, the description and the body, then Save draft.", "Publish to Git: the site updates after the next deploy."] },
+    { "type": "quote", "text": "A page that exists in five languages is a promise. This one is English only on purpose, because the other four translations are not written yet." }
+  ]
+}

@@ -4,8 +4,14 @@ import { newTotpSecret, otpauthUri, verifyTotp } from "../../../lib/totp.ts";
 import { supabaseConfigured, supabaseRequest } from "../../lib/supabase.ts";
 // @ts-expect-error Pages bundles extensionless function imports; Node's native strip loader needs `.ts` for the offline test.
 import { supabaseKv } from "../../lib/supabase-kv.ts";
-// @ts-expect-error Pages bundles extensionless function imports; Node's offline loader needs `.ts`.
+// @ts-expect-error Cloudflare bundles extensionless function imports; Node's offline loader needs `.ts`.
 import { jobs as jobsRegistry } from "../../../lib/careers/jobs.ts";
+// @ts-expect-error Cloudflare bundles extensionless function imports; Node's offline loader needs `.ts`.
+import { contentDataWithBody, markdownToBlocks } from "../../../lib/cms-format.ts";
+// @ts-expect-error Cloudflare bundles extensionless function imports; Node's offline loader needs `.ts`.
+import { isCmsKind, isCmsStatus, type AdminContentItem, type CmsContentData, type CmsKind } from "../../../lib/cms-types.ts";
+// @ts-expect-error Pages bundles extensionless function imports; Node's offline loader needs `.ts`.
+import { cmsSeedContent } from "../../../lib/generated/cms-seed.ts";
 
 // GET/POST /api/admin/feedback — la coda di review dei feedback.
 //
@@ -62,6 +68,11 @@ interface Env {
   SUPABASE_URL?: string;
   SUPABASE_SERVICE_ROLE_KEY?: string;
   SITE_URL?: string;
+  GITHUB_TOKEN?: string;
+  GITHUB_REPOSITORY?: string;
+  GITHUB_BRANCH?: string;
+  CLOUDFLARE_DEPLOY_HOOK?: string;
+  MEDIA?: unknown;
 }
 
 interface PagesContext {
@@ -72,6 +83,8 @@ interface PagesContext {
 type AdminRole = "ceo";
 const ADMIN_EMAIL = "ceo@usepayle.com" as const;
 const JOBS_KEY = "content:jobs";
+const CONTENT_INDEX_KEY = "content:admin:index";
+const CONTENT_PREFIX = "content:admin:";
 
 type AdminJob = {
   slug: string;
@@ -403,6 +416,206 @@ async function adminJobs(env: Env): Promise<AdminJob[]> {
   }
 }
 
+// ---------------------------------------------------------------------------
+// CMS admin: i draft vivono in Supabase, i file pubblicati vivono in Git.
+// Non si scrive mai nel filesystem del deploy e non si espone un endpoint
+// pubblico per il contenuto. Il publish richiede GitHub configurato e lascia
+// comunque un commit versionato, cosi' l'editor non sostituisce il rollback.
+
+function normalizeContentRow(row: Record<string, unknown>): AdminContentItem {
+  return {
+    id: String(row.id || ""),
+    kind: isCmsKind(row.kind) ? row.kind : "page",
+    slug: String(row.slug || ""),
+    status: isCmsStatus(row.status) ? row.status : "draft",
+    title: String(row.title || ""),
+    description: String(row.description || ""),
+    body_markdown: String(row.body_markdown || ""),
+    data: row.data && typeof row.data === "object" ? row.data as CmsContentData : {},
+    created_at: row.created_at ? String(row.created_at) : undefined,
+    updated_at: row.updated_at ? String(row.updated_at) : undefined,
+    published_at: row.published_at ? String(row.published_at) : null,
+    version: Number(row.version || 1),
+  };
+}
+
+async function contentItems(env: Env): Promise<AdminContentItem[]> {
+  if (supabaseConfigured(env)) {
+    try {
+      const result = await supabaseRequest<Array<Record<string, unknown>>>(env, "admin_content?select=*&order=updated_at.desc&limit=200");
+      if (result.response.ok && Array.isArray(result.data)) {
+        const stored = result.data.map(normalizeContentRow);
+        const known = new Set(stored.map((item) => `${item.kind}:${item.slug}`));
+        return [...stored, ...cmsSeedContent.filter((item) => !known.has(`${item.kind}:${item.slug}`))];
+      }
+      console.log(JSON.stringify({ event: "admin_content", outcome: "query_failed", status: result.response.status }));
+    } catch {
+      console.log(JSON.stringify({ event: "admin_content", outcome: "query_failed" }));
+    }
+  }
+  if (!env.FEEDBACK) return [];
+  const raw = await env.FEEDBACK.get(CONTENT_INDEX_KEY);
+  const ids = (raw || "").split("\\n").filter(Boolean);
+  const items: AdminContentItem[] = [];
+  for (const id of ids.slice(0, 200)) {
+    const value = await env.FEEDBACK.get(CONTENT_PREFIX + id);
+    if (!value) continue;
+    try { items.push(normalizeContentRow(JSON.parse(value))); } catch { /* ignore one broken draft */ }
+  }
+  const known = new Set(items.map((item) => `${item.kind}:${item.slug}`));
+  return [...items, ...cmsSeedContent.filter((item) => !known.has(`${item.kind}:${item.slug}`))];
+}
+
+async function contentById(env: Env, id: string): Promise<AdminContentItem | null> {
+  if (supabaseConfigured(env)) {
+    const result = await supabaseRequest<Array<Record<string, unknown>>>(env, `admin_content?id=eq.${encodeURIComponent(id)}&limit=1`);
+    if (result.response.ok && result.data?.[0]) return normalizeContentRow(result.data[0]);
+  }
+  if (!env.FEEDBACK) return null;
+  const raw = await env.FEEDBACK.get(CONTENT_PREFIX + id);
+  if (!raw) return null;
+  try { return normalizeContentRow(JSON.parse(raw)); } catch { return null; }
+}
+
+function validContentItem(value: unknown): value is AdminContentItem {
+  if (!value || typeof value !== "object") return false;
+  const item = value as Partial<AdminContentItem>;
+  return isCmsKind(item.kind) && isCmsStatus(item.status) &&
+    /^[a-z0-9][a-z0-9-]{1,119}$/.test(String(item.slug || "")) &&
+    typeof item.title === "string" && item.title.length <= 240 &&
+    typeof item.description === "string" && item.description.length <= 2000 &&
+    typeof item.body_markdown === "string" && item.body_markdown.length <= 200000 &&
+    !!item.data && typeof item.data === "object" && !Array.isArray(item.data);
+}
+
+async function saveContentItem(env: Env, item: AdminContentItem): Promise<AdminContentItem> {
+  const now = new Date().toISOString();
+  const next: AdminContentItem = { ...item, updated_at: now, version: (item.version || 0) + 1 };
+  if (supabaseConfigured(env)) {
+    const result = await supabaseRequest<Array<Record<string, unknown>>>(env, "admin_content?on_conflict=kind,slug", {
+      method: "POST",
+      headers: { Prefer: "resolution=merge-duplicates,return=representation" },
+      body: JSON.stringify({
+        id: next.id,
+        kind: next.kind,
+        slug: next.slug,
+        status: next.status,
+        title: next.title,
+        description: next.description,
+        body_markdown: next.body_markdown,
+        data: next.data,
+        version: next.version,
+        created_at: next.created_at || now,
+        updated_at: now,
+        published_at: next.published_at,
+      }),
+    });
+    if (!result.response.ok) throw new Error(`content_save_${result.response.status}`);
+    if (result.data?.[0]) return normalizeContentRow(result.data[0]);
+  }
+  if (!env.FEEDBACK) throw new Error("content_store_unavailable");
+  await env.FEEDBACK.put(CONTENT_PREFIX + next.id, JSON.stringify(next));
+  const index = (await env.FEEDBACK.get(CONTENT_INDEX_KEY) || "").split("\\n").filter(Boolean);
+  if (!index.includes(next.id)) await env.FEEDBACK.put(CONTENT_INDEX_KEY, [...index, next.id].slice(-200).join("\\n"));
+  return next;
+}
+
+function githubConfigured(env: Env): boolean {
+  return Boolean(env.GITHUB_TOKEN && env.GITHUB_REPOSITORY && env.GITHUB_BRANCH);
+}
+
+function base64Utf8(value: string): string {
+  const bytes = new TextEncoder().encode(value);
+  let binary = "";
+  for (let index = 0; index < bytes.length; index += 0x8000) {
+    binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+  }
+  return btoa(binary);
+}
+
+async function publishContentToGit(env: Env, item: AdminContentItem): Promise<{ sha?: string }> {
+  if (!githubConfigured(env)) throw new Error("github_not_configured");
+  const path = `content/cms/${item.kind}/${item.slug}.json`;
+  const endpoint = `https://api.github.com/repos/${env.GITHUB_REPOSITORY}/contents/${path}`;
+  const headers = { Accept: "application/vnd.github+json", Authorization: `Bearer ${env.GITHUB_TOKEN}`, "X-GitHub-Api-Version": "2022-11-28" };
+  const current = await fetch(`${endpoint}?ref=${encodeURIComponent(env.GITHUB_BRANCH!)}`, { headers });
+  let sha: string | undefined;
+  if (current.ok) {
+    const data = await current.json() as { sha?: string };
+    sha = data.sha;
+  } else if (current.status !== 404) throw new Error(`github_read_${current.status}`);
+  const data = { ...item.data, slug: item.slug, title: item.title, description: item.description, content: markdownToBlocks(item.body_markdown) };
+  const response = await fetch(endpoint, {
+    method: "PUT",
+    headers: { ...headers, "Content-Type": "application/json" },
+    body: JSON.stringify({ message: `content: publish ${item.kind}/${item.slug}`, content: base64Utf8(JSON.stringify(data, null, 2) + "\\n"), branch: env.GITHUB_BRANCH, ...(sha ? { sha } : {}) }),
+  });
+  if (!response.ok) throw new Error(`github_write_${response.status}`);
+  const result = await response.json() as { content?: { sha?: string } };
+  return { sha: result.content?.sha };
+}
+
+async function triggerDeploy(env: Env): Promise<boolean> {
+  if (!env.CLOUDFLARE_DEPLOY_HOOK) return false;
+  const response = await fetch(env.CLOUDFLARE_DEPLOY_HOOK, { method: "POST" });
+  return response.ok;
+}
+
+/**
+ * Storico dei commit che hanno toccato `content/cms`.
+ *
+ * Il rollback non e' una funzione separata dal publish: e' la stessa operazione
+ * al contrario, e perche' torni indietro serve sapere **quale** commit ha
+ * scritto un file. GitHub restituisce l'ultima modifica per file, quindi il
+ * rollback e' sempre "ritorna alla versione di quel commit", mai "annulla
+ * l'ultimo publish" che potrebbe essere un altro file.
+ */
+async function contentHistory(env: Env, limit: number): Promise<Array<{ sha: string; message: string; date: string; url: string }>> {
+  if (!githubConfigured(env)) return [];
+  const headers = { Accept: "application/vnd.github+json", Authorization: `Bearer ${env.GITHUB_TOKEN}`, "X-GitHub-Api-Version": "2022-11-28" };
+  const url = `https://api.github.com/repos/${env.GITHUB_REPOSITORY}/commits?sha=${encodeURIComponent(env.GITHUB_BRANCH!)}&path=content/cms&per_page=${limit}`;
+  const response = await fetch(url, { headers });
+  if (!response.ok) return [];
+  const commits = await response.json() as Array<{ sha?: string; commit?: { message?: string; author?: { date?: string } }; html_url?: string }>;
+  return commits
+    .filter((entry) => entry.sha)
+    .map((entry) => ({
+      sha: String(entry.sha),
+      // Il subject e' la prima riga: il resto del messaggio di commit e' rumore
+      // in una lista di dieci righe.
+      message: String(entry.commit?.message || "").split("\n")[0] || "(no message)",
+      date: String(entry.commit?.author?.date || ""),
+      url: String(entry.html_url || ""),
+    }));
+}
+
+/** Riporta un file a una versione precedente riaprendolo da un commit. */
+async function restoreContentFromGit(env: Env, kind: CmsKind, slug: string, sha: string): Promise<{ sha?: string }> {
+  if (!githubConfigured(env)) throw new Error("github_not_configured");
+  const path = `content/cms/${kind}/${slug}.json`;
+  const headers = { Accept: "application/vnd.github+json", Authorization: `Bearer ${env.GITHUB_TOKEN}`, "X-GitHub-Api-Version": "2022-11-28" };
+  const current = await fetch(`https://api.github.com/repos/${env.GITHUB_REPOSITORY}/contents/${path}?ref=${encodeURIComponent(env.GITHUB_BRANCH!)}`, { headers });
+  if (!current.ok) throw new Error(`github_read_${current.status}`);
+  const previous = await fetch(`https://api.github.com/repos/${env.GITHUB_REPOSITORY}/contents/${path}?ref=${encodeURIComponent(sha)}`, { headers });
+  if (!previous.ok) throw new Error(`github_restore_${previous.status}`);
+  const file = await previous.json() as { content?: string; encoding?: string };
+  if (!file.content || file.encoding !== "base64") throw new Error("github_restore_payload");
+  const target = await current.json() as { sha?: string };
+  const response = await fetch(`https://api.github.com/repos/${env.GITHUB_REPOSITORY}/contents/${path}`, {
+    method: "PUT",
+    headers: { ...headers, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message: `content: restore ${kind}/${slug} to ${sha.slice(0, 7)}`,
+      content: file.content,
+      branch: env.GITHUB_BRANCH,
+      ...(target.sha ? { sha: target.sha } : {}),
+    }),
+  });
+  if (!response.ok) throw new Error(`github_write_${response.status}`);
+  const result = await response.json() as { content?: { sha?: string } };
+  return { sha: result.content?.sha };
+}
+
 /**
  * Le candidature careers, per il tab Applicants. Come per le viste analytics:
  * solo la service role nella Function tocca la tabella, e un errore non nasconde
@@ -509,8 +722,8 @@ export const onRequestGet = async ({ request, env: incomingEnv }: PagesContext):
     return json({ code: "unauthorized", setup_required: !(await configOf(env)) }, 401);
   }
   if (!env.FEEDBACK) return json({ code: "unavailable" }, 503);
-  const [records, analytics, jobs, applicantRows] = await Promise.all([queue(env), analyticsViews(env), adminJobs(env), applicants(env)]);
-  return json({ records, role, analytics, jobs, applicants: applicantRows });
+  const [records, analytics, jobs, applicantRows, content] = await Promise.all([queue(env), analyticsViews(env), adminJobs(env), applicants(env), contentItems(env)]);
+  return json({ records, role, analytics, jobs, applicants: applicantRows, content });
 };
 
 export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext): Promise<Response> => {
@@ -550,6 +763,10 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
     jobs?: unknown;
     full_name?: unknown;
     email_address?: unknown;
+    content?: unknown;
+    kind?: unknown;
+    slug?: unknown;
+    sha?: unknown;
   };
   try {
     body = JSON.parse(payload) as typeof body;
@@ -663,6 +880,77 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
 
   if (!localAdminEnabled(request, env) && !await isAuthorized(request, env)) return json({ code: "unauthorized" }, 401);
 
+  if (body.action === "content_save") {
+    if (!validContentItem(body.content)) return json({ code: "invalid_content" }, 422);
+    const incoming = { ...(body.content as AdminContentItem) };
+    if (!/^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(incoming.id || "")) incoming.id = crypto.randomUUID();
+    if (incoming.status === "published") incoming.status = "draft";
+    try {
+      const withData = { ...incoming, data: contentDataWithBody(incoming.data, incoming.body_markdown) };
+      const saved = await saveContentItem(env, withData);
+      return json({ ok: true, content: saved });
+    } catch (caught) {
+      console.log(JSON.stringify({ event: "admin_content", outcome: "save_failed", code: caught instanceof Error ? caught.message : "unknown" }));
+      return json({ code: "provider_error" }, 502);
+    }
+  }
+
+  if (body.action === "content_publish") {
+    const id = typeof body.id === "string" ? body.id : "";
+    const existing = await contentById(env, id);
+    if (!existing) return json({ code: "not_found" }, 404);
+    if (!githubConfigured(env)) return json({ code: "github_not_configured" }, 503);
+    const data = contentDataWithBody(existing.data, existing.body_markdown);
+    const published: AdminContentItem = { ...existing, data, status: "published", published_at: new Date().toISOString() };
+    try {
+      const commit = await publishContentToGit(env, published);
+      const saved = await saveContentItem(env, published);
+      const deployTriggered = await triggerDeploy(env);
+      return json({ ok: true, content: saved, commit_sha: commit.sha || null, deploy_triggered: deployTriggered });
+    } catch (caught) {
+      console.log(JSON.stringify({ event: "admin_content", outcome: "publish_failed", code: caught instanceof Error ? caught.message : "unknown" }));
+      return json({ code: "publish_failed" }, 502);
+    }
+  }
+
+  if (body.action === "content_history") {
+    if (!githubConfigured(env)) return json({ commits: [], github: false });
+    const commits = await contentHistory(env, 20);
+    return json({ commits, github: true });
+  }
+
+  if (body.action === "content_restore") {
+    const kind = typeof body.kind === "string" && isCmsKind(body.kind) ? body.kind : "";
+    const slug = typeof body.slug === "string" ? body.slug : "";
+    const sha = typeof body.sha === "string" ? body.sha : "";
+    if (!kind || !/^[a-z0-9][a-z0-9-]{1,119}$/.test(slug) || !/^[a-f0-9]{7,40}$/.test(sha)) {
+      return json({ code: "invalid_request" }, 400);
+    }
+    if (!githubConfigured(env)) return json({ code: "github_not_configured" }, 503);
+    try {
+      const commit = await restoreContentFromGit(env, kind, slug, sha);
+      const deployTriggered = await triggerDeploy(env);
+      return json({ ok: true, commit_sha: commit.sha || null, deploy_triggered: deployTriggered });
+    } catch (caught) {
+      console.log(JSON.stringify({ event: "admin_content", outcome: "restore_failed", code: caught instanceof Error ? caught.message : "unknown" }));
+      return json({ code: "restore_failed" }, 502);
+    }
+  }
+
+  if (body.action === "settings_read") {
+    // Lo stato di configurazione e' utile al pannello anche quando GitHub non e'
+    // configurato: e' il modo per capire *perche'* il publish non parte senza
+    // dover leggere i log del deploy.
+    return json({
+      github: githubConfigured(env),
+      deploy_hook: Boolean(env.CLOUDFLARE_DEPLOY_HOOK),
+      supabase: supabaseConfigured(env),
+      storage: Boolean((env as Env & { MEDIA?: unknown }).MEDIA),
+      branch: env.GITHUB_BRANCH || null,
+      repository: env.GITHUB_REPOSITORY || null,
+    });
+  }
+
   if (body.action === "nda_create") {
     if (!supabaseConfigured(env)) return json({ code: "unavailable" }, 503);
     const fullName = typeof body.full_name === "string" ? body.full_name.trim().replace(/\s+/g, " ") : "";
@@ -690,7 +978,32 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
   if (body.action === "jobs_save") {
     if (!env.FEEDBACK || !validJobs(body.jobs)) return json({ code: "invalid_jobs" }, 422);
     await env.FEEDBACK.put(JOBS_KEY, JSON.stringify(body.jobs));
-    return json({ ok: true, jobs: body.jobs });
+    let commits = 0;
+    if (githubConfigured(env)) {
+      try {
+        for (const job of body.jobs) {
+          const item: AdminContentItem = {
+            id: `job-${job.slug}`,
+            kind: "job",
+            slug: job.slug,
+            status: "published",
+            title: job.title,
+            description: job.shortPitch,
+            body_markdown: job.description,
+            data: { ...job, slug: job.slug, title: job.title, description: job.shortPitch } as CmsContentData,
+            published_at: new Date().toISOString(),
+            version: 1,
+          };
+          await publishContentToGit(env, item);
+          commits += 1;
+        }
+      } catch (caught) {
+        console.log(JSON.stringify({ event: "admin_jobs", outcome: "publish_failed", code: caught instanceof Error ? caught.message : "unknown" }));
+        return json({ code: "publish_failed", jobs: body.jobs }, 502);
+      }
+    }
+    const deployTriggered = commits > 0 ? await triggerDeploy(env) : false;
+    return json({ ok: true, jobs: body.jobs, commits, deploy_triggered: deployTriggered });
   }
 
   if (body.action === "create_test") {

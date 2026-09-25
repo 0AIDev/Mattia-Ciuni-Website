@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import CareerDetailPage, { generateStaticParams as generateCareerParams } from "@/app/careers/[slug]/page";
 import { LOCALES, isLocale, type Locale } from "@/lib/i18n";
-import { getJob } from "@/lib/careers/jobs";
+import { getJob } from "@/lib/careers/jobs-public";
 import { socialImages } from "@/lib/social";
 import { languageAlternates } from "@/lib/seo";
 

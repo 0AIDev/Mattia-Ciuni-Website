@@ -95,6 +95,38 @@ function isNoindex(html) {
   return directives.includes("noindex") || directives.includes("none");
 }
 
+/**
+ * Con `output: "export"` Next scrive comunque un `404.html` per ogni percorso
+ * che una route dinamica potrebbe generare, anche quando `generateStaticParams`
+ * non lo elenca: `dynamicParams = false` non lo impedisce. Il file c'e', quindi un
+ * check che enumera l'export lo trova, ma non e' una pagina: porta la `canonical`
+ * della home e si dichiara `noindex`.
+ *
+ * Non si puo' pero' basarsi sul solo `noindex`, perche' anche `/careers/preview/`
+ * e `/nda/` sono `noindex` di proposito e quelle **devono** restare nell'export.
+ * La distinzione e' la canonical: se punta alla home, il file e' la shell 404.
+ */
+function linkHref(html, rel) {
+  for (const match of html.matchAll(/<link\b[^>]*>/gi)) {
+    const attrs = attributes(match[0]);
+    if ((attrs.rel || "").toLowerCase() === rel) return attrs.href || "";
+  }
+  return "";
+}
+
+function isNotFoundShell(html) {
+  if (!isNoindex(html)) return false;
+  const canonical = linkHref(html, "canonical").replace(/\/$/, "");
+  if (!canonical) return true;
+  try {
+    // La shell 404 dichiara la home come canonical, quindi l'URL si riduce
+    // all'origine. Una pagina reale dichiara il proprio indirizzo, piu' lungo.
+    return new URL(canonical).pathname === "/";
+  } catch {
+    return true;
+  }
+}
+
 function decodeXml(value) {
   return value
     .replace(/&#x([0-9a-f]+);/gi, (_, hex) => String.fromCodePoint(Number.parseInt(hex, 16)))
@@ -170,10 +202,10 @@ for (const file of walk(out)) {
 }
 
 const publicExport = [...exported.values()].filter(
-  (page) => !errorPaths.has(page.path) && !page.path.startsWith("/admin/"),
+  (page) => !errorPaths.has(page.path) && !page.path.startsWith("/admin/") && !isNotFoundShell(page.html),
 );
 const indexableExport = publicExport.filter((page) => !page.noindex);
-const noindexExport = [...exported.values()].filter((page) => page.noindex);
+const noindexExport = [...exported.values()].filter((page) => page.noindex && !isNotFoundShell(page.html));
 
 const sitemapPaths = new Map();
 for (const file of sitemapFiles) {

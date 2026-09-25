@@ -13,9 +13,9 @@
     "dev:pages": "node scripts/dev-pages.mjs",
     "preview": "npm run dev:pages",
     "predev": "node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs && node scripts/gen-rag.mjs",
-    "prebuild": "node scripts/check-heading-sizes.mjs",
+    "prebuild": "node scripts/gen-cms-copy.mjs && tsx scripts/gen-cms-seed.mts && node scripts/check-heading-sizes.mjs",
     "build": "next build",
-    "postbuild": "node scripts/fix-localized-html-lang.mjs && node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs && node scripts/gen-rag.mjs && node scripts/submit-google-sitemap.mjs && node scripts/ping-indexnow.mjs",
+    "postbuild": "node scripts/fix-localized-html-lang.mjs && node scripts/gen-redirects.mjs && node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs && node scripts/gen-rag.mjs && node scripts/submit-google-sitemap.mjs && node scripts/ping-indexnow.mjs",
     "start": "next start",
     "lint": "eslint .",
     "test:newsletter": "node scripts/test-newsletter.mjs",
@@ -32,7 +32,10 @@
     "test:macbook-search": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-macbook-search.mjs",
     "test:careers": "tsx scripts/test-careers.mjs",
     "test:job-feeds": "tsx scripts/test-job-feeds.mjs",
-    "test:visual": "playwright test"
+    "test:visual": "playwright test",
+    "test:cms": "tsx scripts/test-cms.mjs",
+    "test:media": "tsx scripts/test-media.mjs && tsx scripts/test-media-api.mjs",
+    "test:admin-panel": "node scripts/check-heading-sizes.mjs && tsx scripts/test-media.mjs && tsx scripts/test-media-api.mjs"
   },
   "dependencies": {
     "@animateicons/react": "^0.5.0",

@@ -36,7 +36,10 @@
     "/api/locale",
     "/api/macbook/rehearsal-log",
     "/admin/*",
-    "/.well-known/*"
+    "/.well-known/*",
+    "/api/admin/*",
+    "/media/*",
+    "/api/admin/media"
   ],
   "exclude": []
 }

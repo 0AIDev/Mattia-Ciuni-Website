@@ -1,5 +1,5 @@
 import type { CareerJob } from "@/lib/careers/jobs";
-import { openJobs } from "@/lib/careers/jobs";
+import { openJobs } from "@/lib/careers/jobs-public";
 
 /**
  * La sorgente comune dei tre feed (jobs.xml, jobs.rss.xml, jobs.atom.xml) e del

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound, redirect } from "next/navigation";
 import CareerDetailPage from "@/app/careers/[slug]/page";
 import { CareersApplicationModal } from "@/components/CareersApplicationModal";
-import { getJob, publicJobs } from "@/lib/careers/jobs";
+import { getJob, publicJobs } from "@/lib/careers/jobs-public";
 
 export const dynamicParams = false;
 export function generateStaticParams() { return publicJobs().map((job) => ({ slug: job.slug })); }
