@@ -36,6 +36,153 @@ function minutesOf(blocks: Block[]): number {
 
 const raw: Post[] = [
   {
+    slug: "welcoming-raj-koli-founding-engineer-agent-experience",
+    title: "Welcoming Raj Koli, Founding Engineer (Agent Experience): the interview",
+    category: "Thoughts",
+    description:
+      "Raj Koli, 21, from India, is Payle's Founding Engineer on the Agent Experience: the interview on agent evaluation, typed errors, and the pending state most demos skip.",
+    date: "2026-10-01",
+    tags: ["founders", "hiring", "engineering", "building in public", "Payle"],
+    keywords: [
+      "Raj Koli",
+      "founding engineer",
+      "Payle team",
+      "agent evaluation",
+      "TypeScript SDK",
+      "AI agent payments",
+      "Mattia Ciuni",
+    ],
+    content: [
+      {
+        type: "p",
+        text: "**Founding Team series.** This is the second post in the series: introducing the people building Payle, in their own words, with the honesty we use everywhere else on this site.",
+      },
+      {
+        type: "p",
+        text: "First up was [Alex Mwaniki, Founding Engineer on the core](/thoughts/welcoming-alex-mwaniki-founding-engineer-core/). Today: **Raj Koli**, Founding Engineer on the Agent Experience: the TypeScript SDK, the demo agent, and everything that makes the Payle agent usable by developers and visible to the world.",
+      },
+      {
+        type: "p",
+        text: "Raj is 21, from India, and a full-time university student who committed to Payle full-time anyway. Here is our conversation, edited for length but not for honesty.",
+      },
+      { type: "h2", text: "A builder who was already watching agents fail" },
+      {
+        type: "p",
+        text: "**Mattia: Take me back to the day you first saw Payle. What made you reach out instead of just scrolling?**",
+      },
+      {
+        type: "quote",
+        text: "Honestly, what got me was the framing: agents that can actually do things instead of just generating answers. I had already been interested in agent evaluation and tool use, so when I saw your post, it felt like someone was building exactly the kind of thing I wanted to work on. I messaged you the same day because I wanted to learn more about it.",
+      },
+      {
+        type: "p",
+        text: "**Mattia: Your CV mentions Terminal-Bench and agent evaluation at Handshake AI. Where did that instinct come from, what made you think \"I know how agents fail, and I want to build for them\"?**",
+      },
+      {
+        type: "quote",
+        text: "Working on agent evaluation made me realize that agents can look very good in a simple demo but still fail badly on real tasks. I started becoming interested in what happens when an agent has to deal with tools, unexpected outputs, timeouts, wrong decisions, or incomplete information. That made me want to move from only evaluating agents to actually building the systems around them and making them more reliable.",
+      },
+      {
+        type: "p",
+        text: "This is the paragraph I read three times before offering him the role. \"Agents can look very good in a simple demo but still fail badly on real tasks\" is a sentence that only someone who has evaluated hundreds of agent runs would write. Most people building agents haven't watched them fail enough times to know where the failure lives: in the tools, the retries, the state management, not in the model. Raj has. It's why he's building the SDK. The same failure class lives on the money side too, where [idempotency](/notes/idempotent-payments-for-ai-agents/) decides whether an honest retry charges twice.",
+      },
+      { type: "h2", text: "The failure mode nobody talks about" },
+      {
+        type: "p",
+        text: "**Mattia: What did evaluating agents at Handshake teach you about how they actually fail, not in theory, in practice?**",
+      },
+      {
+        type: "quote",
+        text: "One thing I learned is that agents often fail because of small mistakes in the middle of a task, not because they completely misunderstand the task. For example, an agent can make a wrong tool call, misunderstand the tool output, or get stuck after an error instead of recovering. I also saw cases where infrastructure issues like timeouts affected the result. That taught me that building a good agent is not only about the model. The tools, retries, state, and error handling matter a lot too.",
+      },
+      {
+        type: "p",
+        text: "This is the insight that shaped our SDK design. The demo agent doesn't fail because the model is dumb. It fails because a tool returned malformed output, a timeout broke the flow, or a retry created a duplicate. Those are the failures Raj has watched hundreds of times from the evaluation side, and they're the ones he's building the SDK to prevent.",
+      },
+      { type: "h2", text: "The schedule conversation" },
+      {
+        type: "p",
+        text: "**Mattia: You're a full-time student and a full-time startup engineer. Be honest, what does a real week look like?**",
+      },
+      {
+        type: "quote",
+        text: "I build my week around university's fixed deadlines, but Payle is a full-time commitment for me, around 40 hours a week. The hard part isn't really the hours themselves, it's making sure a university deadline doesn't suddenly affect the work. So I try to see conflicts coming weeks ahead instead of discovering them when they're already here.",
+      },
+      {
+        type: "p",
+        text: "**Mattia: There will be a week where a university exam collides with a Payle deadline. Walk me through how you decide which one wins, and what you'd tell me before that week.**",
+      },
+      {
+        type: "quote",
+        text: "I tell the team as early as I possibly can. The moment I know an exam is landing on top of a deadline, that's a conversation I have with Mattia and the team right away, not the week it happens. I'd rather we figure out together what absolutely needs to ship before that week than have anyone find out I'm suddenly unavailable.",
+      },
+      {
+        type: "p",
+        text: "This answer is why I'm confident about Raj's commitment. He didn't promise it would never be hard. He promised to flag conflicts early, which is the only promise a student can honestly make. And he made it before I asked.",
+      },
+      { type: "h2", text: "Types are part of the product" },
+      {
+        type: "p",
+        text: "**Mattia: What's the most TypeScript-specific thing you've learned building the SDK?**",
+      },
+      {
+        type: "quote",
+        text: "How much the types themselves are part of the product. If a developer can look at the request, response, and error shapes and immediately understand how the SDK behaves, they barely need to open the docs. The trap would be going overboard and typing everything just because you can. The goal isn't maximum type coverage, it's an API that's predictable and doesn't surprise anyone.",
+      },
+      {
+        type: "p",
+        text: "**Mattia: The SDK has typed errors for every declined reason. Why typed errors instead of generic exceptions?**",
+      },
+      {
+        type: "quote",
+        text: "Because \"something went wrong\" isn't an answer a developer can build on. With a generic exception, you're stuck parsing error strings and hoping the message doesn't change on you. With something like an OverLimitError or a MerchantNotAllowedError, the application can branch on exactly what happened and give its own user a real answer instead of a shrug. It just makes the SDK nicer to build against.",
+      },
+      { type: "h2", text: "The pending middle state" },
+      {
+        type: "p",
+        text: "**Mattia: The demo agent needs to handle three states: approved, declined, and pending approval. Where do most agent demos get this wrong?**",
+      },
+      {
+        type: "quote",
+        text: "I keep the three states completely explicit and don't let the agent blur them together. Approved means go: move to the next step, like capturing payment. Declined means stop, and the agent has to surface why clearly enough that whoever's watching understands immediately: over budget, merchant not allowed, whatever it is. Pending approval is the one most demos skip: the agent pauses, full stop, and waits on a human. It doesn't get clever and route around the approval.",
+      },
+      {
+        type: "p",
+        text: "Most toy agent demos only model success and failure. The real world lives in that pending middle state.",
+      },
+      {
+        type: "p",
+        text: "That sentence is why Raj is building the Agent Experience. He's seen enough agent evaluations to know that the hardest state isn't success or failure, it's the pause where a human needs to decide. Most builders skip it because it's hard. Raj designs for it because he knows it's where the product lives. It is the human half of the rule Alex defends on his side of the engine: [no LLM in the authorization path](/thoughts/welcoming-alex-mwaniki-founding-engineer-core/), deterministic code decides, and when the policy says a person must approve, the agent waits.",
+      },
+      { type: "h2", text: "His version of the future" },
+      {
+        type: "p",
+        text: "**Mattia: Payle's bet is that agents will pay for things everywhere and nobody will think about it. Raj, the student from India who evaluated agents before most people knew what agents were, what does your version of that future look like?**",
+      },
+      {
+        type: "quote",
+        text: "Agents stop being something you ask questions to and start being something you hand a job to. You give it a budget and a set of rules, and it goes and finds the options, compares them, actually buys the thing, manages the subscription, pays the bill: the whole loop, not just the research part.",
+      },
+      {
+        type: "quote",
+        text: "Coming from India, I see a lot of value here specifically in the repetitive coordination work that eats people's time, for individuals and businesses both. But the part that matters most is that the agent can act, with real permissions and real limits, not just suggestions it hopes someone follows.",
+      },
+      { type: "h2", text: "Welcome to the team, Raj" },
+      {
+        type: "p",
+        text: "Raj is now officially Founding Engineer (Agent Experience) at Payle: full-time commitment, equity with 4-year vesting and a 1-year cliff. He owns the TypeScript SDK, the demo agent, and everything that makes the Payle agent usable by developers. His first shipped artifact, the persistent idempotency SDK with FLAKY_MODE testing, is coming in a follow-up post.",
+      },
+      {
+        type: "list",
+        items: [
+          "GitHub: [github.com/Rajkoli145](https://github.com/Rajkoli145)",
+          "LinkedIn: [linkedin.com/in/raj-koli-626008318](https://www.linkedin.com/in/raj-koli-626008318)",
+          "X: [x.com/koli_raj57974](https://x.com/koli_raj57974)",
+        ],
+      },
+    ],
+  },
+  {
     slug: "welcoming-alex-mwaniki-founding-engineer-core",
     title: "Welcoming Alex Mwaniki, Founding Engineer (Core): the interview",
     category: "Thoughts",
@@ -189,7 +336,7 @@ const raw: Post[] = [
       { type: "h2", text: "Welcome to the team, Alex" },
       {
         type: "p",
-        text: "Alex is now officially Founding Engineer (Core) at Payle: full-time, equity with vesting, San Francisco-bound with the team if we make the batch. He owns the authorization engine, the ledger, and the money test suite. His first shipped test, rate limiting under burst load, is coming in a follow-up post.",
+        text: "Alex is now officially Founding Engineer (Core) at Payle: full-time, equity with vesting, San Francisco-bound with the team if we make the batch. He owns the authorization engine, the ledger, and the money test suite. His first shipped test, rate limiting under burst load, is coming in a follow-up post. Next in this series: [Raj Koli, Founding Engineer on the Agent Experience](/thoughts/welcoming-raj-koli-founding-engineer-agent-experience/).",
       },
       {
         type: "list",
