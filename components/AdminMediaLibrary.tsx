@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Button, Card, Empty, Notice, SectionHeader, TextArea, TextInput, Pill } from "@/components/admin/ui";
+import { Button, Card, Empty, Field, InlineButton, Notice, Pill, SectionHeader, TextArea, TextInput } from "@/components/admin/ui";
 import { formatBytes, MEDIA_MAX_BYTES, type MediaItem } from "@/lib/media";
 
 /**
@@ -134,7 +134,7 @@ export function AdminMediaLibrary({ onError }: { onError: (message: string) => v
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <SectionHeader
         eyebrow="Assets"
         title="Media"
@@ -150,22 +150,22 @@ export function AdminMediaLibrary({ onError }: { onError: (message: string) => v
           onDragOver={(event) => { event.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onDrop={(event) => { event.preventDefault(); setDragOver(false); if (event.dataTransfer.files.length) void uploadMany(event.dataTransfer.files); }}
-          className={`rounded-2xl border border-dashed p-10 text-center text-sm transition-colors ${dragOver ? "border-[#111] bg-[#f4f4f2]" : "border-[#d5d5d2]"}`}
+          className={`rounded-lg border border-dashed px-6 py-8 text-center transition-colors ${dragOver ? "border-admin-faint bg-admin-soft" : "border-admin-line"}`}
         >
-          <p className="text-[#555]">Drop files here, or</p>
-          <div className="mt-3">
+          <p className="text-[13px] text-admin-muted">Drop files here, or</p>
+          <div className="mt-3 flex justify-center">
             <Button onClick={() => inputRef.current?.click()} disabled={busy || storage === "unconfigured"}>Choose files</Button>
           </div>
           <input ref={inputRef} type="file" multiple className="hidden" onChange={(event) => event.target.files && void uploadMany(event.target.files)} />
-          <p className="mt-4 text-xs text-[#999]">Images, MP3, M4A, WAV, WebM, MP4 and PDF. Up to {formatBytes(MEDIA_MAX_BYTES)} each. SVG and HTML are refused on purpose: served from this domain, they would be script injection.</p>
+          <p className="mx-auto mt-3 max-w-xl text-[11px] leading-4 text-admin-faint">Images, MP3, M4A, WAV, WebM, MP4 and PDF. Up to {formatBytes(MEDIA_MAX_BYTES)} each. SVG and HTML are refused on purpose: served from this domain, they would be script injection.</p>
         </div>
         {uploads.length ? (
-          <ul className="mt-4 space-y-2 text-xs">
+          <ul className="mt-3 border-t border-admin-line">
             {uploads.map((entry) => (
-              <li key={entry.name} className="flex items-center justify-between gap-3 border-b border-[#ededeb] pb-2">
-                <span className="min-w-0 truncate text-[#333]">{entry.name}</span>
-                <span className="flex items-center gap-3">
-                  {entry.state === "uploading" ? <span className="text-[#777]">{entry.progress}%</span> : null}
+              <li key={entry.name} className="flex items-center justify-between gap-3 border-b border-admin-line py-2 last:border-0">
+                <span className="min-w-0 truncate text-[12px] text-admin-ink">{entry.name}</span>
+                <span className="flex shrink-0 items-center gap-3">
+                  {entry.state === "uploading" ? <span className="admin-tabular text-[12px] text-admin-faint">{entry.progress}%</span> : null}
                   {entry.state === "done" ? <Pill tone="good">done</Pill> : null}
                   {entry.state === "error" ? <Pill tone="bad">{entry.message}</Pill> : null}
                 </span>
@@ -177,36 +177,30 @@ export function AdminMediaLibrary({ onError }: { onError: (message: string) => v
 
       <Card title={`Library · ${items.length}`}>
         {items.length ? (
-          <ul className="divide-y divide-[#ededeb]">
+          <ul className="divide-y divide-admin-line">
             {items.map((item) => (
-              <li key={item.key} className="py-4">
-                <div className="flex flex-wrap items-start justify-between gap-4">
+              <li key={item.key} className="py-3 first:pt-0 last:pb-0">
+                <div className="flex flex-wrap items-start justify-between gap-3">
                   <div className="min-w-0 flex-1">
-                    <p className="truncate text-sm text-[#111]">{item.name}</p>
-                    <p className="mt-1 break-all font-mono text-[11px] text-[#999]">{item.url || `/media/${item.key}`}</p>
-                    <p className="mt-1 text-[11px] text-[#999]">
-                      <Pill>{item.kind}</Pill>{" "}
-                      <span className="ml-2">{formatBytes(item.size)}</span>
-                      {item.uploadedAt ? <span className="ml-2">{new Date(item.uploadedAt).toLocaleDateString()}</span> : null}
+                    <p className="truncate text-[13px] text-admin-ink">{item.name}</p>
+                    <p className="mt-0.5 break-all font-mono text-[11px] text-admin-faint">{item.url || `/media/${item.key}`}</p>
+                    <p className="mt-1 flex flex-wrap items-center gap-3 text-[11px] text-admin-faint">
+                      <Pill>{item.kind}</Pill>
+                      <span className="admin-tabular">{formatBytes(item.size)}</span>
+                      {item.uploadedAt ? <span className="admin-tabular">{new Date(item.uploadedAt).toLocaleDateString()}</span> : null}
                     </p>
-                    {item.alt ? <p className="mt-2 text-xs text-[#555]">Alt: {item.alt}</p> : item.kind === "image" ? <p className="mt-2 text-xs text-[#a33]">No alt text yet.</p> : null}
+                    {item.alt ? <p className="mt-1.5 text-[12px] text-admin-muted">Alt: {item.alt}</p> : item.kind === "image" ? <p className="mt-1.5 text-[12px] text-admin-muted">No alt text yet.</p> : null}
                   </div>
-                  <div className="flex flex-wrap gap-3 text-xs">
-                    <button type="button" onClick={() => { navigator.clipboard.writeText(item.url || `/media/${item.key}`); }} className="text-[#555] underline">Copy URL</button>
-                    <button type="button" onClick={() => { setEditing(editing === item.key ? null : item.key); setAlt(item.alt || ""); setCaption(item.caption || ""); }} className="text-[#555] underline">{editing === item.key ? "Close" : "Details"}</button>
-                    <button type="button" onClick={() => void remove(item)} className="text-[#a33] underline">Delete</button>
+                  <div className="flex shrink-0 flex-wrap items-center gap-3">
+                    <InlineButton onClick={() => { navigator.clipboard.writeText(item.url || `/media/${item.key}`); }}>Copy URL</InlineButton>
+                    <InlineButton onClick={() => { setEditing(editing === item.key ? null : item.key); setAlt(item.alt || ""); setCaption(item.caption || ""); }}>{editing === item.key ? "Close" : "Details"}</InlineButton>
+                    <InlineButton onClick={() => void remove(item)}>Delete</InlineButton>
                   </div>
                 </div>
                 {editing === item.key ? (
-                  <div className="mt-4 grid gap-3 sm:grid-cols-2">
-                    <label className="block">
-                      <span className="mb-1.5 block text-xs text-[#777]">Alt text</span>
-                      <TextInput value={alt} onChange={setAlt} placeholder="What the image shows" />
-                    </label>
-                    <label className="block">
-                      <span className="mb-1.5 block text-xs text-[#777]">Caption</span>
-                      <TextArea rows={2} value={caption} onChange={setCaption} />
-                    </label>
+                  <div className="mt-3 grid gap-3 rounded-md border border-admin-line bg-admin-bg p-3 sm:grid-cols-2">
+                    <Field label="Alt text"><TextInput value={alt} onChange={setAlt} placeholder="What the image shows" /></Field>
+                    <Field label="Caption"><TextArea rows={2} value={caption} onChange={setCaption} /></Field>
                     <div className="sm:col-span-2">
                       <Button tone="primary" onClick={() => void saveMeta(item.key)}>Save details</Button>
                     </div>

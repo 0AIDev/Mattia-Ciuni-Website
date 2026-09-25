@@ -1,7 +1,28 @@
 # Pannello admin
 
-Il pannello e' l'unico posto dove si opera il sito. Otto sezioni, una barra
-laterale, nessuna sottopagina.
+Il pannello e' l'unico posto dove si opera il sito. Nove sezioni, una barra
+laterale fissa e un blocco centrale che scorre da solo, nessuna sottopagina.
+
+## Perche' ha un aspetto suo
+
+Il pannello non usa il design system del sito pubblico, e non e' una
+dimenticanza. Il sito e' editoriale: serif, pill, raggi grandi, dark mode. Il
+pannello e' uno strumento: sans, raggi da 6px, altezze da 28px, una sola
+modalita'.
+
+Le due scelte che valgono per tutto:
+
+- **Monocromo.** Non c'e' un colore di stato: c'e' un punto pieno, un punto
+  vuoto e la parola accanto. Dieci significati in dieci colori smettono di
+  comunicare, e il colore non porta nessuna informazione che il testo non porti
+  gia'.
+- **I token stanno in `tailwind.config.ts`** sotto `admin` (nove tinte), piu'
+  tre regole in `app/globals.css` per quello che Tailwind non copre: raggio dei
+  campi, focus, cifre tabulari. Il sito pubblico non le vede, perche' sono sotto
+  `#admin-feedback-page`.
+
+Le icone sono `components/admin/icons.tsx`: dodici path disegnati a mano sulla
+stessa griglia, invece di un pacchetto da 1500 icone per usarne dodici.
 
 | Sezione | Cosa fa | Endpoint |
 | --- | --- | --- |

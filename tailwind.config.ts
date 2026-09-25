@@ -30,6 +30,24 @@ const light = {
   gray1200: "#161616",
 };
 
+// La scala del pannello admin.
+//
+// Il pannello e' uno strumento privato con un suo linguaggio, e questi valori
+// non passano dalle variabili del sito per un motivo preciso: non ha una dark
+// mode. Un tool ha un aspetto solo, e averne due significa mantenerne due; le
+// stesse tinte sono ripetute in `app/globals.css` per le poche regole che
+// Tailwind non copre (raggio dei campi, focus).
+const admin = {
+  bg: "#f9f9f8",
+  panel: "#ffffff",
+  line: "#e9e9e7",
+  soft: "#f4f4f2",
+  active: "#ebebea",
+  ink: "#282a30",
+  muted: "#6b6f76",
+  faint: "#8f939a",
+};
+
 const config: Config = {
   darkMode: "class",
   content: ["./app/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./lib/**/*.{ts,tsx}"],
@@ -39,6 +57,7 @@ const config: Config = {
         // Stessi nomi di prima: nessuna classe del sito cambia. I valori light
         // sono anche i default delle variabili, dichiarati in globals.css su
         // :root; .dark li ridefinisce.
+        admin,
         "gray-background": varColor("--tc-background", rgbChannels(light.background)),
         "preview-bg": varColor("--tc-preview-bg", rgbChannels(light.previewBg)),
         "preview-border": varColor("--tc-preview-border", rgbChannels(light.previewBorder)),

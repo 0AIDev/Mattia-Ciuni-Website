@@ -9,9 +9,10 @@ import { Button, Card, Field, Notice, Pill, SectionHeader, TextArea, TextInput, 
  * L'editor di contenuti.
  *
  * Un solo editor per tutti i kind, con i campi che cambiano in base al kind
- * scelto. La alternativa, un form per tipo, would drift: il giorno in cui
- * l'editor dei redirect accetta una riga in piu' e quello delle pagine no, i due
- * smettono di somigliare e il pannello torna a essere illeggibile.
+ * scelto. La alternativa, un form per tipo, sarebbe andata alla deriva: il
+ * giorno in cui l'editor dei redirect accetta una riga in piu' e quello delle
+ * pagine no, i due smettono di somigliare e il pannello torna a essere
+ * illeggibile.
  *
  * I campi non sono "tutti i campi possibili" ma quelli che il registry e il
  * renderer di quel kind leggono davvero: un campo che nessuno legge e' una
@@ -91,9 +92,6 @@ export function AdminContentEditor({
   onRestore?: (kind: CmsKind, slug: string) => Promise<boolean>;
 }) {
   const [filter, setFilter] = useState<CmsKind | "all">("all");
-  // Il filtro segue il tipo dell'item rimandato: altrimenti SEO aprirebbe
-  // l'editor con la lista filtrata su "Redirect" ma l'articolo selezionato
-  // sparito dalla lista, che e' la peggiore delle due cose da lasciare ambiguo.
   const [selectedId, setSelectedId] = useState<string>("");
   const focusId = focus?.id;
   const [draft, setDraft] = useState<AdminContentItem>(() => newItem());
@@ -214,169 +212,192 @@ export function AdminContentEditor({
   const locales = Array.isArray(draft.data.locales) ? (draft.data.locales as string[]) : [];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <SectionHeader
         eyebrow="Publishing"
         title="Content"
         description="Everything the site publishes, in one library. Draft first, publish when it holds."
-        actions={<Button onClick={() => startNew(kind)}>New {KIND_LABELS[kind].toLowerCase()}</Button>}
+        actions={<Button tone="primary" onClick={() => startNew(kind)}>New {KIND_LABELS[kind].toLowerCase()}</Button>}
       />
 
-      <div className="flex flex-wrap gap-2">
-        <button type="button" onClick={() => setFilter("all")} className={`rounded-full border px-3 py-1.5 text-xs ${filter === "all" ? "border-[#111] text-[#111]" : "border-[#e5e5e3] text-[#777]"}`}>
-          All <span className="text-[#999]">{items.length}</span>
+      <div className="-mx-1 flex flex-wrap items-center gap-1 px-1">
+        <button type="button" onClick={() => setFilter("all")} className={tabClass(filter === "all")}>
+          All <span className="admin-tabular text-admin-faint">{items.length}</span>
         </button>
         {CMS_KINDS.filter((entry) => counts.get(entry)).map((entry) => (
-          <button key={entry} type="button" onClick={() => setFilter(entry)} className={`rounded-full border px-3 py-1.5 text-xs ${filter === entry ? "border-[#111] text-[#111]" : "border-[#e5e5e3] text-[#777]"}`}>
-            {KIND_LABELS[entry]} <span className="text-[#999]">{counts.get(entry)}</span>
+          <button key={entry} type="button" onClick={() => setFilter(entry)} className={tabClass(filter === entry)}>
+            {KIND_LABELS[entry]} <span className="admin-tabular text-admin-faint">{counts.get(entry)}</span>
           </button>
         ))}
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-[240px_1fr]">
-        <Card title="Library">
+      <div className="grid gap-4 lg:grid-cols-[252px_1fr]">
+        <section className="overflow-hidden rounded-lg border border-admin-line bg-admin-panel">
+          <header className="flex min-h-10 items-center border-b border-admin-line px-3.5 py-2">
+            <h2 className="text-[13px] font-medium text-admin-ink">{filter === "all" ? "Library" : KIND_LABELS[filter]}</h2>
+            <span className="admin-tabular ml-auto text-[11px] text-admin-faint">{visible.length}</span>
+          </header>
           {visible.length ? (
-            <div className="max-h-[70vh] divide-y divide-[#ededeb] overflow-y-auto">
+            <div className="max-h-[62vh] overflow-y-auto p-1">
               {visible.map((item) => (
-                <button key={item.id} type="button" onClick={() => choose(item)} className={`w-full px-1 py-3 text-left text-sm ${selectedId === item.id ? "font-medium text-[#111]" : "text-[#777]"}`}>
-                  <span className="block truncate">{item.title || item.slug}</span>
-                  <span className="mt-1 flex items-center gap-2 text-[11px] text-[#999]">
-                    {KIND_LABELS[item.kind]}
+                <button
+                  key={item.id}
+                  type="button"
+                  onClick={() => choose(item)}
+                  className={`mb-0.5 flex w-full flex-col rounded-md px-2 py-1.5 text-left transition-colors ${selectedId === item.id ? "bg-admin-active" : "hover:bg-admin-soft"}`}
+                >
+                  <span className={`block truncate text-[13px] ${selectedId === item.id ? "text-admin-ink" : "text-admin-ink/90"}`}>{item.title || item.slug}</span>
+                  <span className="mt-0.5 flex items-center gap-2 text-[11px] text-admin-faint">
+                    <span className="truncate">{KIND_LABELS[item.kind]}</span>
                     {item.status === "published" ? <Pill tone="good">live</Pill> : null}
                   </span>
                 </button>
               ))}
             </div>
           ) : (
-            <p className="py-10 text-center text-sm text-[#777]">Nothing here yet.</p>
+            <p className="px-3.5 py-10 text-center text-[13px] text-admin-faint">Nothing here yet.</p>
           )}
-        </Card>
+        </section>
 
-        <div className="space-y-6">
-          <Card title="Editor">
-            <div className="mb-5 flex flex-wrap items-center justify-between gap-3 border-b border-[#ededeb] pb-4">
-              <p className="text-xs text-[#999]">{draft.version ? `Version ${draft.version}` : "Unsaved draft"}</p>
+        <Card
+          title="Editor"
+          action={
+            <div className="flex items-center gap-3">
+              <span className="admin-tabular text-[11px] text-admin-faint">{draft.version ? `Version ${draft.version}` : "Unsaved draft"}</span>
               <Pill tone={draft.status === "published" ? "good" : "neutral"}>{draft.status}</Pill>
             </div>
+          }
+        >
+          <div className="grid gap-3 sm:grid-cols-2">
+            <Field label="Type" hint={KIND_HINTS[kind]}>
+              <Select
+                value={kind}
+                label="Content type"
+                onChange={(value) => update("kind", value as CmsKind)}
+                options={CMS_KINDS.map((entry) => ({ value: entry, label: KIND_LABELS[entry] }))}
+              />
+            </Field>
+            <Field label="Slug" hint="Lowercase, numbers and dashes. It becomes the file name on Git.">
+              <TextInput value={draft.slug} onChange={(value) => update("slug", value)} />
+            </Field>
+            <Field label="Title">
+              <TextInput value={draft.title} onChange={(value) => update("title", value)} />
+            </Field>
+            <Field label="Date" hint="Used for ordering on the home and in the archives.">
+              <TextInput type="date" value={String(draft.data.date || "")} onChange={(value) => updateData({ date: value })} />
+            </Field>
+          </div>
 
-            <div className="grid gap-4 sm:grid-cols-2">
-              <Field label="Type" hint={KIND_HINTS[kind]}>
-                <Select
-                  value={kind}
-                  label="Content type"
-                  onChange={(value) => update("kind", value as CmsKind)}
-                  options={CMS_KINDS.map((entry) => ({ value: entry, label: KIND_LABELS[entry] }))}
-                />
-              </Field>
-              <Field label="Slug" hint="Lowercase, numbers and dashes. It becomes the file name on Git.">
-                <TextInput value={draft.slug} onChange={(value) => update("slug", value)} />
-              </Field>
-              <Field label="Title">
-                <TextInput value={draft.title} onChange={(value) => update("title", value)} />
-              </Field>
-              <Field label="Date" hint="Used for ordering on the home and in the archives.">
-                <TextInput type="date" value={String(draft.data.date || "")} onChange={(value) => updateData({ date: value })} />
-              </Field>
+          <div className="mt-3 grid gap-3">
+            <Field label="Description" hint="The one line that appears in the SERP, the cards and the feed. Around 155 characters.">
+              <TextArea rows={3} value={draft.description} onChange={(value) => update("description", value)} />
+            </Field>
+          </div>
+
+          {(kind === "post" || kind === "note" || kind === "feedback" || kind === "page") && (
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              <Field label="Category"><TextInput value={String(draft.data.category || "")} onChange={(value) => updateData({ category: value })} /></Field>
+              <Field label="Tags" hint="Comma separated."><TextInput value={tagsOf(draft.data)} onChange={(value) => updateList("tags", value)} /></Field>
+              <Field label="Keywords" hint="Comma separated."><TextInput value={keywordsOf(draft.data)} onChange={(value) => updateList("keywords", value)} /></Field>
             </div>
+          )}
 
-            <div className="mt-4 grid gap-4">
-              <Field label="Description" hint="The one line that appears in the SERP, the cards and the feed. Around 155 characters.">
-                <TextArea rows={3} value={draft.description} onChange={(value) => update("description", value)} />
-              </Field>
-            </div>
-
-            {(kind === "post" || kind === "note" || kind === "feedback" || kind === "page") && (
-              <div className="mt-4 grid gap-4 sm:grid-cols-3">
-                <Field label="Category"><TextInput value={String(draft.data.category || "")} onChange={(value) => updateData({ category: value })} /></Field>
-                <Field label="Tags" hint="Comma separated."><TextInput value={tagsOf(draft.data)} onChange={(value) => updateList("tags", value)} /></Field>
-                <Field label="Keywords" hint="Comma separated."><TextInput value={keywordsOf(draft.data)} onChange={(value) => updateList("keywords", value)} /></Field>
-              </div>
-            )}
-
-            {kind === "page" && (
-              <div className="mt-4">
-                <Field label="Languages" hint="A page is generated only for the languages listed here. Empty means English only.">
-                  <div className="flex flex-wrap gap-2">
-                    {LOCALES.map((locale) => {
-                      const on = locales.includes(locale);
-                      return (
-                        <button key={locale} type="button" onClick={() => updateList("locales", (on ? locales.filter((entry) => entry !== locale) : [...locales, locale]).join(", "))} className={`rounded-full border px-3 py-1.5 text-xs ${on ? "border-[#111] bg-[#111] text-white" : "border-[#bbb] text-[#666]"}`}>
-                          {locale}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </Field>
-              </div>
-            )}
-
-            {kind === "voice_note" && (
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <Field label="Audio src" hint="From the Media tab, for example /media/content/raj.mp3."><TextInput value={String(draft.data.audioSrc || "")} onChange={(value) => updateData({ audioSrc: value })} /></Field>
-                <Field label="Duration" hint="Optional, for example 4:32."><TextInput value={String(draft.data.duration || "")} onChange={(value) => updateData({ duration: value })} /></Field>
-              </div>
-            )}
-
-            {kind === "video" && (
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <Field label="Video src" hint="From the Media tab."><TextInput value={String(draft.data.videoSrc || "")} onChange={(value) => updateData({ videoSrc: value })} /></Field>
-                <Field label="Poster image" hint="Optional, from the Media tab."><TextInput value={String(draft.data.poster || "")} onChange={(value) => updateData({ poster: value })} /></Field>
-              </div>
-            )}
-
-            {kind === "redirect" && (
-              <div className="mt-4 grid gap-4 sm:grid-cols-3">
-                <Field label="From" hint="The old path, with a leading slash."><TextInput value={String(draft.data.from || "")} onChange={(value) => updateData({ from: value })} placeholder="/old-path/" /></Field>
-                <Field label="To" hint="A path or a full https URL."><TextInput value={String(draft.data.to || "")} onChange={(value) => updateData({ to: value })} placeholder="/new-path/" /></Field>
-                <Field label="Status">
-                  <Select value={String(draft.data.status || 301)} label="Redirect status" onChange={(value) => updateData({ status: Number(value) })} options={[{ value: "301", label: "301 permanent" }, { value: "302", label: "302 temporary" }]} />
-                </Field>
-              </div>
-            )}
-
-            {kind === "settings" && (
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                <Field label="Name"><TextInput value={String(draft.data.name || "")} onChange={(value) => updateData({ name: value })} /></Field>
-                <Field label="Role" hint="The line under the name on the home."><TextInput value={String(draft.data.role || "")} onChange={(value) => updateData({ role: value })} /></Field>
-                <Field label="Email" hint="Feeds the contact link and the NDA page."><TextInput value={String(draft.data.email || "")} onChange={(value) => updateData({ email: value })} /></Field>
-                <Field label="Payle URL"><TextInput value={String(draft.data.payleUrl || "")} onChange={(value) => updateData({ payleUrl: value })} /></Field>
-                <div className="sm:col-span-2">
-                  <Field label="SEO description" hint="Around 155 characters. An empty field falls back to the one in code.">
-                    <TextArea rows={2} value={String(draft.data.description || "")} onChange={(value) => updateData({ description: value })} />
-                  </Field>
+          {kind === "page" && (
+            <div className="mt-3">
+              <Field label="Languages" hint="A page is generated only for the languages listed here. Empty means English only.">
+                <div className="flex flex-wrap gap-1.5">
+                  {LOCALES.map((locale) => {
+                    const on = locales.includes(locale);
+                    return (
+                      <button
+                        key={locale}
+                        type="button"
+                        onClick={() => updateList("locales", (on ? locales.filter((entry) => entry !== locale) : [...locales, locale]).join(", "))}
+                        className={`h-7 rounded-md border px-2 text-[12px] transition-colors ${on ? "border-transparent bg-admin-ink text-white" : "border-admin-line text-admin-muted hover:bg-admin-soft hover:text-admin-ink"}`}
+                      >
+                        {locale}
+                      </button>
+                    );
+                  })}
                 </div>
-              </div>
-            )}
+              </Field>
+            </div>
+          )}
 
-            {kind !== "settings" && kind !== "redirect" && kind !== "site_copy" && kind !== "taxonomy" && (
-              <div className="mt-4">
-                <Field label="Body, Markdown" hint="## for a section, > for a quote, - for a list, ``` for code, @@audio|src|title for a player.">
-                  <TextArea rows={16} mono value={draft.body_markdown} onChange={(value) => update("body_markdown", value)} />
+          {kind === "voice_note" && (
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <Field label="Audio src" hint="From the Media tab, for example /media/content/raj.mp3."><TextInput value={String(draft.data.audioSrc || "")} onChange={(value) => updateData({ audioSrc: value })} /></Field>
+              <Field label="Duration" hint="Optional, for example 4:32."><TextInput value={String(draft.data.duration || "")} onChange={(value) => updateData({ duration: value })} /></Field>
+            </div>
+          )}
+
+          {kind === "video" && (
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <Field label="Video src" hint="From the Media tab."><TextInput value={String(draft.data.videoSrc || "")} onChange={(value) => updateData({ videoSrc: value })} /></Field>
+              <Field label="Poster image" hint="Optional, from the Media tab."><TextInput value={String(draft.data.poster || "")} onChange={(value) => updateData({ poster: value })} /></Field>
+            </div>
+          )}
+
+          {kind === "redirect" && (
+            <div className="mt-3 grid gap-3 sm:grid-cols-3">
+              <Field label="From" hint="The old path, with a leading slash."><TextInput value={String(draft.data.from || "")} onChange={(value) => updateData({ from: value })} placeholder="/old-path/" /></Field>
+              <Field label="To" hint="A path or a full https URL."><TextInput value={String(draft.data.to || "")} onChange={(value) => updateData({ to: value })} placeholder="/new-path/" /></Field>
+              <Field label="Status">
+                <Select value={String(draft.data.status || 301)} label="Redirect status" onChange={(value) => updateData({ status: Number(value) })} options={[{ value: "301", label: "301 permanent" }, { value: "302", label: "302 temporary" }]} />
+              </Field>
+            </div>
+          )}
+
+          {kind === "settings" && (
+            <div className="mt-3 grid gap-3 sm:grid-cols-2">
+              <Field label="Name"><TextInput value={String(draft.data.name || "")} onChange={(value) => updateData({ name: value })} /></Field>
+              <Field label="Role" hint="The line under the name on the home."><TextInput value={String(draft.data.role || "")} onChange={(value) => updateData({ role: value })} /></Field>
+              <Field label="Email" hint="Feeds the contact link and the NDA page."><TextInput value={String(draft.data.email || "")} onChange={(value) => updateData({ email: value })} /></Field>
+              <Field label="Payle URL"><TextInput value={String(draft.data.payleUrl || "")} onChange={(value) => updateData({ payleUrl: value })} /></Field>
+              <div className="sm:col-span-2">
+                <Field label="SEO description" hint="Around 155 characters. An empty field falls back to the one in code.">
+                  <TextArea rows={2} value={String(draft.data.description || "")} onChange={(value) => updateData({ description: value })} />
                 </Field>
               </div>
-            )}
+            </div>
+          )}
 
-            <div className="mt-4">
-              <Field label="Structured data, JSON" hint="Anything the specific fields above do not cover. Published as-is.">
-                <TextArea rows={10} mono value={dataText} onChange={updateDataJson} />
+          {kind !== "settings" && kind !== "redirect" && kind !== "site_copy" && kind !== "taxonomy" && (
+            <div className="mt-3">
+              <Field label="Body, Markdown" hint="## for a section, > for a quote, - for a list, ``` for code, @@audio|src|title for a player.">
+                <TextArea rows={16} mono value={draft.body_markdown} onChange={(value) => update("body_markdown", value)} />
               </Field>
-              {dataError ? <p className="mt-2 text-xs text-[#8c3a3a]">{dataError}</p> : null}
             </div>
+          )}
 
-            {notice ? <div className="mt-4"><Notice tone={notice.tone}>{notice.text}</Notice></div> : null}
+          <div className="mt-3">
+            <Field label="Structured data, JSON" hint="Anything the specific fields above do not cover. Published as-is.">
+              <TextArea rows={10} mono value={dataText} onChange={updateDataJson} />
+            </Field>
+            {dataError ? <p className="mt-1.5 text-[12px] text-admin-muted">{dataError}</p> : null}
+          </div>
 
-            <div className="mt-6 flex flex-wrap gap-3 border-t border-[#ededeb] pt-5">
-              <Button onClick={() => void save()} disabled={loading || !draft.title || !draft.slug}>Save draft</Button>
-              <Button tone="primary" onClick={() => void publish()} disabled={loading || !draft.title || !draft.slug}>Publish to Git</Button>
-              {onRestore && draft.status === "published" ? (
-                <Button tone="danger" disabled={loading} onClick={() => void onRestore(kind, draft.slug)} title="Revert this file to the last published commit">
-                  Revert published version
-                </Button>
-              ) : null}
-            </div>
-          </Card>
-        </div>
+          {notice ? <div className="mt-3"><Notice tone={notice.tone}>{notice.text}</Notice></div> : null}
+
+          <div className="mt-4 flex flex-wrap items-center gap-2 border-t border-admin-line pt-3.5">
+            <Button onClick={() => void save()} disabled={loading || !draft.title || !draft.slug}>Save draft</Button>
+            <Button tone="primary" onClick={() => void publish()} disabled={loading || !draft.title || !draft.slug}>Publish to Git</Button>
+            {onRestore && draft.status === "published" ? (
+              <Button disabled={loading} onClick={() => void onRestore(kind, draft.slug)} title="Revert this file to the last published commit">
+                Revert published version
+              </Button>
+            ) : null}
+          </div>
+        </Card>
       </div>
     </div>
   );
+}
+
+function tabClass(active: boolean) {
+  return `inline-flex h-7 items-center gap-1.5 rounded-full border px-2.5 text-[13px] transition-colors ${
+    active
+      ? "border-admin-line bg-admin-active text-admin-ink"
+      : "border-transparent text-admin-muted hover:bg-admin-soft hover:text-admin-ink"
+  }`;
 }

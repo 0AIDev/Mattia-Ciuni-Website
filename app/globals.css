@@ -336,8 +336,25 @@ html {
   mask: url("/logo.svg") no-repeat center / contain;
 }
 
-.admin-card {
-  border-radius: 20px;
+/* Il pannello admin ha il linguaggio di uno strumento, e due regole qui sopra
+   lo contraddicono: i campi sono pill (9999px) e il focus e' un contorno nero
+   spesso staccato di 3px. Nel pannello i raggi sono piccoli e il focus si vede
+   senza spostare niente. Sono sotto `#admin-feedback-page`, quindi non toccano
+   una sola pagina pubblica. */
+#admin-feedback-page input:not([type="checkbox"]):not([type="radio"]):not([type="range"]):not(.sr-only),
+#admin-feedback-page textarea,
+#admin-feedback-page select {
+  border-radius: 6px;
+}
+
+#admin-feedback-page :focus-visible {
+  outline: 2px solid rgba(40, 42, 48, 0.28);
+  outline-offset: 0;
+}
+
+/* Un numero che cambia non deve far ballare la riga che lo contiene. */
+#admin-feedback-page .admin-tabular {
+  font-variant-numeric: tabular-nums;
 }
 
 .link-hero-cutout {

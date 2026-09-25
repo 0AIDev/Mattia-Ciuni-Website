@@ -1,7 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Button, Card, Empty, Notice, Pill, SectionHeader, Table, TextInput, Select, Field } from "@/components/admin/ui";
+import { Button, Card, Empty, Field, InlineButton, Notice, Pill, SectionHeader, Table, TextInput } from "@/components/admin/ui";
 import type { AdminContentItem, CmsKind } from "@/lib/cms-types";
 
 /**
@@ -43,7 +43,7 @@ export function AdminSeoView({
   );
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       <SectionHeader
         eyebrow="Discovery"
         title="SEO"
@@ -65,7 +65,7 @@ export function AdminSeoView({
         }
       />
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 xl:grid-cols-2">
         <Card title={`Redirects · ${redirects.length}`}>
           {redirects.length ? (
             <Table
@@ -74,13 +74,13 @@ export function AdminSeoView({
                 <span className="font-mono text-[12px]">{String(item.data.from || "—")}</span>,
                 <span className="break-all font-mono text-[12px]">{String(item.data.to || "—")}</span>,
                 <Pill>{Number(item.data.status || 301)}</Pill>,
-                <button type="button" onClick={() => onEdit(item)} className="text-[#555] underline">Edit</button>,
+                <InlineButton onClick={() => onEdit(item)}>Edit</InlineButton>,
               ])}
             />
           ) : (
             <Empty>No redirects. Paths that move keep their address, that is the point.</Empty>
           )}
-          <p className="mt-4 text-xs leading-5 text-[#999]">Cloudflare Pages reads <code className="font-mono">_redirects</code> at deploy. Past 100 rules the extras are ignored without a warning, and the build fails first.</p>
+          <p className="mt-3 border-t border-admin-line pt-3 text-[11px] leading-4 text-admin-faint">Cloudflare Pages reads <code className="font-mono">_redirects</code> at deploy. Past 100 rules the extras are ignored without a warning, and the build fails first.</p>
         </Card>
 
         <Card title={`Pages · ${pages.length}`}>
@@ -91,55 +91,55 @@ export function AdminSeoView({
                 const locales = Array.isArray(item.data.locales) ? (item.data.locales as string[]) : ["en"];
                 return [
                   <span className="truncate">{item.title || item.slug}</span>,
-                  <span>{locales.join(", ")}</span>,
+                  <span className="font-mono text-[12px]">{locales.join(", ")}</span>,
                   item.data.noindex ? <Pill tone="warn">no</Pill> : <Pill tone="good">yes</Pill>,
-                  <button type="button" onClick={() => onEdit(item)} className="text-[#555] underline">Edit</button>,
+                  <InlineButton onClick={() => onEdit(item)}>Edit</InlineButton>,
                 ];
               })}
             />
           ) : (
             <Empty>No pages created here yet. A page gets its own route in every language you list.</Empty>
           )}
-          <p className="mt-4 text-xs leading-5 text-[#999]">A page without <code className="font-mono">noindex</code> goes into the sitemap, the llms.txt cards and the news sitemap at the next deploy.</p>
+          <p className="mt-3 border-t border-admin-line pt-3 text-[11px] leading-4 text-admin-faint">A page without <code className="font-mono">noindex</code> goes into the sitemap, the llms.txt cards and the news sitemap at the next deploy.</p>
         </Card>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2">
+      <div className="grid gap-4 xl:grid-cols-2">
         <Card title="Metadata to review">
           {missingDescription.length || missingAlt.length ? (
-            <div className="space-y-4">
+            <div className="space-y-3">
               {missingDescription.length ? (
                 <div>
-                  <p className="text-xs text-[#777]">Thin or missing description, {missingDescription.length} items. Search engines and agents write their own snippet when there is none.</p>
-                  <ul className="mt-2 space-y-1 text-xs text-[#555]">
+                  <p className="text-[12px] text-admin-muted">Thin or missing description, {missingDescription.length} items. Search engines and agents write their own snippet when there is none.</p>
+                  <ul className="mt-1.5 space-y-0.5 text-[12px] text-admin-faint">
                     {missingDescription.slice(0, 6).map((item) => <li key={item.id} className="truncate">{item.title || item.slug}</li>)}
                   </ul>
                 </div>
               ) : null}
               {missingAlt.length ? (
                 <div>
-                  <p className="text-xs text-[#777]">No share image, {missingAlt.length} items. Without one the social card falls back to the site image.</p>
-                  <ul className="mt-2 space-y-1 text-xs text-[#555]">
+                  <p className="text-[12px] text-admin-muted">No share image, {missingAlt.length} items. Without one the social card falls back to the site image.</p>
+                  <ul className="mt-1.5 space-y-0.5 text-[12px] text-admin-faint">
                     {missingAlt.slice(0, 6).map((item) => <li key={item.id} className="truncate">{item.title || item.slug}</li>)}
                   </ul>
                 </div>
               ) : null}
             </div>
           ) : (
-            <p className="text-sm text-[#555]">Every published item has a description and a share image.</p>
+            <p className="text-[13px] text-admin-muted">Every published item has a description and a share image.</p>
           )}
         </Card>
 
         <Card title="Per-language checks">
-          <div className="space-y-4">
+          <div className="space-y-3">
             <Field label="Test a path" hint="Checks what the exported site actually serves, not what the panel believes.">
-              <div className="flex gap-3">
+              <div className="flex gap-2">
                 <TextInput value={testing.path || ""} onChange={(value) => setTesting((current) => ({ ...current, path: value }))} placeholder="/thoughts/money-layer-for-ai-agents/" />
                 <Button onClick={() => setTesting((current) => ({ ...current, result: window.location.origin + (current.path || "") }))}>Resolve</Button>
               </div>
             </Field>
             {testing.result ? <Notice>{testing.result}</Notice> : null}
-            <div className="border-t border-[#ededeb] pt-4 text-xs leading-5 text-[#999]">
+            <div className="border-t border-admin-line pt-3 text-[11px] leading-4 text-admin-faint">
               <p>Languages declared: {LOCALES.join(", ")}.</p>
               <p className="mt-1">The hreflang map is emitted per page for the languages that page exists in, with <code className="font-mono">x-default</code> on the English URL.</p>
             </div>

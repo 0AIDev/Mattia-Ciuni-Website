@@ -385,102 +385,95 @@ export default function FeedbackAdminPage() {
 
   if (!sessionChecked) {
     return (
-      <main id="admin-feedback-page" className="mx-auto w-full max-w-[760px] min-w-0 px-5 py-8 font-sans sm:px-6 sm:py-20">
-        <section aria-busy="true" aria-label="Checking admin session" className="animate-pulse">
-          <header className="flex items-start justify-between gap-6">
-            <div className="space-y-3">
-              <div className="h-9 w-56 rounded-full bg-gray-200" />
-              <div className="h-4 w-64 rounded-full bg-gray-200" />
-              <div className="h-4 w-36 rounded-full bg-gray-200" />
-            </div>
-            <div className="flex gap-2">
-              <div className="h-10 w-36 rounded-full bg-gray-200" />
-              <div className="h-10 w-20 rounded-full bg-gray-200" />
-            </div>
-          </header>
-          <div className="mt-10 grid gap-4">
-            {["w-full", "w-[92%]"].map((width) => (
-              <div key={width} className={`rounded-2xl border border-gray-200 bg-white px-5 py-5 sm:px-6 ${width}`}>
-                <div className="flex flex-wrap gap-2">
-                  <div className="h-4 w-28 rounded-full bg-gray-200" />
-                  <div className="h-4 w-36 rounded-full bg-gray-200" />
-                  <div className="h-4 w-24 rounded-full bg-gray-200" />
-                </div>
-                <div className="mt-5 space-y-2">
-                  <div className="h-4 w-full rounded-full bg-gray-200" />
-                  <div className="h-4 w-4/5 rounded-full bg-gray-200" />
-                </div>
-                <div className="mt-5 flex gap-2">
-                  <div className="h-9 w-20 rounded-full bg-gray-200" />
-                  <div className="h-9 w-20 rounded-full bg-gray-200" />
-                  <div className="h-4 w-32 self-center rounded-full bg-gray-200" />
-                </div>
-              </div>
-            ))}
+      <main id="admin-feedback-page" className="flex h-[100dvh] overflow-hidden bg-admin-bg font-sans text-admin-ink">
+        <div aria-hidden="true" className="hidden w-[236px] shrink-0 flex-col px-2 py-3 md:flex">
+          <div className="flex items-center gap-2 px-1.5">
+            <span className="admin-logo-black h-4 w-4" />
+            <span className="text-[13px] font-medium text-admin-ink">Mattia Ciuni</span>
           </div>
-        </section>
+          <div className="mt-5 animate-pulse space-y-1.5 px-1.5">
+            {Array.from({ length: 7 }, (_, index) => <div key={index} className="h-5 rounded-md bg-admin-active" />)}
+          </div>
+        </div>
+        <div className="flex min-h-0 min-w-0 flex-1 p-2 md:pl-0">
+          <section aria-busy="true" aria-label="Checking admin session" className="w-full overflow-hidden rounded-lg border border-admin-line bg-admin-panel p-5">
+            <div className="animate-pulse space-y-3">
+              <div className="h-3 w-16 rounded bg-admin-active" />
+              <div className="h-5 w-44 rounded bg-admin-active" />
+              <div className="h-3 w-72 rounded bg-admin-active" />
+              <div className="h-28 rounded-lg bg-admin-soft" />
+            </div>
+          </section>
+        </div>
       </main>
     );
   }
 
   if (!authenticated) {
     return (
-      <main id="admin-feedback-page" className="mx-auto flex min-h-[100dvh] max-w-[460px] items-center px-5 py-8 font-sans sm:px-6 sm:py-12">
-        <section className="w-full rounded-3xl border border-gray-300 bg-white p-6 sm:p-8">
+      <main id="admin-feedback-page" className="flex min-h-[100dvh] items-center justify-center bg-admin-bg px-5 py-10 font-sans text-admin-ink">
+        <section className="w-full max-w-[400px]">
+          <div className="mb-4 flex items-center gap-2 px-0.5">
+            <span aria-hidden="true" className="admin-logo-black h-5 w-5" />
+            <span className="text-[13px] font-medium text-admin-ink">Mattia Ciuni</span>
+            <span className="ml-auto text-[12px] text-admin-faint">Admin</span>
+          </div>
+          <div className="rounded-lg border border-admin-line bg-admin-panel p-5 sm:p-6">
           {resetRequested ? (
             <>
-              <h1 className="font-serif text-3xl text-gray-1200">Reset your authenticator</h1>
-              <p className="mt-3 text-sm leading-relaxed text-gray-1000">This revokes every existing admin session and lets you configure TOTP again from zero. It requires the dedicated Cloudflare reset secret.</p>
-              <form onSubmit={resetAuthenticator} className="mt-6 flex flex-col gap-3">
+              <h1 className="text-[18px] font-medium tracking-[-.01em] text-admin-ink">Reset your authenticator</h1>
+              <p className="mt-3 text-[13px] leading-5 text-admin-muted">This revokes every existing admin session and lets you configure TOTP again from zero. It requires the dedicated Cloudflare reset secret.</p>
+              <form onSubmit={resetAuthenticator} className="mt-4 flex flex-col gap-2.5">
                 <label htmlFor="totp-reset-token" className="sr-only">TOTP reset secret</label>
-                <input id="totp-reset-token" type="password" value={token} onChange={(event) => setToken(event.target.value)} placeholder="TOTP reset secret" autoComplete="off" className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 text-sm text-gray-1200 outline-none shadow-none focus:border-gray-1200 focus:outline-none" required />
-                <button type="submit" disabled={loading || !token} className="rounded-full bg-red-600 px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-80 disabled:opacity-50">{loading ? "Resetting" : "Reset authenticator"}</button>
+                <input id="totp-reset-token" type="password" value={token} onChange={(event) => setToken(event.target.value)} placeholder="TOTP reset secret" autoComplete="off" className="w-full rounded-md border border-admin-line bg-admin-panel px-3 py-2 text-[13px] text-admin-ink outline-none transition-colors placeholder:text-admin-faint hover:border-[#dbdbd8] focus:border-[#c9c9c6]" required />
+                <button type="submit" disabled={loading || !token} className="inline-flex h-9 w-full items-center justify-center rounded-md bg-admin-ink text-[13px] font-medium text-white transition-colors hover:bg-[#3d4048] disabled:pointer-events-none disabled:opacity-40">{loading ? "Resetting" : "Reset authenticator"}</button>
               </form>
             </>
           ) : mode === "setup" && !setup ? (
             <>
-              <h1 className="font-serif text-3xl text-gray-1200">Set up your authenticator</h1>
-              <p className="mt-3 text-sm leading-relaxed text-gray-1000">
+              <h1 className="text-[18px] font-medium tracking-[-.01em] text-admin-ink">Set up your authenticator</h1>
+              <p className="mt-3 text-[13px] leading-5 text-admin-muted">
                 This one-time setup uses the bootstrap secret configured for this deployment to create your authenticator. Scan the QR code, then confirm one six-digit code.
               </p>
-              <form onSubmit={beginSetup} className="mt-6 flex flex-col gap-3">
+              <form onSubmit={beginSetup} className="mt-4 flex flex-col gap-2.5">
                 <label htmlFor="admin-token" className="sr-only">Admin token</label>
-                <input id="admin-token" type="password" value={token} onChange={(event) => setToken(event.target.value)} placeholder="One-time setup secret" autoComplete="current-password" className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 text-sm text-gray-1200 outline-none shadow-none focus:border-gray-1200 focus:outline-none" required />
-                <button type="submit" disabled={loading} className="rounded-full bg-gray-1200 px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-80 disabled:opacity-50">{loading ? "Generating" : "Generate QR code"}</button>
+                <input id="admin-token" type="password" value={token} onChange={(event) => setToken(event.target.value)} placeholder="One-time setup secret" autoComplete="current-password" className="w-full rounded-md border border-admin-line bg-admin-panel px-3 py-2 text-[13px] text-admin-ink outline-none transition-colors placeholder:text-admin-faint hover:border-[#dbdbd8] focus:border-[#c9c9c6]" required />
+                <button type="submit" disabled={loading} className="inline-flex h-9 w-full items-center justify-center rounded-md bg-admin-ink text-[13px] font-medium text-white transition-colors hover:bg-[#3d4048] disabled:pointer-events-none disabled:opacity-40">{loading ? "Generating" : "Generate QR code"}</button>
               </form>
             </>
           ) : setup ? (
             <>
-              <h1 className="font-serif text-3xl text-gray-1200">Scan once, then confirm</h1>
-              <p className="mt-3 text-sm leading-relaxed text-gray-1000">Scan this QR code in Google Authenticator, 1Password, Authy or another TOTP app. The QR code and manual key will not be shown again.</p>
-              <div className="mt-6 flex justify-center"><Image src={setup.qr_data_url} alt="One-time authenticator setup QR code" width={240} height={240} unoptimized className="rounded-2xl" /></div>
-              <p className="mt-4 break-all rounded-2xl bg-gray-100 px-4 py-3 font-mono text-xs text-gray-1000">{setup.manual_key}</p>
-              <form onSubmit={confirmSetup} className="mt-4 flex flex-col gap-3">
+              <h1 className="text-[18px] font-medium tracking-[-.01em] text-admin-ink">Scan once, then confirm</h1>
+              <p className="mt-3 text-[13px] leading-5 text-admin-muted">Scan this QR code in Google Authenticator, 1Password, Authy or another TOTP app. The QR code and manual key will not be shown again.</p>
+              <div className="mt-5 flex justify-center"><Image src={setup.qr_data_url} alt="One-time authenticator setup QR code" width={240} height={240} unoptimized className="rounded-md border border-admin-line" /></div>
+              <p className="mt-3 break-all rounded-md border border-admin-line bg-admin-bg px-3 py-2 font-mono text-[11px] text-admin-muted">{setup.manual_key}</p>
+              <form onSubmit={confirmSetup} className="mt-3 flex flex-col gap-2.5">
                 <label htmlFor="setup-code" className="sr-only">Authenticator code</label>
                 <div className="relative">
-                  <input id="setup-code" aria-label="Authenticator code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} autoComplete="one-time-code" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 admin-code-input text-center font-sans text-base font-medium tabular-nums tracking-normal text-gray-1200 outline-none shadow-none focus:border-gray-1200 focus:outline-none" required />
-                  {!code ? <span aria-hidden="true" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="pointer-events-none absolute inset-0 flex items-center justify-center px-5 font-sans text-base text-gray-400">6-digit code</span> : null}
+                  <input id="setup-code" aria-label="Authenticator code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} autoComplete="one-time-code" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="admin-code-input w-full rounded-md border border-admin-line bg-admin-panel px-3 py-2 text-center font-sans text-[14px] font-medium tabular-nums tracking-normal text-admin-ink outline-none transition-colors hover:border-[#dbdbd8] focus:border-[#c9c9c6]" required />
+                  {!code ? <span aria-hidden="true" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="pointer-events-none absolute inset-0 flex items-center justify-center px-3 font-sans text-[13px] text-admin-faint">6-digit code</span> : null}
                 </div>
-                <button type="submit" disabled={loading || code.length !== 6} className="rounded-full bg-gray-1200 px-5 py-3 text-sm font-semibold text-white transition-opacity hover:opacity-80 disabled:opacity-50">{loading ? "Confirming" : "Enable two-factor login"}</button>
+                <button type="submit" disabled={loading || code.length !== 6} className="inline-flex h-9 w-full items-center justify-center rounded-md bg-admin-ink text-[13px] font-medium text-white transition-colors hover:bg-[#3d4048] disabled:pointer-events-none disabled:opacity-40">{loading ? "Confirming" : "Enable two-factor login"}</button>
               </form>
             </>
           ) : (
             <>
-              <h1 className="font-serif text-3xl text-gray-1200">Feedback review</h1>
-              <p className="mt-3 text-sm leading-relaxed text-gray-1000">Sign in with the authorized admin email and your current authenticator code.</p>
+              <h1 className="text-[18px] font-medium tracking-[-.01em] text-admin-ink">Sign in</h1>
+              <p className="mt-3 text-[13px] leading-5 text-admin-muted">Sign in with the authorized admin email and your current authenticator code.</p>
               <form onSubmit={login} className="mt-6 flex flex-col gap-3">
                 <label htmlFor="admin-email" className="sr-only">Admin email</label>
-                <input id="admin-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Admin email" autoComplete="username" className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 font-sans text-sm text-gray-1200 outline-none shadow-none focus:border-gray-1200 focus:outline-none" required />
+                <input id="admin-email" type="email" value={email} onChange={(event) => setEmail(event.target.value)} placeholder="Admin email" autoComplete="username" className="w-full rounded-md border border-admin-line bg-admin-panel px-3 py-2 font-sans text-[13px] text-admin-ink outline-none transition-colors placeholder:text-admin-faint hover:border-[#dbdbd8] focus:border-[#c9c9c6]" required />
                 <label htmlFor="admin-code" className="sr-only">Authenticator code</label>
                 <div className="relative">
-                  <input id="admin-code" aria-label="Authenticator code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} autoComplete="one-time-code" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="w-full appearance-none rounded-full border border-gray-400 bg-white px-5 py-3 admin-code-input text-center font-sans text-base font-medium tabular-nums tracking-normal text-gray-1200 outline-none shadow-none focus:border-gray-1200 focus:outline-none" required autoFocus />
-                  {!code ? <span aria-hidden="true" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="pointer-events-none absolute inset-0 flex items-center justify-center px-5 font-sans text-base text-gray-400">Authenticator code</span> : null}
+                  <input id="admin-code" aria-label="Authenticator code" inputMode="numeric" pattern="[0-9]{6}" maxLength={6} value={code} onChange={(event) => setCode(event.target.value.replace(/\D/g, "").slice(0, 6))} autoComplete="one-time-code" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="admin-code-input w-full rounded-md border border-admin-line bg-admin-panel px-3 py-2 text-center font-sans text-[14px] font-medium tabular-nums tracking-normal text-admin-ink outline-none transition-colors hover:border-[#dbdbd8] focus:border-[#c9c9c6]" required autoFocus />
+                  {!code ? <span aria-hidden="true" style={{ letterSpacing: "0px", fontFamily: "var(--font-inter), Inter, sans-serif" }} className="pointer-events-none absolute inset-0 flex items-center justify-center px-3 font-sans text-[13px] text-admin-faint">Authenticator code</span> : null}
                 </div>
-                <button type="submit" disabled={loading || code.length !== 6 || !email} className="rounded-full bg-gray-1200 px-5 py-3 font-sans text-sm font-semibold text-white transition-opacity hover:opacity-80 disabled:opacity-50">{loading ? "Checking" : "Open queue"}</button>
+                <button type="submit" disabled={loading || code.length !== 6 || !email} className="inline-flex h-9 w-full items-center justify-center rounded-md bg-admin-ink text-[13px] font-medium text-white transition-colors hover:bg-[#3d4048] disabled:pointer-events-none disabled:opacity-40">{loading ? "Checking" : "Continue"}</button>
               </form>
             </>
           )}
-          {error ? <p role="alert" className="mt-3 text-sm text-gray-1000">{error}</p> : null}
+          {error ? <p role="alert" className="mt-3 text-[12px] text-admin-muted">{error}</p> : null}
+          </div>
         </section>
       </main>
     );
@@ -577,6 +570,7 @@ export default function FeedbackAdminPage() {
       identity={identity}
       loading={loading}
       error={error}
+      onRefresh={() => void load()}
       onLogout={() => void logout()}
       onCreateTest={() => void createTestFeedback()}
       onModerate={(id, action) => void moderate(id, action)}
