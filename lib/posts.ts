@@ -65,6 +65,15 @@ const raw: Post[] = [
         type: "p",
         text: "Raj is 21, from India, and a full-time university student who committed to Payle full-time anyway. Here is our conversation, edited for length but not for honesty.",
       },
+      {
+        type: "p",
+        text: "**Describe in one sentence what you think about Payle.**",
+      },
+      {
+        type: "audio",
+        src: "/thoughts/welcoming-raj-koli-founding-engineer-agent-experience/raj-audio.mp3",
+        title: "Raj Koli: one sentence about Payle",
+      },
       { type: "h2", text: "A builder who was already watching agents fail" },
       {
         type: "p",
