@@ -38,6 +38,14 @@
 /.well-known/api-catalog
   Content-Type: application/linkset+json; charset=utf-8
   Cache-Control: public, max-age=3600, s-maxage=3600
+
+# L'ora di fine build. Il pannello la interroga per sapere se una modifica e'
+# gia' online, quindi qui la cache non e' un risparmio: e' il modo di dire "live"
+# per un file che cambia a ogni deploy.
+/deploy.json
+  Content-Type: application/json; charset=utf-8
+  Cache-Control: no-store
+  Access-Control-Allow-Origin: *
   Access-Control-Allow-Origin: *
 
 /.well-known/ai-catalog.json

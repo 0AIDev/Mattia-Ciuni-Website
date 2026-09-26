@@ -40,11 +40,50 @@ stessa griglia, invece di un pacchetto da 1500 icone per usarne dodici.
 
 1. **Draft** in Supabase (o KV): rapidi, annullabili, nessun deploy.
 2. **Publish**: la Function autenticata scrive `content/cms/<kind>/<slug>.json`
-   con la GitHub Contents API, crea un commit e chiama il deploy hook.
-3. **Build**: `next build` legge `content/cms/` e sovrascrive i registry in
-   codice. Un file con lo stesso slug vince sul registry, quindi un override e'
-   sempre reversibile cancellando il file.
-4. **Deploy** su Cloudflare Pages, che ricostruisce e serve l'export statico.
+   con la GitHub Contents API e crea un commit.
+3. **Build**: quel commit **e'** la richiesta di build. Cloudflare Pages
+   costruisce ogni push sul branch di produzione, quindi il deploy hook non
+   viene chiamato sopra. `next build` legge `content/cms/` e sovrascrive i
+   registry in codice: un file con lo stesso slug vince sul registry, quindi un
+   override e' sempre reversibile cancellando il file.
+4. **Deploy** su Cloudflare Pages, che serve l'export statico. La build scrive
+   l'ora in cui e' finita in `out/deploy.json`, e il pannello la usa per dire
+   quando una modifica e' davvero online.
+
+### Una modifica, una build
+
+Chiamare anche il deploy hook dopo il commit raddoppiava le build di ogni
+publish, e le build di produzione girano una alla volta: la copia giusta
+finiva `skipped` e l'attesa raddoppiava. Misurato sulle deployment reali
+dell'account, tre publish in sequenza (12:39-12:40) hanno prodotto sei build,
+tre `skipped`, e l'ultima utile e' arrivata online **128 secondi** dopo il
+click. Con una build sola la stessa coda si svuota in una quarantina di
+secondi.
+
+Lo stesso vale dentro un publish: `publishContentToGit` confronta il file che
+sta su Git con quello che verrebbe scritto e, se sono identici, non committa.
+`jobs_save` su tre offerte ne scriveva tre anche cambiando un solo campo, quindi
+accodava tre build per una parola.
+
+Il deploy hook non e' sparito: e' il pulsante **Rebuild the site** in Settings
+(`content_rebuild`), l'unico caso in cui serve davvero — una build fallita, un
+deploy saltato, o un sito piu' vecchio di Git.
+
+### Come il pannello sa che una modifica e' online
+
+`out/deploy.json` contiene `built_at` e il commit della build, ed e' servito con
+`Cache-Control: no-store`. L'azione `deploy_status` lo legge e lo confronta con
+l'istante del publish, restituendo `live: true`, `false`, o `null` quando non c'e'
+un punto di partenza (senza riferimento non si puo' dire "online", e dirlo lo
+faceva chiudere il conto al primo giro di polling).
+
+Il pannello mostra la riga sotto ai pulsanti che hanno premuto e in fondo alla
+barra laterale: `Deploying 12s` e poi `Last build 4s ago`. Senza questo
+l'unica risposta era "published" e il resto toccava a chi guardava il sito.
+
+Il file nasce con la build successiva a quella che l'ha introdotto, quindi su un
+deploy vecchio `deploy_status` risponde `available: false` e il pannello dice
+"last build unknown" invece di mentire.
 
 Tornare indietro sono **due** operazioni, e sembravano una sola:
 
@@ -124,7 +163,7 @@ Progetto Cloudflare Pages `mattiaciuni`. Variabili d'ambiente in produzione:
 | `GITHUB_TOKEN` | **da creare** | token fine-grained con Contents read/write sul repo |
 | `GITHUB_REPOSITORY` | `0AIDev/Mattia-Ciuni-Website` | endpoint della Contents API |
 | `GITHUB_BRANCH` | `main` | branch su cui committare |
-| `CLOUDFLARE_DEPLOY_HOOK` | deploy hook `admin-content-publish` (branch `main`) | rebuild dopo il publish |
+| `CLOUDFLARE_DEPLOY_HOOK` | deploy hook `admin-content-publish` (branch `main`) | solo **Rebuild the site** in Settings: il publish non lo usa, il commit basta |
 
 Binding in produzione **e** in preview:
 
@@ -174,6 +213,11 @@ fallire al primo click.
 - **I media sono immutabili per chiave.** Sostituire un file con lo stesso nome
   cambia la cache a un anno: per cambiare il contenuto conviene salire con un
   nome nuovo.
+- **Un publish non e' istantaneo, e non puo' esserlo**: il sito e' un export
+  statico, quindi la modifica arriva online quando la build finisce. Il pannello
+  non puo' accorciarla, puo' solo contarla e dirti quando e' successo. Con la
+  build cache di Cloudflare attiva (`.npm` e `.next/cache`) una build sta intorno
+  ai 40 secondi invece dei 90 e oltre senza cache.
 - **`llms.txt` e le card** si rigenerano dalla pagina che esiste davvero,
   quindi una pagina non raggiunta da nessun link viene segnalata dal check
   sitemap invece di restare un'orfana silenziosa.

@@ -3,6 +3,7 @@
 import { useMemo, useState } from "react";
 import { WorldMap } from "@/components/WorldMap";
 import { ChevronDownIcon } from "@/components/admin/icons";
+import { DeployStatusLine } from "@/components/AdminDeployStatus";
 import type { CareerQuestion } from "@/lib/careers/jobs";
 import { Button, Card, Empty, Field, InlineButton, Notice, Pill, SectionHeader, Select, Table, TextArea, TextInput } from "@/components/admin/ui";
 import type { AdminContentItem, CmsKind } from "@/lib/cms-types";
@@ -224,7 +225,7 @@ export function ApplicantsView({ applicants, jobs, loading }: { applicants: Appl
   );
 }
 
-export function JobsView({ jobs: initialJobs, loading, onSaveJobs }: { jobs: AdminJob[]; loading: boolean; onSaveJobs: (jobs: AdminJob[]) => void }) {
+export function JobsView({ jobs: initialJobs, loading, onSaveJobs, pendingSince }: { jobs: AdminJob[]; loading: boolean; onSaveJobs: (jobs: AdminJob[]) => void; pendingSince?: string | null }) {
   const [jobs, setJobs] = useState(initialJobs);
   const [selected, setSelected] = useState(0);
   const current = jobs[selected];
@@ -238,7 +239,7 @@ export function JobsView({ jobs: initialJobs, loading, onSaveJobs }: { jobs: Adm
         eyebrow="Hiring"
         title="Job offers"
         description="Create and manage the public careers pipeline. Saving updates the live registry, not a draft."
-        actions={<><Button onClick={addJob}>Add offer</Button><Button tone="primary" onClick={() => onSaveJobs(jobs)} disabled={loading}>Save changes</Button></>}
+        actions={<><Button onClick={addJob}>Add offer</Button><Button tone="primary" onClick={() => onSaveJobs(jobs)} disabled={loading}>Save changes</Button><DeployStatusLine pendingSince={pendingSince} /></>}
       />
       <div className="grid gap-4 lg:grid-cols-[220px_1fr]">
         <Card title="Offers">
@@ -291,11 +292,17 @@ export function SettingsView({
   config,
   onPublishContent,
   publishing,
+  onRebuildSite,
+  rebuilding,
+  pendingSince,
 }: {
   onCreateNda: (fullName: string, email: string) => Promise<string | null>;
   config: ConfigStatus | null;
   onPublishContent: (id: string) => Promise<boolean>;
   publishing: boolean;
+  onRebuildSite: () => Promise<void>;
+  rebuilding: boolean;
+  pendingSince?: string | null;
 }) {
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
@@ -375,10 +382,18 @@ export function SettingsView({
           <ol className="mt-3 space-y-1.5 border-t border-admin-line pt-3 text-[12px] leading-5 text-admin-muted">
             <li>1 · The draft is validated and written to the admin table.</li>
             <li>2 · The published JSON is committed to content/cms/&lt;kind&gt;/&lt;slug&gt;.json on Git.</li>
-            <li>3 · The deploy hook starts a build; content/cms is read at build time, so the page is static.</li>
+            <li>3 · That commit <em>is</em> the build request: Cloudflare Pages builds every push to the production branch, and the deploy hook is not called on top of it.</li>
             <li>4 · Redirects become out/_redirects, pages become real routes, sitemap and cards follow.</li>
+            <li>5 · The build writes its finishing time to /deploy.json, which is how this panel knows the change is online.</li>
           </ol>
         ) : null}
+        <div className="mt-3 flex flex-wrap items-center gap-3 border-t border-admin-line pt-3">
+          <Button onClick={() => void onRebuildSite()} disabled={rebuilding || !config?.deploy_hook}>
+            {rebuilding ? "Starting…" : "Rebuild the site"}
+          </Button>
+          <DeployStatusLine pendingSince={pendingSince} />
+          {!config?.deploy_hook ? <p className="text-[12px] text-admin-faint">The deploy hook is not configured, so a manual rebuild is not available.</p> : null}
+        </div>
       </Card>
     </div>
   );

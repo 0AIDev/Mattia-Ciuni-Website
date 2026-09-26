@@ -96,6 +96,10 @@ export default function FeedbackAdminPage() {
   const [config, setConfig] = useState<ConfigStatus | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  // L'istante dell'ultimo publish finche' non e' online. Viene dalla Function,
+  // non da qui: il confronto con l'orario di fine build lo fa il server, cosi'
+  // l'orologio del browser non decide nulla.
+  const [pendingSince, setPendingSince] = useState<string | null>(null);
   const [authenticated, setAuthenticated] = useState(false);
   const [identity, setIdentity] = useState<AdminIdentity | null>(null);
   const [sessionChecked, setSessionChecked] = useState(false);
@@ -500,8 +504,10 @@ export default function FeedbackAdminPage() {
     setError("");
     try {
       const response = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "jobs_save", jobs: nextJobs }) });
+      // Il corpo si legge una volta sola: rileggerlo dopo averlo consumato
+      // fallisce, e il salvataggio sembrerebbe non essere avvenuto.
+      const data = (await response.json().catch(() => ({}))) as { code?: string; published_at?: string };
       if (!response.ok) {
-        const data = (await response.json().catch(() => ({}))) as { code?: string };
         // Il 422 qui e' quasi sempre un'unica offerta invalida che fa fallire
         // l'intero elenco: dirlo evita di cercare il problema in tutte.
         if (data.code === "invalid_jobs") throw new Error("One offer has a slug or a status the server refuses: slugs take lowercase letters, numbers and hyphens (3-80 characters), the status must be open, coming-soon or closed, and every answer type must be text, textarea, url or number.");
@@ -509,6 +515,7 @@ export default function FeedbackAdminPage() {
         throw new Error("The job offers could not be saved.");
       }
       setJobs(nextJobs);
+      if (data.published_at) setPendingSince(data.published_at);
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "The job offers could not be saved.");
     } finally {
@@ -575,7 +582,7 @@ export default function FeedbackAdminPage() {
     setError("");
     try {
       const response = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "content_publish", id }) });
-      const data = (await response.json().catch(() => ({}))) as { content?: AdminContentItem; code?: string; deploy_triggered?: boolean; stored?: boolean };
+      const data = (await response.json().catch(() => ({}))) as { content?: AdminContentItem; code?: string; deploy_triggered?: boolean; deploy?: string; published_at?: string; stored?: boolean };
       if (!response.ok || !data.content) throw new Error(data.code === "github_not_configured" ? "GitHub publishing is not configured." : "The content could not be published.");
       setContent((current) => [data.content!, ...current.filter((entry) => !(entry.kind === data.content!.kind && entry.slug === data.content!.slug))]);
       // Pubblicato e committato, ma la riga di stato non si e' scritta: non e' un
@@ -584,10 +591,36 @@ export default function FeedbackAdminPage() {
       if (data.stored === false) {
         setError("Published: the commit is on Git and the build has been requested. The draft row could not be written (Supabase tables missing), so the library still shows the previous version.");
       }
+      // Da qui in poi la riga di stato segue la build: senza questo il pannello
+      // diceva "published" e la pagina pubblica restava quella di prima, e
+      // ricaricare il sito a mano sembrava l'unica parte rimasta da fare.
+      if (data.deploy !== "none" && data.published_at) setPendingSince(data.published_at);
       return true;
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "The content could not be published.");
       return false;
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  // "Ricostruisci il sito": il publish non ha bisogno di questo, il commit
+  // basta. Serve quando una build e' fallita o e' finita `skipped`, e vuol
+  // dire anche l'unica cosa che conta dopo un publish: "online".
+  async function rebuildSite() {
+    setLoading(true);
+    setError("");
+    try {
+      const response = await fetch(API, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ action: "content_rebuild" }) });
+      const data = (await response.json().catch(() => ({}))) as { ok?: boolean; code?: string; published_at?: string };
+      if (!response.ok || !data.ok) {
+        throw new Error(data.code === "deploy_hook_not_configured"
+          ? "The Cloudflare deploy hook is not configured, so a rebuild cannot be requested."
+          : "The rebuild request did not go through. Check the deploy hook in Settings.");
+      }
+      if (data.published_at) setPendingSince(data.published_at);
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : "The rebuild could not be requested.");
     } finally {
       setLoading(false);
     }
@@ -612,6 +645,9 @@ export default function FeedbackAdminPage() {
       onPublishContent={publishContent}
       onRestoreContent={discardContent}
       onCreateNda={createNda}
+      pendingSince={pendingSince}
+      onDeployLive={() => setPendingSince(null)}
+      onRebuildSite={rebuildSite}
     />;
 }
 

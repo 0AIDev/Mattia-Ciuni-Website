@@ -79,6 +79,10 @@ function bucket() {
 
 const calls = [];
 const deployCalls = [];
+// Il file di build che la Function legge per sapere se una modifica e' online.
+// `null` e' il caso di un deploy vecchio, dove il file non e' ancora nato.
+let deployStamp = null;
+function setDeployStamp(value) { deployStamp = value; }
 const db = new Map();
 const git = { files: new Map(), commits: [], counter: 0 };
 
@@ -192,6 +196,10 @@ function installFetch() {
     if (url.startsWith("https://api.github.com")) return githubRest(url, method, init);
     if (url.startsWith(SUPABASE)) return supabaseRest(url, method, init);
     if (url === DEPLOY_HOOK) { deployCalls.push(url); return json({ success: true }); }
+    if (url.startsWith("https://mattiaciuni.pages.dev/deploy.json")) {
+      if (!deployStamp) return json({ message: "Not Found" }, 404);
+      return json(deployStamp);
+    }
     return json({ message: `unexpected fetch ${method} ${url}` }, 500);
   };
 }
@@ -287,7 +295,12 @@ if (jobsRoundTrip.status === 200) {
   const saved = await payload(jobsRoundTrip);
   const kv = JSON.parse(await env.FEEDBACK.get("content:jobs"));
   check("jobs_save writes the registry to KV and publishes one file per job", saved.commits === state.jobs.length && kv.length === state.jobs.length, `commits ${saved.commits}`);
-  check("jobs_save triggers one deploy", saved.deploy_triggered === true && deployCalls.length === 1, `deploys ${deployCalls.length}`);
+  // Il vincolo che conta: **una modifica, una build**. Il commit su `main` e'
+  // gia' la richiesta di build (Cloudflare Pages costruisce ogni push sul branch
+  // di produzione), quindi chiamare anche il deploy hook raddoppiava le build e
+  // le metteva in coda: le deployment reali dell'account mostrano sei build per
+  // tre publish, tre `skipped`, e 128 secondi di attesa.
+  check("a publish that commits does not also fire the deploy hook", saved.deploy === "commit" && deployCalls.length === 0, `deploy ${saved.deploy}, hook calls ${deployCalls.length}`);
   const jobFile = git.files.get(`content/cms/job/${state.jobs[0].slug}.json`);
   check("the job file on Git keeps the number question", Boolean(jobFile) && jobFile.length > 0);
 }
@@ -409,6 +422,81 @@ check(
   "content_discard reloads the published file into the draft without a commit",
   discard.status === 200 && discardData.item?.kind === "note" && typeof discardData.item?.body_markdown === "string",
   await detail(discard),
+);
+
+// --- deploy: una build per modifica, e la risposta "e' online?" ------------
+
+// Il file di build non esiste ancora su un deploy vecchio: la risposta giusta
+// e' "non lo so", non "non e' online", altrimenti il pannello direbbe che
+// niente e' mai arrivato.
+const stampMissing = await payload(await post({ action: "deploy_status" }, session));
+check(
+  "deploy_status says the stamp is missing instead of claiming nothing is live",
+  stampMissing.available === false && stampMissing.live === undefined,
+  JSON.stringify(stampMissing).slice(0, 160),
+);
+
+const since = new Date().toISOString();
+setDeployStamp({ built_at: new Date(Date.now() - 120_000).toISOString(), commit: "a".repeat(40) });
+const beforeBuild = await payload(await post({ action: "deploy_status", since }, session));
+check(
+  "a build that finished before the publish is not live",
+  beforeBuild.available === true && beforeBuild.live === false && beforeBuild.waited_seconds >= 0,
+  JSON.stringify(beforeBuild).slice(0, 160),
+);
+
+setDeployStamp({ built_at: new Date().toISOString(), commit: "b".repeat(40) });
+const afterBuild = await payload(await post({ action: "deploy_status", since }, session));
+check(
+  "a build that finished after the publish is live, and the panel gets the site origin",
+  afterBuild.available === true && afterBuild.live === true && afterBuild.commit === "b".repeat(40) && afterBuild.origin === "https://mattiaciuni.pages.dev",
+  JSON.stringify(afterBuild).slice(0, 200),
+);
+
+setDeployStamp({ built_at: "whenever", commit: null });
+const badStamp = await payload(await post({ action: "deploy_status", since }, session));
+check("a stamp with no usable date is treated as missing", badStamp.available === false, JSON.stringify(badStamp).slice(0, 160));
+setDeployStamp(null);
+
+// Senza `since` non c'e' un punto di partenza, quindi la risposta onesta e'
+// "non lo so". `true` faceva dichiarare online un publish appena fatto, con la
+// build di due minuti prima ancora in coda.
+setDeployStamp({ built_at: new Date().toISOString(), commit: "c".repeat(40) });
+const noReference = await payload(await post({ action: "deploy_status" }, session));
+check(
+  "deploy_status without a reference point answers unknown, not live",
+  noReference.available === true && noReference.live === null,
+  JSON.stringify(noReference).slice(0, 160),
+);
+
+const rebuild = await post({ action: "content_rebuild" }, session);
+const rebuildData = await payload(rebuild);
+check(
+  "content_rebuild is the one path that uses the deploy hook",
+  rebuild.status === 200 && rebuildData.deploy === "hook" && deployCalls.length === 1,
+  `${await detail(rebuild)} hook calls ${deployCalls.length}`,
+);
+const savedHook = env.CLOUDFLARE_DEPLOY_HOOK;
+delete env.CLOUDFLARE_DEPLOY_HOOK;
+const noHook = await post({ action: "content_rebuild" }, session);
+env.CLOUDFLARE_DEPLOY_HOOK = savedHook;
+check("content_rebuild without a deploy hook says so instead of failing silently", noHook.status === 503 && (await payload(noHook)).code === "deploy_hook_not_configured", await detail(noHook));
+
+// Salvare due volte di fila la stessa offerta non deve generare un'altra build.
+const before = git.commits.length;
+const repeat = await payload(await post({ action: "jobs_save", jobs: state.jobs }, session));
+check(
+  "saving an unchanged registry writes no commit and asks for no build",
+  repeat.commits === 0 && repeat.deploy === "none" && git.commits.length === before,
+  `commits ${repeat.commits}, new files ${git.commits.length - before}`,
+);
+
+const changed = state.jobs.map((job, index) => (index === 0 ? { ...job, shortPitch: `${job.shortPitch} ` } : job));
+const oneChange = await payload(await post({ action: "jobs_save", jobs: changed }, session));
+check(
+  "changing one offer commits one file, not all of them",
+  oneChange.commits === 1 && oneChange.deploy === "commit",
+  `commits ${oneChange.commits}`,
 );
 
 // --- nda ------------------------------------------------------------------

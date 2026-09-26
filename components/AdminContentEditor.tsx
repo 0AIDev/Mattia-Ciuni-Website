@@ -4,6 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import type { AdminContentItem, CmsKind, CmsStatus } from "@/lib/cms-types";
 import { CMS_KINDS } from "@/lib/cms-types";
 import { Button, Card, Field, Notice, Pill, SectionHeader, TextArea, TextInput, Select } from "@/components/admin/ui";
+import { DeployStatusLine } from "@/components/AdminDeployStatus";
 
 /**
  * L'editor di contenuti.
@@ -85,6 +86,8 @@ export function AdminContentEditor({
   onSave,
   onPublish,
   onRestore,
+  pendingSince,
+  onDeployLive,
 }: {
   items: AdminContentItem[];
   loading: boolean;
@@ -94,6 +97,9 @@ export function AdminContentEditor({
   onSave: (item: AdminContentItem) => Promise<AdminContentItem | null>;
   onPublish: (id: string) => Promise<boolean>;
   onRestore?: (kind: CmsKind, slug: string) => Promise<AdminContentItem | null>;
+  /** L'istante dell'ultimo publish, per lo stato della build sotto ai pulsanti. */
+  pendingSince?: string | null;
+  onDeployLive?: () => void;
 }) {
   const [filter, setFilter] = useState<CmsKind | "all">("all");
   const [selectedId, setSelectedId] = useState<string>("");
@@ -224,7 +230,7 @@ export function AdminContentEditor({
     const published = await onPublish(saved.id);
     setNotice(
       published
-        ? { text: "Published. The commit is on Git and the deploy has been requested; the site changes after the build.", tone: "good" }
+        ? { text: "Published. The commit is on Git, and the build is running: the line under these buttons says when the page is online.", tone: "good" }
         : { text: "The draft is saved, but the publish did not complete. Check GitHub in Settings.", tone: "bad" },
     );
   }
@@ -415,6 +421,11 @@ export function AdminContentEditor({
                 Load published version
               </Button>
             ) : null}
+            {/* Lo stato della build sta dove si e' premuto il pulsante: il
+                publish dice "fatto" subito, ma la pagina cambia quando la build
+                finisce, e senza questo la riga da sorvegliare era la barra
+                laterale, che si vede solo se lo schermo e' largo. */}
+            <DeployStatusLine pendingSince={pendingSince} onLive={onDeployLive} className="ml-auto" />
           </div>
         </Card>
       </div>

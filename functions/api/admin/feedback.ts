@@ -618,36 +618,99 @@ async function readPublishedFromGit(env: Env, kind: CmsKind, slug: string): Prom
   };
 }
 
-async function publishContentToGit(env: Env, item: AdminContentItem): Promise<{ sha?: string }> {
+async function publishContentToGit(env: Env, item: AdminContentItem): Promise<{ sha?: string; unchanged: boolean }> {
   if (!githubConfigured(env)) throw new Error("github_not_configured");
   const path = `content/cms/${item.kind}/${item.slug}.json`;
   const endpoint = `https://api.github.com/repos/${env.GITHUB_REPOSITORY}/contents/${path}`;
   const headers = githubHeaders(env);
   const current = await fetch(`${endpoint}?ref=${encodeURIComponent(env.GITHUB_BRANCH!)}`, { headers });
   let sha: string | undefined;
+  let stored = "";
   if (current.ok) {
-    const data = await current.json() as { sha?: string };
+    const data = await current.json() as { sha?: string; content?: string; encoding?: string };
     sha = data.sha;
+    stored = data.encoding === "base64" && data.content ? data.content : "";
   } else if (current.status !== 404) throw new Error(`github_read_${current.status}`);
   const data = { ...item.data, slug: item.slug, title: item.title, description: item.description, content: markdownToBlocks(item.body_markdown) };
+  // `"\n"` e non `"\\n"`: la seconda e' una stringa di due caratteri, e un file
+  // che finisce con `}` + backslash + n non e' JSON valido. Il loader della
+  // build lo scartava con un warning, quindi il contenuto pubblicato non
+  // arrivava mai online mentre publish e deploy sembravano riusciti.
+  const payload = base64Utf8(JSON.stringify(data, null, 2) + "\n");
+  // Un commit identico non serve a niente, e un commit e' una build: senza questo
+  // il pulsante "Save changes" delle offerte riscriveva **tutte** le offerte e
+  // metteva in coda una build per ciascuna, anche cambiando un solo campo. Le
+  // build di produzione girano una alla una, quindi salvare tre offerte con una
+  // modifica sola significava aspettare tre build per vedere una parola cambiata.
+  if (stored && stored === payload) return { sha, unchanged: true };
   const response = await fetch(endpoint, {
     method: "PUT",
     headers: { ...headers, "Content-Type": "application/json" },
-    // `"\n"` e non `"\\n"`: la seconda e' una stringa di due caratteri, e un file
-    // che finisce con `}` + backslash + n non e' JSON valido. Il loader della
-    // build lo scartava con un warning, quindi il contenuto pubblicato non
-    // arrivava mai online mentre publish e deploy sembravano riusciti.
-    body: JSON.stringify({ message: `content: publish ${item.kind}/${item.slug}`, content: base64Utf8(JSON.stringify(data, null, 2) + "\n"), branch: env.GITHUB_BRANCH, ...(sha ? { sha } : {}) }),
+    body: JSON.stringify({ message: `content: publish ${item.kind}/${item.slug}`, content: payload, branch: env.GITHUB_BRANCH, ...(sha ? { sha } : {}) }),
   });
   if (!response.ok) throw new Error(`github_write_${response.status}`);
   const result = await response.json() as { content?: { sha?: string } };
-  return { sha: result.content?.sha };
+  return { sha: result.content?.sha, unchanged: false };
 }
 
 async function triggerDeploy(env: Env): Promise<boolean> {
   if (!env.CLOUDFLARE_DEPLOY_HOOK) return false;
-  const response = await fetch(env.CLOUDFLARE_DEPLOY_HOOK, { method: "POST" });
-  return response.ok;
+  try {
+    const response = await fetch(env.CLOUDFLARE_DEPLOY_HOOK, { method: "POST" });
+    return response.ok;
+  } catch {
+    // Un errore di rete non e' un'eccezione da far uscire: senza questo, un
+    // deploy hook irraggiungibile rispondeva 500 senza codice e il pannello
+    // diceva solo "the request did not go through", invece di distinguere
+    // "l'hook non c'e'" da "l'hook non ha risposto".
+    return false;
+  }
+}
+
+/**
+ * Una modifica, una build.
+ *
+ * Il pannello committa su `main` e l'integrazione GitHub di Cloudflare Pages
+ * costruisce da sola ogni push su quel branch: il commit *e' gia'* la richiesta
+ * di build. Chiamare anche il deploy hook raddoppiava i build di ogni publish e,
+ * peggio, li metteva in fila: le build di produzione girano una alla volta,
+ * quindi il commit appena fatto si fermava in `queued` e finiva `skipped`, e a
+ * vincere era l'altra build. Misurato sulle deployment reali dell'account, tre
+ * publish in sequenza (12:39-12:40) hanno prodotto sei build, tre `skipped`, e
+ * l'ultima utile e' arrivata online 128 secondi dopo il click.
+ *
+ * Quindi l'hook non si chiama da qui. Resta per `content_rebuild`, che e'
+ * l'unico caso in cui serve davvero: nessun commit, ma una build da rifare.
+ */
+type Deploy = "commit" | "hook" | "none";
+
+/**
+ * Il file di build della Function pubblica: dice *quando* l'ultima build e'
+ * finita, e con quale commit. E' l'unico modo di sapere se una modifica e'
+ * online senza chiedere a Cloudflare: il pannello fa il confronto e smette di
+ * far ricaricare la pagina a mano.
+ */
+interface DeployStamp {
+  built_at: string;
+  commit: string | null;
+}
+
+async function readDeployStamp(origin: string): Promise<DeployStamp | null> {
+  try {
+    // `cache: "no-store"` piu' il parametro univoco: il file cambia a ogni
+    // build, e una risposta presa dalla cache edge fa dire "online" un commit
+    // che non e' ancora online.
+    const response = await fetch(`${origin}/deploy.json?t=${Date.now()}`, {
+      cache: "no-store",
+      headers: { Accept: "application/json", "User-Agent": "mattia-ciuni-admin (mattiaciuni.pages.dev)" },
+    });
+    if (!response.ok) return null;
+    const data = (await response.json().catch(() => null)) as { built_at?: string; commit?: string } | null;
+    if (!data || typeof data.built_at !== "string" || !Number.isFinite(Date.parse(data.built_at))) return null;
+    return { built_at: data.built_at, commit: typeof data.commit === "string" ? data.commit : null };
+  } catch {
+    return null;
+  }
 }
 
 /**
@@ -856,6 +919,7 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
     kind?: unknown;
     slug?: unknown;
     sha?: unknown;
+    since?: unknown;
   };
   try {
     body = JSON.parse(payload) as typeof body;
@@ -1018,8 +1082,8 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
         stored = false;
         console.log(JSON.stringify({ event: "admin_content", outcome: "publish_committed_not_stored", code: caught instanceof Error ? caught.message : "unknown" }));
       }
-      const deployTriggered = await triggerDeploy(env);
-      return json({ ok: true, content: saved, stored, commit_sha: commit.sha || null, deploy_triggered: deployTriggered });
+      const deploy: Deploy = commit.unchanged ? "none" : "commit";
+      return json({ ok: true, content: saved, stored, commit_sha: commit.sha || null, unchanged: commit.unchanged, deploy, deploy_triggered: deploy !== "none", published_at: published.published_at });
     } catch (caught) {
       console.log(JSON.stringify({ event: "admin_content", outcome: "publish_failed", code: caught instanceof Error ? caught.message : "unknown" }));
       return json({ code: "publish_failed" }, 502);
@@ -1073,8 +1137,7 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
     if (!githubConfigured(env)) return json({ code: "github_not_configured" }, 503);
     try {
       const commit = await restoreContentFromGit(env, kind, slug, sha);
-      const deployTriggered = await triggerDeploy(env);
-      return json({ ok: true, commit_sha: commit.sha || null, deploy_triggered: deployTriggered });
+      return json({ ok: true, commit_sha: commit.sha || null, deploy: "commit" as Deploy, deploy_triggered: true, published_at: new Date().toISOString() });
     } catch (caught) {
       console.log(JSON.stringify({ event: "admin_content", outcome: "restore_failed", code: caught instanceof Error ? caught.message : "unknown" }));
       return json({ code: "restore_failed" }, 502);
@@ -1097,6 +1160,57 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
       storage: Boolean((env as Env & { MEDIA?: unknown }).MEDIA),
       branch: env.GITHUB_BRANCH || null,
       repository: env.GITHUB_REPOSITORY || null,
+    });
+  }
+
+  if (body.action === "content_rebuild") {
+    // "Ricostruisci il sito", a mano.
+    //
+    // Il publish non ha bisogno di questo: il commit parte gia' la build. Serve
+    // quando la build e' andata storta, o quando un deploy e' finito `skipped`
+    // perche' ne e' partito un altro, o quando il sito e' semplicemente piu
+    // vecchio di Git. E' l'unico uso rimasto del deploy hook, e senza un
+    // pulsante che lo chiama esplicitamente la variabile sarebbe rimasta li a
+    // fare rumore in Settings.
+    if (!env.CLOUDFLARE_DEPLOY_HOOK) return json({ code: "deploy_hook_not_configured" }, 503);
+    const triggered = await triggerDeploy(env);
+    if (!triggered) return json({ code: "deploy_hook_failed" }, 502);
+    return json({ ok: true, deploy: "hook" as Deploy, deploy_triggered: true, published_at: new Date().toISOString() });
+  }
+
+  if (body.action === "deploy_status") {
+    // "La mia modifica e' online?" senza aprire Cloudflare.
+    //
+    // Il pannello non puo' dedurlo dal fatto che il commit e' partito: il
+    // commit e' l'inizio della build, non la fine. Senza questo la sola risposta
+    // onesta era "guarda il sito", e ricaricare a mano ogni venti secondi e'
+    // esattamente il modo in cui si conclude che il pannello non funziona.
+    //
+    // `since` e' l'istante del publish, preso dal clock della Function: il
+    // confronto avviene tutto qui, cosi' l'orologio del browser non c'entra.
+    const origin = (env.SITE_URL || new URL(request.url).origin).replace(/\/+$/, "");
+    const stamp = await readDeployStamp(origin);
+    if (!stamp) {
+      // Il file nasce con la build successiva a questa modifica: su un deploy
+      // vecchio non c'e' e va detto, non restituito come "non online".
+      return json({ ok: true, available: false, origin });
+    }
+    const since = typeof body.since === "string" ? Date.parse(body.since) : Number.NaN;
+    const builtAt = Date.parse(stamp.built_at);
+    return json({
+      ok: true,
+      available: true,
+      // `null` e non `true` quando non c'e' un `since`: senza un punto di
+      // partenza non si puo' dire se una build e' successa a qualcosa, e il
+      // pannello deve poter distinguere "online" da "non lo so". Restituire
+      // `true` faceva dichiarare online un publish appena fatto, con la build
+      // vecchia di una build ancora in coda.
+      live: Number.isFinite(since) ? builtAt >= since - 10_000 : null,
+      built_at: stamp.built_at,
+      commit: stamp.commit,
+      origin,
+      build_age_seconds: Math.max(0, Math.round((Date.now() - builtAt) / 1000)),
+      waited_seconds: Number.isFinite(since) ? Math.max(0, Math.round((Date.now() - since) / 1000)) : null,
     });
   }
 
@@ -1143,16 +1257,20 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
             published_at: new Date().toISOString(),
             version: 1,
           };
-          await publishContentToGit(env, item);
-          commits += 1;
+          // Solo i file davvero cambiati contano: ogni commit e' una build, e una
+          // build per ogni offerta anche quando ne hai toccata una sola.
+          const written = await publishContentToGit(env, item);
+          if (!written.unchanged) commits += 1;
         }
       } catch (caught) {
         console.log(JSON.stringify({ event: "admin_jobs", outcome: "publish_failed", code: caught instanceof Error ? caught.message : "unknown" }));
         return json({ code: "publish_failed", jobs: body.jobs }, 502);
       }
     }
-    const deployTriggered = commits > 0 ? await triggerDeploy(env) : false;
-    return json({ ok: true, jobs: body.jobs, commits, deploy_triggered: deployTriggered });
+    // Nessun file cambiato, nessuna build: rifare il sito per poi produrre lo
+    // stesso sito e' l'unico modo per sprecare una coda di build.
+    const deploy: Deploy = commits > 0 ? "commit" : "none";
+    return json({ ok: true, jobs: body.jobs, commits, deploy, deploy_triggered: commits > 0, published_at: deploy === "none" ? null : new Date().toISOString() });
   }
 
   if (body.action === "create_test") {

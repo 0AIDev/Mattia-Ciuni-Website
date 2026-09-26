@@ -2,6 +2,7 @@
 
 import { useCallback, useMemo, useState, type ComponentType } from "react";
 import { AdminContentEditor } from "@/components/AdminContentEditor";
+import { DeployStatusLine } from "@/components/AdminDeployStatus";
 import { AdminMediaLibrary } from "@/components/AdminMediaLibrary";
 import { AdminSeoView } from "@/components/AdminSeoView";
 import {
@@ -107,6 +108,10 @@ type Props = {
   onPublishContent: (id: string) => Promise<boolean>;
   onRestoreContent: (kind: CmsKind, slug: string) => Promise<AdminContentItem | null>;
   onCreateNda: (fullName: string, email: string) => Promise<string | null>;
+  /** L'istante dell'ultimo publish, finche' il deploy non e' arrivato online. */
+  pendingSince?: string | null;
+  onDeployLive?: () => void;
+  onRebuildSite?: () => Promise<void>;
 };
 
 export function AdminWorkspace(props: Props) {
@@ -184,6 +189,8 @@ export function AdminWorkspace(props: Props) {
           ))}
         </nav>
 
+        <DeployStatusLine pendingSince={props.pendingSince} onLive={props.onDeployLive} className="mt-2 px-1.5 pt-3" />
+
         <div className="mt-2 flex items-center gap-2 border-t border-admin-line px-1.5 pt-3">
           <span aria-hidden="true" className="flex h-6 w-6 shrink-0 items-center justify-center rounded-md bg-admin-active text-[11px] text-admin-muted">
             {(props.identity?.name || "M").slice(0, 1).toUpperCase()}
@@ -218,6 +225,7 @@ export function AdminWorkspace(props: Props) {
                 </button>
               ) : null}
               {props.loading ? <span className="text-[12px] text-admin-faint">Loading</span> : null}
+              {props.pendingSince ? <span className="text-[12px] text-admin-muted">Deploying</span> : null}
               <IconButton title="Reload data" onClick={props.onRefresh} disabled={props.loading}>
                 <RefreshIcon />
               </IconButton>
@@ -238,6 +246,8 @@ export function AdminWorkspace(props: Props) {
                   onSave={props.onSaveContent}
                   onPublish={props.onPublishContent}
                   onRestore={props.onRestoreContent}
+                  pendingSince={props.pendingSince}
+                  onDeployLive={props.onDeployLive}
                 />
               ) : null}
               {tab === "site" ? (
@@ -249,11 +259,13 @@ export function AdminWorkspace(props: Props) {
                   onSave={props.onSaveContent}
                   onPublish={props.onPublishContent}
                   onRestore={props.onRestoreContent}
+                  pendingSince={props.pendingSince}
+                  onDeployLive={props.onDeployLive}
                 />
               ) : null}
               {tab === "media" ? <AdminMediaLibrary onError={reportError} /> : null}
               {tab === "seo" ? <AdminSeoView items={props.content} loading={props.loading} onEdit={openInEditor} onSave={props.onSaveContent} /> : null}
-              {tab === "careers" ? <JobsView jobs={props.jobs} loading={props.loading} onSaveJobs={props.onSaveJobs} /> : null}
+              {tab === "careers" ? <JobsView jobs={props.jobs} loading={props.loading} onSaveJobs={props.onSaveJobs} pendingSince={props.pendingSince} /> : null}
               {tab === "inbox" ? (
                 <div className="space-y-6">
                   <ApplicantsView applicants={props.applicants} jobs={props.jobs} loading={props.loading} />
@@ -261,7 +273,7 @@ export function AdminWorkspace(props: Props) {
                 </div>
               ) : null}
               {tab === "analytics" ? <AnalyticsView analytics={props.analytics} /> : null}
-              {tab === "settings" ? <SettingsView onCreateNda={props.onCreateNda} config={props.config} onPublishContent={props.onPublishContent} publishing={props.loading} /> : null}
+              {tab === "settings" ? <SettingsView onCreateNda={props.onCreateNda} config={props.config} onPublishContent={props.onPublishContent} publishing={props.loading} onRebuildSite={props.onRebuildSite ?? (async () => {})} rebuilding={props.loading} pendingSince={props.pendingSince} /> : null}
             </div>
           </div>
         </section>

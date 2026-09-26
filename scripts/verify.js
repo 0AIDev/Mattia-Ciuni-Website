@@ -1329,5 +1329,44 @@ console.log("homepage html+css: " + (bytes / 1024).toFixed(1) + "KB raw | all JS
 // piu' sopra (una rotta in piu' cambia lo split di Turbopack e la home guadagna
 // solo riferimenti di idratazione, ~0.4KB, senza byte di codice). Il link alla
 // pagina nel footer e' invece costo di contenuto reale e voluto.
+// Il file di build: e' l'unico modo che ha il pannello per dire "online" senza
+// chiedere a Cloudflare, e quindi un file che deve esistere, essere JSON valido
+// e avere un orario gia' passato. Se manca, il pannello ripete "non lo so" e
+// l'unico modo di saperlo resta ricaricare il sito a mano.
+const deployStampPath = path.join(out, "deploy.json");
+let deployStamp = null;
+try {
+  deployStamp = JSON.parse(fs.readFileSync(deployStampPath, "utf8"));
+} catch {
+  deployStamp = null;
+}
+const builtAt = Date.parse(deployStamp?.built_at);
+check(
+  "deploy: out/deploy.json exists with a valid built_at",
+  Boolean(deployStamp) && Number.isFinite(builtAt) && builtAt <= Date.now() + 60_000
+);
+check(
+  "deploy: the stamp is served without cache, or the panel reads a stale build",
+  /\/deploy\.json[\s\S]{0,200}Cache-Control: no-store/.test(headersFile)
+);
+check(
+  "deploy: the stamp stays out of public/, where it would be a file to commit on every build",
+  !fs.existsSync(path.join(__dirname, "..", "public", "deploy.json"))
+);
+// Un deploy hook in cima a ogni publish non e' solo ridondante: le build di
+// produzione girano una alla volta, quindi il doppio build accodato fa finire
+// la copia giusta in `skipped` e l'attesa raddoppia. Il hook resta solo per il
+// rebuild manuale.
+const adminFeedbackSource = readFileSync(
+  path.join(__dirname, "..", "functions", "api", "admin", "feedback.ts"),
+  "utf8",
+);
+const hookCalls = (adminFeedbackSource.match(/await triggerDeploy\(/g) || []).length;
+check(
+  "deploy: the deploy hook is only called by content_rebuild",
+  hookCalls === 1 && /if \(body\.action === "content_rebuild"\)/.test(adminFeedbackSource),
+  `${hookCalls} call site(s) of triggerDeploy`,
+);
+
 check("weight: homepage html+css < 135KB raw", bytes < 135 * 1024);
 process.exit(fail ? 1 : 0);

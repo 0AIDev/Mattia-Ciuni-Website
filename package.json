@@ -15,7 +15,7 @@
     "predev": "node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs && node scripts/gen-rag.mjs",
     "prebuild": "node scripts/gen-cms-copy.mjs && tsx scripts/gen-cms-seed.mts && node scripts/check-heading-sizes.mjs",
     "build": "next build",
-    "postbuild": "node scripts/fix-localized-html-lang.mjs && node scripts/gen-redirects.mjs && node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs && node scripts/gen-rag.mjs && node scripts/submit-google-sitemap.mjs && node scripts/ping-indexnow.mjs",
+    "postbuild": "node scripts/gen-deploy-stamp.mjs && node scripts/fix-localized-html-lang.mjs && node scripts/gen-redirects.mjs && node scripts/gen-cards.mjs && node scripts/gen-agent-files.mjs && node scripts/gen-rag.mjs && node scripts/submit-google-sitemap.mjs && node scripts/ping-indexnow.mjs",
     "start": "next start",
     "lint": "eslint .",
     "test:newsletter": "node scripts/test-newsletter.mjs",
