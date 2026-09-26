@@ -16,6 +16,7 @@ import { slugify } from "@/lib/slug";
 import { socialImages } from "@/lib/social";
 import { languageAlternates } from "@/lib/seo";
 import { jobDescriptionHtml } from "@/lib/careers/feed";
+import { jobMetaDescription, jobOgImage } from "@/lib/careers/jobs-public";
 
 export const dynamicParams = false;
 
@@ -26,8 +27,12 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ slug: string }> }): Promise<Metadata> {
   const job = getJob((await params).slug);
   if (!job) return {};
-  const card = socialImages(`/careers/${job.slug}/og.png`, job.title);
-  return { title: job.title, description: job.shortPitch, alternates: { canonical: `/careers/${job.slug}/`, languages: languageAlternates(`/careers/${job.slug}/`) }, openGraph: { type: "website", url: `/careers/${job.slug}/`, siteName: "Mattia Ciuni", title: job.title, description: job.shortPitch, images: card.og }, twitter: { card: "summary_large_image", title: job.title, description: job.shortPitch, images: card.twitter } };
+  // Un ruolo creato dal pannello nasce con il pitch vuoto, e la card dedicata la
+  // disegna solo `scripts/og.ps1`: i due ripieghi stanno in `jobs-public` perche'
+  // valgono anche per la rotta localizzata, che ha un metadata tutto suo.
+  const description = jobMetaDescription(job);
+  const card = socialImages(jobOgImage(job.slug), job.title);
+  return { title: job.title, description, alternates: { canonical: `/careers/${job.slug}/`, languages: languageAlternates(`/careers/${job.slug}/`) }, openGraph: { type: "website", url: `/careers/${job.slug}/`, siteName: "Mattia Ciuni", title: job.title, description, images: card.og }, twitter: { card: "summary_large_image", title: job.title, description, images: card.twitter } };
 }
 
 function MinimalArrow({ direction = "right" }: { direction?: "left" | "right" }) { return <svg aria-hidden="true" viewBox="0 0 20 20" fill="none" className="h-4 w-4"><path d={direction === "left" ? "m12.5 4-6 6 6 6" : "m7.5 4 6 6-6 6"} stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" /></svg>; }

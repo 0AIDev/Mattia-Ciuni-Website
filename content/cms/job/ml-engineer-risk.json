@@ -40,12 +40,22 @@
   ],
   "content": [
     {
+      "type": "h2",
+      "level": 3,
+      "text": "The role"
+    },
+    {
       "type": "p",
       "text": "Payle's authorization engine decides, in milliseconds, whether an AI agent is allowed to spend money. It's deterministic, policy-driven, and live. What it doesn't have yet is a risk layer: the ML that scores transactions for fraud, scores merchants for quality, and builds trust profiles for agents over time."
     },
     {
       "type": "p",
       "text": "Phase 0 of that risk engine is rules-based and in final build. Phase 1 is yours: evolve it into real ML on a dataset nobody else on earth has: an append-only ledger of every agent authorization, payment, and outcome, with full context attached."
+    },
+    {
+      "type": "h2",
+      "level": 3,
+      "text": "What you'd build"
     },
     {
       "type": "list",
@@ -59,6 +69,11 @@
       ]
     },
     {
+      "type": "h2",
+      "level": 3,
+      "text": "You"
+    },
+    {
       "type": "list",
       "items": [
         "Strong classical ML: LightGBM/XGBoost, feature engineering, proper validation. And you can explain why you'd pick classical over deep learning for tabular fraud scoring at 20ms latency",
@@ -69,8 +84,18 @@
       ]
     },
     {
+      "type": "h2",
+      "level": 3,
+      "text": "Compensation"
+    },
+    {
       "type": "p",
       "text": "€2,000-3,500/month (part-time to start, full-time path at YC acceptance) + 0.5-1% equity (4-year vesting, 1-year cliff). Remote-first, async-friendly, Friday demos for the whole team."
+    },
+    {
+      "type": "h2",
+      "level": 3,
+      "text": "The challenge"
     },
     {
       "type": "p",

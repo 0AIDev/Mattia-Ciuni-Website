@@ -11,12 +11,22 @@
   "questions": [],
   "content": [
     {
+      "type": "h2",
+      "level": 3,
+      "text": "The role"
+    },
+    {
       "type": "p",
       "text": "Payle's authorization engine is live: agents ask for permission, a deterministic policy engine decides, every transaction lands in a hash-chained ledger that anyone can verify. The money path is audited, money-tested under concurrency, and finished."
     },
     {
       "type": "p",
       "text": "What's missing is the layer agents run on. You would own it end to end: the agent runtime that searches real retailers, captures evidence, compares offers, attempts purchases through the authorization gate, and verifies outcomes. Your work is the reason the gate exists: without the runtime, the engine is a vault with no hands."
+    },
+    {
+      "type": "h2",
+      "level": 3,
+      "text": "What exists"
     },
     {
       "type": "list",
@@ -27,6 +37,11 @@
       ]
     },
     {
+      "type": "h2",
+      "level": 3,
+      "text": "What you'd build"
+    },
+    {
       "type": "list",
       "items": [
         "The full agent runtime: planning loops with frontier LLMs (tool calling, structured outputs), search connectors across retailers (Apple, Amazon, Back Market for the launch campaign; broader catalog over time), a browser pipeline for evidence capture (screenshots, extraction hashes, freshness checks)",
@@ -34,6 +49,11 @@
         "The MacBook Gate: our launch campaign where the agent tries to buy a MacBook 2,000 times under policy, declines every time, and buys one real one for the draw winner. Your runtime powers it",
         "Outcome verification: the charge is not the task. You build the checks that prove the domain registered, the order shipped, the subscription cancelled"
       ]
+    },
+    {
+      "type": "h2",
+      "level": 3,
+      "text": "You"
     },
     {
       "type": "list",
@@ -46,8 +66,18 @@
       ]
     },
     {
+      "type": "h2",
+      "level": 3,
+      "text": "Compensation"
+    },
+    {
       "type": "p",
       "text": "€2,500-3,000/month + 0.75-1% equity (4-year vesting, 1-year cliff). Contractor now, full-time at YC acceptance, relocation possible with sponsorship."
+    },
+    {
+      "type": "h2",
+      "level": 3,
+      "text": "The challenge"
     },
     {
       "type": "p",

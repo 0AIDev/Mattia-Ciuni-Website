@@ -27,7 +27,7 @@ export function blocksToMarkdown(blocks: unknown): string {
   return blocks.map((block) => {
     if (!block || typeof block !== "object") return "";
     const item = block as UnknownBlock;
-    if (item.type === "h2") return `## ${String(item.text || "")}`;
+    if (item.type === "h2") return `${"#".repeat(Number(item.level) || 2)} ${String(item.text || "")}`;
     if (item.type === "quote") return String(item.text || "").split("\n").map((line) => `> ${line}`).join("\n");
     if (item.type === "list" && Array.isArray(item.items)) return item.items.map((entry) => `- ${String(entry)}`).join("\n");
     if (item.type === "code") return `\`\`\`${String(item.lang || "")}\n${String(item.code || "")}\n\`\`\``;
@@ -64,8 +64,18 @@ export function markdownToBlocks(markdown: string): UnknownBlock[] {
       blocks.push({ type: "code", lang, code: code.join("\n") });
       continue;
     }
-    if (/^##\s+/.test(line)) {
-      blocks.push({ type: "h2", text: line.replace(/^##\s+/, "").trim() });
+    if (/^#{2,}\s+/.test(line)) {
+      // Il livello della intestazione viaggia nel blocco. Il tipo resta `h2`
+      // perche' i renderer (che costruiscono il markup) conoscono solo quello,
+      // e aggiungere un tipo nuovo silenziosamente perderebbe i `###` di un
+      // articolo. Il livello serve solo al giro di ritorno: senza, un ruolo
+      // pubblicato dal pannello perdeva un livello a ogni passaggio e la sua
+      // `JobPosting` restava senza `h3`.
+      // `level` c'e' solo quando non e' 2: un blocco `##` resta identico a
+      // prima, quindi i file gia' scritti non cambiano e un blocco costruito a
+      // mano senza livello continua a tornare `##`.
+      const level = (line.match(/^#+/) || ["##"])[0].length;
+      blocks.push({ type: "h2", ...(level === 2 ? {} : { level }), text: line.replace(/^#+\s+/, "").trim() });
       index += 1;
       continue;
     }
@@ -88,7 +98,7 @@ export function markdownToBlocks(markdown: string): UnknownBlock[] {
       continue;
     }
     const paragraph: string[] = [];
-    while (index < lines.length && (lines[index] || "").trim() && !/^(##|>|-\s|```|@@audio\|)/.test(lines[index] || "")) {
+    while (index < lines.length && (lines[index] || "").trim() && !/^(#{2,}|>|-\s|```|@@audio\|)/.test(lines[index] || "")) {
       paragraph.push(lines[index] || "");
       index += 1;
     }

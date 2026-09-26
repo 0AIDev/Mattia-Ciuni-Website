@@ -1368,5 +1368,56 @@ check(
   `${hookCalls} call site(s) of triggerDeploy`,
 );
 
+// Il nome della cartella che un loader legge deve essere un `kind` del CMS, e il
+// `kind` e' quello che la Function usa per scrivere. Con il plurale
+// (`loadCmsCollection("posts")`) la cartella non esiste, la lista torna vuota
+// **senza errori**, e il contenuto pubblicato non arriva al sito: era successo
+// per articoli, note e offerte, con commit, build e deploy tutti verdi. Il
+// controllo e' generico perche' la lezione non e' "ricordati i singolari", ma
+// "il nome della cartella e' un kind".
+const cmsKinds = new Set(
+  (readFileSync(path.join(__dirname, "..", "lib", "cms-types.ts"), "utf8")
+    .match(/export type CmsKind =([\s\S]*?);/)?.[1] || "")
+    .match(/"([a-z_]+)"/g)
+    .map((value) => value.replace(/"/g, "")),
+);
+const collectionLoaders = [];
+const libFiles = (current) => fs.readdirSync(current, { withFileTypes: true }).flatMap((entry) => {
+  const entryPath = path.join(current, entry.name);
+  return entry.isDirectory() ? libFiles(entryPath) : [entryPath];
+});
+for (const file of libFiles(path.join(__dirname, "..", "lib"))) {
+  if (!file.endsWith(".ts") || file.endsWith("cms-content.ts")) continue;
+  const source = readFileSync(file, "utf8");
+  for (const match of source.matchAll(/loadCmsCollection<[^>]*>\("([^"]+)"\)/g)) {
+    collectionLoaders.push({ file: path.relative(path.join(__dirname, ".."), file), kind: match[1] });
+  }
+}
+check(
+  `cms: every collection loader reads a CMS kind directory (${collectionLoaders.length} loaders)`,
+  collectionLoaders.length >= 6 && collectionLoaders.every((entry) => cmsKinds.has(entry.kind)),
+  collectionLoaders.filter((entry) => !cmsKinds.has(entry.kind)).map((entry) => `${entry.file} reads "${entry.kind}"`).join(" | "),
+);
+// E il prova che non basta: un file pubblicato deve cambiare la pagina. Il
+// controllo precedente dice che la cartella e' quella giusta, questo dice che
+// il loader la legge davvero e la build la usa.
+const careersSource = readFileSync(path.join(__dirname, "..", "lib", "careers", "jobs-public.ts"), "utf8");
+check(
+  "cms: the careers registry is built from the files the panel writes",
+  /loadCmsCollection<CareerJob>\("job"\)/.test(careersSource) &&
+    /mergeCmsCollection\(baseJobs, cmsBodies, \{ keepUnlistedFields: true \}\)/.test(careersSource),
+);
+// Le pagine dei ruoli le genera `generateStaticParams` dal registro pubblico:
+// se la sitemap legge il registry in codice, un ruolo pubblicato dal pannello
+// ha una pagina che nessuna sitemap elenca, e il check di copertura lo segnala
+// solo dopo il deploy.
+const sitemapSource = readFileSync(path.join(__dirname, "..", "app", "sitemap-home.xml", "route.ts"), "utf8");
+const careersParamsSource = readFileSync(path.join(__dirname, "..", "app", "careers", "[slug]", "page.tsx"), "utf8");
+check(
+  "cms: the sitemap and the role pages read the same registry",
+  /from "@\/lib\/careers\/jobs-public"/.test(sitemapSource) &&
+    /publicJobs\(\)\.map\(\(job\)/.test(careersParamsSource),
+);
+
 check("weight: homepage html+css < 135KB raw", bytes < 135 * 1024);
 process.exit(fail ? 1 : 0);

@@ -56,4 +56,34 @@ try {
   globalThis.fetch = realFetch;
 }
 
+// Il giro markdown → blocchi → markdown deve restituire lo stesso testo.
+//
+// Il blocco di un titolo era `h2` senza livello: un `###` di una pagina di
+// ruolo tornava `##`, quindi ogni pubblicazione dal pannello perdeva un livello
+// e il `JobPosting` restava senza `h3`. Il tipo del blocco non cambia (i
+// renderer conoscono solo `h2`): a viaggiare e' il livello, che serve solo al
+// ritorno.
+const body = "Intro.\n\n### The role\n\nBody text.\n\n## Second\n\n- one\n- two";
+const roundTripped = blocksToMarkdown(markdownToBlocks(body));
+assert.equal(roundTripped, body);
+// E il caso che non va dimenticato: un blocco scritto a mano, senza `level`,
+// resta un `##` come prima. Il ripiego e' deliberato, non un default ereditato.
+assert.equal(blocksToMarkdown([{ type: "h2", text: "Legacy" }]), "## Legacy");
+assert.deepEqual(markdownToBlocks("### Deep")[0], { type: "h2", level: 3, text: "Deep" });
+
+// Il merge con `keepUnlistedFields` esiste per i registri che il pannello non
+// possiede interamente: un'offerta ha `postedAt` e `challenge`, e l'editor non ha
+// un campo per nessuno dei due, quindi sostituire l'oggetto li avrebbe cancellati
+// dalla pagina nel momento in cui la si pubblica.
+const role = { slug: "role", title: "Role", postedAt: "2026-09-23", challenge: { title: "Artifact" }, description: "body" };
+const [mergedRole] = mergeCmsCollection([role], [{ slug: "role", title: "Role", description: "new body" }], { keepUnlistedFields: true });
+assert.equal(mergedRole.postedAt, "2026-09-23");
+assert.deepEqual(mergedRole.challenge, { title: "Artifact" });
+assert.equal(mergedRole.description, "new body");
+// Senza l'opzione il comportamento e' quello di sempre: il file vince intero. Le
+// collezioni editoriali dipendono da questo, perche' un campo svuotato dal
+// pannello deve restare svuotato.
+const [replacedRole] = mergeCmsCollection([role], [{ slug: "role", title: "Role" }]);
+assert.equal(replacedRole.postedAt, undefined);
+
 console.log("cms: Markdown blocks, round-trip, static override merge and Supabase schema probe passed");

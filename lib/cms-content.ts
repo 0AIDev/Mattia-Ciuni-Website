@@ -45,8 +45,24 @@ export function loadCmsCollection<T>(kind: string): T[] {
     .filter((value): value is T => value !== null);
 }
 
-export function mergeCmsCollection<T extends { slug: string }>(base: T[], overrides: T[]): T[] {
+/**
+ * Un file CMS vince sul registry per slug.
+ *
+ * `keepUnlistedFields` serve ai registri che il pannello **non** possiede per
+ * intero. Un'offerta di lavoro, per esempio, ha `postedAt` e `challenge` che
+ * l'editor non ha un campo per: sostituendo l'oggetto intero, pubblicare una
+ * descrizione dall'editor avrebbe cancellato quei campi dalla pagina, e il
+ * `JobPosting` sarebbe uscito senza `datePosted`. Con l'opzione, i campi che il
+ * file elenca vincono e quelli che **non** elenca restano quelli del registry.
+ *
+ * Le collezioni editoriali (articoli, note, pagine) non la usano: li il
+ * pannello li possiede davvero, e un campo vuoto deve poter restare vuoto.
+ */
+export function mergeCmsCollection<T extends { slug: string }>(base: T[], overrides: T[], options: { keepUnlistedFields?: boolean } = {}): T[] {
   const bySlug = new Map(base.map((item) => [item.slug, item]));
-  for (const item of overrides) bySlug.set(item.slug, item);
+  for (const item of overrides) {
+    const existing = options.keepUnlistedFields ? bySlug.get(item.slug) : undefined;
+    bySlug.set(item.slug, existing ? ({ ...existing, ...item } as T) : item);
+  }
   return [...bySlug.values()];
 }

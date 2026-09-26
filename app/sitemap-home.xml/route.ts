@@ -5,7 +5,11 @@ import { notes } from "@/lib/notes";
 import { feedback } from "@/lib/feedback";
 import { LOCALES } from "@/lib/i18n";
 import { cmsPages, pageLocales } from "@/lib/cms-pages";
-import { publicJobs as publicCareerJobs } from "@/lib/careers/jobs";
+// Dal registro **pubblico**, cioe' quello che include i file del pannello: le
+// pagine dei ruoli le genera `generateStaticParams` da questa stessa lista, e
+// una sitemap che legge il registry in codice si trova una pagina per ruolo che
+// non elenca, il giorno in cui un ruolo viene pubblicato dal pannello.
+import { publicJobs as publicCareerJobs } from "@/lib/careers/jobs-public";
 
 export const dynamic = "force-static";
 

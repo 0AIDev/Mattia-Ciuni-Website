@@ -539,7 +539,12 @@ const raw: Post[] = [
   },
 ];
 
-const cmsPosts = loadCmsCollection<Post>("posts");
+// `post` e non `posts`: la Function scrive in `content/cms/<kind>/`, e `kind`
+// e' il nome singolare che il pannello manda. Con il plurale la cartella
+// restava vuota, `loadCmsCollection` restituiva una lista vuota senza dire
+// niente, e ogni articolo pubblicato dal pannello finiva su Git senza arrivare
+// mai al sito: commit verde, deploy verde, pagina identica.
+const cmsPosts = loadCmsCollection<Post>("post");
 const merged = mergeCmsCollection(raw, cmsPosts);
 
 export const posts: (Post & { readingMinutes: number })[] = merged

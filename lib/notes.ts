@@ -488,7 +488,10 @@ const raw: Note[] = [
   },
 ];
 
-const cmsNotes = loadCmsCollection<Note>("notes");
+// `note` e non `notes`, come per i post e le offerte: la cartella e' quella
+// del `kind` che il pannello manda, e con il plurale le note pubblicate dal
+// pannello non entravano nella build.
+const cmsNotes = loadCmsCollection<Note>("note");
 
 export const notes: Note[] = mergeCmsCollection(raw, cmsNotes)
   .sort((a, b) => (a.date < b.date ? 1 : -1));
