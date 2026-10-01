@@ -4,7 +4,7 @@ import { HistoryBackButton } from "@/components/HistoryBackButton";
 import { InlineText } from "@/components/RichText";
 import TableOfContents, { MobileTableOfContents, type TocItem } from "@/components/TableOfContents";
 import { CopyPageLink } from "@/components/CopyPageLink";
-import { LOCALES, isLocale, type Locale } from "@/lib/i18n";
+import { isLocale, type Locale } from "@/lib/i18n";
 import { cmsPage, cmsPageStaticParams, pageLocales } from "@/lib/cms-pages";
 import { site } from "@/lib/site";
 import { socialImages } from "@/lib/social";
@@ -34,9 +34,13 @@ function tocOf(page: { content?: unknown }): TocItem[] {
 }
 
 export function generateStaticParams() {
-  return LOCALES.flatMap((locale) =>
-    cmsPageStaticParams().map((entry) => ({ locale, slug: entry.slug })),
-  );
+  // `cmsPageStaticParams()` restituisce gia' una coppia per ogni lingua in cui
+  // la pagina esiste. Il `LOCALES.flatMap` che c'era qui prima rigenerava ogni
+  // pagina in ogni lingua: una pagina solo in inglese produceva quattro shell di
+  // errore (`de|es|fr|it/p/press/index.html`) che i generatori di card e RAG
+  // indicizzavano come contenuto reale. Con `dynamicParams = false` sotto, la
+  // lista che esce da qui e' anche l'unica lista di URL che il build produce.
+  return cmsPageStaticParams();
 }
 
 /**
