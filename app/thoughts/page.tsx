@@ -15,7 +15,7 @@ const card = socialImages("/thoughts/og.png", "Thoughts | Mattia Ciuni");
 export const metadata: Metadata = {
   title: "Thoughts on AI agents and payments",
   description:
-    "Thoughts by Mattia Ciuni on AI agents, payments and building Payle: the money layer for the agentic economy.",
+    "Thoughts by Mattia Ciuni on AI agents, payments and building Ceilya: the money layer for the agentic economy.",
   alternates: {
     canonical: "/thoughts/",
     types: { "text/markdown": "/thoughts.md" },
@@ -27,14 +27,14 @@ export const metadata: Metadata = {
     siteName: "Mattia Ciuni",
     title: pageTitle,
     description:
-      "Thoughts by Mattia Ciuni on AI agents, payments and building Payle.",
+      "Thoughts by Mattia Ciuni on AI agents, payments and building Ceilya.",
     images: card.og,
   },
   twitter: {
     card: "summary_large_image",
     title: pageTitle,
     description:
-      "Thoughts by Mattia Ciuni on AI agents, payments and building Payle.",
+      "Thoughts by Mattia Ciuni on AI agents, payments and building Ceilya.",
     images: card.twitter,
   },
 };
@@ -69,7 +69,7 @@ export default function BlogIndex() {
           Thoughts
         </h1>
         <p className="m-0 max-w-[600px] text-text-paragraph">
-          Thoughts on AI agents, payments and building Payle. Short, no fluff.
+          Thoughts on AI agents, payments and building Ceilya. Short, no fluff.
           written for myself, public by default.
         </p>
       </div>

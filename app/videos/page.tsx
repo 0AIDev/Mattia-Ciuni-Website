@@ -7,22 +7,22 @@ import { HistoryBackButton } from "@/components/HistoryBackButton";
 import { socialImages } from "@/lib/social";
 import { languageAlternates } from "@/lib/seo";
 
-const pageTitle = "Videos | Mattia Ciuni | Building Payle in public";
+const pageTitle = "Videos | Mattia Ciuni | Building Ceilya in public";
 // La card si dichiara con lo stesso helper di tutte le altre pagine: `width`,
 // `height`, `alt` **e `type`**. Qui il `type` mancava, quindi l'`og:image:type`
 // non finiva nell'HTML e `check-live.mjs` segnava la pagina (con `/voice-notes/`)
 // come l'unica senza card completa.
 const card = socialImages("/og.png", "Videos | Mattia Ciuni");
 const pageDescription =
-  "Founder videos from Mattia Ciuni on building Payle, working through hard problems and staying close to the work.";
+  "Founder videos from Mattia Ciuni on building Ceilya, working through hard problems and staying close to the work.";
 
 export const metadata: Metadata = {
-  title: "Videos | Building Payle in public",
+  title: "Videos | Building Ceilya in public",
   description: pageDescription,
   keywords: [
     "Mattia Ciuni videos",
     "founder videos",
-    "building Payle",
+    "building Ceilya",
     "AI agents",
     "startup founder",
   ],

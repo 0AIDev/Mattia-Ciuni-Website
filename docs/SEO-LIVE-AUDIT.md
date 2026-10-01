@@ -10,11 +10,11 @@ The audit found **196 public HTML pages**. Every public page is checked for a ti
 
 | URL | title | canonical | schema | OG image | sitemap | images/alt | internal links |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| [/about/](/about/) | PASS About Mattia Ciuni | Founder &amp; CEO of Payle | Mattia C | PASS | PASS ProfilePage | PASS | PASS | 1 / all alt | 16 |
+| [/about/](/about/) | PASS About Mattia Ciuni | Founder &amp; CEO of Ceilya | Mattia C | PASS | PASS ProfilePage | PASS | PASS | 1 / all alt | 16 |
 | [/careers/agent-runtime-founding-engineer/apply/](/careers/agent-runtime-founding-engineer/apply/) | PASS Apply: Founding Engineer, Agent Runtime | Mattia Ciuni | CHECK | PASS JobPosting | PASS | PASS | 1 / all alt | 18 |
 | [/careers/agent-runtime-founding-engineer/](/careers/agent-runtime-founding-engineer/) | PASS Founding Engineer, Agent Runtime | Mattia Ciuni | PASS | PASS JobPosting | PASS | PASS | 1 / all alt | 17 |
 | [/careers/confirmed/](/careers/confirmed/) | PASS Application confirmed | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 1 / all alt | 16 |
-| [/careers/](/careers/) | PASS Build with Payle — Careers | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 21 |
+| [/careers/](/careers/) | PASS Build with Ceilya — Careers | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 21 |
 | [/careers/ml-engineer-risk/apply/](/careers/ml-engineer-risk/apply/) | PASS Apply: ML Engineer — Risk &amp; Trust | Mattia Ciuni | CHECK | PASS JobPosting | PASS | PASS | 1 / all alt | 19 |
 | [/careers/ml-engineer-risk/](/careers/ml-engineer-risk/) | PASS ML Engineer — Risk &amp; Trust | Mattia Ciuni | PASS | PASS JobPosting | PASS | PASS | 1 / all alt | 18 |
 | [/careers/preview/](/careers/preview/) | PASS Careers offer preview | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 1 / all alt | 16 |
@@ -23,13 +23,13 @@ The audit found **196 public HTML pages**. Every public page is checked for a ti
 | [/de/about/](/de/about/) | PASS Über mich | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/de/careers/agent-runtime-founding-engineer/apply/](/de/careers/agent-runtime-founding-engineer/apply/) | PASS Apply: Founding Engineer, Agent Runtime | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
 | [/de/careers/agent-runtime-founding-engineer/](/de/careers/agent-runtime-founding-engineer/) | PASS Founding Engineer, Agent Runtime | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 17 |
-| [/de/careers/](/de/careers/) | PASS Karriere — Payle | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 21 |
+| [/de/careers/](/de/careers/) | PASS Karriere — Ceilya | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 21 |
 | [/de/careers/ml-engineer-risk/apply/](/de/careers/ml-engineer-risk/apply/) | PASS Apply: ML Engineer — Risk &amp; Trust | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
 | [/de/careers/ml-engineer-risk/](/de/careers/ml-engineer-risk/) | PASS ML Engineer — Risk &amp; Trust | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 18 |
 | [/de/cookies/](/de/cookies/) | PASS Cookies | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/de/feedback/a-stranger-redesigned-my-pitch-in-one-comment/](/de/feedback/a-stranger-redesigned-my-pitch-in-one-comment/) | PASS A stranger redesigned my pitch in one comment | Mattia Ciu | PASS | PASS Article, BreadcrumbList | PASS | CHECK | 1 / all alt | 17 |
 | [/de/feedback/](/de/feedback/) | PASS Feedback | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 17 |
-| [/de/](/de/) | PASS Mattia Ciuni | Founder &amp; CEO at Payle, die Geldschicht | PASS | CHECK none | PASS | PASS | 2 / all alt | 28 |
+| [/de/](/de/) | PASS Mattia Ciuni | Founder &amp; CEO at Ceilya, die Geldschicht | PASS | CHECK none | PASS | PASS | 2 / all alt | 28 |
 | [/de/legal/](/de/legal/) | PASS Rechtliches | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/de/link/](/de/link/) | PASS Links | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/de/newsletter/](/de/newsletter/) | PASS Newsletter | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
@@ -55,13 +55,13 @@ The audit found **196 public HTML pages**. Every public page is checked for a ti
 | [/en/about/](/en/about/) | PASS About | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 21 |
 | [/en/careers/agent-runtime-founding-engineer/apply/](/en/careers/agent-runtime-founding-engineer/apply/) | PASS Apply: Founding Engineer, Agent Runtime | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
 | [/en/careers/agent-runtime-founding-engineer/](/en/careers/agent-runtime-founding-engineer/) | PASS Founding Engineer, Agent Runtime | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 18 |
-| [/en/careers/](/en/careers/) | PASS Careers — Payle | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 21 |
+| [/en/careers/](/en/careers/) | PASS Careers — Ceilya | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 21 |
 | [/en/careers/ml-engineer-risk/apply/](/en/careers/ml-engineer-risk/apply/) | PASS Apply: ML Engineer — Risk &amp; Trust | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
 | [/en/careers/ml-engineer-risk/](/en/careers/ml-engineer-risk/) | PASS ML Engineer — Risk &amp; Trust | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 19 |
 | [/en/cookies/](/en/cookies/) | PASS Cookies | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 21 |
 | [/en/feedback/a-stranger-redesigned-my-pitch-in-one-comment/](/en/feedback/a-stranger-redesigned-my-pitch-in-one-comment/) | PASS A stranger redesigned my pitch in one comment | Mattia Ciu | PASS | PASS Article, BreadcrumbList | PASS | CHECK | 1 / all alt | 17 |
 | [/en/feedback/](/en/feedback/) | PASS Feedback | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 22 |
-| [/en/](/en/) | PASS Mattia Ciuni | Founder &amp; CEO at Payle, the money layer | PASS | CHECK none | PASS | PASS | 2 / all alt | 31 |
+| [/en/](/en/) | PASS Mattia Ciuni | Founder &amp; CEO at Ceilya, the money layer | PASS | CHECK none | PASS | PASS | 2 / all alt | 31 |
 | [/en/legal/](/en/legal/) | PASS Legal Center | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 21 |
 | [/en/link/](/en/link/) | PASS Links | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 21 |
 | [/en/newsletter/](/en/newsletter/) | PASS Newsletter | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 21 |
@@ -87,13 +87,13 @@ The audit found **196 public HTML pages**. Every public page is checked for a ti
 | [/es/about/](/es/about/) | PASS Sobre mí | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/es/careers/agent-runtime-founding-engineer/apply/](/es/careers/agent-runtime-founding-engineer/apply/) | PASS Apply: Founding Engineer, Agent Runtime | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
 | [/es/careers/agent-runtime-founding-engineer/](/es/careers/agent-runtime-founding-engineer/) | PASS Founding Engineer, Agent Runtime | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 17 |
-| [/es/careers/](/es/careers/) | PASS Carreras — Payle | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 21 |
+| [/es/careers/](/es/careers/) | PASS Carreras — Ceilya | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 21 |
 | [/es/careers/ml-engineer-risk/apply/](/es/careers/ml-engineer-risk/apply/) | PASS Apply: ML Engineer — Risk &amp; Trust | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
 | [/es/careers/ml-engineer-risk/](/es/careers/ml-engineer-risk/) | PASS ML Engineer — Risk &amp; Trust | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 18 |
 | [/es/cookies/](/es/cookies/) | PASS Cookies | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/es/feedback/a-stranger-redesigned-my-pitch-in-one-comment/](/es/feedback/a-stranger-redesigned-my-pitch-in-one-comment/) | PASS A stranger redesigned my pitch in one comment | Mattia Ciu | PASS | PASS Article, BreadcrumbList | PASS | CHECK | 1 / all alt | 17 |
 | [/es/feedback/](/es/feedback/) | PASS Comentarios | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 17 |
-| [/es/](/es/) | PASS Mattia Ciuni | Founder &amp; CEO at Payle, la capa de dine | PASS | CHECK none | PASS | PASS | 2 / all alt | 28 |
+| [/es/](/es/) | PASS Mattia Ciuni | Founder &amp; CEO at Ceilya, la capa de dine | PASS | CHECK none | PASS | PASS | 2 / all alt | 28 |
 | [/es/legal/](/es/legal/) | PASS Centro legal | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/es/link/](/es/link/) | PASS Enlaces | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/es/newsletter/](/es/newsletter/) | PASS Newsletter | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
@@ -117,17 +117,17 @@ The audit found **196 public HTML pages**. Every public page is checked for a ti
 | [/es/voice-notes/](/es/voice-notes/) | PASS Notas de voz | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/es/work/](/es/work/) | PASS Trabajo | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/feedback/a-stranger-redesigned-my-pitch-in-one-comment/](/feedback/a-stranger-redesigned-my-pitch-in-one-comment/) | PASS A stranger redesigned my pitch in one comment | Mattia Ciu | PASS | PASS Article, BreadcrumbList | PASS | PASS | 1 / all alt | 17 |
-| [/feedback/](/feedback/) | PASS Feedback on Payle | Mattia Ciuni | PASS | PASS Blog | PASS | PASS | 1 / all alt | 18 |
+| [/feedback/](/feedback/) | PASS Feedback on Ceilya | Mattia Ciuni | PASS | PASS Blog | PASS | PASS | 1 / all alt | 18 |
 | [/fr/about/](/fr/about/) | PASS À propos | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/fr/careers/agent-runtime-founding-engineer/apply/](/fr/careers/agent-runtime-founding-engineer/apply/) | PASS Apply: Founding Engineer, Agent Runtime | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
 | [/fr/careers/agent-runtime-founding-engineer/](/fr/careers/agent-runtime-founding-engineer/) | PASS Founding Engineer, Agent Runtime | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 17 |
-| [/fr/careers/](/fr/careers/) | PASS Carrières — Payle | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 21 |
+| [/fr/careers/](/fr/careers/) | PASS Carrières — Ceilya | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 21 |
 | [/fr/careers/ml-engineer-risk/apply/](/fr/careers/ml-engineer-risk/apply/) | PASS Apply: ML Engineer — Risk &amp; Trust | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
 | [/fr/careers/ml-engineer-risk/](/fr/careers/ml-engineer-risk/) | PASS ML Engineer — Risk &amp; Trust | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 18 |
 | [/fr/cookies/](/fr/cookies/) | PASS Cookies | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/fr/feedback/a-stranger-redesigned-my-pitch-in-one-comment/](/fr/feedback/a-stranger-redesigned-my-pitch-in-one-comment/) | PASS A stranger redesigned my pitch in one comment | Mattia Ciu | PASS | PASS Article, BreadcrumbList | PASS | CHECK | 1 / all alt | 17 |
 | [/fr/feedback/](/fr/feedback/) | PASS Retours | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 17 |
-| [/fr/](/fr/) | PASS Mattia Ciuni | Founder &amp; CEO at Payle, la couche finan | PASS | CHECK none | PASS | PASS | 2 / all alt | 28 |
+| [/fr/](/fr/) | PASS Mattia Ciuni | Founder &amp; CEO at Ceilya, la couche finan | PASS | CHECK none | PASS | PASS | 2 / all alt | 28 |
 | [/fr/legal/](/fr/legal/) | PASS Centre juridique | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/fr/link/](/fr/link/) | PASS Liens | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/fr/newsletter/](/fr/newsletter/) | PASS Newsletter | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
@@ -150,17 +150,17 @@ The audit found **196 public HTML pages**. Every public page is checked for a ti
 | [/fr/videos/](/fr/videos/) | PASS Vidéos | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/fr/voice-notes/](/fr/voice-notes/) | PASS Notes vocales | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/fr/work/](/fr/work/) | PASS Travail | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
-| [/](/) | PASS Mattia Ciuni | Founder &amp; CEO at Payle | PASS | PASS Person, WebSite, Organization | PASS | PASS | 10 / all alt | 31 |
+| [/](/) | PASS Mattia Ciuni | Founder &amp; CEO at Ceilya | PASS | PASS Person, WebSite, Organization | PASS | PASS | 10 / all alt | 31 |
 | [/it/about/](/it/about/) | PASS Chi sono | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/it/careers/agent-runtime-founding-engineer/apply/](/it/careers/agent-runtime-founding-engineer/apply/) | PASS Apply: Founding Engineer, Agent Runtime | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
 | [/it/careers/agent-runtime-founding-engineer/](/it/careers/agent-runtime-founding-engineer/) | PASS Founding Engineer, Agent Runtime | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 17 |
-| [/it/careers/](/it/careers/) | PASS Lavora con me — Payle | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 21 |
+| [/it/careers/](/it/careers/) | PASS Lavora con me — Ceilya | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 21 |
 | [/it/careers/ml-engineer-risk/apply/](/it/careers/ml-engineer-risk/apply/) | PASS Apply: ML Engineer — Risk &amp; Trust | Mattia Ciuni | CHECK | CHECK none | PASS | PASS | 0 / all alt | 2 |
 | [/it/careers/ml-engineer-risk/](/it/careers/ml-engineer-risk/) | PASS ML Engineer — Risk &amp; Trust | Mattia Ciuni | PASS | PASS JobPosting | PASS | CHECK | 1 / all alt | 18 |
 | [/it/cookies/](/it/cookies/) | PASS Cookie | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/it/feedback/a-stranger-redesigned-my-pitch-in-one-comment/](/it/feedback/a-stranger-redesigned-my-pitch-in-one-comment/) | PASS A stranger redesigned my pitch in one comment | Mattia Ciu | PASS | PASS Article, BreadcrumbList | PASS | CHECK | 1 / all alt | 17 |
 | [/it/feedback/](/it/feedback/) | PASS Feedback | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 17 |
-| [/it/](/it/) | PASS Mattia Ciuni | Founder &amp; CEO at Payle, il money layer  | PASS | CHECK none | PASS | PASS | 2 / all alt | 28 |
+| [/it/](/it/) | PASS Mattia Ciuni | Founder &amp; CEO at Ceilya, il money layer  | PASS | CHECK none | PASS | PASS | 2 / all alt | 28 |
 | [/it/legal/](/it/legal/) | PASS Centro legale | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/it/link/](/it/link/) | PASS Link | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
 | [/it/newsletter/](/it/newsletter/) | PASS Newsletter | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 2 / all alt | 16 |
@@ -203,13 +203,13 @@ The audit found **196 public HTML pages**. Every public page is checked for a ti
 | [/thoughts/](/thoughts/) | PASS Thoughts on AI agents and payments | Mattia Ciuni | PASS | PASS Blog | PASS | PASS | 1 / all alt | 20 |
 | [/thoughts/money-layer-for-ai-agents/](/thoughts/money-layer-for-ai-agents/) | PASS The money layer for AI agents | Mattia Ciuni | PASS | PASS BlogPosting, BreadcrumbList | PASS | PASS | 2 / all alt | 26 |
 | [/thoughts/welcoming-alex-mwaniki-founding-engineer-core/](/thoughts/welcoming-alex-mwaniki-founding-engineer-core/) | PASS Welcoming Alex Mwaniki, Founding Engineer (Core): the inte | PASS | PASS BlogPosting, BreadcrumbList | PASS | PASS | 2 / all alt | 24 |
-| [/videos/](/videos/) | PASS Videos | Building Payle in public | Mattia Ciuni | PASS | PASS CollectionPage | PASS | PASS | 1 / all alt | 16 |
+| [/videos/](/videos/) | PASS Videos | Building Ceilya in public | Mattia Ciuni | PASS | PASS CollectionPage | PASS | PASS | 1 / all alt | 16 |
 | [/voice-notes/](/voice-notes/) | PASS Voice Notes | Spoken, unedited | Mattia Ciuni | PASS | CHECK none | PASS | PASS | 1 / all alt | 16 |
-| [/work/](/work/) | PASS Work by Mattia Ciuni | Payle, Celeste and AI Payments | Ma | PASS | PASS CollectionPage | PASS | PASS | 1 / all alt | 16 |
+| [/work/](/work/) | PASS Work by Mattia Ciuni | Ceilya, Celeste and AI Payments | Ma | PASS | PASS CollectionPage | PASS | PASS | 1 / all alt | 16 |
 
 ## What to fix first
 
-1. **Keep the homepage and `/work/` as entity hubs.** They should explain the relationship between Mattia Ciuni, Payle, Celeste and the real subjects of the writing. Do not create thin pages for every keyword permutation.
+1. **Keep the homepage and `/work/` as entity hubs.** They should explain the relationship between Mattia Ciuni, Ceilya, Celeste and the real subjects of the writing. Do not create thin pages for every keyword permutation.
 2. **Keep article URLs stable.** A title change does not justify changing a slug. If a URL must move, add a permanent redirect and update the canonical, sitemap, feed and internal links together.
 3. **Use one primary intent per article.** A pillar can mention many related terms, but supporting pieces should answer a narrower real question and link back to the pillar with descriptive anchor text.
 4. **Validate the live origin.** Run the live audit after each production deploy and inspect the homepage, /work/, one Thought, one Note, /feedback/, /robots.txt, /sitemap.xml and /.well-known/security.txt from the actual domain.
@@ -217,7 +217,7 @@ The audit found **196 public HTML pages**. Every public page is checked for a ti
 
 ## Schema and entity plan
 
-The homepage and About page are the authoritative Person surfaces. The Work page is a CollectionPage and ItemList connecting Payle and Celeste to the real work. Thoughts and Notes should remain Article or BlogPosting pages with Mattia as author, stable dates and related links. Feedback is a public record of user perspective, not a claim that every contributor is an employee or co-author. Keep sameAs limited to profiles actually controlled by Mattia; never add a profile merely because a keyword strategy would benefit from it.
+The homepage and About page are the authoritative Person surfaces. The Work page is a CollectionPage and ItemList connecting Ceilya and Celeste to the real work. Thoughts and Notes should remain Article or BlogPosting pages with Mattia as author, stable dates and related links. Feedback is a public record of user perspective, not a claim that every contributor is an employee or co-author. Keep sameAs limited to profiles actually controlled by Mattia; never add a profile merely because a keyword strategy would benefit from it.
 
 ## Verification commands
 

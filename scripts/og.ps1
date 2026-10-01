@@ -130,8 +130,8 @@ function New-HomeCard($outPath) {
   $subFont   = New-Object System.Drawing.Font("Segoe UI", 40)
   $smallFont = New-Object System.Drawing.Font("Segoe UI", 28)
   $g.DrawString("Mattia Ciuni", $titleFont, [System.Drawing.SolidBrush]::new($Ink), 76, 180)
-  $g.DrawString("Founder & CEO at Payle", $subFont, [System.Drawing.SolidBrush]::new($Ink60), 80, 330)
-  $g.DrawString("usepayle.com", $smallFont, [System.Drawing.SolidBrush]::new($Ink40), 80, 440)
+  $g.DrawString("Founder & CEO at Ceilya", $subFont, [System.Drawing.SolidBrush]::new($Ink60), 80, 330)
+  $g.DrawString("ceilya.com", $smallFont, [System.Drawing.SolidBrush]::new($Ink40), 80, 440)
   Save-Og $bmp $g $outPath
 }
 
@@ -271,7 +271,7 @@ function Get-CareerJobs {
 $careerJobs = @(Get-CareerJobs | Where-Object { $_.Status -ne "closed" })
 if (!$Only -and !$Preview) {
   $careerIndexPath = Join-Path (Join-Path $OutRoot "careers") "og.png"
-  New-ArticleCard $bgCard "Build with Payle - Careers" "Careers - Open roles and artifact-based hiring" $careerIndexPath 230 604 "View roles"
+  New-ArticleCard $bgCard "Build with Ceilya - Careers" "Careers - Open roles and artifact-based hiring" $careerIndexPath 230 604 "View roles"
   foreach ($careerJob in $careerJobs) {
     $statusLabel = if ($careerJob.Status -eq "open") { "Open role" } else { "Coming soon" }
     $careerOgPath = Join-Path (Join-Path $OutRoot "careers") (Join-Path $careerJob.Slug "og.png")

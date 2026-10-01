@@ -1,6 +1,6 @@
-# Payle, die Geldschicht für KI-Agenten | Mattia Ciuni
+# Ceilya, die Geldschicht für KI-Agenten | Mattia Ciuni
 
-> Founder & CEO at Payle, die Geldschicht für KI-Agenten. KI-Agenten können bereits recherchieren, vergleichen und ganze Aufgaben ausführen.
+> Founder & CEO at Ceilya, die Geldschicht für KI-Agenten. KI-Agenten können bereits recherchieren, vergleichen und ganze Aufgaben ausführen.
 
 - URL: https://mattiaciuni.pages.dev/de
 - Type: Page

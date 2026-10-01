@@ -30,7 +30,7 @@ export async function GET() {
   <channel>
     <title>${escapeXml("Mattia Ciuni | Thoughts")}</title>
     <link>${base}/thoughts/</link>
-    <description>${escapeXml("Thoughts by Mattia Ciuni on AI agents, payments and building Payle.")}</description>
+    <description>${escapeXml("Thoughts by Mattia Ciuni on AI agents, payments and building Ceilya.")}</description>
     <language>en</language>
 ${items}
   </channel>

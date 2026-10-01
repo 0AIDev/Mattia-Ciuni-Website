@@ -1,6 +1,6 @@
 # Réflexions | Mattia Ciuni
 
-> Réflexions sur les agents IA, les paiements et la construction de Payle.
+> Réflexions sur les agents IA, les paiements et la construction de Ceilya.
 
 - URL: https://mattiaciuni.pages.dev/fr/thoughts
 - Type: Page

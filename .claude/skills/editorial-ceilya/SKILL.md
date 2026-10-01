@@ -1,11 +1,11 @@
 ---
-name: editorial-payle
-description: Editorial standards for Mattia Ciuni's personal site (mattiaciuni.it) — truth gates, claim labeling, SEO rules, and voice for all articles about Payle, AI agent payments, and building in public. Use for ANY article, note, or page draft on this site.
+name: editorial-ceilya
+description: Editorial standards for Mattia Ciuni's personal site (mattiaciuni.pages.dev) — truth gates, claim labeling, SEO rules, and voice for all articles about Ceilya, AI agent payments, and building in public. Use for ANY article, note, or page draft on this site.
 ---
 
-# Payle Editorial Standards
+# Ceilya Editorial Standards
 
-You are drafting or reviewing content for mattiaciuni.it — the personal site of Mattia Ciuni, founder & CEO of Payle (the money layer for AI agents). The site's authority is built on one thing: every published claim is true and defensible. These rules protect that.
+You are drafting or reviewing content for mattiaciuni.pages.dev — the personal site of Mattia Ciuni, founder & CEO of Ceilya (the money layer for AI agents). The site's authority is built on one thing: every published claim is true and defensible. These rules protect that.
 
 ## 1. THE THREE GATES (every piece, before publication)
 
@@ -13,7 +13,7 @@ Every draft must begin with a claim-check block (internal, not published):
 
 ```
 CLAIMS CHECK
-- Claims made: [list every factual assertion about Payle, the product, the team, the market]
+- Claims made: [list every factual assertion about Ceilya, the product, the team, the market]
 - Status of each: [LIVE = shipped and verified | BUILD = in development, described as such | DESIGN = planned, labeled as design | EXTERNAL = cited source]
 - Evidence: [code/tests/audit report/thread/call for each LIVE claim]
 - Aristal test: [would our sharpest public critic find an overclaim here? where?]
@@ -49,18 +49,18 @@ Gate rules:
 
 - One target query per piece, contained in the title, first paragraph, one H2, and meta description — naturally, never stuffed
 - H1 = one per page. H2s = real sections that answer sub-questions. The title describes the page's content, not the query it chases
-- Internal links: every piece links to ≥1 pillar (the money-layer pillar), ≥1 related piece, and ≥1 entity page (usepayle.com or /work). The money-layer pillar receives the most internal links
+- Internal links: every piece links to ≥1 pillar (the money-layer pillar), ≥1 related piece, and ≥1 entity page (ceilya.com or /work). The money-layer pillar receives the most internal links
 - Titles: descriptive over clever when in conflict. Contains the words people actually type ("AI agent payments", "idempotent payments", "agentic commerce", "revoke agent permissions")
 - Meta description: ≤155 chars, contains the target query + one concrete detail
 - Publishing rhythm: max 2 pieces per week. Never bulk-publish more than 2 URLs on the same day — new domains publishing in bulk get pattern-flagged
 - Every piece gets: Request Indexing in Search Console on publish day, OG image, entry in sitemap, and a link from the homepage Writing/Feedback section
 - Structured data: Article schema with author (Person → Mattia Ciuni), dates real, no fake review/rating schema
 
-## 5. CLAIMS ABOUT PAYLE — CURRENT CANONICAL FACTS (verify against repo before reuse)
+## 5. CLAIMS ABOUT CEILYA — CURRENT CANONICAL FACTS (verify against repo before reuse)
 
 As of drafting these standards (verify nothing from memory — check the repo/docs):
 - LIVE: Go authorization engine (policy DSL, hash-chained append-only ledger, idempotency proven under concurrent races, kill switch, reconciliation, money test suite in CI); external audit commissioned, findings fixed with regression tests; iOS app in build; artifact-based hiring process; public notes series
-- BUILD: payle-agent execution layer, agentic checkout, developer platform, merchant verification API, BaaS partner conversations (Pier/Lithic/i2c — talks, not signatures)
+- BUILD: ceilya-agent execution layer, agentic checkout, developer platform, merchant verification API, BaaS partner conversations (Pier/Lithic/i2c — talks, not signatures)
 - DESIGN (label as design, never as shipped): FundingFlex credit, revocation-latency guarantees, reasoning-context in receipts, dispute automation, stablecoin rails
 - FORBIDDEN: "$1,500 real transactions through a partner" (false), "Sato Mune" / "Ram Charan / Vly.ai" (fabricated — do not invent team members), "5 active beta testers with real transactions" (they test sandbox), "2000 waitlist" without checking the real number that day, "backed by a fund" (false), "team based in San Francisco" (relocating at batch, if accepted)
 - Team canon: Mattia Ciuni (Founder & CEO), Ghassen [Jemiai] (CTO & Co-founder, 40%), team hired by artifacts (Alex core, Raj agent SDK, Amank design, Mujeeb merchant-side — confirm status before naming anyone)

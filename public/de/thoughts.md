@@ -1,6 +1,6 @@
 # Gedanken | Mattia Ciuni
 
-> Gedanken über KI-Agenten, Zahlungen und den Aufbau von Payle.
+> Gedanken über KI-Agenten, Zahlungen und den Aufbau von Ceilya.
 
 - URL: https://mattiaciuni.pages.dev/de/thoughts
 - Type: Page

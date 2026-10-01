@@ -4,7 +4,7 @@ import { mergeCmsCollection } from "../lib/cms-content.ts";
 import { supabaseConfigured, supabaseTablesReady } from "../functions/lib/supabase.ts";
 
 const markdown = [
-  "Intro paragraph with **bold** and [Payle](https://usepayle.com).",
+  "Intro paragraph with **bold** and [Ceilya](https://ceilya.com).",
   "",
   "## A section",
   "",
@@ -20,7 +20,7 @@ const markdown = [
   "@@audio|/voice.mp3|One sentence",
 ].join("\n");
 const blocks = markdownToBlocks(markdown);
-assert.deepEqual(blocks[0], { type: "p", text: "Intro paragraph with **bold** and [Payle](https://usepayle.com)." });
+assert.deepEqual(blocks[0], { type: "p", text: "Intro paragraph with **bold** and [Ceilya](https://ceilya.com)." });
 assert.deepEqual(blocks[1], { type: "h2", text: "A section" });
 assert.deepEqual(blocks[2], { type: "quote", text: "A quote" });
 assert.deepEqual(blocks[3], { type: "list", items: ["First item", "Second item"] });

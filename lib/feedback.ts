@@ -52,10 +52,10 @@ const raw: FeedbackPost[] = [
     author: "Liam Murphy",
     github: "https://github.com/aka7880-721",
     description:
-      "I posted Payle's architecture publicly. An engineer I'd never met corrected my language, found real gaps, and made the product sharper. This is the full exchange.",
+      "I posted Ceilya's architecture publicly. An engineer I'd never met corrected my language, found real gaps, and made the product sharper. This is the full exchange.",
     date: "2026-09-21",
     keywords: [
-      "Payle feedback",
+      "Ceilya feedback",
       "agent payments",
       "authorization",
       "build in public",
@@ -64,12 +64,12 @@ const raw: FeedbackPost[] = [
     content: [
       {
         type: "p",
-        text: "This is the first post in a series I'm calling Feedback: public exchanges where engineers attacked Payle's architecture, and what their attacks changed. I'm publishing them because the build-in-public promise only means something if you show the corrections, not just the wins.",
+        text: "This is the first post in a series I'm calling Feedback: public exchanges where engineers attacked Ceilya's architecture, and what their attacks changed. I'm publishing them because the build-in-public promise only means something if you show the corrections, not just the wins.",
       },
       { type: "h2", text: "The message" },
       {
         type: "p",
-        text: "An engineer read my public post about Payle and replied with what he thought, with no introductions. At the time he hadn't even shared his name; he has since: he is Liam Murphy ([@aka7880-721](https://github.com/aka7880-721) on GitHub). His reply was this:",
+        text: "An engineer read my public post about Ceilya and replied with what he thought, with no introductions. At the time he hadn't even shared his name; he has since: he is Liam Murphy ([@aka7880-721](https://github.com/aka7880-721) on GitHub). His reply was this:",
       },
       {
         type: "quote",
@@ -102,7 +102,7 @@ const raw: FeedbackPost[] = [
       },
       {
         type: "p",
-        text: "I changed the pitch the same day. Payle gives agents scoped capabilities that expire, not wallets. Six words, and the pitch got safer than the product instead of scarier than it.",
+        text: "I changed the pitch the same day. Ceilya gives agents scoped capabilities that expire, not wallets. Six words, and the pitch got safer than the product instead of scarier than it.",
       },
       { type: "h2", text: "The scorecard: what existed, what didn't" },
       {

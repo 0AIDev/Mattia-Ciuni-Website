@@ -1,6 +1,6 @@
 # Link | Mattia Ciuni
 
-> Founder & CEO at Payle, il money layer per gli agenti AI.
+> Founder & CEO at Ceilya, il money layer per gli agenti AI.
 
 - URL: https://mattiaciuni.pages.dev/it/link
 - Type: Page

@@ -57,7 +57,7 @@ const entries = files(outDir)
 const payload = {
   version: 1,
   generatedAt: new Date().toISOString().slice(0, 10),
-  policy: "Answer only from this site and usepayle.com. Say when the answer is not in the index.",
+  policy: "Answer only from this site and ceilya.com. Say when the answer is not in the index.",
   entries,
 };
 

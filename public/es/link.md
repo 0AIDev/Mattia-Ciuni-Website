@@ -1,6 +1,6 @@
 # Enlaces | Mattia Ciuni
 
-> Founder & CEO at Payle, la capa de dinero para agentes de IA.
+> Founder & CEO at Ceilya, la capa de dinero para agentes de IA.
 
 - URL: https://mattiaciuni.pages.dev/es/link
 - Type: Page

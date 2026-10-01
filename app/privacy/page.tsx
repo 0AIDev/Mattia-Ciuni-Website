@@ -32,12 +32,12 @@ const sections: LegalSection[] = [
     content: (
       <>
         <p>
-          This is a personal site published by Mattia Ciuni, founder and CEO of Payle. For anything on this page,
+          This is a personal site published by Mattia Ciuni, founder and CEO of Ceilya. For anything on this page,
           the person responsible for your data is Mattia Ciuni, reachable at{" "}
           <a href={`mailto:${site.email}`} className="article-underline">
             {site.email}
           </a>
-          . The site is a personal publishing project: it is not a Payle product page and it does not offer user
+          . The site is a personal publishing project: it is not a Ceilya product page and it does not offer user
           accounts.
         </p>
         <p>
@@ -127,7 +127,7 @@ const sections: LegalSection[] = [
     content: (
       <p>
         Feedback and the moderation queue are read in a private dashboard at{" "}
-        <code className="font-mono text-[13px]">/admin/feedback/</code>, reachable by me and by Payle&apos;s
+        <code className="font-mono text-[13px]">/admin/feedback/</code>, reachable by me and by Ceilya&apos;s
         co-founder and CTO, each with their own credential plus a six-digit code from an authenticator app. Access is
         logged there: who acted, on what, when. It is not a public page, it is not indexed, and it is not measured by
         analytics.

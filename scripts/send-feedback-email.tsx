@@ -26,7 +26,7 @@ async function main() {
   const body = {
     from,
     to: [to],
-    reply_to: "ceo@usepayle.com",
+    reply_to: "m@ceilya.com",
     subject: "Your feedback reached me",
     html,
   };

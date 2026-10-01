@@ -22,8 +22,8 @@ import { TwitterIcon } from "@/components/ui/twitter";
 // Il contenuto è corto e lo è apposta: profilo, icone dei profili, e i pochi
 // posti che valgono un tocco.
 const description =
-  "Everywhere Mattia Ciuni is: Payle, LinkedIn, X, GitHub, Instagram, YouTube, the Spotify podcast, Crunchbase, and the writing published on this site.";
-const card = socialImages("/og.png", "Mattia Ciuni | Founder & CEO at Payle");
+  "Everywhere Mattia Ciuni is: Ceilya, LinkedIn, X, GitHub, Instagram, YouTube, the Spotify podcast, Crunchbase, and the writing published on this site.";
+const card = socialImages("/og.png", "Mattia Ciuni | Founder & CEO at Ceilya");
 
 export const metadata: Metadata = {
   title: "Links",
@@ -51,7 +51,7 @@ const personJsonLd = {
   "@type": "Person",
   "@id": personId,
   name: "Mattia Ciuni",
-  jobTitle: "Founder & CEO of Payle",
+  jobTitle: "Founder & CEO of Ceilya",
   url: site.url,
   sameAs: Object.values(site.social),
   email: `mailto:${site.email}`,
@@ -163,11 +163,11 @@ export default function Page() {
           <p className="mt-1 text-[15px] leading-relaxed text-gray-1200">
             Founder &amp; CEO at{" "}
             <a
-              href={site.payleUrl}
+              href={site.companyUrl}
               rel="noopener noreferrer"
               className="font-semibold underline decoration-transparent underline-offset-4 transition-colors hover:decoration-gray-1200"
             >
-              Payle
+              Ceilya
             </a>
             , the money layer for AI agents.
           </p>
@@ -191,9 +191,9 @@ export default function Page() {
 
       <div className="mt-8 flex flex-col gap-2">
         <Row
-          href={site.payleUrl}
-          label="Payle"
-          note="usepayle.com"
+          href={site.companyUrl}
+          label="Ceilya"
+          note="ceilya.com"
           icon={<GlobeIcon size={19} />}
           external
         />

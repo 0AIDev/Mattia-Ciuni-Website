@@ -13,7 +13,7 @@ The controls below reference code and tests that exist in this repository. They 
 - Original finding: unavailable. The source F1-F10 report was not supplied.
 - Repository evidence: no external audit artifact found under `docs/` or the repository root.
 - Current control: the project refuses to invent an F1 finding or claim closure.
-- Regression guard: editorial truth gate in `.claude/skills/editorial-payle/SKILL.md`, especially the evidence requirement for LIVE claims.
+- Regression guard: editorial truth gate in `.claude/skills/editorial-ceilya/SKILL.md`, especially the evidence requirement for LIVE claims.
 - Status: `UNVERIFIED — source report required`.
 
 ## F2 — Authentication and session controls

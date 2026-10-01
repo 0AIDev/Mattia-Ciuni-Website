@@ -21,7 +21,7 @@ export type SiteSettings = {
   role?: string;
   description?: string;
   email?: string;
-  payleUrl?: string;
+  companyUrl?: string;
   locale?: string;
   language?: string;
   ogImage?: string;

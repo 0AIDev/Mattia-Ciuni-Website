@@ -42,13 +42,13 @@ const raw: Post[] = [
     title: "Welcoming Raj Koli, Founding Engineer (Agent Experience): the interview",
     category: "Thoughts",
     description:
-      "Raj Koli, 21, from India, is Payle's Founding Engineer on the Agent Experience: the interview on agent evaluation, typed errors, and the pending state most demos skip.",
+      "Raj Koli, 21, from India, is Ceilya's Founding Engineer on the Agent Experience: the interview on agent evaluation, typed errors, and the pending state most demos skip.",
     date: "2026-10-01",
-    tags: ["founders", "hiring", "engineering", "building in public", "Payle"],
+    tags: ["founders", "hiring", "engineering", "building in public", "Ceilya"],
     keywords: [
       "Raj Koli",
       "founding engineer",
-      "Payle team",
+      "Ceilya team",
       "agent evaluation",
       "TypeScript SDK",
       "AI agent payments",
@@ -57,29 +57,29 @@ const raw: Post[] = [
     content: [
       {
         type: "p",
-        text: "**Founding Team series.** This is the second post in the series: introducing the people building Payle, in their own words, with the honesty we use everywhere else on this site.",
+        text: "**Founding Team series.** This is the second post in the series: introducing the people building Ceilya, in their own words, with the honesty we use everywhere else on this site.",
       },
       {
         type: "p",
-        text: "First up was [Alex Mwaniki, Founding Engineer on the core](/thoughts/welcoming-alex-mwaniki-founding-engineer-core/). Today: **Raj Koli**, Founding Engineer on the Agent Experience: the TypeScript SDK, the demo agent, and everything that makes the Payle agent usable by developers and visible to the world.",
+        text: "First up was [Alex Mwaniki, Founding Engineer on the core](/thoughts/welcoming-alex-mwaniki-founding-engineer-core/). Today: **Raj Koli**, Founding Engineer on the Agent Experience: the TypeScript SDK, the demo agent, and everything that makes the Ceilya agent usable by developers and visible to the world.",
       },
       {
         type: "p",
-        text: "Raj is 21, from India, and a full-time university student who committed to Payle full-time anyway. Here is our conversation, edited for length but not for honesty.",
+        text: "Raj is 21, from India, and a full-time university student who committed to Ceilya full-time anyway. Here is our conversation, edited for length but not for honesty.",
       },
       {
         type: "p",
-        text: "**Describe in one sentence what you think about Payle.**",
+        text: "**Describe in one sentence what you think about Ceilya.**",
       },
       {
         type: "audio",
         src: "/thoughts/welcoming-raj-koli-founding-engineer-agent-experience/raj-audio.mp3",
-        title: "Raj Koli: one sentence about Payle",
+        title: "Raj Koli: one sentence about Ceilya",
       },
       { type: "h2", text: "A builder who was already watching agents fail" },
       {
         type: "p",
-        text: "**Mattia: Take me back to the day you first saw Payle. What made you reach out instead of just scrolling?**",
+        text: "**Mattia: Take me back to the day you first saw Ceilya. What made you reach out instead of just scrolling?**",
       },
       {
         type: "quote",
@@ -117,11 +117,11 @@ const raw: Post[] = [
       },
       {
         type: "quote",
-        text: "I build my week around university's fixed deadlines, but Payle is a full-time commitment for me, around 40 hours a week. The hard part isn't really the hours themselves, it's making sure a university deadline doesn't suddenly affect the work. So I try to see conflicts coming weeks ahead instead of discovering them when they're already here.",
+        text: "I build my week around university's fixed deadlines, but Ceilya is a full-time commitment for me, around 40 hours a week. The hard part isn't really the hours themselves, it's making sure a university deadline doesn't suddenly affect the work. So I try to see conflicts coming weeks ahead instead of discovering them when they're already here.",
       },
       {
         type: "p",
-        text: "**Mattia: There will be a week where a university exam collides with a Payle deadline. Walk me through how you decide which one wins, and what you'd tell me before that week.**",
+        text: "**Mattia: There will be a week where a university exam collides with a Ceilya deadline. Walk me through how you decide which one wins, and what you'd tell me before that week.**",
       },
       {
         type: "quote",
@@ -168,7 +168,7 @@ const raw: Post[] = [
       { type: "h2", text: "His version of the future" },
       {
         type: "p",
-        text: "**Mattia: Payle's bet is that agents will pay for things everywhere and nobody will think about it. Raj, the student from India who evaluated agents before most people knew what agents were, what does your version of that future look like?**",
+        text: "**Mattia: Ceilya's bet is that agents will pay for things everywhere and nobody will think about it. Raj, the student from India who evaluated agents before most people knew what agents were, what does your version of that future look like?**",
       },
       {
         type: "quote",
@@ -181,7 +181,7 @@ const raw: Post[] = [
       { type: "h2", text: "Welcome to the team, Raj" },
       {
         type: "p",
-        text: "Raj is now officially Founding Engineer (Agent Experience) at Payle: full-time commitment, equity with 4-year vesting and a 1-year cliff. He owns the TypeScript SDK, the demo agent, and everything that makes the Payle agent usable by developers. His first shipped artifact, the persistent idempotency SDK with FLAKY_MODE testing, is coming in a follow-up post.",
+        text: "Raj is now officially Founding Engineer (Agent Experience) at Ceilya: full-time commitment, equity with 4-year vesting and a 1-year cliff. He owns the TypeScript SDK, the demo agent, and everything that makes the Ceilya agent usable by developers. His first shipped artifact, the persistent idempotency SDK with FLAKY_MODE testing, is coming in a follow-up post.",
       },
       {
         type: "list",
@@ -200,13 +200,13 @@ const raw: Post[] = [
     title: "Welcoming Alex Mwaniki, Founding Engineer (Core): the interview",
     category: "Thoughts",
     description:
-      "Alex Mwaniki, 21, from Kenya, is Payle's Founding Engineer on the core: the interview on least privilege, Go, and why no LLM touches the money.",
+      "Alex Mwaniki, 21, from Kenya, is Ceilya's Founding Engineer on the core: the interview on least privilege, Go, and why no LLM touches the money.",
     date: "2026-09-22",
-    tags: ["founders", "hiring", "engineering", "building in public", "Payle"],
+    tags: ["founders", "hiring", "engineering", "building in public", "Ceilya"],
     keywords: [
       "Alex Mwaniki",
       "founding engineer",
-      "Payle team",
+      "Ceilya team",
       "artifact-based hiring",
       "AI agent payments",
       "Mattia Ciuni",
@@ -214,7 +214,7 @@ const raw: Post[] = [
     content: [
       {
         type: "p",
-        text: "**Founding Team series.** This is the first post in a series I've wanted to write since the day Payle stopped being just me: introducing the people building this company, [in their own words](/work/), with the honesty we use everywhere else on this site.",
+        text: "**Founding Team series.** This is the first post in a series I've wanted to write since the day Ceilya stopped being just me: introducing the people building this company, [in their own words](/work/), with the honesty we use everywhere else on this site.",
       },
       {
         type: "p",
@@ -226,17 +226,17 @@ const raw: Post[] = [
       },
       {
         type: "p",
-        text: "**Describe in one sentence what you think about Payle.**",
+        text: "**Describe in one sentence what you think about Ceilya.**",
       },
       {
         type: "audio",
         src: "/thoughts/welcoming-alex-mwaniki-founding-engineer-core/alex-audio.m4a",
-        title: "Alex Mwaniki: one sentence about Payle",
+        title: "Alex Mwaniki: one sentence about Ceilya",
       },
       { type: "h2", text: "A builder with nowhere to build" },
       {
         type: "p",
-        text: "**Mattia: Take me back to the day you first saw Payle. What made you reply instead of just scrolling?**",
+        text: "**Mattia: Take me back to the day you first saw Ceilya. What made you reply instead of just scrolling?**",
       },
       {
         type: "quote",
@@ -253,7 +253,7 @@ const raw: Post[] = [
       },
       {
         type: "quote",
-        text: "It came directly from my background in Cloud Architecture and SRE. In cloud security, the foundational rule is the Principle of Least Privilege: you never grant a service excess access. You generate the minimal permissions needed to execute the task given, nothing more. When I looked at what Payle was building, I applied the exact mental model to AI. We want autonomous agents to handle transactions, but can we blindly trust non-deterministic software with unrestricted access to our money? Giving an AI agent a static card number or a permanent API key is asking for a disaster; one hallucination could drain an entire account. The only safe model is treating the agent like an untrusted cloud process and giving it the least permissions required. Pairing that with an append-only ledger was the natural counterpart: every permission granted and every cent moved must be permanently recorded in an immutable trail.",
+        text: "It came directly from my background in Cloud Architecture and SRE. In cloud security, the foundational rule is the Principle of Least Privilege: you never grant a service excess access. You generate the minimal permissions needed to execute the task given, nothing more. When I looked at what Ceilya was building, I applied the exact mental model to AI. We want autonomous agents to handle transactions, but can we blindly trust non-deterministic software with unrestricted access to our money? Giving an AI agent a static card number or a permanent API key is asking for a disaster; one hallucination could drain an entire account. The only safe model is treating the agent like an untrusted cloud process and giving it the least permissions required. Pairing that with an append-only ledger was the natural counterpart: every permission granted and every cent moved must be permanently recorded in an immutable trail.",
       },
       {
         type: "p",
@@ -318,7 +318,7 @@ const raw: Post[] = [
       },
       {
         type: "quote",
-        text: "Honestly? The main feeling was relief. I'm 21, and taking on an executive CTO role involves regulatory compliance and corporate management that would pull me completely away from the code. Having Ghassen own that side lets me focus 100% on what I do best: building the core engine, the ledger, and the infrastructure. The only uneasy part was the initial surprise of a sudden structural shift, but that passed immediately once I realized it protects my time to just build. I'm sure there's still a lot to learn before taking a managerial role like a CTO. I believe in the Payle manifesto, and I'm grateful for this chance to be part of it at this early stage. The growth and networking from this team, different countries and different backgrounds, really makes me want to stay and build.",
+        text: "Honestly? The main feeling was relief. I'm 21, and taking on an executive CTO role involves regulatory compliance and corporate management that would pull me completely away from the code. Having Ghassen own that side lets me focus 100% on what I do best: building the core engine, the ledger, and the infrastructure. The only uneasy part was the initial surprise of a sudden structural shift, but that passed immediately once I realized it protects my time to just build. I'm sure there's still a lot to learn before taking a managerial role like a CTO. I believe in the Ceilya manifesto, and I'm grateful for this chance to be part of it at this early stage. The growth and networking from this team, different countries and different backgrounds, really makes me want to stay and build.",
       },
       {
         type: "p",
@@ -340,7 +340,7 @@ const raw: Post[] = [
       { type: "h2", text: "His version of the future" },
       {
         type: "p",
-        text: "**Mattia: Payle's bet is that one day agents pay for things everywhere and nobody thinks about it. Alex, the kid from Kenya who built an M-Pesa gateway, what does everyday money look like when your generation rebuilds it?**",
+        text: "**Mattia: Ceilya's bet is that one day agents pay for things everywhere and nobody thinks about it. Alex, the kid from Kenya who built an M-Pesa gateway, what does everyday money look like when your generation rebuilds it?**",
       },
       {
         type: "quote",
@@ -349,7 +349,7 @@ const raw: Post[] = [
       { type: "h2", text: "Welcome to the team, Alex" },
       {
         type: "p",
-        text: "Alex is now officially Founding Engineer (Core) at Payle: full-time, equity with vesting, San Francisco-bound with the team if we make the batch. He owns the authorization engine, the ledger, and the money test suite. His first shipped test, rate limiting under burst load, is coming in a follow-up post. Next in this series: [Raj Koli, Founding Engineer on the Agent Experience](/thoughts/welcoming-raj-koli-founding-engineer-agent-experience/).",
+        text: "Alex is now officially Founding Engineer (Core) at Ceilya: full-time, equity with vesting, San Francisco-bound with the team if we make the batch. He owns the authorization engine, the ledger, and the money test suite. His first shipped test, rate limiting under burst load, is coming in a follow-up post. Next in this series: [Raj Koli, Founding Engineer on the Agent Experience](/thoughts/welcoming-raj-koli-founding-engineer-agent-experience/).",
       },
       {
         type: "list",
@@ -370,12 +370,12 @@ const raw: Post[] = [
     description:
       "AI agents can research, compare and execute, then they stop at the payment step. Why controlled spending power is the missing infrastructure of the agentic economy.",
     date: "2026-09-20",
-    tags: ["AI agents", "payments", "Payle"],
+    tags: ["AI agents", "payments", "Ceilya"],
     keywords: [
       "AI agents payments",
       "agentic commerce",
       "AI spending",
-      "Payle",
+      "Ceilya",
       "Mattia Ciuni",
     ],
     content: [
@@ -401,10 +401,10 @@ const raw: Post[] = [
         type: "p",
         text: "Payments for humans assume a human clicks pay. Agentic commerce inverts that: the click happens inside a loop, at machine speed, across merchants. Card numbers pasted into prompts are not infrastructure; they are liability. The fix is controlled delegation: founders set policy once, agents spend within it, auditors verify after. Retries are the other half of the same problem: without [idempotency](/notes/idempotent-payments-for-ai-agents/) an agent that fails honestly charges the buyer twice.",
       },
-      { type: "h2", text: "What we're building with Payle" },
+      { type: "h2", text: "What we're building with Ceilya" },
       {
         type: "p",
-        text: "Payle gives each AI agent controlled spending power. Define the rules, let the agent operate, keep a receipt for everything. No model in the authorization path, only rules that can be read, replayed and verified: [boring on purpose](/notes/on-boring-systems/). The short version of the rules is [above](#what-agents-actually-need). If you're building in the agentic economy, write to me: I read every email.",
+        text: "Ceilya gives each AI agent controlled spending power. Define the rules, let the agent operate, keep a receipt for everything. No model in the authorization path, only rules that can be read, replayed and verified: [boring on purpose](/notes/on-boring-systems/). The short version of the rules is [above](#what-agents-actually-need). If you're building in the agentic economy, write to me: I read every email.",
       },
     ],
   },
@@ -413,14 +413,14 @@ const raw: Post[] = [
     title: "Artifact-based hiring: ship code before titles",
     category: "Thoughts",
     description:
-      "Everyone who joins Payle shipped working code before we ever talked about roles. How artifact-first recruiting filters for builders.",
+      "Everyone who joins Ceilya shipped working code before we ever talked about roles. How artifact-first recruiting filters for builders.",
     date: "2026-09-20",
     tags: ["hiring", "building"],
-    keywords: ["artifact-based hiring", "startup hiring", "Payle", "Mattia Ciuni"],
+    keywords: ["artifact-based hiring", "startup hiring", "Ceilya", "Mattia Ciuni"],
     content: [
       {
         type: "p",
-        text: "Everyone who joins Payle shipped working code before we ever talked about roles. No exceptions, including me. Resumes describe the past; *artifacts predict the future*.",
+        text: "Everyone who joins Ceilya shipped working code before we ever talked about roles. No exceptions, including me. Resumes describe the past; *artifacts predict the future*.",
       },
       { type: "h2", text: "How it works" },
       {
@@ -443,25 +443,25 @@ const raw: Post[] = [
     title: "Finding Ghassen: the co-founder question, answered in three weeks",
     category: "Thoughts",
     description:
-      "How a stranger challenged Payle's weakest assumption, became its co-founder and CTO, and turned three weeks of evidence into a partnership.",
+      "How a stranger challenged Ceilya's weakest assumption, became its co-founder and CTO, and turned three weeks of evidence into a partnership.",
     date: "2026-09-21",
-    tags: ["founders", "fintech", "building in public", "Payle"],
+    tags: ["founders", "fintech", "building in public", "Ceilya"],
     keywords: [
       "finding a co-founder",
       "co-founder CTO",
       "fintech startup",
       "building in public",
       "Ghassen Jemai",
-      "Payle",
+      "Ceilya",
     ],
     content: [
       {
         type: "p",
-        text: "Three weeks ago I posted Payle's architecture publicly in a builder community. A complete stranger could read exactly what I was building: the authorization engine, the policy evaluation, the hash-chained ledger, and the idea that AI agents should be able to pay for things under human-defined rules.",
+        text: "Three weeks ago I posted Ceilya's architecture publicly in a builder community. A complete stranger could read exactly what I was building: the authorization engine, the policy evaluation, the hash-chained ledger, and the idea that AI agents should be able to pay for things under human-defined rules.",
       },
       {
         type: "p",
-        text: "I was not looking for a co-founder. I want to be honest about that from the start, because most co-founder stories begin with \"we were looking for someone\" and end with a compromise that everyone regrets. I was looking for something else entirely: stress. I wanted smart people to attack the idea before I fell in love with it. If Payle was going to die, I wanted it to die in a comment section, not after eighteen months and someone's savings.",
+        text: "I was not looking for a co-founder. I want to be honest about that from the start, because most co-founder stories begin with \"we were looking for someone\" and end with a compromise that everyone regrets. I was looking for something else entirely: stress. I wanted smart people to attack the idea before I fell in love with it. If Ceilya was going to die, I wanted it to die in a comment section, not after eighteen months and someone's savings.",
       },
       {
         type: "p",
@@ -470,7 +470,7 @@ const raw: Post[] = [
       { type: "h2", text: "The message" },
       {
         type: "p",
-        text: "Then a message arrived from Ghassen. No compliment in it. Instead, research he had done on his own, completely unprompted. He had found a competitor acquisition I did not even know about, Rye acquired by PayPal, and used it to map where the agentic commerce market was consolidating. Then he asked the hardest question anyone had asked me about Payle up to that point: our BNPL model, exactly as I had framed it, did not work for variable usage-based subscriptions.",
+        text: "Then a message arrived from Ghassen. No compliment in it. Instead, research he had done on his own, completely unprompted. He had found a competitor acquisition I did not even know about, Rye acquired by PayPal, and used it to map where the agentic commerce market was consolidating. Then he asked the hardest question anyone had asked me about Ceilya up to that point: our BNPL model, exactly as I had framed it, did not work for variable usage-based subscriptions.",
       },
       {
         type: "p",
@@ -478,7 +478,7 @@ const raw: Post[] = [
       },
       {
         type: "p",
-        text: "We redesigned around his objection. The aggregated spend budget, the credit line that covers variable consumption instead of fixed installments on imaginary amounts, is in Payle's architecture today because a stranger asked me a question I could not answer well. It is the same principle behind [the money layer for AI agents](/thoughts/money-layer-for-ai-agents/): controlled delegation has to work in the messy version of reality, not just in a pitch.",
+        text: "We redesigned around his objection. The aggregated spend budget, the credit line that covers variable consumption instead of fixed installments on imaginary amounts, is in Ceilya's architecture today because a stranger asked me a question I could not answer well. It is the same principle behind [the money layer for AI agents](/thoughts/money-layer-for-ai-agents/): controlled delegation has to work in the messy version of reality, not just in a pitch.",
       },
       { type: "h2", text: "The first week" },
       {
@@ -525,7 +525,7 @@ const raw: Post[] = [
       },
       {
         type: "p",
-        text: "Three weeks ago Ghassen was a stranger in my comments. Today he is the **Co-founder and CTO of Payle**, and the company is objectively better than the one I was building alone: sharper model, deeper fintech coverage, faster decisions.",
+        text: "Three weeks ago Ghassen was a stranger in my comments. Today he is the **Co-founder and CTO of Ceilya**, and the company is objectively better than the one I was building alone: sharper model, deeper fintech coverage, faster decisions.",
       },
       {
         type: "p",
@@ -533,7 +533,7 @@ const raw: Post[] = [
       },
       {
         type: "p",
-        text: "Build in public. Watch who shows up. The rest is selection. You can find Ghassen on [his website](https://beamerboi.github.io/), on [LinkedIn](https://www.linkedin.com/in/ghassen-jemai/), or reach him at [ghassen@usepayle.com](mailto:ghassen@usepayle.com).",
+        text: "Build in public. Watch who shows up. The rest is selection. You can find Ghassen on [his website](https://beamerboi.github.io/), on [LinkedIn](https://www.linkedin.com/in/ghassen-jemai/), or reach him at [g@ceilya.com](mailto:g@ceilya.com).",
       },
     ],
   },

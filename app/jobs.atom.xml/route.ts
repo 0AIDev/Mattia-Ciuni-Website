@@ -39,15 +39,15 @@ export async function GET() {
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <feed xmlns="http://www.w3.org/2005/Atom">
-  <title>${escapeXmlText("Payle — Careers")}</title>
-  <subtitle>${escapeXmlText("Open positions at Payle — the money layer for AI agents.")}</subtitle>
+  <title>${escapeXmlText("Ceilya — Careers")}</title>
+  <subtitle>${escapeXmlText("Open positions at Ceilya — the money layer for AI agents.")}</subtitle>
   <link rel="alternate" href="${base}/careers/"/>
   <link rel="self" href="${base}/jobs.atom.xml"/>
   <id>${base}/jobs.atom.xml</id>
   <updated>${new Date(`${lastBuild}T00:00:00Z`).toISOString()}</updated>
   <author>
-    <name>Payle</name>
-    <uri>${escapeXmlText(site.payleUrl)}</uri>
+    <name>Ceilya</name>
+    <uri>${escapeXmlText(site.companyUrl)}</uri>
   </author>
 ${entries}
 </feed>`;

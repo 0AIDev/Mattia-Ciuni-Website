@@ -75,6 +75,6 @@ SearchProvider.search(query, context) -> SearchResult
 
 Development uses `SEARCH_MODE=sandbox`. The sandbox reads only recorded-offer fixtures. The repository currently contains no verified recorded retailer offers, so the checked-in fixture is intentionally empty. Adding a fixture requires provenance from a real capture: retailer, original URL, capture timestamp, model identifier, price, currency, availability, evidence URL, evidence hash, and operator.
 
-`SEARCH_MODE=live` is disabled outside the controlled rehearsal. It delegates to the existing payle-agent connector/browser pipeline when that dependency is supplied. Timeouts, bot detection, blocked pages, and provider errors remain failures. They are never converted into declines or entries.
+`SEARCH_MODE=live` is disabled outside the controlled rehearsal. It delegates to the existing ceilya-agent connector/browser pipeline when that dependency is supplied. Timeouts, bot detection, blocked pages, and provider errors remain failures. They are never converted into declines or entries.
 
 The browser may submit a query only. It cannot submit prices, retailer names, URLs, screenshots, hashes, or evidence records for acceptance.

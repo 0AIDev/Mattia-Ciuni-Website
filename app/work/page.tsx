@@ -5,14 +5,14 @@ import { site } from "@/lib/site";
 import { socialImages } from "@/lib/social";
 import { languageAlternates } from "@/lib/seo";
 
-const pageTitle = "Work by Mattia Ciuni | Payle, Celeste and AI Payments";
+const pageTitle = "Work by Mattia Ciuni | Ceilya, Celeste and AI Payments";
 const description =
-  "The work of Mattia Ciuni: building Payle's payments infrastructure for AI agents, after building Celeste, an AI browser.";
+  "The work of Mattia Ciuni: building Ceilya's payments infrastructure for AI agents, after building Celeste, an AI browser.";
 const card = socialImages("/og.png", "Work | Mattia Ciuni");
 const base = site.url.replace(/\/$/, "");
 
 export const metadata: Metadata = {
-  title: "Work by Mattia Ciuni | Payle, Celeste and AI Payments",
+  title: "Work by Mattia Ciuni | Ceilya, Celeste and AI Payments",
   description,
   alternates: { canonical: "/work/", types: { "text/markdown": "/work.md" }, languages: languageAlternates("/work/") },
   openGraph: {
@@ -41,9 +41,9 @@ const workJsonLd = {
       {
         "@type": "ListItem",
         position: 1,
-        name: "Payle",
-        url: site.payleUrl,
-        item: { "@type": "Organization", name: "Payle", url: site.payleUrl },
+        name: "Ceilya",
+        url: site.companyUrl,
+        item: { "@type": "Organization", name: "Ceilya", url: site.companyUrl },
       },
       {
         "@type": "ListItem",
@@ -74,18 +74,18 @@ export default function WorkPage() {
         </p>
       </section>
 
-      <section id="payle" aria-labelledby="payle-title" className="mb-16 border-t border-gray-300 pt-8 sm:mb-24">
+      <section id="ceilya" aria-labelledby="company-title" className="mb-16 border-t border-gray-300 pt-8 sm:mb-24">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
-          <h2 id="payle-title" className="font-serif text-3xl font-medium">Payle</h2>
+          <h2 id="company-title" className="font-serif text-3xl font-medium">Ceilya</h2>
           <span className="text-sm text-gray-1000">Current work</span>
         </div>
         <p className="mt-5 max-w-[600px] text-text-paragraph">
-          Payle is the money layer for AI agents. I am building the authorization and payments infrastructure that makes autonomous spending safe enough to use: scoped capabilities, per-agent and per-task limits, merchant rules, approval thresholds, idempotency, revocation and receipts that explain what happened. The goal is not to hand a model an unrestricted wallet. The goal is controlled delegation: a person or company defines the boundaries once, an agent works inside them, and every decision can be inspected afterwards.
+          Ceilya is the money layer for AI agents. I am building the authorization and payments infrastructure that makes autonomous spending safe enough to use: scoped capabilities, per-agent and per-task limits, merchant rules, approval thresholds, idempotency, revocation and receipts that explain what happened. The goal is not to hand a model an unrestricted wallet. The goal is controlled delegation: a person or company defines the boundaries once, an agent works inside them, and every decision can be inspected afterwards.
         </p>
         <p className="mt-4 max-w-[600px] text-text-paragraph">
           This work sits across AI agents, agentic commerce, fintech infrastructure, risk, payments and software reliability. The difficult questions are deliberately practical. What happens when two identical requests arrive together? What does a merchant need to verify? How should a failed risk service behave? How can an operator revoke authority immediately? I write the answers as I discover them in <Link href="/thoughts/" className="article-underline">Thoughts</Link> and <Link href="/notes/" className="article-underline">Notes</Link>, and I publish useful corrections from other people in <Link href="/feedback/" className="article-underline">Feedback</Link>.
         </p>
-        <a href={site.payleUrl} rel="noopener noreferrer" className="mt-5 inline-flex article-underline text-sm text-gray-1000">Visit Payle →</a>
+        <a href={site.companyUrl} rel="noopener noreferrer" className="mt-5 inline-flex article-underline text-sm text-gray-1000">Visit Ceilya →</a>
       </section>
 
       <section id="celeste" aria-labelledby="celeste-title" className="mb-16 border-t border-gray-300 pt-8 sm:mb-24">
@@ -94,10 +94,10 @@ export default function WorkPage() {
           <span className="text-sm text-gray-1000">Earlier work</span>
         </div>
         <p className="mt-5 max-w-[600px] text-text-paragraph">
-          Before Payle, I built Celeste, an AI browser. It could open pages, follow instructions, research, compare options and complete workflows. The important lesson was not that the agent could navigate a browser. It was that the last ten percent of an apparently finished task exposed a completely different infrastructure problem. The agent could do the thinking and the work, then it stopped at the credit card form because the financial system assumed that every actor was a human with a hand, a wallet and a phone.
+          Before Ceilya, I built Celeste, an AI browser. It could open pages, follow instructions, research, compare options and complete workflows. The important lesson was not that the agent could navigate a browser. It was that the last ten percent of an apparently finished task exposed a completely different infrastructure problem. The agent could do the thinking and the work, then it stopped at the credit card form because the financial system assumed that every actor was a human with a hand, a wallet and a phone.
         </p>
         <p className="mt-4 max-w-[600px] text-text-paragraph">
-          That experience became the starting point for Payle. It connected a product question about browsers to a larger question about authority, liability and trust. Celeste is part of the context for the current work, not a separate keyword page or a claim that the two products are the same.
+          That experience became the starting point for Ceilya. It connected a product question about browsers to a larger question about authority, liability and trust. Celeste is part of the context for the current work, not a separate keyword page or a claim that the two products are the same.
         </p>
       </section>
 

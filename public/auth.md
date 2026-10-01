@@ -50,4 +50,4 @@ Everything else on the origin is public.
 ## Contact
 
 For questions about access to public resources, email
-[ceo@usepayle.com](mailto:ceo@usepayle.com).
+[m@ceilya.com](mailto:m@ceilya.com).

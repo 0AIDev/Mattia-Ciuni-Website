@@ -23,13 +23,13 @@ export default function NowSection() {
       <p className="m-0 mb-1 text-text-paragraph">
         Building the{" "}
         <a
-          href={site.payleUrl}
+          href={site.companyUrl}
           rel="noopener noreferrer"
           className="article-underline"
         >
           money layer for AI agents
         </a>{" "}
-        at Payle. Applying to YC, relocating to San Francisco.
+        at Ceilya. Applying to YC, relocating to San Francisco.
       </p>
       <p className="m-0 text-sm text-gray-1000">
         Last updated: {updated || "…"}

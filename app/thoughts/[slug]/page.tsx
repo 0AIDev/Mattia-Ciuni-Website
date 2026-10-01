@@ -255,8 +255,8 @@ export default async function BlogPost({
           {post.slug === "finding-ghassen-the-co-founder-question-answered-in-three-weeks" ? <GhassenLinks /> : null}
           <p className="mt-12 w-full text-text-paragraph">
             Building the money layer for AI agents at{" "}
-            <a href={site.payleUrl} rel="noopener noreferrer" className="article-underline">
-              Payle
+            <a href={site.companyUrl} rel="noopener noreferrer" className="article-underline">
+              Ceilya
             </a>
             . Reply via{" "}
             <a
