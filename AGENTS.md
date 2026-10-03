@@ -8,4 +8,4 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-Before writing or reviewing ANY content: read and follow `.claude/skills/editorial-ceilya/SKILL.md`. Section 5 (canonical facts) overrides everything the tool thinks it knows about Ceilya.
+Before writing or reviewing ANY content: read and follow `.claude/skills/editorial-noesia/SKILL.md`. Section 5 (canonical facts) overrides everything the tool thinks it knows about Noesia.

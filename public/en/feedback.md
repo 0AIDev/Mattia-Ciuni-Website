@@ -1,6 +1,6 @@
 # Feedback | Mattia Ciuni
 
-> A public record of the people paying attention to Ceilya and the corrections that survive review.
+> A public record of the people paying attention to Noesia and the corrections that survive review.
 
 - URL: https://mattiaciuni.pages.dev/en/feedback
 - Type: Page

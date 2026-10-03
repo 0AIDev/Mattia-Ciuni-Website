@@ -1,6 +1,6 @@
-# Ceilya, the money layer for AI agents | Mattia Ciuni
+# Noesia, the money layer for AI agents | Mattia Ciuni
 
-> Founder & CEO at Ceilya, the money layer for AI agents. AI agents can already research, compare and execute entire tasks.
+> Founder & CEO at Noesia, the money layer for AI agents. AI agents can already research, compare and execute entire tasks.
 
 - URL: https://mattiaciuni.pages.dev/en
 - Type: Page

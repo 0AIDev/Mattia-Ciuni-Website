@@ -39,9 +39,9 @@ export async function GET() {
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <rss version="2.0">
   <channel>
-    <title>${escapeXmlText("Ceilya — Careers")}</title>
+    <title>${escapeXmlText("Noesia — Careers")}</title>
     <link>${base}/careers/</link>
-    <description>${escapeXmlText("Open positions at Ceilya — the money layer for AI agents.")}</description>
+    <description>${escapeXmlText("Open positions at Noesia — the money layer for AI agents.")}</description>
     <language>en</language>
     <lastBuildDate>${rfc2822(lastBuild)}</lastBuildDate>
 ${items}

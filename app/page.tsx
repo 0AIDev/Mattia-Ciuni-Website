@@ -29,9 +29,9 @@ const personJsonLd = {
   "@type": "Person",
   "@id": `${site.url.replace(/\/$/, "")}/#mattia-ciuni`,
   name: "Mattia Ciuni",
-  alternateName: ["Mattia Ciuni, Ceilya founder", "Mattia Ciuni, CEO of Ceilya"],
-  jobTitle: "Founder & CEO of Ceilya",
-  worksFor: { "@type": "Organization", name: "Ceilya", url: site.companyUrl },
+  alternateName: ["Mattia Ciuni, Noesia founder", "Mattia Ciuni, CEO of Noesia"],
+  jobTitle: "Founder & CEO of Noesia",
+  worksFor: { "@type": "Organization", name: "Noesia", url: site.companyUrl },
   url: site.url,
   mainEntityOfPage: { "@type": "WebPage", "@id": `${site.url.replace(/\/$/, "")}/#webpage` },
   knowsAbout: [
@@ -44,7 +44,7 @@ const personJsonLd = {
   ],
   sameAs: [site.social.github, site.social.linkedin, site.social.x, site.social.instagram, site.social.crunchbase],
   email: `mailto:${site.email}`,
-  description: "Founder & CEO of Ceilya, the money layer for AI agents",
+  description: "Founder & CEO of Noesia, the money layer for AI agents",
   address: {
     "@type": "PostalAddress",
     addressLocality: "Milan",
@@ -66,7 +66,7 @@ const organizationJsonLd = {
   "@context": "https://schema.org",
   "@type": "Organization",
   "@id": `${site.companyUrl}/#organization`,
-  name: "Ceilya",
+  name: "Noesia",
   url: site.companyUrl,
   founder: { "@id": `${site.url.replace(/\/$/, "")}/#mattia-ciuni` },
 };
@@ -109,7 +109,7 @@ export default function Home() {
             rel="noopener noreferrer"
             className="font-semibold text-gray-1200 underline decoration-transparent underline-offset-4 transition-colors hover:decoration-gray-1200"
           >
-            Ceilya
+            Noesia
           </a>
         </p>
       </header>
@@ -120,10 +120,10 @@ export default function Home() {
         <p className="m-0">
           I&apos;m building the money layer for AI agents at{" "}
           <a href={site.companyUrl} rel="noopener noreferrer" className="article-underline">
-            Ceilya
+            Noesia
           </a>
           . AI agents can already research, compare and execute entire tasks.
-          Then they stop and ask you for a credit card. Ceilya gives each agent a{" "}
+          Then they stop and ask you for a credit card. Noesia gives each agent a{" "}
           <em className="font-serif italic">wallet with rules</em>: per-agent
           budgets, merchant allowlists, a deterministic authorization engine, and a
           verifiable receipt for every transaction.
@@ -131,7 +131,7 @@ export default function Home() {
         <p className="m-0">
           Before this I built <em className="font-serif italic">Celeste</em>, an
           AI browser, and watched users finish the hard part of a task, then
-          abandon it at the payment step. That observation became Ceilya. We&apos;re
+          abandon it at the payment step. That observation became Noesia. We&apos;re
           applying to YC and relocating to San Francisco.
         </p>
         <p className="m-0">
@@ -206,10 +206,10 @@ export default function Home() {
       <section aria-labelledby="about-mattia-ciuni" className="mb-16 sm:mb-24">
         <h2 id="about-mattia-ciuni" className="mb-4 font-serif text-3xl font-medium">Who is Mattia Ciuni?</h2>
         <p className="m-0 text-text-paragraph">
-          Mattia Ciuni is an Italian founder and the founder and CEO of Ceilya, a company building the money layer for AI agents. He works on the rules, authorization and receipts that let software spend money safely on behalf of people.
+          Mattia Ciuni is an Italian founder and the founder and CEO of Noesia, a company building the money layer for AI agents. He works on the rules, authorization and receipts that let software spend money safely on behalf of people.
         </p>
         <p className="mt-4 m-0 text-text-paragraph">
-          What does Mattia Ciuni do? Before Ceilya, he built Celeste, an AI browser. Today his work sits at the intersection of AI agents, payments infrastructure, fintech and software engineering.
+          What does Mattia Ciuni do? Before Noesia, he built Celeste, an AI browser. Today his work sits at the intersection of AI agents, payments infrastructure, fintech and software engineering.
         </p>
       </section>
 
@@ -258,7 +258,7 @@ export default function Home() {
               rel="noopener noreferrer"
               className="group grid min-w-0 grid-cols-[auto_minmax(0,1fr)_auto] items-baseline gap-3 py-3.5 sm:gap-4"
             >
-              <span className="font-medium">Ceilya</span>
+              <span className="font-medium">Noesia</span>
               <span className="text-gray-1000">The money layer for AI agents.</span>
               <ChevronRight className="h-4 w-4 self-center text-gray-1000 transition-transform group-hover:translate-x-1" />
             </a>
@@ -270,7 +270,7 @@ export default function Home() {
             >
               <span className="font-medium">Thoughts</span>
               <span className="text-gray-1000">
-                Notes on AI agents and building Ceilya.
+                Notes on AI agents and building Noesia.
               </span>
               <ChevronRight className="h-4 w-4 self-center text-gray-1000 transition-transform group-hover:translate-x-1" />
             </Link>
@@ -319,7 +319,7 @@ export default function Home() {
           <Link href="/feedback/" className="text-sm text-gray-1000 article-underline">All feedback</Link>
         </div>
         <p className="mb-6 max-w-[600px] text-text-paragraph">
-          Engineers attack Ceilya&apos;s architecture in public. I publish what their attacks changed, corrections included.
+          Engineers attack Noesia&apos;s architecture in public. I publish what their attacks changed, corrections included.
         </p>
         {/* I contributi non sono un altro elenco di pezzi miei: è un pannello
             grigio, senza bordo e **senza filetto in cima** (il `border-t-2` nero

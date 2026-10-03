@@ -85,9 +85,9 @@
       execute: async () => ({
         sections: [
           { name: "About", url: new URL("/about/", location.origin).href, description: "Who Mattia Ciuni is and what he is building." },
-          { name: "Thoughts", url: new URL("/thoughts/", location.origin).href, description: "Essays on AI agents, payments, and building Ceilya." },
+          { name: "Thoughts", url: new URL("/thoughts/", location.origin).href, description: "Essays on AI agents, payments, and building Noesia." },
           { name: "Notes", url: new URL("/notes/", location.origin).href, description: "Longer notes on systems, people, and ideas." },
-          { name: "Feedback", url: new URL("/feedback/", location.origin).href, description: "Published feedback from people interested in Ceilya." },
+          { name: "Feedback", url: new URL("/feedback/", location.origin).href, description: "Published feedback from people interested in Noesia." },
           { name: "Videos", url: new URL("/videos/", location.origin).href, description: "Founder videos and the visual work log." },
           { name: "Voice Notes", url: new URL("/voice-notes/", location.origin).href, description: "Spoken notes from Mattia Ciuni." },
         ],

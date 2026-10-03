@@ -29,7 +29,7 @@ export default function NowSection() {
         >
           money layer for AI agents
         </a>{" "}
-        at Ceilya. Applying to YC, relocating to San Francisco.
+        at Noesia. Applying to YC, relocating to San Francisco.
       </p>
       <p className="m-0 text-sm text-gray-1000">
         Last updated: {updated || "…"}

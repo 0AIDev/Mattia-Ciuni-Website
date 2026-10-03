@@ -103,7 +103,7 @@ const ard = {
       url: `${base}/thoughts.md`,
       representativeQueries: [
         "What is Mattia Ciuni building for AI agent payments?",
-        "Find Mattia's essays about Ceilya and agentic commerce",
+        "Find Mattia's essays about Noesia and agentic commerce",
       ],
     },
     {

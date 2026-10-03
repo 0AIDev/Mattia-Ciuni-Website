@@ -5,7 +5,7 @@ The site includes a small sticky **Ask Mattia's site** chat on every page.
 ## What it does
 
 - Searches the generated `public/rag/index.json` content index on every request.
-- Uses only published pages from this site and the `ceilya.com` product link.
+- Uses only published pages from this site and the `withnoesia.com` product link.
 - Uses the current path to suggest contextual questions.
 - Returns source links with each answer.
 - Understands navigation requests such as “open the note about idempotency” and moves the visitor to the matching page.

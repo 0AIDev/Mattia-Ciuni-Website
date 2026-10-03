@@ -1,6 +1,6 @@
 # Artifact-based hiring: ship code before titles | Mattia Ciuni
 
-> Everyone who joins Ceilya shipped working code before we ever talked about roles. How artifact-first recruiting filters for builders.
+> Everyone who joins Noesia shipped working code before we ever talked about roles. How artifact-first recruiting filters for builders.
 
 - URL: https://mattiaciuni.pages.dev/it/thoughts/artifact-based-hiring
 - Type: Page

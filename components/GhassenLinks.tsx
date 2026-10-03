@@ -24,11 +24,11 @@ export function GhassenLinks() {
       </a>
       , and at{" "}
       <a
-        href="mailto:g@ceilya.com"
+        href="mailto:g@withnoesia.com"
         className="article-underline inline-flex items-center gap-1.5"
       >
         <MailCheckIcon size={15} className="inline-flex shrink-0" />
-        g@ceilya.com
+        g@withnoesia.com
       </a>
       .
     </p>

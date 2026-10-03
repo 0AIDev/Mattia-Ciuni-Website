@@ -176,7 +176,7 @@ avevano una data fissa: era il caso peggiore, una data che non cambia mai più.)
 
 | Pagina | Nodi |
 | --- | --- |
-| home | `Person` (con `worksFor` → Ceilya, `sameAs` social, indirizzo Milano) + `WebSite` |
+| home | `Person` (con `worksFor` → Noesia, `sameAs` social, indirizzo Milano) + `WebSite` |
 | articolo | `BlogPosting` + `BreadcrumbList` |
 | nota | `Article` + `BreadcrumbList` |
 | indice Thoughts | `Blog` |
@@ -290,7 +290,7 @@ controllo passerebbe anche con metà annuncio sparito).
 
 `/llms.txt` (generato, come tutto il resto) contiene: chi è la persona in una riga
 (il blockquote), le sezioni Home / Thoughts / Notes con **tutti** i titoli e i
-loro indirizzi, la riga che dice dove stanno le card, e i contatti (email, Ceilya).
+loro indirizzi, la riga che dice dove stanno le card, e i contatti (email, Noesia).
 È il file che un motore generativo legge per primo: deve dire **cosa c'è** e
 **come raggiungerlo**, non ripetere il contenuto.
 

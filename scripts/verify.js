@@ -86,15 +86,15 @@ if (builtFor !== SITE_ORIGIN) {
 check("post: canonical", post.includes(`rel="canonical" href="${PROD}/thoughts/money-layer-for-ai-agents/"`));
 check("index: og:image absolute", index.includes(`og:image" content="${PROD}/og.png"`));
 check("index: og:site_name", index.includes('og:site_name" content="Mattia Ciuni"'));
-check("index: title uses entity and topic", index.includes("Mattia Ciuni | Founder &amp; CEO at Ceilya"));
-check("index: role links bold Ceilya", index.includes("Founder &amp; CEO at") && index.includes('href="https://ceilya.com"') && index.includes(">Ceilya</a>"));
+check("index: title uses entity and topic", index.includes("Mattia Ciuni | Founder &amp; CEO at Noesia"));
+check("index: role links bold Noesia", index.includes("Founder &amp; CEO at") && index.includes('href="https://withnoesia.com"') && index.includes(">Noesia</a>"));
 check("index: WebSite identity", !!ldJson(index).find((j) => j["@type"] === "WebSite" && j.name === "Mattia Ciuni" && j.url === PROD));
 check("post: og:type article", post.includes('og:type" content="article"'));
 check("post: article:published_time", post.includes("article:published_time"));
 check("blog: twitter title fixed", blog.includes('twitter:title" content="Thoughts'));
 check("index: twitter large image", index.includes('twitter:card" content="summary_large_image"'));
 check("index: rel=me x3", (index.match(/rel="me noopener"/g) || []).length === 3);
-check("index: mailto", index.includes("mailto:m@ceilya.com"));
+check("index: mailto", index.includes("mailto:m@withnoesia.com"));
 // Il theme-color segue il tema: due meta con media query (light #FCFCFC, dark
 // #0A0A0A), gli stessi valori di --tc-background in globals.css. Un solo valore
 // fisso lascerebbe la barra del browser del colore sbagliato in dark mode.
@@ -102,9 +102,9 @@ check("index: theme-color", index.includes('name="theme-color" content="#FCFCFC"
 check("index: Google Search Console verification", index.includes('name="google-site-verification" content="2Yp93wGXnpI1i5vhC09zwHdmGr1vY6rFCZIXptWOITI"'));
 
 const person = ldJson(index).find((j) => j["@type"] === "Person");
-check("index: Person JSON-LD valid", !!person && person.name === "Mattia Ciuni" && person.worksFor.name === "Ceilya" && person.sameAs.length === 5);
+check("index: Person JSON-LD valid", !!person && person.name === "Mattia Ciuni" && person.worksFor.name === "Noesia" && person.sameAs.length === 5);
 const organization = ldJson(index).find((j) => j["@type"] === "Organization");
-check("index: Ceilya Organization JSON-LD valid", !!organization && organization.name === "Ceilya" && organization.founder?.["@id"]?.endsWith("/#mattia-ciuni"));
+check("index: Noesia Organization JSON-LD valid", !!organization && organization.name === "Noesia" && organization.founder?.["@id"]?.endsWith("/#mattia-ciuni"));
 const art = ldJson(post).find((j) => j["@type"] === "BlogPosting");
 check("post: BlogPosting JSON-LD valid", !!art && !!art.headline && !!art.datePublished && !!art.author);
 const crumb = ldJson(post).find((j) => j["@type"] === "BreadcrumbList");
@@ -352,7 +352,7 @@ check(
     readFileSync(path.join(__dirname, "..", "functions", "api", "admin", "feedback.ts"), "utf8").includes("ADMIN_TOKEN") &&
     feedbackSource.includes("api.brevo.com/v3/smtp/email") &&
     feedbackSource.includes("BREVO_API_KEY") &&
-    feedbackSource.includes("m@ceilya.com")
+    feedbackSource.includes("m@withnoesia.com")
 );
 check(
   "feedback: the author gets the frozen Resend confirmation",
@@ -1086,7 +1086,7 @@ check("security: CSP allows Clarity", /script-src[^;]*https:\/\/www\.clarity\.ms
 check("legal: cookies lists the Clarity session cookies", cookies.includes("_clck") && cookies.includes("_clsk") && cookies.includes("Microsoft Clarity"));
 check("legal: cookies says Umami writes nothing", cookies.includes("Umami") && cookies.includes("no cookie, no local storage"));
 check("security: production hardening headers are configured", headersFile.includes("Content-Security-Policy:") && headersFile.includes("Strict-Transport-Security:") && headersFile.includes("Cross-Origin-Opener-Policy:") && headersFile.includes("X-Frame-Options: DENY") && headersFile.includes("X-Content-Type-Options: nosniff") && headersFile.includes("frame-ancestors 'none'"));
-check("security: vulnerability disclosure document is published", fs.existsSync(path.join(out, ".well-known", "security.txt")) && read(".well-known/security.txt").includes("Contact: mailto:m@ceilya.com") && read(".well-known/security.txt").includes("Canonical:"));
+check("security: vulnerability disclosure document is published", fs.existsSync(path.join(out, ".well-known", "security.txt")) && read(".well-known/security.txt").includes("Contact: mailto:m@withnoesia.com") && read(".well-known/security.txt").includes("Canonical:"));
 check("security: public forms reject cross-origin browser posts", readFileSync(path.join(__dirname, "..", "functions", "api", "feedback.ts"), "utf8").includes("cross_origin") && readFileSync(path.join(__dirname, "..", "functions", "api", "subscribe.ts"), "utf8").includes("cross_origin"));
 check("accessibility: feedback dialog has a labelled focusable implementation", readFileSync(path.join(__dirname, "..", "components", "FeedbackForm.tsx"), "utf8").includes("aria-labelledby=\"feedback-dialog-title\"") && readFileSync(path.join(__dirname, "..", "components", "FeedbackForm.tsx"), "utf8").includes("event.key !== \"Tab\"") && readFileSync(path.join(__dirname, "..", "components", "FeedbackForm.tsx"), "utf8").includes("triggerRef"));
 check("WebMCP: registration is present in the page",

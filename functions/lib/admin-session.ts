@@ -21,7 +21,7 @@ export interface Store {
 
 export type AdminRole = "ceo";
 
-export const ADMIN_EMAIL = "m@ceilya.com" as const;
+export const ADMIN_EMAIL = "m@withnoesia.com" as const;
 export const SESSION_PREFIX = "adm:";
 export const TOTP_CONFIG_KEY = "auth:totp:config";
 export const TOTP_EPOCH_KEY = "auth:totp:epoch";

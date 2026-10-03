@@ -179,10 +179,10 @@ async function notifyMattia(
   queueUrl: string,
 ): Promise<"sent" | "failed" | "not_configured"> {
   if (!env.BREVO_API_KEY) return "not_configured";
-  const to = env.FEEDBACK_NOTIFY_TO || "m@ceilya.com";
-  const senderEmail = env.BREVO_FROM_EMAIL || "m@ceilya.com";
+  const to = env.FEEDBACK_NOTIFY_TO || "m@withnoesia.com";
+  const senderEmail = env.BREVO_FROM_EMAIL || "m@withnoesia.com";
   const senderName = env.BREVO_FROM_NAME || "Mattia Ciuni";
-  const subject = `New Ceilya feedback${record.name ? ` from ${record.name}` : ""}`;
+  const subject = `New Noesia feedback${record.name ? ` from ${record.name}` : ""}`;
   const htmlContent = `<p><strong>New feedback is waiting for review.</strong></p><p><strong>From:</strong> ${escapeHtml(record.name || "Anonymous")}${record.email ? ` (${escapeHtml(record.email)})` : ""}</p><p><strong>Page:</strong> ${escapeHtml(record.page_url)}</p><p><strong>Submitted:</strong> ${escapeHtml(record.submitted_at)}</p><blockquote style="white-space:pre-wrap">${escapeHtml(record.message)}</blockquote>${queueUrl ? `<p><a href="${escapeHtml(queueUrl + "/admin/feedback/")}">Open the review queue</a></p>` : ""}`;
   const textContent = `New feedback is waiting for review.\n\nFrom: ${record.name || "Anonymous"}${record.email ? ` (${record.email})` : ""}\nPage: ${record.page_url}\nSubmitted: ${record.submitted_at}\n\n${record.message}${queueUrl ? `\n\nOpen the review queue: ${queueUrl}/admin/feedback/` : ""}`;
   const controller = new AbortController();
@@ -249,7 +249,7 @@ async function confirmToAuthor(
       body: JSON.stringify({
         from: env.RESEND_FROM_EMAIL,
         to: [record.email],
-        reply_to: "m@ceilya.com",
+        reply_to: "m@withnoesia.com",
         subject: record.name
           ? `${record.name}, Your feedback reached me`
           : "Your feedback reached me",

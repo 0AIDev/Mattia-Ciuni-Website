@@ -291,7 +291,7 @@ function toCsv(rows: LedgerRow[]): string {
 
 const README = `# Fraud pattern hunt — synthetic agent ledger
 
-Synthetic dataset for the ML Engineer (Risk & Trust) challenge at Ceilya.
+Synthetic dataset for the ML Engineer (Risk & Trust) challenge at Noesia.
 
 - 5,000 agent transactions across 40 agents and 25 merchants
 - Fields match our production schema (timestamp, agent_id, merchant, category,

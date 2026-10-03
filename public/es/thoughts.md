@@ -1,6 +1,6 @@
 # Ideas | Mattia Ciuni
 
-> Ideas sobre agentes de IA, pagos y la construcción de Ceilya.
+> Ideas sobre agentes de IA, pagos y la construcción de Noesia.
 
 - URL: https://mattiaciuni.pages.dev/es/thoughts
 - Type: Page

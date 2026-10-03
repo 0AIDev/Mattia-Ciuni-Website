@@ -1,6 +1,6 @@
 # A stranger redesigned my pitch in one comment | Mattia Ciuni
 
-> I posted Ceilya's architecture publicly. An engineer I'd never met corrected my language, found real gaps, and made the product sharper. This is the full exchange.
+> I posted Noesia's architecture publicly. An engineer I'd never met corrected my language, found real gaps, and made the product sharper. This is the full exchange.
 
 - URL: https://mattiaciuni.pages.dev/feedback/a-stranger-redesigned-my-pitch-in-one-comment
 - Type: Feedback post
@@ -12,11 +12,11 @@ Liam Murphy[aka7880-721](https://github.com/aka7880-721)·2026-09-21
 
 # A stranger redesigned my pitch in one comment
 
-This is the first post in a series I'm calling Feedback: public exchanges where engineers attacked Ceilya's architecture, and what their attacks changed. I'm publishing them because the build-in-public promise only means something if you show the corrections, not just the wins.
+This is the first post in a series I'm calling Feedback: public exchanges where engineers attacked Noesia's architecture, and what their attacks changed. I'm publishing them because the build-in-public promise only means something if you show the corrections, not just the wins.
 
 ## The message
 
-An engineer read my public post about Ceilya and replied with what he thought, with no introductions. At the time he hadn't even shared his name; he has since: he is Liam Murphy ([@aka7880-721](https://github.com/aka7880-721) on GitHub). His reply was this:
+An engineer read my public post about Noesia and replied with what he thought, with no introductions. At the time he hadn't even shared his name; he has since: he is Liam Murphy ([@aka7880-721](https://github.com/aka7880-721) on GitHub). His reply was this:
 
 > The problem is real, but the payment API itself is only a small part of the problem. The harder problem is authorization and liability.
 
@@ -34,7 +34,7 @@ He was correcting my vocabulary, and the vocabulary was hiding a real distinctio
 
 Here's the uncomfortable part: my architecture already worked this way. One-shot scoped intents. Expiry on every policy. Ephemeral credentials. But my language said "wallet," and language is what merchants, regulators and users actually react to. A product can be safer than its pitch, and that mismatch is a bug: the most expensive kind, because you don't discover it in testing. You discover it when the wrong person reads your homepage.
 
-I changed the pitch the same day. Ceilya gives agents scoped capabilities that expire, not wallets. Six words, and the pitch got safer than the product instead of scarier than it.
+I changed the pitch the same day. Noesia gives agents scoped capabilities that expire, not wallets. Six words, and the pitch got safer than the product instead of scarier than it.
 
 ## The scorecard: what existed, what didn't
 

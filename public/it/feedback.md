@@ -1,6 +1,6 @@
 # Feedback | Mattia Ciuni
 
-> Un registro pubblico delle persone che osservano Ceilya e delle correzioni che superano la revisione.
+> Un registro pubblico delle persone che osservano Noesia e delle correzioni che superano la revisione.
 
 - URL: https://mattiaciuni.pages.dev/it/feedback
 - Type: Page

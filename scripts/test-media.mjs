@@ -65,7 +65,7 @@ check("media: classification and formatting", () => {
 });
 
 check("settings: an empty field falls back to the value in code", () => {
-  const base = { name: "Mattia Ciuni", description: "Original", email: "m@ceilya.com" };
+  const base = { name: "Mattia Ciuni", description: "Original", email: "m@withnoesia.com" };
   const merged = withSiteSettings({ ...base });
   assert.equal(merged.name, "Mattia Ciuni", "no override file means the defaults win");
   const social = { linkedin: "https://linkedin.com/in/mattiaciuni", x: "https://x.com/mattiaciuni" };

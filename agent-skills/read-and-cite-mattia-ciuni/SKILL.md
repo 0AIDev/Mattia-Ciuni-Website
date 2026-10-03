@@ -6,7 +6,7 @@ answers `200`: nothing here points at an endpoint the site does not have.
 
 ## What the site is
 
-A personal site by Mattia Ciuni, founder and CEO of Ceilya, the money layer for AI agents.
+A personal site by Mattia Ciuni, founder and CEO of Noesia, the money layer for AI agents.
 Four collections:
 
 - **Thoughts** — long essays: `{{SITE}}/thoughts/`

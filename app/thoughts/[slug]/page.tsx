@@ -256,7 +256,7 @@ export default async function BlogPost({
           <p className="mt-12 w-full text-text-paragraph">
             Building the money layer for AI agents at{" "}
             <a href={site.companyUrl} rel="noopener noreferrer" className="article-underline">
-              Ceilya
+              Noesia
             </a>
             . Reply via{" "}
             <a

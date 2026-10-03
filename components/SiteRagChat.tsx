@@ -8,7 +8,7 @@ type ChatMessage = { role: "user" | "assistant"; text: string; sources?: Source[
 
 const STORAGE_KEY = "mattia-ciuni-ai-chat";
 const promptsByPath: Record<string, string[]> = {
-  "/": ["Who is Mattia Ciuni?", "What is Ceilya?", "Show me the latest Notes"],
+  "/": ["Who is Mattia Ciuni?", "What is Noesia?", "Show me the latest Notes"],
   "/thoughts/": ["What is Mattia building?", "Show me the latest Thought"],
   "/notes/": ["What are the Notes about?", "Show me the latest Note"],
   "/feedback/": ["What is the Feedback series?", "How do I send feedback?", "Show me the latest exchange"],
@@ -19,7 +19,7 @@ function initialPrompts(path: string) {
   if (path.startsWith("/thoughts/")) return ["Summarize this Thought", "Show me related Thoughts"];
   if (path.startsWith("/notes/")) return ["Summarize this Note", "Show me related Notes"];
   if (path.startsWith("/feedback/")) return ["What changed thanks to this feedback?", "Show me the Feedback index"];
-  return ["Who is Mattia Ciuni?", "What is Ceilya?"];
+  return ["Who is Mattia Ciuni?", "What is Noesia?"];
 }
 
 function TypingText({ text }: { text: string }) {
@@ -87,7 +87,7 @@ export function SiteRagChat() {
       if (data.navigateTo) {
         window.setTimeout(() => {
           if (data.navigateTo?.startsWith("/")) window.location.assign(data.navigateTo);
-          else if (data.navigateTo === "https://ceilya.com") window.location.assign(data.navigateTo);
+          else if (data.navigateTo === "https://withnoesia.com") window.location.assign(data.navigateTo);
         }, 250);
       }
     } catch (error) {
@@ -123,7 +123,7 @@ export function SiteRagChat() {
           <header className="flex shrink-0 items-center justify-between border-b border-gray-200 px-5 py-4">
             <div>
               <p className="font-serif text-xl leading-none">Ask Mattia Ciuni AI</p>
-              <p className="mt-1 text-xs text-gray-1000">Only this site and Ceilya</p>
+              <p className="mt-1 text-xs text-gray-1000">Only this site and Noesia</p>
             </div>
             <div className="flex items-center gap-1">
               {messages.length > 0 && <button type="button" onClick={clearConversation} className="rounded-full px-2.5 py-1.5 text-xs text-gray-1000 transition-colors hover:text-gray-1200" aria-label="Start a new chat">New chat</button>}
@@ -135,7 +135,7 @@ export function SiteRagChat() {
             {!messages.length && (
               <div className="pt-8 text-center">
                 <p className="font-serif text-2xl">What would you like to know?</p>
-                <p className="mx-auto mt-2 max-w-[260px] text-sm leading-relaxed text-gray-1000">Ask about Mattia, Ceilya, the Thoughts, the Notes, the Feedback or anything else published here.</p>
+                <p className="mx-auto mt-2 max-w-[260px] text-sm leading-relaxed text-gray-1000">Ask about Mattia, Noesia, the Thoughts, the Notes, the Feedback or anything else published here.</p>
               </div>
             )}
             {messages.map((message, index) => (

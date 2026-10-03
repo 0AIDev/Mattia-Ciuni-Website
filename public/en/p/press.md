@@ -1,6 +1,6 @@
 # Press and talks | Mattia Ciuni
 
-> Talks, podcast appearances and written pieces about building Ceilya and the money layer for AI agents.
+> Talks, podcast appearances and written pieces about building Noesia and the money layer for AI agents.
 
 - URL: https://mattiaciuni.pages.dev/en/p/press
 - Type: Page

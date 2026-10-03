@@ -7,8 +7,8 @@ export interface ArticleRef {
   tags?: string[];
 }
 
-/** "AI agents payments" → ai, agents, payments: così "Ceilya" aggancia anche
- *  "Ceilya principles" e le frasi lunghe non devono combaciare alla lettera. */
+/** "AI agents payments" → ai, agents, payments: così "Noesia" aggancia anche
+ *  "Noesia principles" e le frasi lunghe non devono combaciare alla lettera. */
 function tokens(values: string[]) {
   const set = new Set<string>();
   for (const value of values) {

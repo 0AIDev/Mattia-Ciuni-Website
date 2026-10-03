@@ -1,6 +1,6 @@
-# Build with Ceilya — Careers | Mattia Ciuni
+# Build with Noesia — Careers | Mattia Ciuni
 
-> I hire by artifact: ship something real, then we talk. Open roles at Ceilya.
+> I hire by artifact: ship something real, then we talk. Open roles at Noesia.
 
 - URL: https://mattiaciuni.pages.dev/careers
 - Type: Page

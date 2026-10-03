@@ -1,6 +1,6 @@
-# Ceilya, die Geldschicht für KI-Agenten | Mattia Ciuni
+# Noesia, die Geldschicht für KI-Agenten | Mattia Ciuni
 
-> Founder & CEO at Ceilya, die Geldschicht für KI-Agenten. KI-Agenten können bereits recherchieren, vergleichen und ganze Aufgaben ausführen.
+> Founder & CEO at Noesia, die Geldschicht für KI-Agenten. KI-Agenten können bereits recherchieren, vergleichen und ganze Aufgaben ausführen.
 
 - URL: https://mattiaciuni.pages.dev/de
 - Type: Page

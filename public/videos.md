@@ -1,6 +1,6 @@
-# Videos | Building Ceilya in public | Mattia Ciuni
+# Videos | Building Noesia in public | Mattia Ciuni
 
-> Founder videos from Mattia Ciuni on building Ceilya, working through hard problems and staying close to the work.
+> Founder videos from Mattia Ciuni on building Noesia, working through hard problems and staying close to the work.
 
 - URL: https://mattiaciuni.pages.dev/videos
 - Type: Page

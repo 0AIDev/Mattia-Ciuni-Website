@@ -12,7 +12,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: { params: Promise<{ locale: string }> }): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
-  const title = `${careersUi[locale].careers} — Ceilya`;
+  const title = `${careersUi[locale].careers} — Noesia`;
   const description = `${careersUi[locale].careers}. ${careersUi[locale].sundayLog}`;
   const card = socialImages("/careers/og.png", title);
   return { title, description, alternates: { canonical: `/${locale}/careers/`, languages: languageAlternates("/careers/") }, openGraph: { type: "website", url: `/${locale}/careers/`, siteName: "Mattia Ciuni", title, description, images: card.og }, twitter: { card: "summary_large_image", title, description, images: card.twitter } };

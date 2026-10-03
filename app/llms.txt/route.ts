@@ -16,19 +16,19 @@ export async function GET() {
 
   const text = `# Mattia Ciuni
 
-> Mattia Ciuni is an Italian founder and the founder and CEO of Ceilya, the money layer for AI agents. He previously built Celeste, an AI browser. This personal site answers who Mattia Ciuni is and what Mattia Ciuni does: building payments infrastructure for software that acts on behalf of people.
+> Mattia Ciuni is an Italian founder and the founder and CEO of Noesia, the money layer for AI agents. He previously built Celeste, an AI browser. This personal site answers who Mattia Ciuni is and what Mattia Ciuni does: building payments infrastructure for software that acts on behalf of people.
 
 ## About Mattia Ciuni
-- [Mattia Ciuni](${base}/): founder and CEO of Ceilya, working on AI agents, agentic commerce, payments infrastructure and fintech.
-- Common searches: who is Mattia Ciuni, what does Mattia Ciuni do, Mattia Ciuni Ceilya, CEO of Ceilya.
+- [Mattia Ciuni](${base}/): founder and CEO of Noesia, working on AI agents, agentic commerce, payments infrastructure and fintech.
+- Common searches: who is Mattia Ciuni, what does Mattia Ciuni do, Mattia Ciuni Noesia, CEO of Noesia.
 
 ## Home
 - [Home](${base}/): bio, principles, now, projects, thoughts and notes.
-- [About Mattia Ciuni](${base}/about/): identity, work, Ceilya and the background behind the site.
-- [Work by Mattia Ciuni](${base}/work/): the relationship between Ceilya, Celeste, AI agents, payments and the topics Mattia writes about.
+- [About Mattia Ciuni](${base}/about/): identity, work, Noesia and the background behind the site.
+- [Work by Mattia Ciuni](${base}/work/): the relationship between Noesia, Celeste, AI agents, payments and the topics Mattia writes about.
 
 ## Thoughts
-- [Thoughts](${base}/thoughts/): short posts on AI agents, payments and building Ceilya.
+- [Thoughts](${base}/thoughts/): short posts on AI agents, payments and building Noesia.
 ${thoughtLinks}
 
 ## Notes
@@ -36,19 +36,19 @@ ${thoughtLinks}
 ${noteLinks}
 
 ## Feedback
-- [Feedback](${base}/feedback/): public exchanges where engineers attacked Ceilya's architecture, and what the attacks changed. Readers can send their own feedback by email; it gets reviewed, and if it holds, it gets published.
+- [Feedback](${base}/feedback/): public exchanges where engineers attacked Noesia's architecture, and what the attacks changed. Readers can send their own feedback by email; it gets reviewed, and if it holds, it gets published.
 ${feedback.map((f) => `- [${f.title}](${base}/feedback/${f.slug}/)`).join("\n")}
 
 ## Field notes
 - [Voice Notes](${base}/voice-notes/): spoken thoughts, to be published when they are ready.
-- [Videos](${base}/videos/): a visual log of building Ceilya, also published when ready.
+- [Videos](${base}/videos/): a visual log of building Noesia, also published when ready.
 
 ## Cards
 Every page has a concise machine-readable card in markdown at the same path with .md: [home](${base}/index.md), [thoughts](${base}/thoughts.md), [notes](${base}/notes.md), e.g. [this post](${base}/thoughts/money-layer-for-ai-agents.md).
 
 ## Contact
 - [Email](mailto:${site.email})
-- [Ceilya](${site.companyUrl}): the money layer for AI agents.
+- [Noesia](${site.companyUrl}): the money layer for AI agents.
 `;
 
   return new Response(text, {

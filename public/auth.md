@@ -50,4 +50,4 @@ Everything else on the origin is public.
 ## Contact
 
 For questions about access to public resources, email
-[m@ceilya.com](mailto:m@ceilya.com).
+[m@withnoesia.com](mailto:m@withnoesia.com).

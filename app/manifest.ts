@@ -4,10 +4,10 @@ export const dynamic = "force-static";
 
 export default function manifest(): MetadataRoute.Manifest {
   return {
-    name: "Mattia Ciuni | Founder & CEO at Ceilya",
+    name: "Mattia Ciuni | Founder & CEO at Noesia",
     short_name: "Mattia",
     description:
-      "Founder & CEO of Ceilya, the money layer for AI agents.",
+      "Founder & CEO of Noesia, the money layer for AI agents.",
     start_url: "/",
     display: "standalone",
     background_color: "#FCFCFC",

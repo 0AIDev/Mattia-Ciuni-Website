@@ -16,7 +16,7 @@ export const dynamic = "force-static";
  * Talent.com/Neuvoo, Careerjet e la maggior parte degli aggregatori. Ogni
  * `<url>` torna qui: la candidatura avviene sul sito, mai sulla board.
  *
- * Il publisher è Ceilya (chi assume), non il sito personale: è il nome che il
+ * Il publisher è Noesia (chi assume), non il sito personale: è il nome che il
  * candidato vede sulla board, e deve combaciare con `hiringOrganization` del
  * JSON-LD. Le voci XML non hanno date di build dinamiche: l'export è statico e
  * `lastBuildDate` segue la data dell'ultimo ruolo pubblicato, così il valore
@@ -35,7 +35,7 @@ export async function GET() {
     <date>${cdata(job.postedAt || "2026-01-01")}</date>
     <referenceno>${cdata(job.slug)}</referenceno>
     <url>${cdata(url)}</url>
-    <company>${cdata("Ceilya")}</company>
+    <company>${cdata("Noesia")}</company>
     <companyurl>${cdata(site.companyUrl)}</companyurl>
     <city>${cdata(job.location)}</city>
     <country>${cdata("Remote")}</country>
@@ -49,7 +49,7 @@ export async function GET() {
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <source>
-  <publisher>${escapeXmlText("Ceilya")}</publisher>
+  <publisher>${escapeXmlText("Noesia")}</publisher>
   <publisherUrl>${escapeXmlText(site.companyUrl)}</publisherUrl>
   <lastBuildDate>${rfc2822(lastBuild)}</lastBuildDate>
 ${entries}

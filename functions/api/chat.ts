@@ -35,7 +35,7 @@ const NAV_WORDS = /\b(go|take|send|open|show|vai|portami|mandami|apri|mostrami)\
 // Gli intent espliciti della sezione Feedback passano prima di qui: il
 // retrieval a token non sempre li vince contro pagine con più testo.
 const NAV_OVERRIDES: Array<[RegExp, string]> = [
-  [/\bfeedback\b|attack(ed)? (it|ceilya)|send (my|a) (comment|feedback)/i, "/feedback/"],
+  [/\bfeedback\b|attack(ed)? (it|noesia)|send (my|a) (comment|feedback)/i, "/feedback/"],
 ];
 
 function json(body: Record<string, unknown>, status = 200) {
@@ -78,7 +78,7 @@ function navigation(question: string, entries: RagEntry[]): string | null {
     if (pattern.test(lower)) return url;
   }
   if (!NAV_WORDS.test(question)) return null;
-  if (/ceilya|product/i.test(lower)) return "https://ceilya.com";
+  if (/noesia|product/i.test(lower)) return "https://withnoesia.com";
   const ranked = entries
     .map((entry) => ({ entry, score: tokens(`${entry.title} ${entry.url}`).filter((token) => lower.includes(token)).length }))
     .sort((a, b) => b.score - a.score);
@@ -87,7 +87,7 @@ function navigation(question: string, entries: RagEntry[]): string | null {
 
 function fallback(question: string, sources: RagEntry[]): string {
   if (!sources.length) {
-    return "I can answer questions about Mattia Ciuni, Ceilya, the Thoughts, the Notes and the other pages on this site. I could not find that in the site's published content.";
+    return "I can answer questions about Mattia Ciuni, Noesia, the Thoughts, the Notes and the other pages on this site. I could not find that in the site's published content.";
   }
   const best = sources[0];
   return `Here is what I found on this site, in “${best.title}”: ${best.description || best.content.slice(0, 420)}${best.url === "/" ? "" : ` Read the full page: ${best.url}`}`;
@@ -128,7 +128,7 @@ export const onRequestPost = async ({ request, env }: { request: Request; env: E
   }
 
   const context = sources.map((source, index) => `SOURCE ${index + 1}\nTITLE: ${source.title}\nURL: ${source.url}\nCONTENT: ${source.content}`).join("\n\n");
-  const system = `You are the private site guide for Mattia Ciuni's personal website. Answer only from the provided sources. You may mention ceilya.com because it is the site's product link. Do not browse, invent facts, answer general questions, or discuss external people or sites. If the sources do not answer the question, say exactly that the answer is not in the site's published content and suggest a related page. Be concise, warm, and link to a source when useful. Never output markdown links to an external domain other than https://ceilya.com.`;
+  const system = `You are the private site guide for Mattia Ciuni's personal website. Answer only from the provided sources. You may mention withnoesia.com because it is the site's product link. Do not browse, invent facts, answer general questions, or discuss external people or sites. If the sources do not answer the question, say exactly that the answer is not in the site's published content and suggest a related page. Be concise, warm, and link to a source when useful. Never output markdown links to an external domain other than https://withnoesia.com.`;
   try {
     const result = await env.AI.run(MODEL, {
       messages: [

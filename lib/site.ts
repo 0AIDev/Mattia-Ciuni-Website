@@ -3,7 +3,7 @@ import { withSiteSettings } from "./cms-settings";
 
 const siteDefaults = {
   name: "Mattia Ciuni",
-  role: "Founder & CEO at Ceilya",
+  role: "Founder & CEO at Noesia",
   // Dominio di produzione. `lib/site-origin.ts` valida la configurazione
   // `NEXT_PUBLIC_SITE_URL` del progetto Pages e restituisce sempre l'unica
   // origine SEO autorizzata. Usato da metadataBase, canonical, sitemap,
@@ -14,9 +14,9 @@ const siteDefaults = {
   // ("una ricevuta verificabile per ogni pagamento") resta; la coda su YC e San
   // Francisco no, perché il testo della home la dice già per esteso.
   description:
-    "Founder & CEO of Ceilya, the money layer for AI agents. Scoped permissions, deterministic authorization and a verifiable receipt for every payment.",
-  email: "m@ceilya.com",
-  companyUrl: "https://ceilya.com",
+    "Founder & CEO of Noesia, the money layer for AI agents. Scoped permissions, deterministic authorization and a verifiable receipt for every payment.",
+  email: "m@withnoesia.com",
+  companyUrl: "https://withnoesia.com",
   locale: "en_US",
   language: "en",
   // I profili sono un solo elenco, e `Object.values(site.social)` è il `sameAs`

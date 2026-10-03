@@ -1,4 +1,4 @@
-# Careers — Ceilya | Mattia Ciuni
+# Careers — Noesia | Mattia Ciuni
 
 > Careers. Follow the work in the Sunday log.
 

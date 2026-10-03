@@ -37,7 +37,7 @@ const openSlugs = openJobs().map((job) => job.slug);
 // --- jobs.xml (formato Indeed) ---------------------------------------------
 const xml = read("jobs.xml");
 check("jobs.xml: valid XML declaration + single root", xml.startsWith('<?xml version="1.0" encoding="UTF-8"?>') && /^<source>/m.test(xml) && /<\/source>\s*$/.test(xml));
-check("jobs.xml: declares publisher and publisherUrl", xml.includes("<publisher>Ceilya</publisher>") && xml.includes("https://ceilya.com"));
+check("jobs.xml: declares publisher and publisherUrl", xml.includes("<publisher>Noesia</publisher>") && xml.includes("https://withnoesia.com"));
 check("jobs.xml: RFC 2822 lastBuildDate", /<lastBuildDate>[A-Za-z]{3}, \d{2} [A-Za-z]{3} \d{4} \d{2}:\d{2}:\d{2} GMT<\/lastBuildDate>/.test(xml));
 const xmlJobs = [...xml.matchAll(/<job>/g)].length;
 check(`jobs.xml: contains exactly the open roles (${openSlugs.length})`, xmlJobs === openSlugs.length, `found ${xmlJobs}`);
@@ -52,7 +52,7 @@ check("jobs.xml: cache headers written in the route source", readFileSync(join(r
 // --- jobs.rss.xml -----------------------------------------------------------
 const rss = read("jobs.rss.xml");
 check("jobs.rss.xml: valid RSS 2.0 structure", rss.startsWith('<?xml version="1.0" encoding="UTF-8"?>') && rss.includes('<rss version="2.0">') && rss.includes("</rss>"));
-check("jobs.rss.xml: channel metadata", rss.includes("<title>Ceilya") && rss.includes("<language>en</language>") && rss.includes("<lastBuildDate>"));
+check("jobs.rss.xml: channel metadata", rss.includes("<title>Noesia") && rss.includes("<language>en</language>") && rss.includes("<lastBuildDate>"));
 check("jobs.rss.xml: item count matches open roles", [...rss.matchAll(/<item>/g)].length === openSlugs.length);
 check("jobs.rss.xml: guid isPermaLink and absolute", [...rss.matchAll(/<guid isPermaLink="true">([^<]+)<\/guid>/g)].every((m) => m[1].startsWith("https://mattiaciuni.pages.dev/careers/")));
 check("jobs.rss.xml: description entities escaped (no raw < inside)", [...rss.matchAll(/<description>([\s\S]*?)<\/description>/g)].every((m) => !/<(?:h3|p|ul|li)[\s>]/.test(m[1])));

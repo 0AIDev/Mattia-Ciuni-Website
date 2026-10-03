@@ -1,6 +1,6 @@
 # The moment my AI agent asked for my credit card | Mattia Ciuni
 
-> The scene that started Ceilya: an AI agent did 90% of the work, then stopped at a credit card form. On the wall between acting and paying.
+> The scene that started Noesia: an AI agent did 90% of the work, then stopped at a credit card form. On the wall between acting and paying.
 
 - URL: https://mattiaciuni.pages.dev/en/notes/the-moment-my-ai-agent-asked-for-my-credit-card
 - Type: Page

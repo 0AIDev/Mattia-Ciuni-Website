@@ -28,7 +28,7 @@ CAREERS_FROM_EMAIL
 IP_HASH_SALT
 ```
 
-`CAREERS_FROM_EMAIL` must be a verified Resend sender, normally `Mattia Ciuni <m@ceilya.com>`. Bind the existing `RATE_LIMIT` KV namespace. If the binding is absent, the function uses the server-side `private_kv` table as a fallback.
+`CAREERS_FROM_EMAIL` must be a verified Resend sender, normally `Mattia Ciuni <m@withnoesia.com>`. Bind the existing `RATE_LIMIT` KV namespace. If the binding is absent, the function uses the server-side `private_kv` table as a fallback.
 
 ## Verification behavior
 

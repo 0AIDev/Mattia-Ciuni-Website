@@ -25,7 +25,7 @@ const raw: Note[] = [
       "payments security",
       "fintech engineering",
       "race conditions",
-      "Ceilya",
+      "Noesia",
     ],
     content: [
       {
@@ -34,7 +34,7 @@ const raw: Note[] = [
       },
       {
         type: "p",
-        text: "Eight weeks into building Ceilya, I did something most pre-seed founders don't do: I hired someone to find everything wrong with my code.",
+        text: "Eight weeks into building Noesia, I did something most pre-seed founders don't do: I hired someone to find everything wrong with my code.",
       },
       {
         type: "p",
@@ -166,12 +166,12 @@ const raw: Note[] = [
     slug: "the-moment-my-ai-agent-asked-for-my-credit-card",
     title: "The moment my AI agent asked for my credit card",
     description:
-      "The scene that started Ceilya: an AI agent did 90% of the work, then stopped at a credit card form. On the wall between acting and paying.",
+      "The scene that started Noesia: an AI agent did 90% of the work, then stopped at a credit card form. On the wall between acting and paying.",
     date: "2026-09-21",
     keywords: [
       "AI agents payments",
       "agentic commerce",
-      "Ceilya origin story",
+      "Noesia origin story",
       "money layer for AI agents",
       "founder story",
     ],
@@ -234,7 +234,7 @@ const raw: Note[] = [
       },
       {
         type: "p",
-        text: "So I stopped building the browser and started building [Ceilya](https://ceilya.com). Not because the browser failed, because it succeeded so well that the payment step became the only wall left standing.",
+        text: "So I stopped building the browser and started building [Noesia](https://withnoesia.com). Not because the browser failed, because it succeeded so well that the payment step became the only wall left standing.",
       },
       {
         type: "p",
@@ -265,7 +265,7 @@ const raw: Note[] = [
       "idempotency key",
       "AI agents payments",
       "deterministic payments",
-      "Ceilya",
+      "Noesia",
     ],
     content: [
       {
@@ -286,7 +286,7 @@ const raw: Note[] = [
       },
       {
         type: "p",
-        text: "At Ceilya every spend call carries an idempotency key, and the authorization engine answers the same key with the same result. Agents become free to fail honestly, and fail on purpose. It is one of the things [the money layer for AI agents](/thoughts/money-layer-for-ai-agents/) has to get right, together with [wallets with rules](/notes/the-agentic-economy-is-a-trust-problem/).",
+        text: "At Noesia every spend call carries an idempotency key, and the authorization engine answers the same key with the same result. Agents become free to fail honestly, and fail on purpose. It is one of the things [the money layer for AI agents](/thoughts/money-layer-for-ai-agents/) has to get right, together with [wallets with rules](/notes/the-agentic-economy-is-a-trust-problem/).",
       },
     ],
   },
@@ -337,7 +337,7 @@ const raw: Note[] = [
       "deterministic systems",
       "software craft",
       "reliable infrastructure",
-      "Ceilya principles",
+      "Noesia principles",
     ],
     content: [
       {
@@ -373,7 +373,7 @@ const raw: Note[] = [
       "engineering hiring",
       "written assessment",
       "artifact-based hiring",
-      "Ceilya",
+      "Noesia",
     ],
     content: [
       {
@@ -406,13 +406,13 @@ const raw: Note[] = [
     slug: "honestly-im-excited",
     title: "Honestly? I'm excited.",
     description:
-      "Why every hard question about Ceilya has made me believe more in the problem, the solution and the timing.",
+      "Why every hard question about Noesia has made me believe more in the problem, the solution and the timing.",
     date: "2026-09-21",
     keywords: [
       "founder excitement",
       "building in public",
       "AI agents payments",
-      "Ceilya",
+      "Noesia",
       "startup building",
     ],
     content: [
@@ -422,7 +422,7 @@ const raw: Note[] = [
       },
       {
         type: "p",
-        text: "A few weeks ago I posted Ceilya's architecture publicly and asked strangers to attack it. They did. Fintech engineers I'd never met tore into the BNPL model, questioned the delegation model, found the exact spot where my design was weakest. And instead of discouraging me, every objection made the product sharper. The best parts of Ceilya's architecture today exist because strangers took the time to argue with me.",
+        text: "A few weeks ago I posted Noesia's architecture publicly and asked strangers to attack it. They did. Fintech engineers I'd never met tore into the BNPL model, questioned the delegation model, found the exact spot where my design was weakest. And instead of discouraging me, every objection made the product sharper. The best parts of Noesia's architecture today exist because strangers took the time to argue with me.",
       },
       {
         type: "p",
@@ -446,10 +446,10 @@ const raw: Note[] = [
     slug: "about-the-name",
     title: "About the name",
     description:
-      "How Ceilya stopped feeling like a rough draft and became the name of the company we are building.",
+      "How Noesia stopped feeling like a rough draft and became the name of the company we are building.",
     date: "2026-09-21",
     keywords: [
-      "Ceilya",
+      "Noesia",
       "startup naming",
       "founder story",
       "building a company",
@@ -458,7 +458,7 @@ const raw: Note[] = [
     content: [
       {
         type: "p",
-        text: "Confession: when I first said \"Ceilya\" out loud, I didn't like it.",
+        text: "Confession: when I first said \"Noesia\" out loud, I didn't like it.",
       },
       {
         type: "p",
@@ -470,7 +470,7 @@ const raw: Note[] = [
       },
       {
         type: "p",
-        text: "Somewhere between the first test passing and the first stranger using the name correctly in a sentence, \"are you the Ceilya guy?\" the name started to fit. Not because it changed. Because the thing behind it grew into it. Now when I say Ceilya, I don't hear an awkward draft. I hear the engine approving a payment. I hear the ledger. I hear the approval tap. I hear the company my co-founder and I just signed our names to.",
+        text: "Somewhere between the first test passing and the first stranger using the name correctly in a sentence, \"are you the Noesia guy?\" the name started to fit. Not because it changed. Because the thing behind it grew into it. Now when I say Noesia, I don't hear an awkward draft. I hear the engine approving a payment. I hear the ledger. I hear the approval tap. I hear the company my co-founder and I just signed our names to.",
       },
       {
         type: "p",
@@ -478,7 +478,7 @@ const raw: Note[] = [
       },
       {
         type: "p",
-        text: "Today Ceilya is on my company documents, my app, my email address, and in the last message of every day when I close the laptop. It's no longer a name I picked. It's a name I earned the right to like.",
+        text: "Today Noesia is on my company documents, my app, my email address, and in the last message of every day when I close the laptop. It's no longer a name I picked. It's a name I earned the right to like.",
       },
       {
         type: "p",

@@ -87,7 +87,7 @@ export default async function CareerDetailPage({ params, locale = "en", basePath
     description: jobDescriptionHtml(job),
     datePosted: job.postedAt,
     employmentType: job.employmentType || "FULL_TIME",
-    hiringOrganization: { "@type": "Organization", name: "Ceilya", url: site.companyUrl, logo: `${site.url.replace(/\/$/, "")}/logo.svg` },
+    hiringOrganization: { "@type": "Organization", name: "Noesia", url: site.companyUrl, logo: `${site.url.replace(/\/$/, "")}/logo.svg` },
     jobLocationType: "TELECOMMUTE",
     applicantLocationRequirements: { "@type": "AdministrativeArea", name: job.location },
     baseSalary: { "@type": "MonetaryAmount", currency: "EUR", value: { "@type": "QuantitativeValue", minValue: job.salaryMin ?? 2500, maxValue: job.salaryMax ?? 3000, unitText: "MONTH" } },

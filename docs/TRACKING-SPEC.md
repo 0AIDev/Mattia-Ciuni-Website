@@ -5,7 +5,7 @@
 The site is a static Next.js export served by Cloudflare Pages. The real public actions are:
 
 - reading home, About, Work, Thoughts, Notes, Feedback, Newsletter, Links, legal pages and media pages;
-- internal navigation and external links to Ceilya, GitHub, LinkedIn, X, Instagram, Crunchbase and email;
+- internal navigation and external links to Noesia, GitHub, LinkedIn, X, Instagram, Crunchbase and email;
 - the newsletter form;
 - the feedback modal;
 - audio and video players;

@@ -111,10 +111,10 @@ let secret;
   const wrongEmailSetup = await onRequestPost({ request: request({ method: "POST", body: { action: "login", email: "mattia@example.com", code: "000000" } }), env: configuredEnv });
   check("a different email is rejected before TOTP verification", wrongEmailSetup.status === 401);
   const code = await totpCode(secret);
-  const login = await onRequestPost({ request: request({ method: "POST", body: { action: "login", email: "m@ceilya.com", code } }), env: configuredEnv });
+  const login = await onRequestPost({ request: request({ method: "POST", body: { action: "login", email: "m@withnoesia.com", code } }), env: configuredEnv });
   const session = sessionCookie(login);
   check("normal login requires the authorized email + current TOTP code", login.status === 200 && session.length > 20);
-  check("wrong TOTP is rejected", (await onRequestPost({ request: request({ method: "POST", body: { action: "login", email: "m@ceilya.com", code: "000000" } }), env: configuredEnv })).status === 401);
+  check("wrong TOTP is rejected", (await onRequestPost({ request: request({ method: "POST", body: { action: "login", email: "m@withnoesia.com", code: "000000" } }), env: configuredEnv })).status === 401);
   check("unrecognized email is rejected", (await onRequestPost({ request: request({ method: "POST", body: { action: "login", email: "other@example.com", code } }), env: configuredEnv })).status === 401);
   const queueResponse = await onRequestGet({ request: request({ cookie: session }), env: configuredEnv });
   const queueData = await queueResponse.json();
@@ -150,7 +150,7 @@ let secret;
   check("a jobs registry over 8KB is accepted", longJobs.status === 200, `got ${longJobs.status}`);
   const declaredHuge = await onRequestPost({ request: request({ method: "POST", cookie: session, length: 2 * 1024 * 1024, body: { action: "content_save" } }), env: configuredEnv });
   check("a declared body over 1MB is refused before it is read", declaredHuge.status === 413, `got ${declaredHuge.status}`);
-  const longLogin = await onRequestPost({ request: request({ method: "POST", length: 30000, body: { action: "login", email: "m@ceilya.com", code: "000000" } }), env: configuredEnv });
+  const longLogin = await onRequestPost({ request: request({ method: "POST", length: 30000, body: { action: "login", email: "m@withnoesia.com", code: "000000" } }), env: configuredEnv });
   check("the small limit still applies to a login that declares 30KB", longLogin.status === 413, `got ${longLogin.status}`);
   const testFeedback = await onRequestPost({ request: request({ method: "POST", body: { action: "create_test" }, cookie: session }), env: configuredEnv });
   const testFeedbackData = await testFeedback.json();
@@ -163,13 +163,13 @@ let secret;
 {
   const code = await totpCode(secret);
   check("email is required for CLI access", (await onRequestGet({ request: request({ totp: code }), env: configuredEnv })).status === 401);
-  check("CLI access requires the authorized email and TOTP", (await onRequestGet({ request: request({ totp: code, headers: { "X-Admin-Email": "m@ceilya.com" } }), env: configuredEnv })).status === 200);
+  check("CLI access requires the authorized email and TOTP", (await onRequestGet({ request: request({ totp: code, headers: { "X-Admin-Email": "m@withnoesia.com" } }), env: configuredEnv })).status === 200);
 }
 
 // Origin, body, and brute-force controls.
 {
-  const cross = await onRequestPost({ request: request({ method: "POST", origin: "https://evil.test", body: { action: "login", email: "m@ceilya.com", code: "000000" } }), env: configuredEnv });
-  const big = await onRequestPost({ request: request({ method: "POST", length: 20000, body: { action: "login", email: "m@ceilya.com", code: "000000" } }), env: configuredEnv });
+  const cross = await onRequestPost({ request: request({ method: "POST", origin: "https://evil.test", body: { action: "login", email: "m@withnoesia.com", code: "000000" } }), env: configuredEnv });
+  const big = await onRequestPost({ request: request({ method: "POST", length: 20000, body: { action: "login", email: "m@withnoesia.com", code: "000000" } }), env: configuredEnv });
   check("cross-origin login → 403", cross.status === 403);
   check("oversized declared body → 413", big.status === 413);
   const statuses = [];

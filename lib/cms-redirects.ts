@@ -29,7 +29,7 @@ function isSafePath(value: unknown): value is string {
 
 /**
  * Il percorso di destinazione puo' essere anche esterno: un redirect verso
- * `https://ceilya.com/` e' il caso piu' comune quando una sezione del sito
+ * `https://withnoesia.com/` e' il caso piu' comune quando una sezione del sito
  * personale diventa una pagina del prodotto.
  */
 function isValidTarget(value: unknown): value is string {
