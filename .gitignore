@@ -19,6 +19,10 @@ public/privacy.md
 public/.well-known/
 # artefatti di build (tsc --noEmit / next dev)
 *.tsbuildinfo
+# output di testredirectato su file (`node scripts/verify.js > verify.out`): il
+# log del run precedente, mai sorgente. Se viene committato il guard del brand
+# lo legge come contenuto e fallisce la build sul nome del brand di allora.
+*.out
 # wrangler (stato locale di `wrangler pages dev`)
 .wrangler/
 # copia dell'export servita da `wrangler pages dev` e prove a mano

@@ -228,6 +228,7 @@ fallire al primo click.
 npx tsc --noEmit              # tipi
 npm run build                 # export + prebuild/postbuild
 node scripts/verify.js        # include i check del pannello e i titoli
+npm run test:brand            # il gate del brand fallisce davvero?
 npm run test:media            # validazione + endpoint media
 npm run test:cms              # parser e merge
 npm run test:admin            # auth, TOTP, draft, publish, tetto dei corpi
@@ -241,3 +242,27 @@ Tailwind porta ogni heading a `font-size: inherit`, quindi un titolo senza una
 classe di dimensione esce a 16px ed e' indistinguibile dal corpo. Il check e'
 un gate perche' il difetto e' invisibile nel markup e si vede solo in uno
 screenshot.
+
+## Cambiare brand
+
+`scripts/check-brand.mjs` gira anch'esso nel `prebuild` e cerca i nomi dei brand
+ritirati in **ogni file tracciato**, non in una lista di cartelle: il primo
+rebrand aveva applicato lo sweep a `app/`, `lib/`, `content/` e cosi' via, e
+`verify-final.out`, un log committato nella root, era rimasto con il nome
+vecchio senza che nessuno se ne accorgesse. L'elenco dei file arriva da
+`git ls-files`, quindi i binari vengono saltati e nulla di non tracciato blocca
+la build.
+
+Un rebrand si fa in tre mosse:
+
+1. sostituisci il nome in ogni sorgente, come negli sweep precedenti;
+2. in `scripts/check-brand.mjs` sposta il nome nuovo in `current` e appendi
+   quello vecchio a `retired`;
+3. se un match e' legittimo, aggiungilo a `allowlist` **come stringa esatta**,
+   non come file: cosi' il resto del file continua a essere controllato. Oggi
+   c'e' solo l'host Railway del documento NDA, che e' un URL vivo e non una
+   stringa di brand.
+
+Il check verifica anche che `lib/site.ts` nomi ancora il brand dichiarato in
+`current`: se qualcuno aggiorna `retired` e dimentica `current`, fallisce invece
+di controllare in silenzio la stringa sbagliata.
