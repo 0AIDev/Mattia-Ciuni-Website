@@ -23,7 +23,8 @@
 // so this sweep reaches them without special-casing.
 
 import { execFileSync } from "node:child_process";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
+import { join } from "node:path";
 
 const root = process.cwd();
 
@@ -37,6 +38,15 @@ const retired = ["payle", "ceilya"];
 // failure instead of a guard that confidently checks the wrong string.
 const current = { name: "Noesia", domain: "withnoesia.com" };
 const siteConfig = "lib/site.ts";
+// The panel can republish site settings, and `withSiteSettings` prefers a
+// non-empty panel value over the code default. So `companyUrl` has two places it
+// can be declared, and nothing aligns them on its own: a stale override left in
+// site.json silently replaces the default at build time, long after anyone
+// stopped looking at lib/site.ts.
+const panelSettings = "content/cms/settings/site.json";
+
+const host = current.domain.toLowerCase();
+const token = current.name.toLowerCase();
 
 // Strings that legitimately contain a retired name. Masked out of each file
 // before the search, so an entry has to be the exact literal rather than a
@@ -90,6 +100,37 @@ function lineOf(text, index) {
   return text.slice(0, index).split("\n").length;
 }
 
+// A dotted host, anywhere: inside a URL, inside an email address, or written
+// bare in a caption or a policy string. The final label has to be alphabetic so
+// version numbers and file names like 1.0.0 or gen-cards.mjs do not match.
+const HOST = /[A-Za-z0-9-]+(?:\.[A-Za-z0-9-]+)*\.[A-Za-z]{2,}/g;
+const URL_IN_TEXT = /https?:\/\/[^\s"'`)<>\]]+/gi;
+
+/**
+ * Checks one declared product URL. The host is the part that matters: a wrong
+ * host is a dead link, and a non-https one leaks a referral on every click.
+ * Port, credentials and "www." all change the host, so one comparison covers
+ * them, and `URL` lowercases for us, so a stray capital cannot hide a mismatch.
+ */
+function checkDeclaration(where, raw) {
+  let parsed;
+  try {
+    parsed = new URL(raw);
+  } catch {
+    failures.add(`${where}: "${raw}" is not a URL`);
+    return;
+  }
+  if (parsed.protocol !== "https:") {
+    failures.add(`${where}: uses ${parsed.protocol}// where https is required ("${raw}")`);
+  }
+  if (parsed.host.toLowerCase() !== host) {
+    failures.add(`${where}: points to "${parsed.host}" but the declared product host is "${host}"`);
+  }
+  if (parsed.username || parsed.password) {
+    failures.add(`${where}: carries credentials in the URL ("${raw}")`);
+  }
+}
+
 // Un Set, non un array: un file che non si puo' leggere viene segnalato sia
 // dalla scansione sia dal controllo del brand corrente, e la riga deve
 // comparire una volta sola.
@@ -115,10 +156,41 @@ for (const file of trackedFiles()) {
   // Masking preserves newline positions, so line numbers stay accurate even
   // though the masked text is shorter than the original.
   const masked = mask(text);
+
   for (const brand of retired) {
     const pattern = new RegExp(brand, "gi");
     for (const match of masked.matchAll(pattern)) {
       failures.add(`${file}:${lineOf(masked, match.index)} still says the retired brand "${brand}"`);
+    }
+  }
+
+  // The product host appears in dozens of places: the link on every home page,
+  // the careers apply button, the contact address in the feedback email, the
+  // RAG policy string, the system prompt in api/chat.ts. "www." in front of it,
+  // a different TLD, "noesia.com" without "with", a port, http instead of https:
+  // each of those is still a well-formed URL, so nothing else notices, and the
+  // page renders a link that goes nowhere.
+  for (const match of masked.matchAll(HOST)) {
+    const found = match[0].toLowerCase();
+    if (!found.includes(token)) continue;
+    if (found !== host) {
+      failures.add(`${file}:${lineOf(masked, match.index)} names the host "${match[0]}" but the declared product host is "${host}"`);
+    }
+  }
+
+  for (const match of masked.matchAll(URL_IN_TEXT)) {
+    let parsed;
+    try {
+      parsed = new URL(match[0]);
+    } catch {
+      continue;
+    }
+    if (!parsed.host.toLowerCase().includes(token)) continue;
+    if (parsed.protocol !== "https:") {
+      failures.add(`${file}:${lineOf(masked, match.index)} links to the product over ${parsed.protocol}// instead of https`);
+    }
+    if (parsed.username || parsed.password) {
+      failures.add(`${file}:${lineOf(masked, match.index)} puts credentials in a product URL`);
     }
   }
 }
@@ -142,14 +214,42 @@ if (siteRead && siteSource === null) {
       failures.add(`${siteConfig}: no longer contains the current ${field} "${value}" - the brand guard is stale`);
     }
   }
+  // The declaration itself, not just its presence. A rename that updates
+  // `current.domain` but leaves companyUrl pointing at the old domain would
+  // otherwise pass: the retired-name sweep catches the old *name*, but only if
+  // the old host still contained it.
+  // Accetta sia `companyUrl: "..."` (come e' oggi nel siteDefaults) sia
+// `companyUrl = "..."`: il contratto e' che il valore dichiarato sia quello, non
+// che resti scritto con un certo segno.
+const declared = siteSource.match(/companyUrl\s*[:=]\s*"([^"]+)"/);
+  if (!declared) {
+    failures.add(`${siteConfig}: declares no companyUrl, so the product link has no source of truth`);
+  } else {
+    checkDeclaration(`${siteConfig} companyUrl`, declared[1]);
+  }
+}
+
+// The panel's override wins over the code default whenever it is a non-empty
+// string, so it is checked with the same rule. Absent or empty means "keep the
+// default" and is not a failure.
+if (existsSync(join(root, panelSettings))) {
+  let settings = null;
+  try {
+    settings = JSON.parse(readFileSync(join(root, panelSettings), "utf8"));
+  } catch (error) {
+    failures.add(`${panelSettings}: could not be parsed (${error.message})`);
+  }
+  const override = settings && typeof settings.companyUrl === "string" ? settings.companyUrl.trim() : "";
+  if (override) checkDeclaration(`${panelSettings} companyUrl`, override);
 }
 
 if (failures.size) {
   console.error(`FAIL brand: ${failures.size} problem(s) with the brand tokens`);
   for (const failure of failures) console.error(`  ${failure}`);
+  console.error(`  The product host is declared once, in \`current.domain\`, and every host carrying the brand must match it.`);
   console.error("  A rebrand adds its retired name to `retired` and its new name to `current` in scripts/check-brand.mjs.");
   process.exit(1);
 }
 
 const allowNote = allowlist.length ? `, ${allowlist.length} allowlisted literal(s)` : "";
-console.log(`PASS brand: no retired name in ${scanned} tracked text files (${skipped} binary skipped, ${owners.size} owner file(s) exempt${allowNote}); current brand is ${current.name} (${current.domain})`);
+console.log(`PASS brand: no retired name or wrong product host in ${scanned} tracked text files (${skipped} binary skipped, ${owners.size} owner file(s) exempt${allowNote}); every brand host is ${host}, declared in ${siteConfig}`);

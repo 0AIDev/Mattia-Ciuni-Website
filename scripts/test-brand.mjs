@@ -55,8 +55,8 @@ const SITE_OK = 'export const email = "m@withnoesia.com";\nexport const companyU
 {
   const { code, stdout, stderr } = run({ "lib/site.ts": SITE_OK, "app/page.tsx": "const x = <p>Founder &amp; CEO at Noesia</p>;\n" });
   assert.equal(code, 0, `un repository pulito deve passare\n${stderr}${stdout}`);
-  assert.match(stdout, /PASS brand: no retired name in 2 tracked text files/);
-  assert.match(stdout, /current brand is Noesia \(withnoesia\.com\)/);
+  assert.match(stdout, /PASS brand: no retired name or wrong product host in 2 tracked text files/);
+  assert.match(stdout, /every brand host is withnoesia\.com, declared in lib\/site\.ts/);
   PASS("a clean repo passes and reports what it scanned");
 }
 
@@ -140,5 +140,84 @@ for (const [label, needle] of [
   PASS("the exemption list is closed: only the two files that must name the brands");
 }
 
-console.log("brand: the gate fails on a retired name, allowlists only the NDA literal, skips binaries and untracked files");
+// 9. Il dominio del prodotto. Un host che porta il nome del brand deve essere
+//    esattamente quello dichiarato: ogni altro resta un URL ben formato, quindi
+//    è un link che non porta da nessuna parte e che nessun altro check nota.
+{
+  const bad = [
+    ["www in front", "https://www.withnoesia.com", /names the host "www\.withnoesia\.com"/],
+    ["no 'with' prefix", "https://noesia.com", /names the host "noesia\.com"/],
+    ["wrong tld", "https://withnoesia.io", /names the host "withnoesia\.io"/],
+    ["suffix trap", "https://withnoesia.com.evil.com", /names the host "withnoesia\.com\.evil\.com"/],
+    ["plain http", "http://withnoesia.com", /instead of https/],
+    ["credentials in the url", "https://user:pw@withnoesia.com", /credentials/],
+  ];
+  for (const [label, url, expected] of bad) {
+    const { code, stderr } = run({ "lib/site.ts": SITE_OK, "app/page.tsx": `const u = "${url}";\n` });
+    assert.equal(code, 1, `${label}: il guard deve fallire su "${url}"`);
+    assert.match(stderr, expected, `${label}: messaggio inatteso`);
+    PASS(`the guard rejects a wrong product host (${label})`);
+  }
+
+  // Le forme che invece sono legittime non devono mai far fallire niente: un
+  // gate che urlizza il traffico legittimo viene spento al primo falso positivo.
+  const good = [
+    ["https url", 'const u = "https://withnoesia.com";'],
+    ["trailing slash", 'const u = "https://withnoesia.com/";'],
+    ["contact address", 'const u = "m@withnoesia.com";'],
+    ["partner address", 'const u = "g@withnoesia.com";'],
+    ["bare host in a caption", 'const caption = "withnoesia.com";'],
+    ["unrelated host", 'const u = "https://mattiaciuni.pages.dev/agent";'],
+    ["a file name", 'const s = "gen-cards.mjs";'],
+  ];
+  for (const [label, line] of good) {
+    const { code, stderr } = run({ "lib/site.ts": SITE_OK, "app/page.tsx": `${line}\n` });
+    assert.equal(code, 0, `${label}: non deve far fallire il build\n${stderr}`);
+  }
+  PASS("the guard accepts https, emails, bare hosts in copy and unrelated domains");
+}
+
+// 10. La dichiarazione in lib/site.ts è la fonte della verità, quindi viene
+//     confrontata con current.domain e non solo cercata.
+{
+  const wrong = run({ "lib/site.ts": SITE_OK.replace("https://withnoesia.com", "https://noesia.com") });
+  assert.equal(wrong.code, 1, "companyUrl deve combaciare con il dominio dichiarato");
+  assert.match(wrong.stderr, /lib\/site\.ts companyUrl: points to "noesia\.com"/);
+  PASS("a companyUrl that disagrees with the declared domain fails");
+
+  const insecure = run({ "lib/site.ts": SITE_OK.replace("https://withnoesia.com", "http://withnoesia.com") });
+  assert.equal(insecure.code, 1, "companyUrl non può essere http");
+  PASS("an insecure companyUrl fails");
+
+  const missing = run({ "lib/site.ts": 'export const role = "Founder & CEO at Noesia";\n' });
+  assert.equal(missing.code, 1, "l'assenza di companyUrl deve fallire, non passare in silenzio");
+  assert.match(missing.stderr, /declares no companyUrl/);
+  PASS("a missing companyUrl fails instead of passing quietly");
+}
+
+// 11. Il pannello pubblica impostazioni che sovrascrivono il default: un
+//     override rimasto indietro durante un rebrand silenzierebbe il link.
+{
+  const wrong = run({ "lib/site.ts": SITE_OK, "content/cms/settings/site.json": JSON.stringify({ companyUrl: "https://ceilya.com" }) });
+  assert.equal(wrong.code, 1, "un override del pannello con un dominio vecchio deve fallire");
+  assert.match(wrong.stderr, /site\.json companyUrl/);
+  PASS("a stale panel override fails the build");
+
+  const right = run({ "lib/site.ts": SITE_OK, "content/cms/settings/site.json": JSON.stringify({ companyUrl: "https://withnoesia.com" }) });
+  assert.equal(right.code, 0, "un override allineato al default deve passare");
+  PASS("a panel override that agrees with the default passes");
+
+  // withSiteSettings ignora una stringa vuota, quindi vuoto e assente sono
+  // "torna al default" e non un errore.
+  const empty = run({ "lib/site.ts": SITE_OK, "content/cms/settings/site.json": JSON.stringify({ companyUrl: "" }) });
+  assert.equal(empty.code, 0, "un override vuoto deve passare");
+  PASS("an empty panel override falls back to the default silently");
+
+  const broken = run({ "lib/site.ts": SITE_OK, "content/cms/settings/site.json": "{ not json" });
+  assert.equal(broken.code, 1, "un site.json illeggibile deve fallire");
+  assert.match(broken.stderr, /could not be parsed/);
+  PASS("an unparseable site.json fails instead of being ignored");
+}
+
+console.log("brand: the gate fails on a retired name or a wrong product host, allowlists only the NDA literal, skips binaries and untracked files");
 console.log("brand: i contratti sono verificati offline; il comportamento su Cloudflare Pages resta UNVERIFIED finche' non si mergia e non si guarda il build");

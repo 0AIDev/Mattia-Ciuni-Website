@@ -266,3 +266,23 @@ Un rebrand si fa in tre mosse:
 Il check verifica anche che `lib/site.ts` nomi ancora il brand dichiarato in
 `current`: se qualcuno aggiorna `retired` e dimentica `current`, fallisce invece
 di controllare in silenzio la stringa sbagliata.
+
+Lo stesso vale per il **dominio del prodotto**, che vive in una quarantina di
+file: il link della home, il pulsante di candidatura, il contatto nelle mail,
+la policy del RAG, il system prompt in `api/chat.ts`. La regola e' una sola e
+vale ovunque: un host che porta il nome del brand deve essere esattamente
+quello dichiarato in `current.domain`. `www.` davanti, un TLD diverso, il
+dominio senza il prefisso `with`, una porta, `http` invece di `https`: sono
+tutti URL ben formati, quindi restano invisibili a ogni altro check mentre la
+pagina mostra un link che non porta da nessuna parte.
+
+Nota che questa pagina non puo' fare un esempio sbagliato per chiarezza: il
+check lo leggerebbe e fallirebbe, il che e' il comportamento giusto ma
+renderebbe la documentazione un ostacolo invece di un aiuto.
+
+Il dominio viene confrontato con due dichiarazioni, non una. Il default e' in
+`lib/site.ts`, ma `withSiteSettings` lascia vincere un valore non vuoto
+pubblicato dal pannello in `content/cms/settings/site.json`: un override
+rimasto indietro durante un rebrand sostituirebbe il default in build senza che
+nessuno lo noti. Vuoto o assente significa "torna al default" e non e' un
+errore; un `site.json` illeggibile invece fallisce.
