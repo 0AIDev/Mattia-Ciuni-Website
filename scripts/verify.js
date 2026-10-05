@@ -1314,7 +1314,40 @@ check(`links: no nested <a> across ${pages.length} exported pages`, nestedAnchor
 if (nestedAnchors.length) console.log("     " + nestedAnchors.slice(0, 5).join(", "));
 const allowedCardLinks = unresolvedLinks.filter((entry) => entry.endsWith(".md"));
 const realUnresolvedLinks = unresolvedLinks.filter((entry) => !entry.endsWith(".md"));
-check("links: every internal href resolves in the export", realUnresolvedLinks.length === 0);
+
+// Un pezzo in coda e' una pagina che non esiste ancora, non un link morto.
+// La coda editoriale e' scritta tutta insieme e pubblicata a scaglioni, quindi
+// un pezzo di oggi cita pezzi delle prossime settimane: senza questa eccezione
+// il controllo cade il giorno in cui il pezzo esce, e cadrebbe perche' il link
+// e' **destinato** a risolversi. Il link non verra' tollerato se punta a uno
+// slug che non e' in nessun registro: quello resta un errore di battitura, che
+// e' la cosa che questo controllo deve continuare a trovare.
+const REGISTRY_SECTIONS = ["thoughts", "notes", "feedback", "careers", "p"];
+const knownSlugs = new Set();
+for (const file of REGISTRIES) {
+  const source = readFileSync(path.join(__dirname, "..", file), "utf8");
+  for (const match of source.matchAll(/slug:\s*"([^"]+)"/g)) knownSlugs.add(match[1]);
+}
+const isScheduled = (entry) => {
+  const href = entry.slice(entry.indexOf("→ ") + 2).trim();
+  const parts = href.split("/").filter(Boolean);
+  if (parts.length < 2) return false;
+  // Lo slug deve esistere in un registro e la sezione deve essere una di quelle
+  // che il sito usa: altrimenti e' un refuso, e un refuso resta un refuso.
+  return knownSlugs.has(parts[parts.length - 1]) && REGISTRY_SECTIONS.includes(parts[0]);
+};
+const scheduledLinks = realUnresolvedLinks.filter(isScheduled);
+const deadLinks = realUnresolvedLinks.filter((entry) => !isScheduled(entry));
+check("links: every internal href resolves in the export", deadLinks.length === 0);
+if (deadLinks.length) console.log("     " + deadLinks.slice(0, 5).join(", "));
+if (scheduledLinks.length) {
+  console.log(
+    `     ${scheduledLinks.length} link a pezzi programmati, che usciranno alle loro date: ` +
+      [...new Set(scheduledLinks.map((entry) => entry.slice(entry.indexOf("→ ") + 2).trim()))]
+        .sort()
+        .join(", "),
+  );
+}
 if (realUnresolvedLinks.length) console.log("     " + realUnresolvedLinks.slice(0, 5).join(", "));
 
 // La forma di un controllo non si decide col focus. `:focus-visible` in

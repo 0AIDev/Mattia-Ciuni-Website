@@ -135,6 +135,25 @@ piano chiedeva anche la pagina `/now` come pagina propria: oggi la sezione
 **Now** sta sulla home ed è un paragrafo, e la sua versione lunga ha più senso
 come nota che come rotta nuova.
 
+### Un pezzo di oggi cita pezzi di domani
+
+La coda è scritta tutta insieme, quindi un pezzo appena pubblicato contiene
+link verso pezzi che escono nelle settimane dopo. Sono link a pagine che **non
+esistono ancora**: per un lettore restano un 404 per qualche giorno, e il
+controllo dei link interni in `verify.js` li avrebbe contati come morti, facendo
+cadere il controllo proprio il giorno della pubblicazione.
+
+La correzione è nel controllo: un link interno che punta a uno slug presente in
+un registro, in una sezione che il sito usa, è un **pezzo programmato** e va
+tollerato finché non esce. Uno slug che non è in nessun registro resta un
+errore di battitura e continua a far fallire il controllo, che è la cosa che il
+controllo deve trovare. La lista dei link programmati viene stampata a ogni
+esecuzione, quindi non è un'eccezione invisibile.
+
+Se questo fastidio non è accettato, l'alternativa è scrivere i pezzi in modo che
+citino solo pezzi già usciti, che appiattisce la sequenza degli argomenti. Ho
+scelto la prima strada e ho reso la seconda esplicita nel log.
+
 ### Una nota operativa sulle card
 
 `scripts/og.ps1` legge i registri come testo e filtra per data, quindi salta i
