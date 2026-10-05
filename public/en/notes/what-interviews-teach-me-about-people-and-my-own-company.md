@@ -2,5 +2,5 @@
 
 > What written technical work reveals that a conversation can hide, and why every interview has become an audit of my own company.
 
-- URL: https://mattiaciuni.pages.dev/en/notes/what-interviews-teach-me-about-people-and-my-own-company
+- URL: https://mattiaciuni.com/en/notes/what-interviews-teach-me-about-people-and-my-own-company
 - Type: Page

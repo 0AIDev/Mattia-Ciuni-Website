@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 
 const root = fileURLToPath(new URL("..", import.meta.url));
 const out = join(root, "out");
-const productionOrigin = "https://mattiaciuni.pages.dev";
+const productionOrigin = "https://mattiaciuni.com";
 // Plain Node cannot import the TypeScript i18n module; keep this list in sync
 // with `lib/i18n.ts` when a locale is added.
 const LOCALES = ["en", "it", "fr", "es", "de"];

@@ -2,7 +2,7 @@
 
 > Lavora con me. Segui il lavoro nel Sunday log.
 
-- URL: https://mattiaciuni.pages.dev/it/careers
+- URL: https://mattiaciuni.com/it/careers
 - Type: Page
 
 - [undefined index](../it.md)

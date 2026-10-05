@@ -26,6 +26,7 @@
     "test:security": "node scripts/security-audit.mjs",
     "audit:seo": "node scripts/audit-seo.mjs",
     "test:sitemap": "node scripts/check-sitemap-coverage.mjs",
+    "test:domain": "tsx scripts/test-domain.mjs",
     "email:preview": "tsx emails/render-preview.tsx",
     "email:template": "tsx emails/gen-template.tsx",
     "test:analytics": "node scripts/test-analytics.mjs",

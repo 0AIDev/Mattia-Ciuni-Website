@@ -2,5 +2,5 @@
 
 > How a stranger challenged Noesia's weakest assumption, became its co-founder and CTO, and turned three weeks of evidence into a partnership.
 
-- URL: https://mattiaciuni.pages.dev/de/thoughts/finding-ghassen-the-co-founder-question-answered-in-three-weeks
+- URL: https://mattiaciuni.com/de/thoughts/finding-ghassen-the-co-founder-question-answered-in-three-weeks
 - Type: Page

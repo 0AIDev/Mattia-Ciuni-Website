@@ -2,7 +2,7 @@
 
 > Founder & CEO at Noesia, die Geldschicht für KI-Agenten. KI-Agenten können bereits recherchieren, vergleichen und ganze Aufgaben ausführen.
 
-- URL: https://mattiaciuni.pages.dev/de
+- URL: https://mattiaciuni.com/de
 - Type: Page
 
 - [Home](index.md)

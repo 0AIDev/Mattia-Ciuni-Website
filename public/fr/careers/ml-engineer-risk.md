@@ -2,5 +2,5 @@
 
 > Build the trust layer for autonomous agent spending: fraud scoring, on a behavioral dataset that doesn't exist anywhere else.
 
-- URL: https://mattiaciuni.pages.dev/fr/careers/ml-engineer-risk
+- URL: https://mattiaciuni.com/fr/careers/ml-engineer-risk
 - Type: Page

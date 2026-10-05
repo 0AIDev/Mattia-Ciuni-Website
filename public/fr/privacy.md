@@ -2,7 +2,7 @@
 
 > Founder & CEO of Noesia, the money layer for AI agents. Scoped permissions, deterministic authorization and a verifiable receipt for every payment.
 
-- URL: https://mattiaciuni.pages.dev/fr/privacy
+- URL: https://mattiaciuni.com/fr/privacy
 - Type: Page
 
 - [undefined index](../fr.md)

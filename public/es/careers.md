@@ -2,7 +2,7 @@
 
 > Carreras. Sigue el trabajo en el Sunday log.
 
-- URL: https://mattiaciuni.pages.dev/es/careers
+- URL: https://mattiaciuni.com/es/careers
 - Type: Page
 
 - [undefined index](../es.md)

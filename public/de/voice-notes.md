@@ -2,7 +2,7 @@
 
 > Unbearbeitete Gedanken, gesprochen bevor sie zu Essays werden.
 
-- URL: https://mattiaciuni.pages.dev/de/voice-notes
+- URL: https://mattiaciuni.com/de/voice-notes
 - Type: Page
 
 - [undefined index](../de.md)

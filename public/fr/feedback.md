@@ -2,7 +2,7 @@
 
 > Un registre public des personnes qui observent Noesia et des corrections retenues après examen.
 
-- URL: https://mattiaciuni.pages.dev/fr/feedback
+- URL: https://mattiaciuni.com/fr/feedback
 - Type: Page
 
 - [undefined index](../fr.md)

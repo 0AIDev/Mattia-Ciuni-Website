@@ -2,7 +2,7 @@
 
 > Founder & CEO at Noesia, il money layer per gli agenti AI. Gli agenti AI possono già cercare, confrontare ed eseguire intere attività.
 
-- URL: https://mattiaciuni.pages.dev/it
+- URL: https://mattiaciuni.com/it
 - Type: Page
 
 - [Home](index.md)

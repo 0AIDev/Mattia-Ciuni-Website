@@ -2,7 +2,7 @@
 
 > A public record of what users and people interested in Noesia think, what they want to see next, and which signals are worth building around.
 
-- URL: https://mattiaciuni.pages.dev/feedback
+- URL: https://mattiaciuni.com/feedback
 - Type: Feedback index
 
 ## Feedback

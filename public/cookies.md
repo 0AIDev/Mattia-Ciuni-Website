@@ -2,7 +2,7 @@
 
 > Every cookie, local storage key and session value this site uses, what each one is for, and how to change your choice.
 
-- URL: https://mattiaciuni.pages.dev/cookies
+- URL: https://mattiaciuni.com/cookies
 - Type: Page
 
 - [Home](index.md)

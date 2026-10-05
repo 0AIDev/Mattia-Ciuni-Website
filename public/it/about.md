@@ -2,7 +2,7 @@
 
 > Un founder italiano che lavora su regole, autorizzazione e ricevute per permettere al software di agire e spendere per conto delle persone.
 
-- URL: https://mattiaciuni.pages.dev/it/about
+- URL: https://mattiaciuni.com/it/about
 - Type: Page
 
 - [undefined index](../it.md)

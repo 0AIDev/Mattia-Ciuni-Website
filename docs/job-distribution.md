@@ -7,9 +7,9 @@ pubblica le pagine, e non può dire una cosa diversa da quello che il sito dice.
 
 | Feed | URL | Formato | Chi lo legge |
 | --- | --- | --- | --- |
-| XML Indeed | `https://mattiaciuni.pages.dev/jobs.xml` | `<source>/<job>` | Indeed, Glassdoor, Jooble, Talent.com/Neuvoo, Jobrapido |
-| RSS 2.0 | `https://mattiaciuni.pages.dev/jobs.rss.xml` | RSS | Careerjet, lettori generici, IFTTT |
-| Atom 1.0 | `https://mattiaciuni.pages.dev/jobs.atom.xml` | Atom | aggregatori europei, alcuni ATS |
+| XML Indeed | `https://mattiaciuni.com/jobs.xml` | `<source>/<job>` | Indeed, Glassdoor, Jooble, Talent.com/Neuvoo, Jobrapido |
+| RSS 2.0 | `https://mattiaciuni.com/jobs.rss.xml` | RSS | Careerjet, lettori generici, IFTTT |
+| Atom 1.0 | `https://mattiaciuni.com/jobs.atom.xml` | Atom | aggregatori europei, alcuni ATS |
 
 La trasformazione sta tutta in `lib/careers/feed.ts`: description HTML pulita
 (`h3` dalle sezioni `###`, `ul` dagli elenchi), solo ruoli `open`, tetto di 100
@@ -20,7 +20,7 @@ diverse.
 ## La regola che non si negozia
 
 Ogni `<url>`, ogni `<link>`, ogni `guid` punta a
-`https://mattiaciuni.pages.dev/careers/<slug>/`. La candidatura avviene **sul
+`https://mattiaciuni.com/careers/<slug>/`. La candidatura avviene **sul
 sito**: il form con verifica email, il challenge pagato, il database. Nessuna
 board riceve un form suo, nessun click è sponsorizzato. Se un aggregatore
 propone "apply on our site" come default, si disattiva: è il modo in cui le

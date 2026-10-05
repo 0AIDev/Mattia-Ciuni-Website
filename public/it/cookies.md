@@ -2,7 +2,7 @@
 
 > Le tecnologie di archiviazione usate da questo sito.
 
-- URL: https://mattiaciuni.pages.dev/it/cookies
+- URL: https://mattiaciuni.com/it/cookies
 - Type: Page
 
 - [undefined index](../it.md)

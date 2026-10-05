@@ -44,6 +44,12 @@ Due dettagli che valgono come regole:
   stesso posto. Il middleware preserva quell'origine invece di sostituirla con
   l'host della richiesta, mentre `scripts/check-live.mjs` verifica il dominio
   effettivamente servito (§5 di `docs/SEO-GEO-AI.md`).
+  Gli host che **non** sono l'origine — il sottodominio `mattiaciuni.pages.dev`
+  del progetto e il `www` — ricevono un **301** invece di una copia duplicata: è
+  la condizione perché il cambio di dominio sposti il rango invece di dissiparlo,
+  e vive in `functions/_middleware.ts` perché è l'unico punto in cui la richiesta
+  porta con sé l'host. La procedura è in `docs/domain-migration.md`, il
+  comportamento è provato da `npm run test:domain`.
 
 **`hreflang` su ogni pagina indicizzabile**, perché il sito esiste in cinque
 lingue (`lib/i18n.ts`) e ognuna ha i suoi indirizzi. Le sei annotazioni (le
@@ -228,7 +234,7 @@ sito deve poter essere citato senza aver visto la pagina:
 
 > La description della pagina
 
-- URL: https://mattiaciuni.pages.dev/thoughts/<slug>
+- URL: https://mattiaciuni.com/thoughts/<slug>
 - Type: Blog post
 - Published: 2026-09-20
 

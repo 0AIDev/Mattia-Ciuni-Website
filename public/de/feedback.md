@@ -2,7 +2,7 @@
 
 > Ein öffentliches Protokoll der Menschen, die Noesia beobachten, und der Korrekturen, die die Prüfung überstehen.
 
-- URL: https://mattiaciuni.pages.dev/de/feedback
+- URL: https://mattiaciuni.com/de/feedback
 - Type: Page
 
 - [undefined index](../de.md)

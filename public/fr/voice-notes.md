@@ -2,7 +2,7 @@
 
 > Des pensées non retouchées, dites avant de devenir des essais.
 
-- URL: https://mattiaciuni.pages.dev/fr/voice-notes
+- URL: https://mattiaciuni.com/fr/voice-notes
 - Type: Page
 
 - [undefined index](../fr.md)

@@ -42,7 +42,7 @@ check("jobs.xml: RFC 2822 lastBuildDate", /<lastBuildDate>[A-Za-z]{3}, \d{2} [A-
 const xmlJobs = [...xml.matchAll(/<job>/g)].length;
 check(`jobs.xml: contains exactly the open roles (${openSlugs.length})`, xmlJobs === openSlugs.length, `found ${xmlJobs}`);
 check("jobs.xml: no closed or coming-soon roles", openSlugs.every((slug) => xml.includes(`<referenceno><![CDATA[${slug}]]></referenceno>`)) && !xml.includes("coming-soon"));
-check("jobs.xml: every url points back to the site", [...xml.matchAll(/<url><!\[CDATA\[([^\]]+)\]\]><\/url>/g)].every((m) => m[1].startsWith("https://mattiaciuni.pages.dev/careers/") && m[1].endsWith("/")));
+check("jobs.xml: every url points back to the site", [...xml.matchAll(/<url><!\[CDATA\[([^\]]+)\]\]><\/url>/g)].every((m) => m[1].startsWith("https://mattiaciuni.com/careers/") && m[1].endsWith("/")));
 check("jobs.xml: description is clean HTML (no scripts, no styles)", !/<script|<style|onclick|class=/i.test(xml));
 check("jobs.xml: description CDATA has no raw ]]> sequence", !/(?<!\]\]])><!\[CDATA\[\s*\]\]>/.test(xml) && ![...xml.matchAll(/<!\[CDATA\[([\s\S]*?)\]\]>/g)].some((m) => m[1].includes("]]>")));
 check("jobs.xml: salary present on every open role", [...xml.matchAll(/<salary><!\[CDATA\[([^\]]*)\]\]><\/salary>/g)].every((m) => m[1].length > 0));
@@ -54,17 +54,17 @@ const rss = read("jobs.rss.xml");
 check("jobs.rss.xml: valid RSS 2.0 structure", rss.startsWith('<?xml version="1.0" encoding="UTF-8"?>') && rss.includes('<rss version="2.0">') && rss.includes("</rss>"));
 check("jobs.rss.xml: channel metadata", rss.includes("<title>Noesia") && rss.includes("<language>en</language>") && rss.includes("<lastBuildDate>"));
 check("jobs.rss.xml: item count matches open roles", [...rss.matchAll(/<item>/g)].length === openSlugs.length);
-check("jobs.rss.xml: guid isPermaLink and absolute", [...rss.matchAll(/<guid isPermaLink="true">([^<]+)<\/guid>/g)].every((m) => m[1].startsWith("https://mattiaciuni.pages.dev/careers/")));
+check("jobs.rss.xml: guid isPermaLink and absolute", [...rss.matchAll(/<guid isPermaLink="true">([^<]+)<\/guid>/g)].every((m) => m[1].startsWith("https://mattiaciuni.com/careers/")));
 check("jobs.rss.xml: description entities escaped (no raw < inside)", [...rss.matchAll(/<description>([\s\S]*?)<\/description>/g)].every((m) => !/<(?:h3|p|ul|li)[\s>]/.test(m[1])));
 check("jobs.rss.xml: every item has RFC 822 pubDate", [...rss.matchAll(/<pubDate>([^<]+)<\/pubDate>/g)].every((m) => !Number.isNaN(Date.parse(m[1]))));
 
 // --- jobs.atom.xml ----------------------------------------------------------
 const atom = read("jobs.atom.xml");
 check("jobs.atom.xml: valid Atom 1.0 structure", atom.includes('<feed xmlns="http://www.w3.org/2005/Atom">') && atom.includes("</feed>"));
-check("jobs.atom.xml: id, self link and updated", atom.includes('<link rel="self"') && /<id>https:\/\/mattiaciuni\.pages\.dev\/jobs\.atom\.xml<\/id>/.test(atom) && /<updated>\d{4}-\d{2}-\d{2}T/.test(atom));
+check("jobs.atom.xml: id, self link and updated", atom.includes('<link rel="self"') && /<id>https:\/\/mattiaciuni\.com\/jobs\.atom\.xml<\/id>/.test(atom) && /<updated>\d{4}-\d{2}-\d{2}T/.test(atom));
 check("jobs.atom.xml: entry count matches open roles", [...atom.matchAll(/<entry>/g)].length === openSlugs.length);
 check("jobs.atom.xml: content type html", [...atom.matchAll(/<content type="html">/g)].length === openSlugs.length);
-check("jobs.atom.xml: every entry links back to the site", [...atom.matchAll(/<link rel="alternate" href="([^"]+)"/g)].every((m) => m[1].startsWith("https://mattiaciuni.pages.dev/careers/")));
+check("jobs.atom.xml: every entry links back to the site", [...atom.matchAll(/<link rel="alternate" href="([^"]+)"/g)].every((m) => m[1].startsWith("https://mattiaciuni.com/careers/")));
 
 // --- JSON-LD JobPosting sulle pagine ruolo ----------------------------------
 for (const job of openJobs()) {

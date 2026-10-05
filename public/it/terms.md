@@ -2,7 +2,7 @@
 
 > Le regole che si applicano all'uso di questo sito e dei suoi contenuti.
 
-- URL: https://mattiaciuni.pages.dev/it/terms
+- URL: https://mattiaciuni.com/it/terms
 - Type: Page
 
 - [undefined index](../it.md)

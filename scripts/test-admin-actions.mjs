@@ -196,7 +196,7 @@ function installFetch() {
     if (url.startsWith("https://api.github.com")) return githubRest(url, method, init);
     if (url.startsWith(SUPABASE)) return supabaseRest(url, method, init);
     if (url === DEPLOY_HOOK) { deployCalls.push(url); return json({ success: true }); }
-    if (url.startsWith("https://mattiaciuni.pages.dev/deploy.json")) {
+    if (url.startsWith("https://mattiaciuni.com/deploy.json")) {
       if (!deployStamp) return json({ message: "Not Found" }, 404);
       return json(deployStamp);
     }
@@ -246,7 +246,7 @@ const env = {
   GITHUB_REPOSITORY: REPO,
   GITHUB_BRANCH: BRANCH,
   CLOUDFLARE_DEPLOY_HOOK: DEPLOY_HOOK,
-  SITE_URL: "https://mattiaciuni.pages.dev",
+  SITE_URL: "https://mattiaciuni.com",
 };
 
 installFetch();
@@ -449,7 +449,7 @@ setDeployStamp({ built_at: new Date().toISOString(), commit: "b".repeat(40) });
 const afterBuild = await payload(await post({ action: "deploy_status", since }, session));
 check(
   "a build that finished after the publish is live, and the panel gets the site origin",
-  afterBuild.available === true && afterBuild.live === true && afterBuild.commit === "b".repeat(40) && afterBuild.origin === "https://mattiaciuni.pages.dev",
+  afterBuild.available === true && afterBuild.live === true && afterBuild.commit === "b".repeat(40) && afterBuild.origin === "https://mattiaciuni.com",
   JSON.stringify(afterBuild).slice(0, 200),
 );
 

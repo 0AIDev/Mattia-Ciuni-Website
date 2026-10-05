@@ -2,7 +2,7 @@
 
 > Un diario visivo del lavoro, del pensiero e dei cambi di idea.
 
-- URL: https://mattiaciuni.pages.dev/it/videos
+- URL: https://mattiaciuni.com/it/videos
 - Type: Page
 
 - [undefined index](../it.md)

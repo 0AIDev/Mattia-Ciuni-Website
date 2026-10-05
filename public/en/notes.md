@@ -2,7 +2,7 @@
 
 > Longer, slower pieces on AI agents, payments and how to build things that last.
 
-- URL: https://mattiaciuni.pages.dev/en/notes
+- URL: https://mattiaciuni.com/en/notes
 - Type: Page
 
 - [undefined index](../en.md)

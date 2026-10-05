@@ -28,10 +28,10 @@ check("disposable domains are blocked", isDisposableCareerEmail("candidate@maili
 check("valid application passes server validation", validateCareerApplication({ job_slug: "x", full_name: "Alex Mwaniki", email: "alex@example.com", country_timezone: "UTC+3", artifact_link: "https://example.com/artifact", artifact_description: longArtifact, motivation: longMotivation, cv_filename: "alex.pdf", cv_base64: "JVBERi0xLjQK" }).ok === true);
 check("short fields and invalid URLs return field errors", (() => { const result = validateCareerApplication({ job_slug: "x", full_name: "A", email: "x@mailinator.com", country_timezone: "", artifact_link: "http://bad", artifact_description: "short", motivation: "short" }); return !result.ok && ["full_name", "email", "country_timezone", "artifact_link", "artifact_description", "motivation"].every((field) => field in result.fields); })());
 
-const unavailableResponse = await onRequestPost({ request: new Request("https://mattiaciuni.pages.dev/api/careers/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_slug: "coming-soon-role", full_name: "Test Candidate", email: "test@example.com", country_timezone: "UTC", artifact_link: "https://example.com/artifact", artifact_description: longArtifact, motivation: longMotivation, cv_filename: "candidate.pdf", cv_base64: "JVBERi0xLjQK" }) }), env: {} });
+const unavailableResponse = await onRequestPost({ request: new Request("https://mattiaciuni.com/api/careers/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_slug: "coming-soon-role", full_name: "Test Candidate", email: "test@example.com", country_timezone: "UTC", artifact_link: "https://example.com/artifact", artifact_description: longArtifact, motivation: longMotivation, cv_filename: "candidate.pdf", cv_base64: "JVBERi0xLjQK" }) }), env: {} });
 check("coming-soon API guard returns 422 before providers", unavailableResponse.status === 422);
 
-const response = await onRequestPost({ request: new Request("https://mattiaciuni.pages.dev/api/careers/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ website: "bot", job_slug: "x", email: "x@example.com" }) }), env: {} });
+const response = await onRequestPost({ request: new Request("https://mattiaciuni.com/api/careers/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ website: "bot", job_slug: "x", email: "x@example.com" }) }), env: {} });
 check("honeypot returns a false success without touching providers", response.status === 200 && (await response.json()).ok === true);
 
 // ---- ML Engineer — Risk & Trust (MLHIRE) ----
@@ -108,7 +108,7 @@ check("ML role SEO inputs: salary band, PART_TIME employment type, postedAt", ml
 // Test_Form_MinChars: server-side minimum enforcement for ML textareas.
 check("server enforces ML textarea minimums (200 chars) before providers", (() => {
   const shortAnswers = Object.fromEntries(ML_QUESTION_IDS.map((id) => [id, id === "ml-models-deployed" ? "3" : "too short"]));
-  return onRequestPost({ request: new Request("https://mattiaciuni.pages.dev/api/careers/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_slug: "ml-engineer-risk", full_name: "ML Candidate", email: "ml@example.com", country_timezone: "UTC+1", artifact_link: "https://example.com/notebook", artifact_description: longArtifact, motivation: longMotivation, cv_filename: "cv.pdf", cv_base64: "JVBERi0xLjQK", custom_answers: shortAnswers }) }), env: {} }).then((r) => {
+  return onRequestPost({ request: new Request("https://mattiaciuni.com/api/careers/apply", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ job_slug: "ml-engineer-risk", full_name: "ML Candidate", email: "ml@example.com", country_timezone: "UTC+1", artifact_link: "https://example.com/notebook", artifact_description: longArtifact, motivation: longMotivation, cv_filename: "cv.pdf", cv_base64: "JVBERi0xLjQK", custom_answers: shortAnswers }) }), env: {} }).then((r) => {
     if (r.status !== 422) return false;
     return r.json().then((data) => ML_QUESTION_IDS.every((id) => `custom_${id}` in (data.fields || {})));
   });

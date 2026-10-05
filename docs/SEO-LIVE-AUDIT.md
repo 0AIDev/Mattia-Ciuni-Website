@@ -1,6 +1,6 @@
 # SEO page-by-page audit
 
-Generated from the static export on 2026-09-24. This is the repository/export audit. Run node scripts/audit-seo.mjs --site=https://mattiaciuni.pages.dev after deployment for a network-level check; DNS, Cloudflare headers, cache and Search Console are not provable from the export alone.
+Generated from the static export on 2026-09-24. This is the repository/export audit. Run node scripts/audit-seo.mjs --site=https://mattiaciuni.com after deployment for a network-level check; DNS, Cloudflare headers, cache and Search Console are not provable from the export alone.
 
 ## Executive summary
 
@@ -224,7 +224,7 @@ The homepage and About page are the authoritative Person surfaces. The Work page
 Commands:
 npm run build
 node scripts/audit-seo.mjs
-node scripts/check-live.mjs --site=https://mattiaciuni.pages.dev
+node scripts/check-live.mjs --site=https://mattiaciuni.com
 node scripts/verify.js
 
 

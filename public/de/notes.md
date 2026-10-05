@@ -2,7 +2,7 @@
 
 > Längere, langsamere Texte über KI-Agenten, Zahlungen und dauerhafte Systeme.
 
-- URL: https://mattiaciuni.pages.dev/de/notes
+- URL: https://mattiaciuni.com/de/notes
 - Type: Page
 
 - [undefined index](../de.md)

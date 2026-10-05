@@ -2,7 +2,7 @@
 
 > The rules that apply when you use this site and its public content.
 
-- URL: https://mattiaciuni.pages.dev/de/terms
+- URL: https://mattiaciuni.com/de/terms
 - Type: Page
 
 - [undefined index](../de.md)

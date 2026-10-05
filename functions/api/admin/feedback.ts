@@ -557,7 +557,7 @@ function githubHeaders(env: Env): Record<string, string> {
     Accept: "application/vnd.github+json",
     Authorization: `Bearer ${env.GITHUB_TOKEN}`,
     "X-GitHub-Api-Version": "2022-11-28",
-    "User-Agent": "mattia-ciuni-admin (mattiaciuni.pages.dev)",
+    "User-Agent": "mattia-ciuni-admin (mattiaciuni.com)",
   };
 }
 
@@ -702,7 +702,7 @@ async function readDeployStamp(origin: string): Promise<DeployStamp | null> {
     // che non e' ancora online.
     const response = await fetch(`${origin}/deploy.json?t=${Date.now()}`, {
       cache: "no-store",
-      headers: { Accept: "application/json", "User-Agent": "mattia-ciuni-admin (mattiaciuni.pages.dev)" },
+      headers: { Accept: "application/json", "User-Agent": "mattia-ciuni-admin (mattiaciuni.com)" },
     });
     if (!response.ok) return null;
     const data = (await response.json().catch(() => null)) as { built_at?: string; commit?: string } | null;

@@ -2,7 +2,7 @@
 
 > Pensieri su agenti AI, pagamenti e costruire Noesia.
 
-- URL: https://mattiaciuni.pages.dev/it/thoughts
+- URL: https://mattiaciuni.com/it/thoughts
 - Type: Page
 
 - [undefined index](../it.md)

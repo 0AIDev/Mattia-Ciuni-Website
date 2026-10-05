@@ -2,7 +2,7 @@
 
 > Un diario visual de construir, pensar y cambiar de opinión.
 
-- URL: https://mattiaciuni.pages.dev/es/videos
+- URL: https://mattiaciuni.com/es/videos
 - Type: Page
 
 - [undefined index](../es.md)

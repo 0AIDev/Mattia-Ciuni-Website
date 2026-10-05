@@ -2,7 +2,7 @@
 
 > Le fil conducteur est la délégation contrôlée : le logiciel peut agir, mais ses permissions restent explicites, limitées et vérifiables.
 
-- URL: https://mattiaciuni.pages.dev/fr/work
+- URL: https://mattiaciuni.com/fr/work
 - Type: Page
 
 - [undefined index](../fr.md)

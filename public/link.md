@@ -2,7 +2,7 @@
 
 > Everywhere Mattia Ciuni is: Noesia, LinkedIn, X, GitHub, Instagram, YouTube, the Spotify podcast, Crunchbase, and the writing published on this site.
 
-- URL: https://mattiaciuni.pages.dev/link
+- URL: https://mattiaciuni.com/link
 - Type: Page
 
 - [Home](index.md)

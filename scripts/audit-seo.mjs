@@ -42,7 +42,11 @@ const files = walk(out).filter((file) => {
   return !url.startsWith("/admin") && url !== "/404/" && url !== "/404.html";
 });
 const sitemap = existsSync(join(out, "sitemap.xml")) ? readFileSync(join(out, "sitemap.xml"), "utf8") : "";
-const childMaps = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].split(".pages.dev").pop());
+// `<loc>` are absolute URLs, and the audit reads the sitemap that the export
+// just wrote, so the origin is known: stripping it with the host as a literal
+// would have to be edited on every domain change, and a miss would silently look
+// for a file named `https:/...`. Strip the origin, whatever it is.
+const childMaps = [...sitemap.matchAll(/<loc>([^<]+)<\/loc>/g)].map((m) => m[1].replace(/^https?:\/\/[^/]+/, ""));
 const sitemapText = childMaps.map((name) => {
   const file = join(out, name.replace(/^\//, ""));
   return existsSync(file) ? readFileSync(file, "utf8") : "";
@@ -64,7 +68,7 @@ const rows = files.map((file) => {
     inSitemap: Boolean(canonical) && new RegExp(`<loc>${canonical.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")}<\\/loc>`).test(sitemapText),
     titleOk: title.includes(" | ") && !title.includes("·"),
     canonicalOk: canonical.endsWith(url) || canonical.endsWith(url.slice(0, -1)),
-    ogOk: Boolean(og) && og.includes("mattiaciuni.pages.dev"),
+    ogOk: Boolean(og) && og.includes("mattiaciuni.com"),
     schemaOk: schemas.length > 0,
   };
 });
@@ -76,7 +80,7 @@ const rowLine = (row) => {
 const lines = [
   "# SEO page-by-page audit",
   "",
-  `Generated from the static export on ${new Date().toISOString().slice(0, 10)}. This is the repository/export audit. Run node scripts/audit-seo.mjs --site=https://mattiaciuni.pages.dev after deployment for a network-level check; DNS, Cloudflare headers, cache and Search Console are not provable from the export alone.`,
+  `Generated from the static export on ${new Date().toISOString().slice(0, 10)}. This is the repository/export audit. Run node scripts/audit-seo.mjs --site=https://mattiaciuni.com after deployment for a network-level check; DNS, Cloudflare headers, cache and Search Console are not provable from the export alone.`,
   "",
   "## Executive summary",
   "",
@@ -105,7 +109,7 @@ const lines = [
   "Commands:",
   "npm run build",
   "node scripts/audit-seo.mjs",
-  "node scripts/check-live.mjs --site=https://mattiaciuni.pages.dev",
+  "node scripts/check-live.mjs --site=https://mattiaciuni.com",
   "node scripts/verify.js",
   "",
   "",

@@ -2,7 +2,7 @@
 
 > Founder & CEO at Noesia, die Geldschicht für KI-Agenten.
 
-- URL: https://mattiaciuni.pages.dev/de/link
+- URL: https://mattiaciuni.com/de/link
 - Type: Page
 
 - [undefined index](../de.md)

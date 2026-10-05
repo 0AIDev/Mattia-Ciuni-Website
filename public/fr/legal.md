@@ -2,7 +2,7 @@
 
 > Site documents, contacts and legal information.
 
-- URL: https://mattiaciuni.pages.dev/fr/legal
+- URL: https://mattiaciuni.com/fr/legal
 - Type: Page
 
 - [undefined index](../fr.md)

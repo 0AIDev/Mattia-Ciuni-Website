@@ -2,7 +2,7 @@
 
 > The storage technologies used by this site.
 
-- URL: https://mattiaciuni.pages.dev/es/cookies
+- URL: https://mattiaciuni.com/es/cookies
 - Type: Page
 
 - [undefined index](../es.md)

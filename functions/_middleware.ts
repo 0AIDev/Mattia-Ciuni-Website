@@ -1,7 +1,7 @@
 /**
  * L'unico codice del sito: una Pages Function (`functions/_middleware.ts`).
  *
- * Fa due cose che gli asset statici da soli non sanno fare, e niente altro.
+ * Fa tre cose che gli asset statici da soli non sanno fare, e niente altro.
  *
  * 1 · **Negoziazione markdown.** `Accept: text/markdown` su una pagina riceve la
  *     card `.md` di quella pagina — la stessa che il sito pubblica, quella che la
@@ -11,7 +11,17 @@
  *     poi direbbe qualcosa di diverso (le card si generano dall'HTML appena
  *     esportato, non da un template a parte).
  *
- * 2 · **Il dominio SEO production è fisso e sicuro.** L'export nasce per
+ * 2 · **Gli host che non sono più un'origine rispondono 301.** Dal 5 ottobre 2026
+ *     l'origine production è il dominio proprio, `mattiaciuni.com`. Il
+ *     sottodominio `mattiaciuni.pages.dev` che Cloudflare assegna al progetto
+ *     continua a rispondere, perché lo ha sempre fatto e cancellarlo d'un colpo
+ *     avrebbe restituito 404 a chi aveva ancora quel link: ma risponde con un
+ *     301 verso l'apex, che è l'unica forma di risposta che sposta il ranking
+ *     invece di perderlo. Lo stesso vale per `www`, che non è un'altra copia del
+ *     sito. Le anteprima (`<hash>.mattiaciuni.pages.dev`) non sono in elenco:
+ *     quelle devono restare raggiungibili.
+ *
+ * 3 · **Il dominio SEO production è fisso e sicuro.** L'export nasce per
  *     `SITE_ORIGIN`; gli indirizzi assoluti che il file dichiara — `canonical`,
  *     `og:url`, `og:image`, JSON-LD, `<loc>` delle sitemap e il `Sitemap:` di
  *     robots.txt — restano esattamente sull'origine dichiarata dal build.
@@ -23,8 +33,57 @@
  * Tutto il resto passa agli asset, come se questa funzione non ci fosse: gli
  * header di `public/_headers`, il 404, le regole di `_redirects`. E grazie a
  * `public/_routes.json` la funzione **non viene nemmeno invocata** per immagini,
- * CSS, font e JS.
+ * CSS, font e JS: il 301 del punto 2 copre quindi pagine, sitemap, feed e API,
+ * non i file statici, che sono gli stessi byte sotto due host e non hanno un
+ * rango da difendere.
  */
+
+/**
+ * L'origine production, qui ripetuta invece che importata.
+ *
+ * `lib/site-origin.ts` è la fonte unica, ma non si puo' importare qui: al
+ * caricamento della Function la sua validazione gira anche, e su un
+ * sottodominio di anteprima `NEXT_PUBLIC_SITE_URL` non e' l'origine
+ * production — l'errore che lancia farebbe cadere tutta la Function invece di
+ * una riga. Il vincolo tra le due copie e' un controllo di `scripts/verify.js`,
+ * che legge questo file e lo confronta con la costante.
+ */
+const PRODUCTION_ORIGIN = "https://mattiaciuni.com";
+
+/**
+ * Gli host che rispondono 301 verso l'origine production.
+ *
+ * `mattiaciuni.pages.dev` e' il sottodominio che Cloudflare ha assegnato al
+ * progetto: continuera' a risolvere per sempre, e finche' risolve serve a
+ * qualcosa. `www.mattiaciuni.com` e' l'alias commerciale del dominio: due nomi
+ * per lo stesso sito non aiutano nessuno, quindi uno dei due deve dire
+ * all'altro "e' qui".
+ */
+const RETIRED_HOSTS = new Set(["mattiaciuni.pages.dev", "www.mattiaciuni.com"]);
+
+/**
+ * Il 301, con percorso e query intatti.
+ *
+ * La query non si perde: `/careers/xxx/apply?ref=...` e il link del pannello
+ * admin passano dei parametri che il destinatario usa, e una migrazione che
+ * li taglia sembrerebbe una migrazione e sarebbe un'altra cosa.
+ *
+ * `max-age` breve e non `no-store`: il 301 e' permanente per il visitatore, ma
+ * un giorno il ritorno a un dominio diverso non deve costare un anno di cache
+ * nel suo browser.
+ */
+function retiredHostRedirect(url: URL): Response {
+  const target = new URL(PRODUCTION_ORIGIN);
+  target.pathname = url.pathname;
+  target.search = url.search;
+  return new Response(null, {
+    status: 301,
+    headers: {
+      Location: target.toString(),
+      "Cache-Control": "public, max-age=86400",
+    },
+  });
+}
 
 /** Il minimo che serve: gli asset del progetto e le variabili d'ambiente. */
 interface Env {
@@ -73,6 +132,17 @@ function preserveSeoOrigin(body: string): string {
 export const onRequest = async (context: Context): Promise<Response> => {
   const { request, env, next } = context;
   const url = new URL(request.url);
+
+  // Prima di tutto, e prima di ogni altra risposta: un host che non e' piu'
+  // l'origine non deve ricevere contenuto. Se rispondesse 200 con le pagine
+  // giuste, l'indirizzo vecchio continuerebbe a essere una copia indicizzabile
+  // del sito, e il segnale che sposta il ranking — il 301 — non arriverebbe
+  // mai. Il confronto e' sui nomi host, non sull'origine completa, cosi' una
+  // richiesta `http://` sullo stesso host viene comunque raddrizzata dal piano
+  // HTTPS di Cloudflare e non qui.
+  if (RETIRED_HOSTS.has(url.hostname.toLowerCase())) {
+    return retiredHostRedirect(url);
+  }
 
   // Sotto un percorso privato non esiste nessuna card, e va detto **qui**, non
   // solo nel generatore: il file è sparito dall'export, ma la copia che l'edge

@@ -267,6 +267,37 @@ Il check verifica anche che `lib/site.ts` nomi ancora il brand dichiarato in
 `current`: se qualcuno aggiorna `retired` e dimentica `current`, fallisce invece
 di controllare in silenzio la stringa sbagliata.
 
+## Cambiare dominio
+
+Il dominio non e' un brand e non si cambia come un brand. `scripts/check-brand.mjs`
+non lo controlla, perche' un host sbagliato non contiene il nome del brand e
+passerebbe. A controllarlo sono due cose gia' esistenti:
+
+- **`lib/site-origin.ts`** dichiara l'origine production e **rifiuta** al build
+  qualunque `NEXT_PUBLIC_SITE_URL` diversa. Quindi il build non puo' pubblicare
+  un export con un dominio non autorizzato, e `.env.example` da solo non cambia
+  niente.
+- **`scripts/verify.js`** confronta l'origine con quella che la Function
+  middleware usa per i 301, cosi' le due copie non possono divergere.
+
+Un cambio di dominio, nell'ordine:
+
+1. `PRODUCTION_ORIGIN` in `lib/site-origin.ts` e `NEXT_PUBLIC_SITE_URL` in
+   `.env.example`;
+2. la stessa variabile nel progetto Cloudflare Pages — **prima** del deploy, o il
+   primo build post-cambio fallisce;
+3. `RETIRED_HOSTS` in `functions/_middleware.ts`: il vecchio host e il `www` devono
+   rispondere 301, non 200, altrimenti il sito esiste due volte e il ranking non
+   si sposta;
+4. il dominio come custom domain del progetto Pages, con i `CNAME` (l'apex
+   non e' un A record: e' un CNAME con flattening, altrimenti l'hosting
+   precedente continua a rispondere al suo posto);
+5. i passi sui motori, che dal repository non si fanno.
+
+`npm run test:domain` prova il 301 senza deploy (status, percorso, query, host
+production e anteprima). L'ultimo capitolo di `docs/domain-migration.md` ha i
+passi dei motori e il rollback con i valori DNS del precedente hosting.
+
 Lo stesso vale per il **dominio del prodotto**, che vive in una quarantina di
 file: il link della home, il pulsante di candidatura, il contatto nelle mail,
 la policy del RAG, il system prompt in `api/chat.ts`. La regola e' una sola e

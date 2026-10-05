@@ -9,6 +9,7 @@ Tre file, e sono il contratto del sito — non si scrive un articolo senza il se
 - **[`docs/SEO.md`](docs/SEO.md)** — come la SEO è fatta **qui**: chi scrive quale file, cosa si genera da cosa, i comandi che controllano.
 - **[`docs/AUTHORING.md`](docs/AUTHORING.md)** — come si scrive un articolo: campi, blocchi, sintassi, e le **regole dei collegamenti** (ogni articolo nomina almeno un altro articolo e una nota, le sezioni si citano con `#anchor`).
 - **[`docs/SEO-GEO-AI.md`](docs/SEO-GEO-AI.md)** — l'impianto completo per tre lettori (motore di ricerca, motore generativo, agente), cosa è generico e cosa è dato di questo sito, e la lista di **cosa non si pubblica e perché**.
+- **[`docs/domain-migration.md`](docs/domain-migration.md)** — il passaggio da `mattiaciuni.pages.dev` a `mattiaciuni.com`: il 301, i record toccati su Cloudflare, i passi che restano sui motori e come si torna indietro.
 
 ## Struttura
 
@@ -26,7 +27,7 @@ Tre file, e sono il contratto del sito — non si scrive un articolo senza il se
 - `lib/slug.ts` — `slugify` condivisa: unica fonte degli anchor di sezione (heading + TOC)
 - `lib/posts.ts` — **unico file dove scrivere articoli** (niente MDX, niente dipendenze). Campo `category` mostrato come tag; `*testo*` renderizzato come `em` in Instrument Serif
 - `lib/notes.ts` — **unico file dove scrivere le note** (niente MDX): `slug`, `title`, `description`, `date`, `keywords`, `content` (paragrafi + h2 con `*em*`)
-- `lib/site-origin.ts` — **l'unica costante del dominio SEO production** (`https://mattiaciuni.pages.dev`): la leggono il build (`lib/site.ts` → canonical, sitemap, feed, JSON-LD, OG), il middleware e `scripts/verify.js`. La variabile `NEXT_PUBLIC_SITE_URL` del progetto Pages è un controllo operativo e deve riportare lo stesso valore, non un override.
+- `lib/site-origin.ts` — **l'unica costante del dominio SEO production** (`https://mattiaciuni.com`): la leggono il build (`lib/site.ts` → canonical, sitemap, feed, JSON-LD, OG), il middleware e `scripts/verify.js`. La variabile `NEXT_PUBLIC_SITE_URL` del progetto Pages è un controllo operativo e deve riportare lo stesso valore, non un override.
 - `lib/site.ts` — **dominio + social**: usa la costante di `lib/site-origin.ts`; qui stanno gli handle social (`social.crunchbase` incluso)
 - `public/og.png`, `public/thoughts/og.png`, `public/notes/og.png`, `public/thoughts/<slug>/og.png` e `public/notes/<slug>/og.png`: OG 1200×630 statiche (tema chiaro), generate con `scripts/og.ps1` (niente runtime, niente dipendenze; `next/og` evitato di proposito: crasha il build su Windows e richiede Node runtime, incompatibile con static export puro). Homepage, indice Thoughts e indice Notes partono da **master disegnati a mano in root, 1920×1008** — `og.png`, `thoughts-og.png`, `notesog.png` (come `Vector.svg` e `mattia.png`): lo script li porta a 1200×630 con `HighQualityBicubic` e li ricodifica, senza disegnare niente (stesso rapporto d'aspetto, quindi nessun ritaglio). Le OG di **post e note** le compone lo script dal template: `og-sfondo.png` (il tuo `sfondo.svg` rasterizzato con `node scripts/gen-og-bg.mjs`) + **titolo in Instrument Serif Regular** e **sottotitolo in Inter Light**, centrati sotto il logo, con i TTF in `scripts/fonts/` caricati da disco (nessuna installazione). Lo stesso giro scrive anche **`cover.png`** accanto a ogni `og.png`: la stessa card **senza il logo**, ed è quella che la pagina mostra **sopra il `h1`** (`components/CoverImage.tsx` — colonna intera, riquadro con bordo e ombra leggera), perché nella `<head>` va la card con il logo e dentro il sito quella senza. Il sottotitolo è la riga di contesto (`Thoughts · 20 September 2026`, o `Notes · 12 September 2026`); con `-Subtitle description` al suo posto va la description dell'articolo. Titoli, slug e date si leggono da `lib/posts.ts` e `lib/notes.ts`: zero duplicazioni. Utili: `-Only <slug>` (un solo articolo), `-Preview` (scrive in `out/_tmp/og` per approvarlo prima), `-HomeOnly` (solo la homepage)
 - `public/mattia.webp`, avatar della home: **80×80 WebP, 0,8KB**, dal master `mattia.png` in root (1254×1254) con `node scripts/gen-avatar.mjs`. 80px è il doppio dei 40px a cui la pagina lo mostra (`h-10 w-10`), quindi è nitido sui display 2x senza servire pixel che nessuno vede: prima era un PNG 128×128 da 10,7KB, cioè ~10KB di risparmio che su mobile sono una richiesta che finisce prima
@@ -58,7 +59,7 @@ npm run test:newsletter  # copy, accessibilità, honeypot/rate-limit contract e 
 npm run test:admin       # attacchi offline al login della dashboard (token a confronto costante, sessioni KV, logout vero, rate limit, id di moderazione confinati ai feedback)
 npm run test:feedback    # attacchi offline all'endpoint pubblico del feedback (honeypot, tetto del corpo sui byte arrivati, dati IP non persistiti, link della notifica sull'host che ha servito la pagina)
 npm run test:security    # guardrail su segreti, source map, artefatti privati, security.txt e header Cloudflare
-node scripts/check-live.mjs --site=https://mattiaciuni.pages.dev  # gli stessi controlli **sul sito pubblicato** (il dominio risolve? ogni pagina elencata risponde e dichiara la propria card?)
+node scripts/check-live.mjs --site=https://mattiaciuni.com  # gli stessi controlli **sul sito pubblicato** (il dominio risolve? ogni pagina elencata risponde e dichiara la propria card?)
 ```
 
 ## Deploy su Cloudflare Pages
@@ -67,12 +68,12 @@ Il sito è un export statico: Pages pubblica la cartella `out/` e basta, più `f
 
 1. Cloudflare Dashboard → **Workers & Pages → Create → Pages → Connect to Git** → repo `0AIDev/Mattia-Ciuni-Website`, branch `main`.
 2. Build settings: **Build command** `npm run build`, **Build output directory** `out`. Nient'altro: `_headers`, `_redirects`, `_routes.json` e la pagina 404 stanno già nell'export, e li legge Pages da sé.
-3. **Environment variables** (Production): `NEXT_PUBLIC_SITE_URL` = `https://mattiaciuni.pages.dev`, obbligatoriamente uguale al valore consentito in `lib/site-origin.ts`. Il build rifiuta un valore diverso, così `.env.example` o una configurazione secondaria non possono cambiare il dominio SEO.
-4. Deploy → `https://mattiaciuni.pages.dev`. Verifica rapida: `/sitemap.xml`, `/news-sitemap.xml`, `/robots.txt`, `/llms.txt`, `/feed.xml`, `/og.png`, `/thoughts/`, `/index.md` (card For AI). La funzione `/api/subscribe` richiede i Secret Resend/Brevo e il binding KV `RATE_LIMIT` nel progetto Pages. Il MacBook Gate richiede inoltre il secret Cloudflare `MACBOOK_EMAIL_ENCRYPTION_KEY`, ma Phase 1B non attiva traffico live verso retailer.
+3. **Environment variables** (Production): `NEXT_PUBLIC_SITE_URL` = `https://mattiaciuni.com`, obbligatoriamente uguale al valore consentito in `lib/site-origin.ts`. Il build rifiuta un valore diverso, così `.env.example` o una configurazione secondaria non possono cambiare il dominio SEO.
+4. Deploy → `https://mattiaciuni.com`. Verifica rapida: `/sitemap.xml`, `/news-sitemap.xml`, `/robots.txt`, `/llms.txt`, `/feed.xml`, `/og.png`, `/thoughts/`, `/index.md` (card For AI). La funzione `/api/subscribe` richiede i Secret Resend/Brevo e il binding KV `RATE_LIMIT` nel progetto Pages. Il MacBook Gate richiede inoltre il secret Cloudflare `MACBOOK_EMAIL_ENCRYPTION_KEY`, ma Phase 1B non attiva traffico live verso retailer.
 5. Il controllo che guarda **il sito pubblicato** e non l'export (è quello che avrebbe preso il guasto del 21/09, quando il dominio dichiarato non esisteva):
 
 ```bash
-node scripts/check-live.mjs --site=https://mattiaciuni.pages.dev
+node scripts/check-live.mjs --site=https://mattiaciuni.com
 ```
 
 6. **Vecchio Worker**: il progetto Workers omonimo (`mattiaciuni.<account>.workers.dev`) non è più la sorgente. Va cancellato da **Workers & Pages → mattia-ciuni-website → Settings → Delete**, altrimenti resta lì a servire una copia vecchia su un indirizzo che qualcuno può ancora incollare in chat.
@@ -106,12 +107,14 @@ The public `GET /api/macbook/rehearsal-log` endpoint is read-only and returns ma
 
 ### Dominio production
 
-Il dominio production è esclusivamente `https://mattiaciuni.pages.dev`, l'host ufficiale del progetto Cloudflare Pages. `NEXT_PUBLIC_SITE_URL` nel progetto production deve riportare questo valore; `lib/site-origin.ts` lo valida al build e rifiuta qualsiasi origine diversa. `SITE_URL` non modifica canonical, sitemap, robots, metadata, Open Graph o JSON-LD: le API possono usarlo soltanto per costruire link applicativi. Non aggiungere un custom domain o un redirect a un altro host senza una decisione SEO esplicita.
+Il dominio production è esclusivamente `https://mattiaciuni.com`, il dominio proprio collegato al progetto Cloudflare Pages. `NEXT_PUBLIC_SITE_URL` nel progetto production deve riportare questo valore; `lib/site-origin.ts` lo valida al build e rifiuta qualsiasi origine diversa. `SITE_URL` non modifica canonical, sitemap, robots, metadata, Open Graph o JSON-LD: le API possono usarlo soltanto per costruire link applicativi. Non aggiungere un altro custom domain o un redirect a un altro host senza una decisione SEO esplicita.
+
+Il sottodominio `mattiaciuni.pages.dev` che Cloudflare assegna al progetto non è stato cancellato: risponde con un **301** verso l'apex, perché un 404 avrebbe restituito a chi ha ancora quel link un errore invece di spostare il ranking. Il redirect è in `functions/_middleware.ts` (decisione sull'host, vedi `docs/domain-migration.md`) e non in `public/_redirects` (regole di percorso). `npm run test:domain` prova il comportamento della risposta HTTP: 301, percorso e query intatti, `www` raddrizzato, host production e anteprima intatti.
 
 ### Search Console, IndexNow e Google News
 
 1. Aggiungi la proprietà del dominio a Google Search Console e verifica via record TXT.
-2. Invia una volta `https://mattiaciuni.pages.dev/sitemap.xml`; il sito pubblica anche `/news-sitemap.xml`, RSS e `robots.txt` con lo stesso dominio production.
+2. Invia una volta `https://mattiaciuni.com/sitemap.xml`; il sito pubblica anche `/news-sitemap.xml`, RSS e `robots.txt` con lo stesso dominio production.
 3. Google non offre più un endpoint pubblico affidabile per il vecchio "ping" sitemap: la scoperta automatica avviene tramite `robots.txt` e sitemap. Search Console resta il posto corretto per ispezionare e richiedere una URL.
 4. Per Bing, Yandex, Seznam e altri motori compatibili, imposta `INDEXNOW_KEY` come Secret. Il postbuild genera automaticamente il file di verifica e invia le URL principali a IndexNow; se la chiave manca, il build continua senza inviare nulla.
 5. Per inviare automaticamente `/sitemap.xml` a Google Search Console dopo ogni build, assegna a un service account il permesso sulla proprietà e configura i Secret `GOOGLE_SERVICE_ACCOUNT_EMAIL` e `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`, più `GOOGLE_SEARCH_CONSOLE_SITE_URL`. Se non sono configurati, il build salta l'invio senza errori. Questo usa la Sitemap API, non l'Indexing API: gli articoli normali non vanno inviati all'Indexing API.

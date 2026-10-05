@@ -2,5 +2,5 @@
 
 > I posted Noesia's architecture publicly. An engineer I'd never met corrected my language, found real gaps, and made the product sharper. This is the full exchange.
 
-- URL: https://mattiaciuni.pages.dev/it/feedback/a-stranger-redesigned-my-pitch-in-one-comment
+- URL: https://mattiaciuni.com/it/feedback/a-stranger-redesigned-my-pitch-in-one-comment
 - Type: Page

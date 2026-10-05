@@ -16,10 +16,10 @@ async function main() {
   const html = await render(
     <FeedbackReceivedEmail
       name="Liam"
-      pageUrl="https://mattiaciuni.pages.dev/feedback/"
+      pageUrl="https://mattiaciuni.com/feedback/"
       submittedAt="September 22, 2026"
       message="The product is clear, but I would love to understand how feedback becomes part of the roadmap."
-      feedbackUrl="https://mattiaciuni.pages.dev/feedback/"
+      feedbackUrl="https://mattiaciuni.com/feedback/"
     />,
   );
 
@@ -30,11 +30,11 @@ async function main() {
   // nelle mail reali servono URL assoluti, che i client possano scaricare.
   const inlined = html
     .replaceAll(
-      "https://mattiaciuni.pages.dev/email-header.png",
+      "https://mattiaciuni.com/email-header.png",
       `data:image/png;base64,${header.toString("base64")}`,
     )
     .replaceAll(
-      "https://mattiaciuni.pages.dev/mail-arrow.png",
+      "https://mattiaciuni.com/mail-arrow.png",
       `data:image/png;base64,${arrow.toString("base64")}`,
     );
 

@@ -160,7 +160,7 @@ async function withStubbedBrevo(run) {
 }
 
 // --- 4 · la notifica porta alla dashboard dell'host che ha ricevuto il post --
-// Il caso da non ripetere: il link era `https://mattiaciuni.pages.dev` scritto a
+// Il caso da non ripetere: il link era `https://mattiaciuni.com` scritto a
 // mano, quindi la notifica di un deploy di prova mandava al sito di produzione (e
 // viceversa). Adesso l'origine si legge dalla richiesta, e `SITE_URL` la fissa solo
 // quando il progetto la imposta.
@@ -179,7 +179,7 @@ async function withStubbedBrevo(run) {
     calls.length === 1 &&
       calls[0].url === "https://api.brevo.com/v3/smtp/email" &&
       html.includes(`${ORIGIN}/admin/feedback/`) &&
-      !html.includes("mattiaciuni.pages.dev"),
+      !html.includes("mattiaciuni.com"),
   );
   check(
     "the notification uses Brevo and sends no PII beyond the feedback itself",
@@ -187,13 +187,13 @@ async function withStubbedBrevo(run) {
       calls[0]?.headers?.["api-key"] === API_KEY,
   );
 
-  const configured = newEnv({ ...brevo, SITE_URL: "https://mattiaciuni.pages.dev/" });
+  const configured = newEnv({ ...brevo, SITE_URL: "https://mattiaciuni.com/" });
   const { calls: fixed } = await withStubbedBrevo(async () =>
     onRequestPost({ request: request({ message }), env: configured }),
   );
   check(
     "SITE_URL, when the project sets it, wins over the request host (trailing slash removed)",
-    (fixed[0]?.body?.htmlContent || "").includes("https://mattiaciuni.pages.dev/admin/feedback/"),
+    (fixed[0]?.body?.htmlContent || "").includes("https://mattiaciuni.com/admin/feedback/"),
   );
 }
 

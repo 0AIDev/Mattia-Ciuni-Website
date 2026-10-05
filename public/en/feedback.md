@@ -2,7 +2,7 @@
 
 > A public record of the people paying attention to Noesia and the corrections that survive review.
 
-- URL: https://mattiaciuni.pages.dev/en/feedback
+- URL: https://mattiaciuni.com/en/feedback
 - Type: Page
 
 - [undefined index](../en.md)

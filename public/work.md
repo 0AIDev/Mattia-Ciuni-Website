@@ -2,7 +2,7 @@
 
 > The work of Mattia Ciuni: building Noesia's payments infrastructure for AI agents, after building Celeste, an AI browser.
 
-- URL: https://mattiaciuni.pages.dev/work
+- URL: https://mattiaciuni.com/work
 - Type: Page
 
 - [Home](index.md)

@@ -373,7 +373,10 @@ const feedbackFunction = readFileSync(
 );
 check(
   "feedback: the notification link follows the serving host, never a constant",
-  !feedbackFunction.includes("mattiaciuni.pages.dev") &&
+  // L'host qui viene da `PROD`, non scritto a mano: il dominio production è
+  // cambiato una volta (pages.dev → apex) e un letterale in questa riga avrebbe
+  // continuato a vietare il vecchio host mentre non vietava più quello nuovo.
+  !feedbackFunction.includes(new URL(PROD).host) &&
     feedbackFunction.includes("siteOrigin(request, env)")
 );
 // La moderazione di `/api/admin/feedback` scrive su una chiave presa dal corpo:
@@ -436,6 +439,35 @@ check(
     middleware.includes('!isPrivate && prefersMarkdown(request.headers.get("Accept")') &&
     routes.include.includes("/admin/*")
 );
+// Il 301 che sposta il ranking dal vecchio host a quello production vive nel
+// middleware, e il middleware non puo' importare `lib/site-origin.ts` (motivo
+// spiegato li'): l'origine e' quindi scritta due volte. Cio' che non deve
+// succedere e' che le due copie divergano — un host che risponde 301 verso se
+// stesso, o un redirect che punta a un dominio che il build non dichiara.
+// Il controllo legge entrambi i file, quindi non puo' invecchiare come una
+// lista scritta a mano: gli host ammessi sono derivati dal dominio production
+// (il progetto Pages e l'apex hanno lo stesso nome) e dal fatto che `www` non
+// e' una seconda copia del sito.
+const prodHost = new URL(PROD).host;
+const middlewareOrigin = /const PRODUCTION_ORIGIN = "([^"]+)"/.exec(middleware)?.[1];
+const retiredHosts = [
+  ...(/(?:const RETIRED_HOSTS = new Set\(\[)([^\]]*)/.exec(middleware)?.[1] ?? "").matchAll(/"([^"]+)"/g),
+].map((m) => m[1]);
+// Il progetto Pages si chiama come l'apex senza TLD (`mattiaciuni.com` ->
+// `mattiaciuni.pages.dev`), e questo e' l'unico modo di scrivere l'host legacy
+// senza ripeterne il letterale: il giorno in cui il dominio cambiasse ancora,
+// l'host da ritirare sarebbe quello del progetto, non `mattiaciuni.com.pages.dev`.
+const allowedRetired = new Set([`${prodHost.split(".")[0]}.pages.dev`, `www.${prodHost}`]);
+check(
+  "origin: the middleware 301s every retired host to the production origin",
+  middlewareOrigin === PROD &&
+    retiredHosts.length > 0 &&
+    !retiredHosts.includes(prodHost) &&
+    retiredHosts.every((host) => allowedRetired.has(host)) &&
+    middleware.includes("status: 301"),
+);
+if (retiredHosts.length && retiredHosts.some((host) => !allowedRetired.has(host)))
+  console.log("     host non derivabili dal dominio production: " + retiredHosts.filter((h) => !allowedRetired.has(h)).join(", "));
 // Ogni endpoint sotto `functions/api/` deve essere instradato: una rotta non
 // elencata non arriva **mai** alla Function, la richiesta cade sull'handler
 // statico e torna un 405 che sembra un metodo sbagliato invece di un endpoint

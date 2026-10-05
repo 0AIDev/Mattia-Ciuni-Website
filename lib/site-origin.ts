@@ -15,8 +15,19 @@
  * costante è il guardrail che impedisce a `.env.example`, a una variabile
  * sbagliata o a un fallback operativo di trasformare il dominio SEO. Le
  * variabili della Function non possono sostituirlo.
+ *
+ * Dal 5 ottobre 2026 l'origine production è il dominio proprio
+ * `mattiaciuni.com`, non piu' il sottodominio `mattiaciuni.pages.dev` che
+ * Cloudflare assegna al progetto. Quel sottodominio adesso riceve un 301 e non
+ * si indicizza piu': vive in `functions/_middleware.ts`, che conosce l'host
+ * legacy senza importarlo da qui (una Function non puo' importare questo
+ * modulo: la sua validazione gira anche dove `NEXT_PUBLIC_SITE_URL` non
+ * coincide, e farebbe fallire l'intera Function invece di una riga). Il nome
+ * dell'host legacy e' quindi scritto in due punti per forza; `scripts/verify.js`
+ * controlla che i due dicano la stessa cosa, e che il redirect punti
+ * all'origine dichiarata qui.
  */
-const PRODUCTION_ORIGIN = "https://mattiaciuni.pages.dev";
+const PRODUCTION_ORIGIN = "https://mattiaciuni.com";
 const configuredOrigin = process.env.NEXT_PUBLIC_SITE_URL?.trim().replace(/\/+$/, "");
 
 if (configuredOrigin && configuredOrigin !== PRODUCTION_ORIGIN) {

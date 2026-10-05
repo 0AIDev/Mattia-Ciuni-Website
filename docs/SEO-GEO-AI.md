@@ -241,7 +241,7 @@ cambiata**: `/thoughts/money-layer-for-ai-agents` → `/thoughts/money-layer-for
 
 > La description della pagina
 
-- URL: https://mattiaciuni.pages.dev/thoughts/money-layer-for-ai-agents
+- URL: https://mattiaciuni.com/thoughts/money-layer-for-ai-agents
 - Type: Blog post
 - Published: 2026-09-20
 
@@ -417,7 +417,7 @@ pagina, e prima o poi direbbe qualcosa di diverso — la card invece nasce
 dall'HTML appena esportato.
 
 **La seconda** è il dominio: la fonte SEO production è
-`https://mattiaciuni.pages.dev`, dichiarata una sola volta in
+`https://mattiaciuni.com`, dichiarata una sola volta in
 `lib/site-origin.ts` e verificata contro `NEXT_PUBLIC_SITE_URL` nelle impostazioni
 Cloudflare Pages. Il middleware preserva quel dominio anche quando la richiesta
 arriva da un deploy di anteprima: `SITE_URL` resta una configurazione delle API
@@ -477,7 +477,7 @@ dichiara). Confrontarlo con l'export locale direbbe solo che il computer è
 d'accordo con sé stesso.
 
 ```bash
-node scripts/check-live.mjs --site=https://mattiaciuni.pages.dev
+node scripts/check-live.mjs --site=https://mattiaciuni.com
 ```
 
 Cosa morde, in ordine: il dominio **risolve in DNS** (il controllo che mancava),
@@ -502,7 +502,7 @@ npm run build && npx wrangler pages dev out    # workerd vero: Functions, _heade
 `/thoughts/<slug>` **308** verso quella con la barra, un indirizzo inventato 404 con
 il corpo di `out/404.html`, su `/og.png` il `Content-Type` e il `Cache-Control` di
 `_headers`, `Accept: text/markdown` che restituisce la card, e la canonical che
-dichiara sempre `https://mattiaciuni.pages.dev` — anche quando la richiesta locale
+dichiara sempre `https://mattiaciuni.com` — anche quando la richiesta locale
 arriva da `http://127.0.0.1:8788`.
 
 Qui è anche il posto in cui è stata **misurata** la scelta di `trailingSlash`:
@@ -588,7 +588,7 @@ JSON-LD: Person + WebSite · BlogPosting + BreadcrumbList · Article + Breadcrum
 scoperta: Link su ogni pagina · api-catalog (1 linkset, 2 documenti) · 1 skill con digest
 verify.js: controlli SEO/OG/discovery/news tutti verdi · homepage html+css 68.3KB raw · newsletter globale prima del footer · GA4 opzionale con consenso
 font: self-hosted (Inter + Instrument Serif) · zero richieste a domini terzi · avatar 0,8KB WebP
-pubblicazione: Cloudflare Pages · dominio dichiarato: https://mattiaciuni.pages.dev
+pubblicazione: Cloudflare Pages · dominio dichiarato: https://mattiaciuni.com
 ```
 
 **Fuori dal repository, e quindi da verificare sul live:**

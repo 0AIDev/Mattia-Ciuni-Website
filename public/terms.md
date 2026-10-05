@@ -2,7 +2,7 @@
 
 > Terms for using Mattia Ciuni's website: reading and citing the content, the newsletter and feedback submissions.
 
-- URL: https://mattiaciuni.pages.dev/terms
+- URL: https://mattiaciuni.com/terms
 - Type: Page
 
 - [Home](index.md)

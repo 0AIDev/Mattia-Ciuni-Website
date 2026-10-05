@@ -2,5 +2,5 @@
 
 > Why every hard question about Noesia has made me believe more in the problem, the solution and the timing.
 
-- URL: https://mattiaciuni.pages.dev/es/notes/honestly-im-excited
+- URL: https://mattiaciuni.com/es/notes/honestly-im-excited
 - Type: Page

@@ -20,7 +20,7 @@ export type FeedbackReceivedEmailProps = {
   feedbackUrl?: string;
 };
 
-const siteUrl = "https://mattiaciuni.pages.dev";
+const siteUrl = "https://mattiaciuni.com";
 const siteEmail = "m@withnoesia.com";
 
 // I tre esiti possibili, così come sono scritti. La freccia è un'immagine
@@ -156,7 +156,7 @@ export function FeedbackReceivedEmail({
                 </Text>
 
                 <Text className="email-muted mb-0 mt-3 text-[15px] leading-6 text-muted">
-                  Your feedback reached me through mattiaciuni.pages.dev, and
+                  Your feedback reached me through mattiaciuni.com, and
                   it&apos;s in the review queue.
                 </Text>
 

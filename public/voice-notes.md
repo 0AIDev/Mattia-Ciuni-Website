@@ -2,7 +2,7 @@
 
 > Unedited spoken notes from Mattia Ciuni on building Noesia, work and the questions between decisions.
 
-- URL: https://mattiaciuni.pages.dev/voice-notes
+- URL: https://mattiaciuni.com/voice-notes
 - Type: Page
 
 - [Home](index.md)

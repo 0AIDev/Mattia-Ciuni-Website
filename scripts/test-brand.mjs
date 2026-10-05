@@ -167,7 +167,7 @@ for (const [label, needle] of [
     ["contact address", 'const u = "m@withnoesia.com";'],
     ["partner address", 'const u = "g@withnoesia.com";'],
     ["bare host in a caption", 'const caption = "withnoesia.com";'],
-    ["unrelated host", 'const u = "https://mattiaciuni.pages.dev/agent";'],
+    ["unrelated host", 'const u = "https://mattiaciuni.com/agent";'],
     ["a file name", 'const s = "gen-cards.mjs";'],
   ];
   for (const [label, line] of good) {

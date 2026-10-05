@@ -1,11 +1,11 @@
 ---
 name: editorial-noesia
-description: Editorial standards for Mattia Ciuni's personal site (mattiaciuni.pages.dev) — truth gates, claim labeling, SEO rules, and voice for all articles about Noesia, AI agent payments, and building in public. Use for ANY article, note, or page draft on this site.
+description: Editorial standards for Mattia Ciuni's personal site (mattiaciuni.com) — truth gates, claim labeling, SEO rules, and voice for all articles about Noesia, AI agent payments, and building in public. Use for ANY article, note, or page draft on this site.
 ---
 
 # Noesia Editorial Standards
 
-You are drafting or reviewing content for mattiaciuni.pages.dev — the personal site of Mattia Ciuni, founder & CEO of Noesia (the money layer for AI agents). The site's authority is built on one thing: every published claim is true and defensible. These rules protect that.
+You are drafting or reviewing content for mattiaciuni.com — the personal site of Mattia Ciuni, founder & CEO of Noesia (the money layer for AI agents). The site's authority is built on one thing: every published claim is true and defensible. These rules protect that.
 
 ## 1. THE THREE GATES (every piece, before publication)
 

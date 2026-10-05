@@ -2,5 +2,5 @@
 
 > Everyone who joins Noesia shipped working code before we ever talked about roles. How artifact-first recruiting filters for builders.
 
-- URL: https://mattiaciuni.pages.dev/fr/thoughts/artifact-based-hiring
+- URL: https://mattiaciuni.com/fr/thoughts/artifact-based-hiring
 - Type: Page

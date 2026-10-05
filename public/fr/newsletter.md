@@ -2,7 +2,7 @@
 
 > One email a week: what I shipped, what broke and what I decided.
 
-- URL: https://mattiaciuni.pages.dev/fr/newsletter
+- URL: https://mattiaciuni.com/fr/newsletter
 - Type: Page
 
 - [undefined index](../fr.md)

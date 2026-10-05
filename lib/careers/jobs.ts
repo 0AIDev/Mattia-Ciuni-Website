@@ -63,7 +63,7 @@ What's missing is the layer agents run on. You would own it end to end: the agen
 ### What exists
 
 - The Go authorization core: policy DSL, idempotent under concurrent agent retries (proven: 100 parallel identical requests, exactly one decision), hash-chained append-only ledger, kill switch, reconciliation. Externally audited; findings fixed with regression tests in CI.
-- A live demo: our agent buys real domains through the gate at mattiaciuni.pages.dev/agent: real search, real policy decline, real receipts.
+- A live demo: our agent buys real domains through the gate at mattiaciuni.com/agent: real search, real policy decline, real receipts.
 - The OpenAPI contract between engine and runtime: your layer consumes it, and helps us evolve it.
 
 ### What you'd build

@@ -2,7 +2,7 @@
 
 > Ein visuelles Protokoll vom Bauen, Denken und Umdenken.
 
-- URL: https://mattiaciuni.pages.dev/de/videos
+- URL: https://mattiaciuni.com/de/videos
 - Type: Page
 
 - [undefined index](../de.md)
