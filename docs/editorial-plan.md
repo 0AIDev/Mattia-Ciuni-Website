@@ -200,6 +200,37 @@ Per Google l'annuncio è il sitemap che cambia, e per questo il lavoro fatto qui
 è: la voce giusta nel sitemap, il feed aggiornato, la news sitemap, e la
 Sitemap API quando ci sono le credenziali.
 
+### Lo stato reale, verificato il 5 ottobre 2026
+
+Quello che segue è stato letto dal progetto Cloudflare, non dedotto:
+
+| Anello | Stato | Chi lo chiude |
+| --- | --- | --- |
+| Data che decide la pubblicazione | **funziona**, verificato con un pezzo spostato a oggi | fatto |
+| Card in `public/` per tutta la coda | **funziona**, 42 immagini committate | fatto |
+| Build su Cloudflare | **funziona**, deploy verdi | fatto |
+| `CLOUDFLARE_DEPLOY_HOOK` su GitHub Actions | **manca**, e il valore che c'è come variabile del progetto non è un URL di build hook | l'utente, nei secret del repository |
+| `INDEXNOW_KEY` | **valore sbagliato**: identico alla variabile del deploy hook, e non è una chiave valida | l'utente, dalla dashboard |
+| Credenziali Google (`GOOGLE_*`) | **assenti**, nessuna delle tre | l'utente, dalla dashboard |
+| `RESEND_FROM_EMAIL` | mittente su un dominio del marchio ritirato | l'utente, dalla dashboard |
+
+I primi tre anelli sono gli unici che fanno partire lunedì, e per due bastano
+trenta secondi di dashboard ciascuno.
+
+**Gli hook di build non si creano con l'API.** L'endpoint esiste solo per
+Workers Builds (`/accounts/{id}/builds/workers/{script}/deploy_hooks`); per un
+progetto Pages collegato a Git si creano dalla dashboard. Il valore va quindi
+copiato a mano nei secret del repository, in Settings → Secrets and variables →
+Actions.
+
+**Perché non ho corretto `INDEXNOW_KEY` con l'API.** Tutte e 18 le variabili del
+progetto sono in chiaro e leggibili, quindi una `PATCH` con l'elenco completo
+sarebbe stata tecnicamente possibile, ma la forma esatta del corpo non e'
+documentata nella specifica risolvibile e i primi tentativi sono stati rifiutati.
+Una `PATCH` sbagliata avrebbe potuto azzerare le altre diciassette variabili,
+inclusa la chiave di Resend e il token del pannello: peggio che lasciare la
+variabile sbagliata. Un campo nella dashboard e' piu' breve e non rischia niente.
+
 ## 5 · Il giorno che pubblichi
 
 Un pezzo si scrive e si ferma quando ha: una data (anche futura), almeno 1000
