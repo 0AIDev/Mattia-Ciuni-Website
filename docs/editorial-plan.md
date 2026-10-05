@@ -42,13 +42,18 @@ dall'immaginazione*. Un titolo senza fonte reale non è un articolo in attesa, �
 un articolo che non si può scrivere, e l'unico modo di non pubblicare testo
 generico è scriverlo solo quando la fonte esiste.
 
-`FR` = `Payle HQ/fundroom/Team-Allignment/`, il repository di ricerca.
+`FR` = il repository di ricerca sul Desktop: la cartella **Fundroom**, dentro
+`Team-Allignment/`. Due nomi di cartella al suo interno contengono il nome
+ritirato del prodotto, e `scripts/check-brand.mjs` non permette di scriverlo in
+un file tracciato(è lui che ha fermato la prima build di questi articoli, e ha fatto bene). I percorsi qui sotto partono quindi da `01-RESEARCH/`, e la
+cartella con i documenti dell'offerta pre-seed è quella che finisce in
+`-preseed-deck`.
 
 ### Cluster 01 · Autonomous agents
 
 | Titolo | Query | Fonte | Stato |
 | --- | --- | --- | --- |
-| The moment AI agents stop being assistants | AI agents, autonomous agents | FR `01-RESEARCH/payle-preseed-deck/memo/`, §"Il caso" | da scrivere |
+| The moment AI agents stop being assistants | AI agents, autonomous agents | FR `01-RESEARCH/<offerta>-preseed-deck/memo/`, §"Il caso" | da scrivere |
 | AI agents don't need more intelligence, they need more authority | AI agent authority | FR memo + la tesi dell'autorizzazione | da scrivere |
 | The difference between an AI assistant and an autonomous agent | AI assistant vs autonomous agent | Celeste (browser AI) vs il modello a mandato | da scrivere |
 | The agentic economy will start with small decisions | agentic economy | FR `analysis/03-market-model.md` | da scrivere |
