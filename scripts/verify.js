@@ -845,11 +845,23 @@ for (const page of feedbackLayout) {
   ].filter(Boolean);
   if (problems.length) console.log(`     ${page.slug}: ${problems.join(", ")}`);
 }
+// Gli slug che esistono in un registro, pubblicati o meno. La coda editoriale
+// e' scritta tutta insieme e pubblicata a scaglioni, quindi una card puo'
+// appartenere a un pezzo che non e' ancora uscito: e' una card **pronta**, non
+// una card orfana, e serve anzi, perche' la build che pubblica il pezzo gira su
+// Cloudflare dove non c'e' PowerShell per disegnarla. Il difetto che questo
+// controllo cerca resta quello vero: una cartolina per uno slug che nessun
+// registro contiene.
+const registrySlugs = new Set();
+for (const file of REGISTRIES) {
+  const source = readFileSync(path.join(__dirname, "..", file), "utf8");
+  for (const match of source.matchAll(/slug:\s*"([^"]+)"/g)) registrySlugs.add(match[1]);
+}
 check(
   "og: no card without an article",
-  cardsIn("thoughts").every((slug) => postSlugs.includes(slug)) &&
-    cardsIn("notes").every((slug) => noteSlugs.includes(slug)) &&
-    cardsIn("feedback").every((slug) => feedbackSlugs.includes(slug))
+  cardsIn("thoughts").every((slug) => registrySlugs.has(slug)) &&
+    cardsIn("notes").every((slug) => registrySlugs.has(slug)) &&
+    cardsIn("feedback").every((slug) => registrySlugs.has(slug))
 );
 check(
   "og: each section declares its own card",
@@ -1323,18 +1335,13 @@ const realUnresolvedLinks = unresolvedLinks.filter((entry) => !entry.endsWith(".
 // slug che non e' in nessun registro: quello resta un errore di battitura, che
 // e' la cosa che questo controllo deve continuare a trovare.
 const REGISTRY_SECTIONS = ["thoughts", "notes", "feedback", "careers", "p"];
-const knownSlugs = new Set();
-for (const file of REGISTRIES) {
-  const source = readFileSync(path.join(__dirname, "..", file), "utf8");
-  for (const match of source.matchAll(/slug:\s*"([^"]+)"/g)) knownSlugs.add(match[1]);
-}
 const isScheduled = (entry) => {
   const href = entry.slice(entry.indexOf("→ ") + 2).trim();
   const parts = href.split("/").filter(Boolean);
   if (parts.length < 2) return false;
   // Lo slug deve esistere in un registro e la sezione deve essere una di quelle
   // che il sito usa: altrimenti e' un refuso, e un refuso resta un refuso.
-  return knownSlugs.has(parts[parts.length - 1]) && REGISTRY_SECTIONS.includes(parts[0]);
+  return registrySlugs.has(parts[parts.length - 1]) && REGISTRY_SECTIONS.includes(parts[0]);
 };
 const scheduledLinks = realUnresolvedLinks.filter(isScheduled);
 const deadLinks = realUnresolvedLinks.filter((entry) => !isScheduled(entry));

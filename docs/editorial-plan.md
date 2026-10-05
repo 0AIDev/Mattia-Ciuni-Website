@@ -20,6 +20,7 @@ posti.
 | La data decide la pubblicazione | [`lib/publication.ts`](../lib/publication.ts) | Un pezzo con la data nel futuro sta nel repository e non esiste in nessuna pagina. Il filtro è nel registro, non nelle pagine: rotta, sitemap, feed, card, liste correlate e link in fondo leggono tutti da lì, quindi non può trapelare da una superficie dimenticata. |
 | Il controllo che impone la coerenza | `scripts/verify.js` | Il numero di pagine esportate deve corrispondere ai pezzi pubblicati. Se il filtro e la sua copia nei controlli si separano, cade un check e lo dice. |
 | Il minimo di parole | `scripts/verify.js` | Ogni pezzo con data **2026-10-05 o successiva** deve avere almeno 1000 parole, contate dal `content` in poi (titolo e descrizione non sono parole dell'articolo). Vale anche per i pezzi non ancora pubblicati: la finestra prima della data è il momento in cui si corregge, non il giorno in cui esce. |
+| Le card sono gia' nel repository | [`scripts/og.ps1`](../scripts/og.ps1) | La build che pubblica un pezzo gira su Cloudflare, senza PowerShell: la `og.png` e la `cover.png` di un pezzo di coda sono quindi committate **prima** della sua data, e `-Scheduled` le rigenera in un colpo solo. Il controllo in `verify.js` cerca la cartolina senza pezzo, che è il difetto vero, e non la cartolina senza pagina, che è la normalità di una coda. |
 | La build che gira da sola | [`.github/workflows/publish-scheduled.yml`](../.github/workflows/publish-scheduled.yml) | Lunedi, mercoledi, giovedi e venerdi avvia la ricostruzione su Cloudflare: i due giorni in cui la coda esce, piu due di riserva. Serve il segreto `CLOUDFLARE_DEPLOY_HOOK` nelle impostazioni del repository: senza, esce verde e lo dice nel log. |
 | L'annuncio | [`scripts/ping-indexnow.mjs`](../scripts/ping-indexnow.mjs) | Annuncia a IndexNow (Bing, Yandex, Seznam) le pagine con la data di oggi, lette dall'export. Se non c'è niente di nuovo non manda niente: un segnale che arriva sempre è un segnale che si può ignorare. |
 
@@ -156,10 +157,25 @@ scelto la prima strada e ho reso la seconda esplicita nel log.
 
 ### Una nota operativa sulle card
 
-`scripts/og.ps1` legge i registri come testo e filtra per data, quindi salta i
-pezzi non ancora pubblicati. Se si lancia il giro **completo** lo script
-sovrascrive anche le card ritoccate a mano dopo la generazione, che è il caso
-della card di Raj. Per un pezzo nuovo si usa sempre `-Only <slug>`.
+La card di un pezzo **non pubblicato deve esistere gia' nel repository**. La build
+che lo pubblica gira su Cloudflare, dove non c'e' PowerShell: senza la card in
+`public/`, il pezzo esce il giorno giusto con la `og:image` dichiarata e
+mancante. Le card dei ventuno pezzi di coda sono quindi gia' committate, e
+`verify.js` le accetta perche' controlla che non ci sia una cartolina per uno
+slug che nessun registro contiene, non che ogni cartolina abbia gia' la sua
+pagina.
+
+Il comando per rigenerarle, quando un titolo o una descrizione cambiano:
+
+```bash
+powershell -NoProfile -File scripts/og.ps1 -Only <slug>   # un pezzo
+powershell -NoProfile -File scripts/og.ps1 -Scheduled      # tutta la coda
+```
+
+Il giro **completo** senza flag resta da usare con cautela: sovrascrive anche le
+card ritoccate a mano dopo la generazione, che è il caso della card di Raj
+(commit 3993165). E serve rigenerarle tutte quando cambia lo sfondo, perché
+allora anche i pezzi ancora da pubblicare devono avere la card nuova.
 
 ## 4 · L'annuncio, con i limiti veri
 

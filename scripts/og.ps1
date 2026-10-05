@@ -3,6 +3,7 @@
 #   powershell -NoProfile -ExecutionPolicy Bypass -File scripts/og.ps1
 #   powershell ... -File scripts/og.ps1 -HomeOnly          # solo la OG della homepage
 #   powershell ... -File scripts/og.ps1 -Only <slug>       # solo un articolo / una nota
+#   powershell ... -File scripts/og.ps1 -Scheduled         # solo i pezzi con la data futura (la coda)
 #   powershell ... -File scripts/og.ps1 -Only <slug> -Preview   # scrive in out/_tmp/og (per approvare)
 #   powershell ... -File scripts/og.ps1 -Subtitle meta     # sottotitolo = etichetta + punto medio + data
 #
@@ -20,14 +21,16 @@
 # ATTENZIONE al giro completo: sovrascrive **tutte** le card, anche quelle che
 # qualcuno ha ritoccato a mano dopo la generazione. La card di Raj e' in questo
 # caso (commit 3993165, "trim the transparent band"). Con `-Only <slug>` si
-# rigenera solo quella che si sta toccando; il giro completo va fatto quando si
-# cambia lo sfondo, e in quel caso le card ritoccate vanno ritagliate di nuovo.
+# rigenera solo quella che si sta toccando, con `-Scheduled` solo la coda; il
+# giro completo va fatto quando si cambia lo sfondo, e in quel caso le card
+# ritoccate vanno ritagliate di nuovo.
 
 param(
   [switch]$HomeOnly,
   [ValidateSet("description", "meta")]
   [string]$Subtitle = "meta",
   [string]$Only = "",
+  [switch]$Scheduled,
   [switch]$Preview
 )
 
@@ -242,22 +245,31 @@ function Get-Articles($fileName, $label) {
     }
   }
   # Questa funzione legge il registro come testo: non vede il filtro di
-  # `lib/publication.ts`. Un pezzo con la data nel futuro e' quindi visibile qui
-  # mentre non esiste in nessuna pagina. Senza questo controllo gli si generava
-  # la card, la card finiva nell'export, e `verify.js` trovava l'immagine di un
-  # articolo che non c'e': build rossa per un errore che nessuno collega alla
-  # causa. Il futuro si salta, e lo dice.
+  # `lib/publication.ts`, quindi distingue i pezzi pubblicati da quelli
+  # programmati con la data, che e' la stessa regola (`isPublished`) scritta in
+  # un altro linguaggio.
+  #
+  # Perche' la data conta qui. La card di un pezzo non pubblicato deve
+  # **esistere gia' nel repository**: la build che lo pubblica e' quella che
+  # gira su Cloudflare, e li non c'e' PowerShell per disegnarla. Senza la card in
+  # `public/`, il pezzo esce il giorno giusto con la `og:image` dichiarata e
+  # mancante, e `verify.js` lo nota come card orfana perche' cerca il
+  # contrario: immagine senza pagina invece di pagina senza immagine.
+  #
+  # `-Scheduled` genera solo i pezzi con la data futura, cosi' si aggiorna la
+  # coda senza toccare le card gia' pubblicate e senza passare dal giro
+  # completo, che sovrascrive anche quelle ritoccate a mano.
   #
   # `Write-Host` e non `Write-Output`: dentro una funzione, `Write-Output`
   # finisce nell'array di ritorno insieme agli articoli. Il chiamante lo
   # riceverebbe come se fosse un articolo, con lo slug vuoto, e produrrebbe
   # una card chiamata `notes/cover.png` senza titolo.
   $today = [datetime]::UtcNow.Date
+  $published = @($all | Where-Object { [datetime]::ParseExact($_.Date, "yyyy-MM-dd", $null) -le $today })
   $future = @($all | Where-Object { [datetime]::ParseExact($_.Date, "yyyy-MM-dd", $null) -gt $today })
-  if ($future.Count -gt 0) {
-    Write-Host ("saltati (data futura): " + (($future | ForEach-Object { $_.Slug }) -join ", "))
-  }
-  return @($all | Where-Object { [datetime]::ParseExact($_.Date, "yyyy-MM-dd", $null) -le $today })
+  Write-Host ("  $label`: $($published.Count) pubblicati, $($future.Count) programmati")
+  if ($Scheduled) { return $future }
+  return @($published) + @($future)
 }
 
 # ---------------------------------------------------------------- esecuzione
