@@ -71,7 +71,7 @@ interface Env {
   GITHUB_TOKEN?: string;
   GITHUB_REPOSITORY?: string;
   GITHUB_BRANCH?: string;
-  CLOUDFLARE_DEPLOY_HOOK?: string;
+  
   MEDIA?: unknown;
 }
 
@@ -653,18 +653,55 @@ async function publishContentToGit(env: Env, item: AdminContentItem): Promise<{ 
   return { sha: result.content?.sha, unchanged: false };
 }
 
-async function triggerDeploy(env: Env): Promise<boolean> {
-  if (!env.CLOUDFLARE_DEPLOY_HOOK) return false;
-  try {
-    const response = await fetch(env.CLOUDFLARE_DEPLOY_HOOK, { method: "POST" });
-    return response.ok;
-  } catch {
-    // Un errore di rete non e' un'eccezione da far uscire: senza questo, un
-    // deploy hook irraggiungibile rispondeva 500 senza codice e il pannello
-    // diceva solo "the request did not go through", invece di distinguere
-    // "l'hook non c'e'" da "l'hook non ha risposto".
-    return false;
-  }
+/**
+ * Una ricostruzione senza modificare nulla.
+ *
+ * Il deploy hook era il modo previsto per chiedere a Cloudflare una build, e non
+ * esiste piu': la dashboard di un progetto Pages non ha la sezione, l'API
+ * risponde 405 e Wrangler non ha il comando. Un pulsante che lo chiama restava
+ * attivo perche' la variabile c'era, e falliva sempre con un 502 che non
+ * spiegava il motivo.
+ *
+ * Quello che resta e' il meccanismo che fa gia' ricostruire a ogni push, e che
+ * questa Function ha gia' sotto mano: il token GitHub che scrive i contenuti.
+ * Si crea un commit con lo stesso albero del padre, quindi un commit vuoto, e si
+ * sposta il branch su quel commit. L'API dei contenuti non serve: rifiuta un
+ * commit senza cambiamenti, perche' un file identico non e' una modifica.
+ */
+async function pushRebuildCommit(env: Env): Promise<void> {
+  if (!githubConfigured(env)) throw new Error("github_not_configured");
+  const repo = `https://api.github.com/repos/${env.GITHUB_REPOSITORY}`;
+  const headers = githubHeaders(env);
+  const branch = env.GITHUB_BRANCH!;
+
+  const ref = await fetch(`${repo}/git/ref/heads/${branch}`, { headers });
+  if (!ref.ok) throw new Error(`github_ref_${ref.status}`);
+  const head = await ref.json() as { object: { sha: string } };
+
+  // L'albero si riprende dal commit di testa: identico significa "stessi file",
+  // che e' esattamente cio' che vuole un rebuild e non un deploy di modifiche.
+  const commit = await fetch(`${repo}/git/commits/${head.object.sha}`, { headers });
+  if (!commit.ok) throw new Error(`github_commit_${commit.status}`);
+  const parent = await commit.json() as { tree: { sha: string } };
+
+  const created = await fetch(`${repo}/git/commits`, {
+    method: "POST",
+    headers: { ...headers, "Content-Type": "application/json" },
+    body: JSON.stringify({
+      message: "chore: rebuild so the site is regenerated",
+      tree: parent.tree.sha,
+      parents: [head.object.sha],
+    }),
+  });
+  if (!created.ok) throw new Error(`github_empty_commit_${created.status}`);
+  const result = await created.json() as { sha: string };
+
+  const moved = await fetch(`${repo}/git/refs/heads/${branch}`, {
+    method: "PATCH",
+    headers: { ...headers, "Content-Type": "application/json" },
+    body: JSON.stringify({ sha: result.sha, force: false }),
+  });
+  if (!moved.ok) throw new Error(`github_ref_update_${moved.status}`);
 }
 
 /**
@@ -682,7 +719,7 @@ async function triggerDeploy(env: Env): Promise<boolean> {
  * Quindi l'hook non si chiama da qui. Resta per `content_rebuild`, che e'
  * l'unico caso in cui serve davvero: nessun commit, ma una build da rifare.
  */
-type Deploy = "commit" | "hook" | "none";
+type Deploy = "commit" | "none";
 
 /**
  * Il file di build della Function pubblica: dice *quando* l'ultima build e'
@@ -1154,7 +1191,7 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
     // tabelle il pannello diceva pronto e il primo salvataggio falliva.
     return json({
       github: githubConfigured(env),
-      deploy_hook: Boolean(env.CLOUDFLARE_DEPLOY_HOOK),
+      deploy_hook: githubConfigured(env),
       supabase: supabaseConfigured(env),
       tables: await supabaseTablesReady(env),
       storage: Boolean((env as Env & { MEDIA?: unknown }).MEDIA),
@@ -1169,13 +1206,16 @@ export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext)
     // Il publish non ha bisogno di questo: il commit parte gia' la build. Serve
     // quando la build e' andata storta, o quando un deploy e' finito `skipped`
     // perche' ne e' partito un altro, o quando il sito e' semplicemente piu
-    // vecchio di Git. E' l'unico uso rimasto del deploy hook, e senza un
-    // pulsante che lo chiama esplicitamente la variabile sarebbe rimasta li a
-    // fare rumore in Settings.
-    if (!env.CLOUDFLARE_DEPLOY_HOOK) return json({ code: "deploy_hook_not_configured" }, 503);
-    const triggered = await triggerDeploy(env);
-    if (!triggered) return json({ code: "deploy_hook_failed" }, 502);
-    return json({ ok: true, deploy: "hook" as Deploy, deploy_triggered: true, published_at: new Date().toISOString() });
+    // vecchio di Git. Funziona come il workflow programmato, che fa la stessa
+    // cosa: un commit vuoto che Cloudflare vede come un push.
+    try {
+      await pushRebuildCommit(env);
+    } catch (error) {
+      const code = String((error as Error)?.message || "");
+      if (code === "github_not_configured") return json({ code: "github_not_configured" }, 503);
+      return json({ code: "rebuild_commit_failed", detail: code }, 502);
+    }
+    return json({ ok: true, deploy: "commit" as Deploy, deploy_triggered: true, published_at: new Date().toISOString() });
   }
 
   if (body.action === "deploy_status") {

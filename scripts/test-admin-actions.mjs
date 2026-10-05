@@ -31,7 +31,7 @@ const ORIGIN = "https://example.test";
 const IP = "203.0.113.7";
 const REPO = "0AIDev/Mattia-Ciuni-Website";
 const BRANCH = "main";
-const DEPLOY_HOOK = "https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/audit";
+
 const SUPABASE = "https://stub.supabase.co";
 
 let failures = 0;
@@ -78,7 +78,7 @@ function bucket() {
 }
 
 const calls = [];
-const deployCalls = [];
+
 // Il file di build che la Function legge per sapere se una modifica e' online.
 // `null` e' il caso di un deploy vecchio, dove il file non e' ancora nato.
 let deployStamp = null;
@@ -178,6 +178,21 @@ async function githubRest(url, method, init) {
     return json({ content: { sha, path: file }, commit: { sha } }, 201);
   }
 
+  // Il rebuild manuale non usa piu' un deploy hook, che non esiste piu': crea
+  // un commit vuoto con l'API Git e sposta il branch. `POST /git/commits` crea
+  // il commit, `GET /git/commits/{sha}` serve a leggerne l'albero, e la PATCH
+  // sul ref e' lo spostamento. Va tenuta separata dalla risposta a `GET
+  // /commits`, che elenca la cronologia e finisce con la stessa stringa.
+  if (method === "GET" && /\/git\/ref\/heads\//.test(path)) return json({ ref: `refs/heads/${BRANCH}`, object: { sha: git.commits[0]?.sha || nextSha() } });
+  if (method === "GET" && /\/git\/commits\/[^/]+$/.test(path)) return json({ sha: path.split("/").pop(), tree: { sha: `tree-of-${git.commits[0]?.sha || "empty"}` } });
+  if (method === "POST" && path.endsWith("/git/commits")) {
+    const body = JSON.parse(String(init.body));
+    const sha = nextSha();
+    git.commits.unshift({ sha, tree: body.tree, commit: { message: body.message, author: { date: new Date().toISOString() } }, html_url: `https://github.com/${REPO}/commit/${sha}` });
+    return json({ sha }, 201);
+  }
+  if (method === "PATCH" && /\/git\/refs\/heads\//.test(path)) return json({ ref: `refs/heads/${BRANCH}`, object: { sha: git.commits[0]?.sha } });
+
   if (path.endsWith("/commits")) {
     const limit = Number(parsed.searchParams.get("per_page") ?? "30");
     return json(git.commits.slice(0, limit));
@@ -195,7 +210,7 @@ function installFetch() {
     calls.push({ url, method, headers });
     if (url.startsWith("https://api.github.com")) return githubRest(url, method, init);
     if (url.startsWith(SUPABASE)) return supabaseRest(url, method, init);
-    if (url === DEPLOY_HOOK) { deployCalls.push(url); return json({ success: true }); }
+    
     if (url.startsWith("https://mattiaciuni.com/deploy.json")) {
       if (!deployStamp) return json({ message: "Not Found" }, 404);
       return json(deployStamp);
@@ -245,7 +260,7 @@ const env = {
   GITHUB_TOKEN: "github_pat_audit",
   GITHUB_REPOSITORY: REPO,
   GITHUB_BRANCH: BRANCH,
-  CLOUDFLARE_DEPLOY_HOOK: DEPLOY_HOOK,
+  
   SITE_URL: "https://mattiaciuni.com",
 };
 
@@ -300,7 +315,7 @@ if (jobsRoundTrip.status === 200) {
   // di produzione), quindi chiamare anche il deploy hook raddoppiava le build e
   // le metteva in coda: le deployment reali dell'account mostrano sei build per
   // tre publish, tre `skipped`, e 128 secondi di attesa.
-  check("a publish that commits does not also fire the deploy hook", saved.deploy === "commit" && deployCalls.length === 0, `deploy ${saved.deploy}, hook calls ${deployCalls.length}`);
+  check("a publish that commits writes no empty commit of its own", saved.deploy === "commit", `deploy ${saved.deploy}`);
   const jobFile = git.files.get(`content/cms/job/${state.jobs[0].slug}.json`);
   check("the job file on Git keeps the number question", Boolean(jobFile) && jobFile.length > 0);
 }
@@ -469,18 +484,24 @@ check(
   JSON.stringify(noReference).slice(0, 160),
 );
 
+const rebuildCommitsBefore = git.commits.length;
 const rebuild = await post({ action: "content_rebuild" }, session);
 const rebuildData = await payload(rebuild);
 check(
-  "content_rebuild is the one path that uses the deploy hook",
-  rebuild.status === 200 && rebuildData.deploy === "hook" && deployCalls.length === 1,
-  `${await detail(rebuild)} hook calls ${deployCalls.length}`,
+  "content_rebuild pushes one empty commit, and Cloudflare rebuilds from it",
+  rebuild.status === 200 && rebuildData.deploy === "commit" && git.commits.length === rebuildCommitsBefore + 1,
+  `${await detail(rebuild)} commits ${rebuildCommitsBefore} -> ${git.commits.length}`,
 );
-const savedHook = env.CLOUDFLARE_DEPLOY_HOOK;
-delete env.CLOUDFLARE_DEPLOY_HOOK;
-const noHook = await post({ action: "content_rebuild" }, session);
-env.CLOUDFLARE_DEPLOY_HOOK = savedHook;
-check("content_rebuild without a deploy hook says so instead of failing silently", noHook.status === 503 && (await payload(noHook)).code === "deploy_hook_not_configured", await detail(noHook));
+check(
+  "the empty commit carries the tree it branched from, so it changes no file",
+  git.commits[0]?.tree === `tree-of-${git.commits[1]?.sha}`,
+  `tree ${git.commits[0]?.tree}`,
+);
+const savedToken = env.GITHUB_TOKEN;
+delete env.GITHUB_TOKEN;
+const noGit = await post({ action: "content_rebuild" }, session);
+env.GITHUB_TOKEN = savedToken;
+check("content_rebuild without GitHub credentials says so instead of failing silently", noGit.status === 503 && (await payload(noGit)).code === "github_not_configured", await detail(noGit));
 
 // Salvare due volte di fila la stessa offerta non deve generare un'altra build.
 const before = git.commits.length;

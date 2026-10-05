@@ -320,7 +320,7 @@ export function SettingsView({
 
   const checks: Array<[string, boolean | null, string]> = [
     ["GitHub publishing", config?.github ?? null, "Commits the published JSON"],
-    ["Cloudflare deploy hook", config?.deploy_hook ?? null, "Triggers a build after a publish"],
+    ["Manual rebuild", config?.deploy_hook ?? null, "An empty commit is all a rebuild needs"],
     ["Supabase connection", config?.supabase ?? null, "URL and service role key, server-only"],
     ["Supabase tables", config?.tables ?? null, "Where a draft is written; without them the save fails"],
     ["R2 media", config?.storage ?? null, "Images, audio and documents"],
@@ -392,7 +392,7 @@ export function SettingsView({
             {rebuilding ? "Starting…" : "Rebuild the site"}
           </Button>
           <DeployStatusLine pendingSince={pendingSince} />
-          {!config?.deploy_hook ? <p className="text-[12px] text-admin-faint">The deploy hook is not configured, so a manual rebuild is not available.</p> : null}
+          {!config?.deploy_hook ? <p className="text-[12px] text-admin-faint">A rebuild is an empty commit, so it needs the same GitHub access as publishing. Without it, a manual rebuild is not available.</p> : null}
         </div>
       </Card>
     </div>

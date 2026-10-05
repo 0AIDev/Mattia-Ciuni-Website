@@ -1519,19 +1519,27 @@ check(
   "deploy: the stamp stays out of public/, where it would be a file to commit on every build",
   !fs.existsSync(path.join(__dirname, "..", "public", "deploy.json"))
 );
-// Un deploy hook in cima a ogni publish non e' solo ridondante: le build di
-// produzione girano una alla volta, quindi il doppio build accodato fa finire
-// la copia giusta in `skipped` e l'attesa raddoppia. Il hook resta solo per il
-// rebuild manuale.
+// Non c'e' piu' nessun deploy hook, e questo e' il punto: un progetto Pages non
+// puo' averne uno, la dashboard non ha la sezione e l'API risponde 405. Il
+// pulsante di rebuild e il workflow programmato fanno la stessa cosa, spingere
+// un commit vuoto. Un riferimento residuo a `CLOUDFLARE_DEPLOY_HOOK` o a
+// `triggerDeploy` significherebbe un pulsante che fallisce sempre con un 502 che
+// non spiega nulla, quindi qui si controlla che il concetto sia sparito dal
+// codice, non solo che non venga chiamato.
 const adminFeedbackSource = readFileSync(
   path.join(__dirname, "..", "functions", "api", "admin", "feedback.ts"),
   "utf8",
 );
-const hookCalls = (adminFeedbackSource.match(/await triggerDeploy\(/g) || []).length;
 check(
-  "deploy: the deploy hook is only called by content_rebuild",
-  hookCalls === 1 && /if \(body\.action === "content_rebuild"\)/.test(adminFeedbackSource),
-  `${hookCalls} call site(s) of triggerDeploy`,
+  "deploy: no deploy hook is left in the panel, because Pages cannot have one",
+  !/CLOUDFLARE_DEPLOY_HOOK|triggerDeploy/.test(adminFeedbackSource),
+  [...adminFeedbackSource.matchAll(/CLOUDFLARE_DEPLOY_HOOK|triggerDeploy/g)].map((m) => m[0]).join(", ") || "none left",
+);
+check(
+  "deploy: the manual rebuild pushes an empty commit, like the scheduled workflow does",
+  /await pushRebuildCommit\(env\)/.test(adminFeedbackSource) &&
+    /if \(body\.action === "content_rebuild"\)/.test(adminFeedbackSource),
+  "content_rebuild must call pushRebuildCommit",
 );
 
 // Il nome della cartella che un loader legge deve essere un `kind` del CMS, e il

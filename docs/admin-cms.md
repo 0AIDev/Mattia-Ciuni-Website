@@ -42,17 +42,17 @@ stessa griglia, invece di un pacchetto da 1500 icone per usarne dodici.
 2. **Publish**: la Function autenticata scrive `content/cms/<kind>/<slug>.json`
    con la GitHub Contents API e crea un commit.
 3. **Build**: quel commit **e'** la richiesta di build. Cloudflare Pages
-   costruisce ogni push sul branch di produzione, quindi il deploy hook non
-   viene chiamato sopra. `next build` legge `content/cms/` e sovrascrive i
-   registry in codice: un file con lo stesso slug vince sul registry, quindi un
-   override e' sempre reversibile cancellando il file.
+   costruisce ogni push sul branch di produzione. `next build` legge
+   `content/cms/` e sovrascrive i registry in codice: un file con lo stesso
+   slug vince sul registry, quindi un override e' sempre reversibile
+   cancellando il file.
 4. **Deploy** su Cloudflare Pages, che serve l'export statico. La build scrive
    l'ora in cui e' finita in `out/deploy.json`, e il pannello la usa per dire
    quando una modifica e' davvero online.
 
 ### Una modifica, una build
 
-Chiamare anche il deploy hook dopo il commit raddoppiava le build di ogni
+Chiamare anche una seconda build dopo il commit raddoppiava le build di ogni
 publish, e le build di produzione girano una alla volta: la copia giusta
 finiva `skipped` e l'attesa raddoppiava. Misurato sulle deployment reali
 dell'account, tre publish in sequenza (12:39-12:40) hanno prodotto sei build,
@@ -65,9 +65,9 @@ sta su Git con quello che verrebbe scritto e, se sono identici, non committa.
 `jobs_save` su tre offerte ne scriveva tre anche cambiando un solo campo, quindi
 accodava tre build per una parola.
 
-Il deploy hook non e' sparito: e' il pulsante **Rebuild the site** in Settings
-(`content_rebuild`), l'unico caso in cui serve davvero — una build fallita, un
-deploy saltato, o un sito piu' vecchio di Git.
+Il pulsante **Rebuild the site** in Settings (`content_rebuild`) serve per una
+build fallita, un deploy saltato, o un sito piu' vecchio di Git. Anche lui spinge
+un commit, vuoto: vedi sotto.
 
 ### Come il pannello sa che una modifica e' online
 
@@ -163,7 +163,7 @@ Progetto Cloudflare Pages `mattiaciuni`. Variabili d'ambiente in produzione:
 | `GITHUB_TOKEN` | **da creare** | token fine-grained con Contents read/write sul repo |
 | `GITHUB_REPOSITORY` | `0AIDev/Mattia-Ciuni-Website` | endpoint della Contents API |
 | `GITHUB_BRANCH` | `main` | branch su cui committare |
-| `CLOUDFLARE_DEPLOY_HOOK` | deploy hook `admin-content-publish` (branch `main`) | solo **Rebuild the site** in Settings: il publish non lo usa, il commit basta |
+| `GITHUB_TOKEN` | **da creare** | serve anche a **Rebuild the site**, che spinge un commit vuoto |
 
 Binding in produzione **e** in preview:
 
@@ -172,12 +172,25 @@ Binding in produzione **e** in preview:
 | R2 | `MEDIA` | bucket `mattiaciuni-media` (privato) |
 | KV | `FEEDBACK`, `RATE_LIMIT` | gia' presenti |
 
-Un deploy hook si crea dalla dashboard (**Settings → Builds & deployments →
-Deploy hooks**) oppure via API, e il suo URL e'
-`https://api.cloudflare.com/client/v4/pages/webhooks/deploy_hooks/<hook_id>`.
-Va creato **con un branch**: senza, il trigger risponde
-`8000032: Unable to find a branch with the provided name` e non parte nessuna
-build. Un `POST` senza corpo e' quello che fa il pannello.
+### Il rebuild manuale e il deploy hook che non c'e' piu'
+
+Un deploy hook era il modo previsto per chiedere a Cloudflare una build senza
+committare, e **non esiste piu'**. La dashboard di un progetto Pages offre solo
+Deployments, Metrics, Custom domains e Settings: non c'e' piu' la sezione per
+aggiungerlo, l'API risponde `405` a `POST .../deploy-hooks`, e Wrangler non ha
+il comando. Non si puo' creare da nessuna parte.
+
+Quello che resta e' il meccanismo che fa gia' ricostruire a ogni push, e che la
+Function ha gia' sotto mano: il token GitHub che scrive i contenuti.
+`pushRebuildCommit` legge il ref di `main`, prende l'albero del commit di testa,
+crea un commit con lo stesso albero — quindi un commit vuoto, che non modifica
+nessun file — e sposta il branch su quel commit. L'API dei contenuti non
+servirebbe: rifiuta un commit senza cambiamenti, perche' un file identico non e'
+una modifica.
+
+Il pulsante e' quindi attivo quando `GITHUB_TOKEN` e' configurato, e quando
+manca risponde `github_not_configured` invece del `502` senza spiegazione che
+dava quando la variabile c'era ma non era un URL.
 
 Migration da applicare una volta sola:
 
