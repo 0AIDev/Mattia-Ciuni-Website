@@ -279,9 +279,18 @@ export default function Home() {
       </section>
 
       <section aria-labelledby="thoughts" className="mb-16 sm:mb-24">
-        <h2 id="thoughts" className="mb-2 font-serif text-3xl font-medium">Thoughts</h2>
+        <div className="mb-2 flex flex-wrap items-baseline justify-between gap-4">
+          <h2 id="thoughts" className="font-serif text-3xl font-medium">Thoughts</h2>
+          <Link href="/thoughts/" className="text-sm text-gray-1000 article-underline">All thoughts</Link>
+        </div>
         <ul className="m-0 list-none divide-y divide-gray-300 p-0">
-          {posts.map((p) => (
+          {/* Le ultime cinque, non tutte. La homepage non è l'archivio: le note
+              qui sotto sono limitate da sempre, gli articoli no, e la lista
+              cresceva a ogni pezzo pubblicato. Il budget di peso di
+              `scripts/verify.js` diventava così un numero da alzare ogni due
+              settimane invece di un contratto, e a romperlo sarebbe stata
+              l'attività normale del sito. Il resto sta su /thoughts/. */}
+          {posts.slice(0, 5).map((p) => (
             <li key={p.slug}>
               <Link
                 href={`/thoughts/${p.slug}/`}

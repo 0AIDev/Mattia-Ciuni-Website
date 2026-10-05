@@ -1,0 +1,48 @@
+# La pubblicazione programmata.
+#
+# Il sito è statico: un articolo con la data nel futuro è già nel repository, e
+# diventa una pagina solo quando una build gira dopo quella data. Questo
+# workflow è la build che gira. Non pubblica niente di suo: chiede a Cloudflare
+# di ricostruire, e a decidere cosa esce è `lib/publication.ts`.
+#
+# Tre volte a settimana, lunedì, mercoledì e venerdì: è il ritmo del piano
+# editoriale, e ricostruire quando non c'è niente da pubblicare non costa niente
+# di visibile. Il sitemap esce identico, `scripts/ping-indexnow.mjs` non annuncia
+# nulla se nessun pezzo porta la data di oggi, e nessuna pagina cambia. È per
+# questo che il ping è condizionato alla data invece di partire a ogni build.
+#
+# Il segreto da configurare: `CLOUDFLARE_DEPLOY_HOOK` nelle impostazioni del
+# repository (Settings → Secrets and variables → Actions), lo stesso valore che
+# il pannello amministrativo ha come variabile sul progetto Pages. È un URL di
+# deploy hook, non una chiave API: può solo avviare una build.
+#
+# Senza il segreto il workflow esce verde e lo dice nel log. Un fallimento qui
+# non deve sembrare un guasto del sito quando l'unica cosa che manca è una
+# configurazione che nessuno ha ancora fatto.
+
+name: Publish scheduled pieces
+
+on:
+  schedule:
+    - cron: "0 6 * * 1,3,5"
+  workflow_dispatch:
+
+jobs:
+  rebuild:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trigger the Cloudflare Pages rebuild
+        env:
+          DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
+        run: |
+          if [ -z "$DEPLOY_HOOK" ]; then
+            echo "CLOUDFLARE_DEPLOY_HOOK is not configured; nothing to trigger."
+            echo "Pieces whose date has arrived will publish on the next push instead."
+            exit 0
+          fi
+          status=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$DEPLOY_HOOK")
+          echo "deploy hook answered $status"
+          if [ "$status" -ge 300 ]; then
+            echo "::error::The deploy hook refused the build (HTTP $status)."
+            exit 1
+          fi

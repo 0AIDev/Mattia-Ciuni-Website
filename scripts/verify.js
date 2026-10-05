@@ -114,12 +114,66 @@ check("note: breadcrumb visible", note.includes('aria-label="Breadcrumb"') && no
 const noteCrumb = ldJson(note).find((j) => j["@type"] === "BreadcrumbList");
 check("note: BreadcrumbList valid", !!noteCrumb && noteCrumb.itemListElement.length === 3 && noteCrumb.itemListElement[2].item === `${PROD}/notes/on-boring-systems/`);  check("404: noindex + home link", read("404.html").includes('name="robots" content="noindex"') && read("404.html").includes("Go back home"));
 
+// La data decide se un pezzo è pubblico (`lib/publication.ts`), e questo file
+// è Node puro: non può importare TypeScript, quindi la regola è ripetuta qui.
+// Le due copie possono divergere, ed è per questo che i controlli che
+// confrontano le pagine esportate con gli slug pubblicati restano al loro
+// posto: se il filtro e la sua copia si separano, cade un controllo e lo dice.
+// Un pezzo scritto oggi con la data fra due settimane è una bozza: sta nel
+// registro, non nell'export, e non deve essere contato qui.
+const BUILD_DAY = new Date().toISOString().slice(0, 10);
+const publishedSlugs = (file) => {
+  const source = readFileSync(path.join(__dirname, "..", file), "utf8");
+  // Le due chiavi si prendono dalla stessa finestra, come fa `scripts/og.ps1`:
+  // `slug` e la prima `date` che lo segue appartengono allo stesso oggetto.
+  return [...source.matchAll(/slug:\s*"([^"]+)"[\s\S]*?date:\s*"([^"]+)"/g)]
+    .filter((m) => m[2] <= BUILD_DAY)
+    .map((m) => m[1]);
+};
+
 // Quanti articoli abbia il blog si legge dal registro, non si scrive a mano: un
 // post nuovo non deve far fallire un controllo per il motivo sbagliato, e un
 // controllo che conta i post deve accorgersi se registro e build divergono.
-const postCount = [
-  ...readFileSync(path.join(__dirname, "..", "lib", "posts.ts"), "utf8").matchAll(/slug:\s*"/g),
-].length;
+const postCount = publishedSlugs("lib/posts.ts").length;
+
+// Ogni pezzo ha un minimo di parole, e il minimo è un contratto: un articolo
+// che sta sotto è un annuncio, non un pezzo, e la differenza si vede nel
+// risultato invece che nell'intenzione. Il conteggio parte da `content: [`, non
+// dall'inizio dell'oggetto: titolo, descrizione e keyword sono testo del sito e
+// non parole dell'articolo, e contarli renderebbe la soglia una bugia di
+// quaranta parole. Vale anche per i pezzi **non ancora pubblicati**: la data
+// nel futuro è una finestra di revisione, e chi la scrive deve incontrare
+// questo controllo adesso, non il giorno in cui il pezzo esce.
+const MIN_WORDS = 1000;
+// La regola vale per i pezzi pubblicati da questa data in avanti. I pezzi
+// precedenti sono corti per scelta editoriale di allora e riscriverli non è
+// quello che è stato chiesto: cambiare la soglia sotto i piedi a un archivio
+// già pubblicato farebbe fallire il build per una decisione che nessuno ha
+// preso, e il modo di far passare un controllo non è riscrivere la storia ma
+// dichiarare da quando vale.
+const MIN_WORDS_FROM = "2026-10-05";
+const shortPieces = [];
+for (const file of REGISTRIES) {
+  const source = readFileSync(path.join(__dirname, "..", file), "utf8");
+  for (const block of source.split(/slug:\s*"/).slice(1)) {
+    const slug = block.slice(0, block.indexOf('"'));
+    const date = (block.match(/date:\s*"([^"]+)"/) || [])[1] || "";
+    if (date < MIN_WORDS_FROM) continue;
+    // Le parole si contano da `content: [` in poi: titolo, descrizione e
+    // keyword sono testo del sito, non parole dell'articolo, e contarli
+    // renderebbe la soglia una bugia di una quarantina di parole.
+    const body = block.slice(block.indexOf("content: ["));
+    const words = body
+      ? body.split('"').filter((_, i) => i % 2 === 1).join(" ").split(/\s+/).filter(Boolean).length
+      : 0;
+    if (words < MIN_WORDS) shortPieces.push(`${slug} (${words})`);
+  }
+}
+check(
+  `editorial: every piece dated ${MIN_WORDS_FROM} or later is at least ${MIN_WORDS} words`,
+  shortPieces.length === 0,
+);
+if (shortPieces.length) console.log("     sotto il minimo: " + shortPieces.join(", "));
 
 const smIndex = read("sitemap.xml");
 check(
@@ -128,7 +182,15 @@ check(
 );
 check("sitemap-home: base and localized urls", (read("sitemap-home.xml").match(/<loc>/g) || []).length >= 75 && read("sitemap-home.xml").includes(`${PROD}/`) && read("sitemap-home.xml").includes(`${PROD}/about/`) && read("sitemap-home.xml").includes(`${PROD}/work/`) && read("sitemap-home.xml").includes(`${PROD}/voice-notes/`) && read("sitemap-home.xml").includes(`${PROD}/videos/`) && read("sitemap-home.xml").includes(`${PROD}/it/`) && read("sitemap-home.xml").includes(`${PROD}/fr/`) && read("sitemap-home.xml").includes(`${PROD}/de/`));
 check("sitemap-thoughts: index + every post", (read("sitemap-thoughts.xml").match(/<loc>/g) || []).length === postCount + 1 && read("sitemap-thoughts.xml").includes("finding-ghassen-the-co-founder-question-answered-in-three-weeks") && read("sitemap-thoughts.xml").includes("welcoming-alex-mwaniki-founding-engineer-core"));
-check("sitemap-notes: 9 url", (read("sitemap-notes.xml").match(/<loc>/g) || []).length === 9 && read("sitemap-notes.xml").includes("/notes/"));
+// Il numero era scritto a mano (`=== 9`) mentre il commento sopra spiegava che
+// i conteggi si leggono dal registro: una nota nuova faceva fallire il
+// controllo per il motivo sbagliato, e la riga veniva aggiornata a mano invece
+// di essere capita. Ora viene dal registro, come gli articoli.
+check(
+  "sitemap-notes: index + every note",
+  (read("sitemap-notes.xml").match(/<loc>/g) || []).length ===
+    publishedSlugs("lib/notes.ts").length + 1 && read("sitemap-notes.xml").includes("/notes/")
+);
 // Le date seguono i contenuti: una collezione è datata con l'elemento più
 // recente che contiene, non con la data del deploy.
 const sitemapUrls = (xml) =>
@@ -688,10 +750,7 @@ check(
 // nessuno: l'elenco atteso si ricava da lib/posts.ts e lib/notes.ts, e il
 // conteggio si confronta con le pagine che il build ha prodotto davvero, così il
 // controllo non può passare a vuoto se il registro cambia forma.
-const slugsIn = (file) =>
-  [...readFileSync(path.join(__dirname, "..", file), "utf8").matchAll(/slug:\s*"([^"]+)"/g)].map(
-    (m) => m[1]
-  );
+const slugsIn = (file) => publishedSlugs(file);
 const cardPath = (dir, slug) => path.join(out, dir, slug, "og.png");
 // Le pagine di una sezione: cartelle con dentro `index.html`. Le card stanno
 // nella stessa cartella (`thoughts/<slug>/og.png`).

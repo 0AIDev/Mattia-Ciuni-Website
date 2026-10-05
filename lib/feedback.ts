@@ -1,4 +1,5 @@
 import { loadCmsCollection, mergeCmsCollection } from "./cms-content";
+import { isPublished } from "./publication";
 
 export type FeedbackBlock =
   | { type: "p"; text: string }
@@ -150,6 +151,9 @@ const raw: FeedbackPost[] = [
 const cmsFeedback = loadCmsCollection<FeedbackPost>("feedback");
 
 export const feedback: FeedbackPost[] = mergeCmsCollection(raw, cmsFeedback)
+  // Stessa regola dei post e delle note: anche un feedback si puo' scrivere
+  // prima che la persona che l'ha scritto veda la risposta pubblicata.
+  .filter((f) => isPublished(f.date))
   .sort((a, b) => (a.date < b.date ? 1 : -1));
 
 export function getFeedback(slug: string): FeedbackPost | undefined {

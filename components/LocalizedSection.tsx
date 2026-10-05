@@ -53,7 +53,12 @@ export function LocalizedSection({ locale, section }: { locale: Locale; section:
 
       {section === "thoughts" ? <>
         <section className="mb-16 sm:mb-24"><h1 className="mb-5 font-serif text-3xl font-medium sm:text-4xl">{title}</h1><p className="m-0 max-w-[600px] text-text-paragraph">{text.shortThoughts}</p></section>
-        <ul className="m-0 list-none divide-y divide-gray-300 p-0">{posts.map((post) => <li key={post.slug}><Link href={`/${locale}/thoughts/${post.slug}/`} className="group flex min-w-0 flex-col items-start gap-1.5 py-3.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"><span className="min-w-0 font-serif font-medium">{post.title}</span><span className="flex items-center gap-2 text-sm text-gray-1000">{post.category} · {post.date}<ChevronRight className="h-4 w-4" /></span></Link></li>)}</ul>
+        <ul className="m-0 list-none divide-y divide-gray-300 p-0">{/* Qui la lista è **completa**: questo componente è l'indice di sezione
+            (`/en/thoughts/`, `/de/notes/`), non una vetrina. Limitarla ha
+            orfanato gli articoli più vecchi nella versione localizzata, e il
+            controllo di copertura del sitemap se n'è accorto subito: un pezzo
+            che esiste solo nel sitemap non è indicizzabile. La home limita,
+            l'indice no. */}{posts.map((post) => <li key={post.slug}><Link href={`/${locale}/thoughts/${post.slug}/`} className="group flex min-w-0 flex-col items-start gap-1.5 py-3.5 sm:flex-row sm:items-baseline sm:justify-between sm:gap-4"><span className="min-w-0 font-serif font-medium">{post.title}</span><span className="flex items-center gap-2 text-sm text-gray-1000">{post.category} · {post.date}<ChevronRight className="h-4 w-4" /></span></Link></li>)}</ul>
       </> : section === "notes" ? <>
         <section className="mb-16 sm:mb-24"><h1 className="mb-5 font-serif text-3xl font-medium sm:text-4xl">{title}</h1><p className="m-0 max-w-[600px] text-text-paragraph">{text.longNotes}</p></section>
         <ul className="m-0 list-none divide-y divide-gray-300 p-0">{notes.map((note) => <li key={note.slug}><Link href={`/${locale}/notes/${note.slug}/`} className="group block py-5"><div className="overflow-hidden rounded-xl border border-gray-300 bg-preview-bg"><Image src={`/notes/${note.slug}/cover.png`} alt={note.title} width={1200} height={630} className="h-auto w-full" /></div><div className="mt-3 flex flex-wrap items-baseline justify-between gap-4"><span className="font-serif font-medium">{note.title}</span><span className="flex items-center text-sm text-gray-1000">{note.date}<ChevronRight className="ml-2 h-4 w-4" /></span></div></Link></li>)}</ul>

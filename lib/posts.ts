@@ -1,4 +1,5 @@
 import { loadCmsCollection, mergeCmsCollection } from "./cms-content";
+import { isPublished } from "./publication";
 
 export type Block =
   | { type: "p"; text: string }
@@ -37,6 +38,200 @@ function minutesOf(blocks: Block[]): number {
 }
 
 const raw: Post[] = [
+  {
+    slug: "why-ai-agents-need-permission-systems",
+    title: "Why AI agents need permission systems",
+    category: "Thoughts",
+    description:
+      "AI agent permissions are not a settings screen. The three ways people handle agent spending today, why each one fails, and what has to exist instead.",
+    date: "2026-10-05",
+    tags: ["authorization", "AI agents", "payments", "Noesia"],
+    keywords: [
+      "AI agent permissions",
+      "AI agent authorization",
+      "agentic commerce",
+      "Noesia",
+      "Mattia Ciuni",
+    ],
+    content: [
+      {
+        type: "p",
+        text: "Someone read Noesia's architecture and asked me the only question that mattered: *what stops the agent from buying something stupid?* I had an answer for the happy path and nothing for that one. It took me a week to find the honest version, and the honest version is not a settings screen.",
+      },
+      {
+        type: "p",
+        text: "Here is what I found. AI agent permissions are usually described as a limit: a maximum amount, a merchant allowlist, a monthly ceiling. Limits are necessary and they are not a permission system. A limit tells the agent where the wall is. It does not tell anyone who allowed the action, under which rule, or what happens when the rule turns out to be wrong.",
+      },
+      { type: "h2", text: "Three ways people handle agent spending today" },
+      {
+        type: "list",
+        items: [
+          "**The shared card.** The agent uses a company card with no boundary. Finance finds out from the statement, and nobody can reconstruct why the purchase happened.",
+          "**The confirmation button.** The agent proposes, a human approves every single time. It is safe, and it turns the agent into an assistant that sends you invoices.",
+          "**Declared autonomy.** The product executes and puts the outcome on the user. It is the most common position in this category, and it is the easiest one to write down.",
+        ],
+      },
+      {
+        type: "p",
+        text: "None of the three is stupid. The first two are what people actually do today, and the third is a legitimate position I disagree with. What all three share is a missing record: in all three, the question *who authorised this, and under which boundary* has no answer that survives an argument.",
+      },
+      { type: "h2", text: "What a permission system actually is" },
+      {
+        type: "p",
+        text: "A permission system has four parts, and a limit is only one of them.",
+      },
+      {
+        type: "list",
+        items: [
+          "**A mandate.** The outcome you asked for, in your own words, written before the agent starts. Not an interface guessing what you will allow.",
+          "**A perimeter.** Amount, period, payees, categories. What the mandate does not cover, the agent cannot do, even when doing it would be a good idea.",
+          "**A decision.** Deterministic, explainable, replayable. The same input produces the same answer, and a human who was not in the room can read it.",
+          "**A record.** Who acted, for which task, under which rule, with what evidence.",
+        ],
+      },
+      {
+        type: "p",
+        text: "In Noesia's authorization engine the decision path has no model in it. It is a policy engine written in Go, and the ledger it appends to is hash-chained. That is not a detail about our stack. It is the only thing that makes the fourth part worth anything: a record nobody can quietly edit is the difference between an audit and a story.",
+      },
+      {
+        type: "p",
+        text: "The property I care about most is boring to write down and hard to get right: idempotency under concurrent retries. The authorization core is tested with 100 parallel identical requests, and exactly one decision comes out. That test exists because an agent that retries is normal, and an agent that charges twice because it retried is a bug with a bank account attached. I wrote about [the idempotent version of this problem](/notes/idempotent-payments-for-ai-agents/) before the buyer was an agent.",
+      },
+      { type: "h2", text: "The difference between an instruction and a permission" },
+      {
+        type: "p",
+        text: "An instruction describes intent. A permission describes authority. The distinction looks academic until you put an agent in front of a web page, because an agent that reads can be told things. If the authority to spend came from the conversation, then whoever can write into the conversation can spend. That is not a hypothetical attack, it is the normal way the web works.",
+      },
+      {
+        type: "p",
+        text: "A mandate written before the conversation changes what a prompt injection can do. The injected text can still change what the agent tries. It cannot change what the agent is allowed to do, because the authority was never in the conversation. This is why I think the mandate has to be a document you sign rather than a form you fill in the moment the agent asks.",
+      },
+      { type: "h2", text: "The part we do not have yet" },
+      {
+        type: "p",
+        text: "I would rather write this than have it found later. Agent identity and liability is the row of our own capability table marked as not answered. If an agent buys the wrong thing while doing exactly what it was told, who answers? Every platform in this category states a position. We do not have the final one, and it is not a paragraph to write: it is a product and a legal decision that has to survive a real dispute.",
+      },
+      {
+        type: "p",
+        text: "What we do have is the piece that makes the question answerable later: a stop. Pausing an agent and cancelling its pending requests from your device is designed and not shipped. The closest thing verified today lives in the prototype: an order came back at 163.00 euro as a request to confirm, and it left at 137.00. One number from a prototype run is worth more than the adjective I would otherwise have used in this paragraph, and it is why the prototype is labelled as one on every page that shows it.",
+      },
+      { type: "h2", text: "What I would tell someone shipping an agent this month" },
+      {
+        type: "list",
+        items: [
+          "Write the boundary before the agent runs, not after it fails. A boundary added later has no record of what already happened.",
+          "Key the retry on the intent, not on the request. Two identical requests are one intention, and one charge.",
+          "Make the decision readable by someone who was not there. If explaining a spend needs the conversation that produced it, you do not have an audit trail.",
+          "Decide what happens when the agent is wrong before you decide how fast it can buy. The second number is easier to change.",
+        ],
+      },
+      {
+        type: "p",
+        text: "The reason I keep coming back to permissions is that they are the only part of this that has to be decided before the money moves. Everything else can be added later. An authorization layer cannot be retrofitted onto a system that already spends, because by then the evidence of what it did is gone.",
+      },
+      {
+        type: "p",
+        text: "Agents do not need a bigger allowance. They need a boundary that can be read out loud, and a receipt that survives being questioned. I have been building this problem into [Noesia](https://withnoesia.com), the authorization layer for agents, and the [money layer argument](/thoughts/money-layer-for-ai-agents/) is where it started. If you are building an agent that spends, I would rather hear where this breaks than where it works.",
+      },
+    ],
+  },
+  {
+    slug: "why-ai-agents-keep-stopping-at-checkout",
+    title: "Why AI agents keep stopping at checkout",
+    category: "Thoughts",
+    description:
+      "AI agents research, compare and decide, then they hand you a cart. The checkout step is where delegation breaks, and it is not a payments problem.",
+    date: "2026-10-05",
+    tags: ["AI agents", "payments", "checkout", "Noesia"],
+    keywords: [
+      "AI agents checkout",
+      "AI agent payments",
+      "agentic commerce",
+      "Noesia",
+      "Mattia Ciuni",
+    ],
+    content: [
+      {
+        type: "p",
+        text: "An agent can research a product, compare twelve offers, read the reviews, decide, and put the right thing in a cart. Then it stops and asks you for a card. Every AI agents checkout flow ends in the same place: a human, in the middle of an automated process, doing the one step nobody automated.",
+      },
+      {
+        type: "p",
+        text: "I watched this happen hundreds of times. Not in a dashboard: on a screen, next to people who had just told me the thing worked.",
+      },
+      { type: "h2", text: "The day I understood it was not an intelligence problem" },
+      {
+        type: "p",
+        text: "I was building Celeste, an AI browser. It was good: the agent could open pages, follow instructions, compare options, complete research. Then it reached the payment step, and the task ended. Not because the agent got the answer wrong. Because the last screen assumed a person.",
+      },
+      {
+        type: "p",
+        text: "That was the useful finding. The abandonment was not a failure of comprehension, it was a handoff. The agent had done the hard part and could not cross the last metre, and every workflow that ended there had been *technically* completed and *practically* abandoned. I wrote the first version of this argument in [the money layer for AI agents](/thoughts/money-layer-for-ai-agents/), and this piece is the part of it that is about checkout specifically.",
+      },
+      { type: "h2", text: "Three gaps, and only one of them is a payments problem" },
+      {
+        type: "list",
+        items: [
+          "**Identity.** Checkout is built for a person with a card: a name, an address, a device, a session. An agent has none of those in a form the page accepts, so it borrows a human's credentials and inherits all of that human's authority.",
+          "**State.** A checkout is a small state machine with a step that is genuinely unknown for a while: the payment is authorised, or pending, or declined, and the page has to be asked again. Agents retry. Retrying something that was pending is how you get two orders.",
+          "**Authority.** Whoever holds the card holds the authority. So you cannot give the card to the agent, which means the human comes back at the exact moment the automation was supposed to remove them.",
+        ],
+      },
+      {
+        type: "p",
+        text: "The first two are engineering. The third is the reason adding a checkout API to your product does not fix the problem: it moves the handoff one layer down, and the layer below is still a card.",
+      },
+      { type: "h2", text: "The difference between a timeout and a decline" },
+      {
+        type: "p",
+        text: "This is the detail I did not appreciate until I was inside it. A decline is an answer. A timeout is not an answer: it is the absence of one, and the difference matters more when the client is software that will retry.",
+      },
+      {
+        type: "p",
+        text: "An agent that treats a timeout as a failure retries. An agent that retries a payment whose state is unknown creates a duplicate, and duplicates are not a performance problem, they are a money problem. This is the same class of bug as [idempotency for autonomous agents](/notes/idempotent-payments-for-ai-agents/), with a worse blast radius because nobody is watching the second charge happen.",
+      },
+      {
+        type: "p",
+        text: "The answer in our engine is that the retry is keyed on the intention rather than the request. Same intention, same decision, one charge, and the second request returns the first decision instead of making a new one. It is tested with 100 parallel identical requests, and exactly one decision comes out. Boring, and the only version of this I would let near a real card.",
+      },
+      { type: "h2", text: "The merchant is looking at the wrong thing" },
+      {
+        type: "p",
+        text: "There is a second checkout, and only one of the two parties has been thinking about it. The merchant's checkout is built to answer one question: is this a fraudster or a customer? The signals it uses are all human signals. A device fingerprint, a shipping address that has history, a typing rhythm, a browsing session that took four minutes instead of four milliseconds.",
+      },
+      {
+        type: "p",
+        text: "An agent fails all of those checks while being completely legitimate. So the merchant sees something that looks like fraud and is actually a customer who automated the boring part, and the honest options on the table are all bad: decline a real sale, or loosen the check that protects everyone else. A merchant verification layer is in build on our side for exactly this reason, and I would rather describe it as in build than imply it is answering questions it has not been asked yet.",
+      },
+      { type: "h2", text: "What has to exist instead" },
+      {
+        type: "list",
+        items: [
+          "**A mandate with a perimeter.** Amount, period, payees, categories, written before the agent starts.",
+          "**A deterministic decision.** No model in the authorization path. The same input gives the same answer, every time, on any machine.",
+          "**An idempotent execution.** The retry is part of the design, not an edge case handled by luck.",
+          "**A receipt with the reasoning.** What was bought, under which rule, and why the decision came out that way.",
+        ],
+      },
+      {
+        type: "p",
+        text: "I have been building this into [Noesia](https://withnoesia.com): scoped capabilities that expire instead of a wallet an agent holds, and an append-only ledger behind every decision. The audit that covers the authorization core is commissioned and its findings are fixed with regression tests in the suite, which is why the phrase about being safe with money is not one I use loosely here.",
+      },
+      { type: "h2", text: "What is still open" },
+      {
+        type: "p",
+        text: "Revocation, honestly. Pausing an agent and cancelling the requests it already has in flight is designed, not shipped, and the hard part is not the button, it is what happens between the pause and the last decision already taken. Dispute handling is the same shape of problem and it is in the same state.",
+      },
+      {
+        type: "p",
+        text: "The other open thing is a number I refuse to publish: how long a revocation takes to reach an agent mid-flight. I have a target. A target is not a measurement, and the difference is exactly the thing this site is supposed to be careful about.",
+      },
+      {
+        type: "p",
+        text: "The end of a workflow is the whole workflow. An agent that stops one step before the outcome did not save you the task, it moved the task to you and added a conversation. Checkout is not the last screen of the product. It is the first place where the product has to answer for what it did.",
+      },
+    ],
+  },
   {
     slug: "welcoming-raj-koli-founding-engineer-agent-experience",
     title: "Welcoming Raj Koli, Founding Engineer (Agent Experience): the interview",
@@ -548,8 +743,24 @@ const cmsPosts = loadCmsCollection<Post>("post");
 const merged = mergeCmsCollection(raw, cmsPosts);
 
 export const posts: (Post & { readingMinutes: number })[] = merged
+  // Il filtro sta qui e non nelle pagine: tutto ciò che mostra un articolo —
+  // rotta, sitemap, feed, card, liste correlate, link in fondo — legge da
+  // questo elenco, quindi un pezzo non ancora pubblico non puo' trapelare da
+  // una superficie che qualcuno si e' dimenticato di filtrare.
+  .filter((p) => isPublished(p.date))
   .map((p) => ({ ...p, readingMinutes: minutesOf(p.content) }))
   .sort((a, b) => (a.date < b.date ? 1 : -1));
+
+/**
+ * Gli slug che questa build ha appena reso pubblici.
+ *
+ * Serve a chi deve *annunciare* qualcosa invece di mostrarlo: il ping a
+ * IndexNow e l'invio del sitemap non hanno senso a ogni deploy, ne' hanno
+ * senso con un elenco fisso di indirizzi scritto nello script.
+ */
+export function publishedToday(): (Post & { readingMinutes: number })[] {
+  return posts.filter((p) => isPublished(p.date) && p.date === new Date().toISOString().slice(0, 10));
+}
 
 export function getPost(slug: string) {
   return posts.find((p) => p.slug === slug);

@@ -1,4 +1,5 @@
 import { loadCmsCollection, mergeCmsCollection } from "./cms-content";
+import { isPublished } from "./publication";
 
 export type NoteBlock =
   | { type: "p"; text: string }
@@ -494,6 +495,9 @@ const raw: Note[] = [
 const cmsNotes = loadCmsCollection<Note>("note");
 
 export const notes: Note[] = mergeCmsCollection(raw, cmsNotes)
+  // Come per gli articoli: il filtro sta nel registro, cosi' una nota con la
+  // data nel futuro non puo' comparire in una pagina, in una card o nel feed.
+  .filter((n) => isPublished(n.date))
   .sort((a, b) => (a.date < b.date ? 1 : -1));
 
 export function getNote(slug: string) {
