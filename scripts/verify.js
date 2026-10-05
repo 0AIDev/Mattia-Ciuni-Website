@@ -513,6 +513,41 @@ check(
   overlapping.length === 0,
 );
 if (overlapping.length) console.log("     regole coperte da un'altra: " + overlapping.join(", "));
+// Ogni pagina esportata deve passare dalla funzione, e non perché la funzione
+// servire qualcosa di piu': perché è l'unico codice che vede l'host della
+// richiesta. Una pagina non instradata cade sul gestore degli asset, che
+// risponde 200 su **qualsiasi** host: `/about/` e `/de/notes/` stavano
+// fuori, e il sottodominio ritirato rispondeva con una copia del sito invece
+// che con il 301 — la condizione perché il cambio di dominio sposti il rango.
+// Nessuna lista scritta a mano può coprire questo: le pagine le genera
+// `next build`, quindi il controllo le rilegge dall'export e cerca quelle che
+// nessuna regola copre.
+const NOT_ROUTED_BY_DESIGN = new Set(["/404/", "/_not-found/"]);
+const exportedPages = [];
+(function walkPages(current) {
+  for (const entry of fs.readdirSync(current, { withFileTypes: true })) {
+    const p = path.join(current, entry.name);
+    if (entry.isDirectory()) walkPages(p);
+    else if (entry.name === "index.html") {
+      const rel = "/" + path.relative(out, path.dirname(p)).split(path.sep).join("/");
+      exportedPages.push(rel === "/" ? "/" : rel + "/");
+    }
+  }
+})(out);
+const unroutedPages = exportedPages.filter(
+  (page) =>
+    !NOT_ROUTED_BY_DESIGN.has(page) &&
+    !page.startsWith("/admin") &&
+    !routes.include.some((rule) => covers(rule, page)),
+);
+check(
+  `routes: all ${exportedPages.length - 2} exported pages reach the Function`,
+  unroutedPages.length === 0,
+);
+if (unroutedPages.length) {
+  console.log("     pagine fuori dal routing: " + unroutedPages.slice(0, 12).join(", "));
+  console.log("     (aggiungere il prefetto in public/_routes.json: senza, l'host ritirato serve una copia)");
+}
 if (leakedAdmin.length) console.log("     nominano admin: " + leakedAdmin.join(", "));
 // Nessun file si scrive **intorno** alla dashboard: `admin/feedback.md` era una
 // card servita come asset statico (quel percorso non passa dalla Function), e

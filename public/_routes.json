@@ -7,10 +7,27 @@
     "/notes",
     "/notes/*",
     "/voice-notes",
+    "/voice-notes/*",
     "/videos",
+    "/videos/*",
     "/careers",
     "/careers/*",
+    "/about/*",
+    "/cookies/*",
+    "/feedback/*",
+    "/legal/*",
+    "/link/*",
+    "/newsletter/*",
+    "/privacy/*",
+    "/terms/*",
+    "/work/*",
     "/nda",
+    "/nda/*",
+    "/de/*",
+    "/en/*",
+    "/es/*",
+    "/fr/*",
+    "/it/*",
     "/index.md",
     "/sitemap.xml",
     "/sitemap-home.xml",
@@ -40,4 +57,4 @@
     "/media/*"
   ],
   "exclude": []
-}
+}

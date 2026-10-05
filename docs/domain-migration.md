@@ -34,10 +34,19 @@ sé stesso — un loop, che su un sito SEO è peggio di nessun redirect. Su ques
 piano (Free) non c'è nemmeno Bulk Redirects, che è la strada che
 ufficialmente consiglierebbe Cloudflare per `*.pages.dev`.
 
-Il 301 copre pagine, sitemap, feed, `.md` e API: sono i percorsi che
-`public/_routes.json` instrada verso la funzione. Non copre i file statici
-(immagini, CSS, font), che sono gli stessi byte sotto due host e non hanno un
-rango da difendere.
+Il 301 copre tutto ciò che è una pagina: le 204 pagine esportate, sitemap,
+feed, le card `.md` e le API. È `public/_routes.json` a decidere quali
+percorsi arrivano alla funzione, perché è l'unico codice che vede l'host della
+richiesta — e a scrivere quelle regole a mano il buco è stato reale: il primo
+deploy rispondeva 301 su `/thoughts/` e **200** su `/about/`, `/feedback/` e
+tutte le versioni localizzate. Sul vecchio host, il sito esisteva due volte.
+
+Non copre i file statici (immagini, CSS, font in `/_next/`), che sono gli stessi
+byte sotto due host e non hanno un rango da difendere.
+
+`scripts/verify.js` rilegge le pagine dall'export e fallisce se una non è
+instradata, quindi la prossima pagina nuova non può ripetere la cosa: rimuovere
+una riga da `_routes.json` fa fallire il build e nomina le pagine rimaste fuori.
 
 ## Cosa è stato fatto su Cloudflare
 
