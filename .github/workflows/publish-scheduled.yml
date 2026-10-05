@@ -5,11 +5,20 @@
 # workflow è la build che gira. Non pubblica niente di suo: chiede a Cloudflare
 # di ricostruire, e a decidere cosa esce è `lib/publication.ts`.
 #
-# Tre volte a settimana, lunedì, mercoledì e venerdì: è il ritmo del piano
-# editoriale, e ricostruire quando non c'è niente da pubblicare non costa niente
-# di visibile. Il sitemap esce identico, `scripts/ping-indexnow.mjs` non annuncia
-# nulla se nessun pezzo porta la data di oggi, e nessuna pagina cambia. È per
-# questo che il ping è condizionato alla data invece di partire a ogni build.
+# Quattro volte a settimana, lunedì, mercoledì, giovedì e venerdì: sono i giorni
+# in cui la coda editoriale può uscire (lunedì e giovedì), più due di riserva
+# per il caso in cui una build fallisce e un pezzo con la data di oggi resterebbe
+# fuori fino alla successiva. Ricostruire quando non c'è niente da pubblicare non
+# costa niente di visibile: il sitemap esce identico,
+# `scripts/ping-indexnow.mjs` non annuncia nulla se nessun pezzo porta la data di
+# oggi, e nessuna pagina cambia. È per questo che il ping è condizionato alla
+# data invece di partire a ogni build.
+#
+# Il giorno conta: la data di pubblicazione si confronta con il giorno UTC della
+# build (`BUILD_DAY` in `lib/publication.ts`). Un pezzo datato giovedì esce con la
+# build di giovedì alle 06:00 UTC e, se quella build cade, con quella di venerdì.
+# Per questo il giovedì è nel cron: con il solo lun/mer/ven un pezzo di giovedì
+# sarebbe rimasto in attesa fino al venerdì senza che nessuno lo notasse.
 #
 # Il segreto da configurare: `CLOUDFLARE_DEPLOY_HOOK` nelle impostazioni del
 # repository (Settings → Secrets and variables → Actions), lo stesso valore che
@@ -24,7 +33,7 @@ name: Publish scheduled pieces
 
 on:
   schedule:
-    - cron: "0 6 * * 1,3,5"
+    - cron: "0 6 * * 1,3,4,5"
   workflow_dispatch:
 
 jobs:

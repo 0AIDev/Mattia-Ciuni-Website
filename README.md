@@ -11,6 +11,7 @@ Tre file, e sono il contratto del sito — non si scrive un articolo senza il se
 - **[`docs/SEO-GEO-AI.md`](docs/SEO-GEO-AI.md)** — l'impianto completo per tre lettori (motore di ricerca, motore generativo, agente), cosa è generico e cosa è dato di questo sito, e la lista di **cosa non si pubblica e perché**.
 - **[`docs/domain-migration.md`](docs/domain-migration.md)** — il passaggio da `mattiaciuni.pages.dev` a `mattiaciuni.com`: il 301, i record toccati su Cloudflare, i passi che restano sui motori e come si torna indietro.
 - **[`docs/editorial-plan.md`](docs/editorial-plan.md)** — il piano editoriale e come gira da solo: la data che decide la pubblicazione, il minimo di 1000 parole, la build programmata, l'annuncio ai motori, e la coda dei titoli con la fonte reale di ognuno.
+- **[`docs/editorial-claims.md`](docs/editorial-claims.md)** — il blocco dei claim di ogni pezzo della coda: che cosa afferma, in che stato è (live, build, design, esterna), da dove viene, e che cosa **non** si pubblica perché non ha fonte.
 
 ## Struttura
 

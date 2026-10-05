@@ -20,7 +20,7 @@ posti.
 | La data decide la pubblicazione | [`lib/publication.ts`](../lib/publication.ts) | Un pezzo con la data nel futuro sta nel repository e non esiste in nessuna pagina. Il filtro è nel registro, non nelle pagine: rotta, sitemap, feed, card, liste correlate e link in fondo leggono tutti da lì, quindi non può trapelare da una superficie dimenticata. |
 | Il controllo che impone la coerenza | `scripts/verify.js` | Il numero di pagine esportate deve corrispondere ai pezzi pubblicati. Se il filtro e la sua copia nei controlli si separano, cade un check e lo dice. |
 | Il minimo di parole | `scripts/verify.js` | Ogni pezzo con data **2026-10-05 o successiva** deve avere almeno 1000 parole, contate dal `content` in poi (titolo e descrizione non sono parole dell'articolo). Vale anche per i pezzi non ancora pubblicati: la finestra prima della data è il momento in cui si corregge, non il giorno in cui esce. |
-| La build che gira da sola | [`.github/workflows/publish-scheduled.yml`](../.github/workflows/publish-scheduled.yml) | Lunedi, mercoledi e venerdi avvia la ricostruzione su Cloudflare. Serve il segreto `CLOUDFLARE_DEPLOY_HOOK` nelle impostazioni del repository: senza, esce verde e lo dice nel log. |
+| La build che gira da sola | [`.github/workflows/publish-scheduled.yml`](../.github/workflows/publish-scheduled.yml) | Lunedi, mercoledi, giovedi e venerdi avvia la ricostruzione su Cloudflare: i due giorni in cui la coda esce, piu due di riserva. Serve il segreto `CLOUDFLARE_DEPLOY_HOOK` nelle impostazioni del repository: senza, esce verde e lo dice nel log. |
 | L'annuncio | [`scripts/ping-indexnow.mjs`](../scripts/ping-indexnow.mjs) | Annuncia a IndexNow (Bing, Yandex, Seznam) le pagine con la data di oggi, lette dall'export. Se non c'è niente di nuovo non manda niente: un segnale che arriva sempre è un segnale che si può ignorare. |
 
 ### Perché non si pubblica in blocco
@@ -45,68 +45,102 @@ generico è scriverlo solo quando la fonte esiste.
 `FR` = il repository di ricerca sul Desktop: la cartella **Fundroom**, dentro
 `Team-Allignment/`. Due nomi di cartella al suo interno contengono il nome
 ritirato del prodotto, e `scripts/check-brand.mjs` non permette di scriverlo in
-un file tracciato(è lui che ha fermato la prima build di questi articoli, e ha fatto bene). I percorsi qui sotto partono quindi da `01-RESEARCH/`, e la
+un file tracciato (è lui che ha fermato la prima build di questi articoli, e ha
+fatto bene). I percorsi qui sotto partono quindi da `01-RESEARCH/`, e la
 cartella con i documenti dell'offerta pre-seed è quella che finisce in
 `-preseed-deck`.
 
-### Cluster 01 · Autonomous agents
+I claim di ogni pezzo, cioè la fonte di ogni singola affermazione, sono in
+[`editorial-claims.md`](editorial-claims.md). Una coda senza claim non è una
+coda che si può pubblicare.
 
-| Titolo | Query | Fonte | Stato |
+### Le fonti che hanno sbloccato la coda
+
+La parte che mancava era il materiale. Le tre fonti che hanno reso scrivibili
+ventuno pezzi sono state le seguenti, e sono tutte di prima parte o di studio
+professionale con data:
+
+| File | Che cosa contiene | Pezzi che sblocca |
+| --- | --- | --- |
+| `research/sources/agentic-rails-primaries.md` | comunicati Visa, Mastercard, Google, OpenAI, Stripe, con le date sulle pagine e le citazioni letterali; l'evidenza su disputa e responsabilità | 12 |
+| `research/sources/agent-checkout-network-primaries.md` | il perimetro di chi è chi: mandatari, identità, issuer, e il costo di essere una rete | 8 |
+| `research/product/25-agentic-payments-competitive-sweep-2026-09-29.md` | chi copre quale lavoro, senza lasciare che un partner scopra un competitor da solo | 5 |
+| `analysis/10-rails-verification.md` | la frase «le regole esistono» e perché non chiude il caso | 3 |
+| `analysis/03-market-model.md` | i numeri di sondaggio, con il voto di fonte, e i numeri che non si possono usare | 4 |
+| `memo/2026-10-03-delegated-authority-in-euro.md` | la tesi di Mattia: tre posizioni, e la responsabilità come posizione | 5 |
+
+### Il calendario, due pezzi a settimana
+
+Il tetto del contratto è due pezzi a settimana, mai due URL nuovi lo stesso
+giorno. Quindi la coda è **lunedì e giovedì**, e comincia lunedì 12 ottobre
+perché la settimana del 5 è già piena: quel giorno sono usciti i due pezzi
+delle permission e del checkout.
+
+| Data | Titolo | Query | Cluster |
 | --- | --- | --- | --- |
-| The moment AI agents stop being assistants | AI agents, autonomous agents | FR `01-RESEARCH/<offerta>-preseed-deck/memo/`, §"Il caso" | da scrivere |
-| AI agents don't need more intelligence, they need more authority | AI agent authority | FR memo + la tesi dell'autorizzazione | da scrivere |
-| The difference between an AI assistant and an autonomous agent | AI assistant vs autonomous agent | Celeste (browser AI) vs il modello a mandato | da scrivere |
-| The agentic economy will start with small decisions | agentic economy | FR `analysis/03-market-model.md` | da scrivere |
-| What happens when software can act for you | agentic commerce | FR memo §"Come si arrangia la gente oggi" | da scrivere |
+| 05-10 | Why AI agents need permission systems | AI agent permissions | 02 |
+| 05-10 | Why AI agents keep stopping at checkout | AI agents checkout | 03 |
+| **12-10** | Who is responsible when an AI agent buys the wrong thing | AI agent liability | 03 |
+| **15-10** | Why there should be no LLM in the authorization path | deterministic AI systems | 04 |
+| **19-10** | The authorization layer for autonomous agents | AI agent authorization | 02 |
+| **22-10** | What should an AI agent be allowed to do | AI agent controls | 02 |
+| **26-10** | An AI agent should never have your credit card | AI agent credit card | 02 |
+| **29-10** | What it means to give an AI agent a budget | AI agent spending limit | 03 |
+| **02-11** | Deterministic authorization for AI agents | deterministic authorization | 04 |
+| **05-11** | The credit card is the wrong interface for ai agents | AI agent payment infrastructure | 03 |
+| **09-11** | What an agent authorization record should contain | AI agent transaction receipt | 04 |
+| **12-11** | Least privilege for AI agents | least privilege AI agents | 02 |
+| **16-11** | Why agent payments need an append-only audit trail | AI agent audit | 04 |
+| **19-11** | The difference between an AI assistant and an autonomous agent | AI assistant vs autonomous agent | 01 |
+| **23-11** | Designing an agent policy engine | agent policy engine | 04 |
+| **26-11** | The moment AI agents stop being assistants | autonomous agents | 01 |
+| **30-11** | AI agents don't need more intelligence, they need more authority | AI agent authority | 01 |
+| **03-12** | Revocation: how to stop an agent mid-flight | AI agent revocation | 04 |
+| **07-12** | The agentic economy will start with small decisions | agentic economy | 01 |
+| **10-12** | Why autonomous purchasing needs a control layer | AI agent purchasing | 03 |
+| **14-12** | What happens when you let software actually do the job | autonomous AI agents | 01 |
+| **17-12** | Only 23% of merchants can tell an agent from a human | AI agent traffic | 03 |
+| **21-12** | The mandate has to be written before the agent runs | agent mandate | 02 |
 
-### Cluster 02 · Authorization
+Tutti e ventuno sono **scritti**, tutti passano il controllo delle mille parole,
+e nessuno è nell'export finché la sua data non arriva.
 
-| Titolo | Query | Fonte | Stato |
-| --- | --- | --- | --- |
-| **Why AI agents need permission systems** | AI agent permissions | FR memo + motore di autorizzazione (Go, policy DSL, ledger) | **pubblicato** |
-| The authorization layer for autonomous agents | AI agent authorization | il pillar + questo file | da scrivere |
-| What should an AI agent be allowed to do | AI agent controls | truth table righe B2, B3, B4, B5 | da scrivere |
-| An AI agent should never have your credit card | AI agent credit card | "scoped capabilities that expire", il vocabolario del contratto | da scrivere |
-| Least privilege for AI agents | least privilege AI agents | l'articolo con Alex, che già lo applica agli agenti | da scrivere |
+### L'aritmetica, detta perché il piano la chiede
 
-### Cluster 03 · Money
-
-| Titolo | Query | Fonte | Stato |
-| --- | --- | --- | --- |
-| **Why AI agents keep stopping at checkout** | AI agents checkout | Celeste + il buco fra stato *pending* e *decline* | **pubblicato** |
-| The credit card is the wrong interface for AI agents | AI agent payments | pillar `money-layer-for-ai-agents` | da scrivere |
-| What it means to give an AI agent a budget | AI agent spending limit | truth table B2, B3 | da scrivere |
-| **Who is responsible when an AI agent buys the wrong thing** | AI agent liability | FR memo, la domanda del caso del volo | **la prossima** |
-| Why autonomous purchasing needs a control layer | AI agent purchasing | FR `analysis/10-rails-verification.md` | da scrivere |
-
-### Cluster 04 · Technical
-
-| Titolo | Query | Fonte | Stato |
-| --- | --- | --- | --- |
-| Why there should be no LLM in the authorization path | deterministic AI systems | legge di prodotto, 100 richieste identiche in parallelo | da scrivere |
-| Deterministic authorization for AI agents | deterministic authorization | idempotenza provata in CI | da scrivere |
-| Designing an agent policy engine | agent policy engine | policy DSL | da scrivere |
-| What an agent authorization record should contain | AI agent transaction receipt | ledger hash-chained, audit esterno | da scrivere |
-| Why agent payments need an append-only audit trail | AI agent audit | ledger, kill switch, reconciliation | da scrivere |
-| Revocation: how to stop an agent mid-flight | AI agent revocation | **DESIGN**: latenza di revoca non è misurata | da scrivere, con il limite dichiarato |
-
-### Cluster 05 · Founder
-
-| Titolo | Query | Fonte | Stato |
-| --- | --- | --- | --- |
-| What we changed after people attacked Noesia | Noesia, AI agent infrastructure | già raccontato in `lib/notes.ts`: il budget aggregato nato da un'obiezione pubblica | da scrivere |
-| Why Noesia is not a payment company | Noesia, agent authorization | posizionamento "authorization layer" | da scrivere, dopo una verifica col CTO |
-| Building Noesia in public: October 2026 | Noesia | mensile, dai fatti del mese | **serve il mese** |
-| Why we hire by artifact | startup hiring | `artifact-based-hiring` esiste già | non riscrivere |
+Il piano originale chiede trentasei pezzi in novanta giorni, cioè circa tre a
+settimana. Il contratto di questo sito ne ammette due. ** Vince il contratto,
+e il conto è semplice: ventuno pezzi in undici settimane, fino al 21 dicembre.**
+Il resto del piano non è scartato, è spostato: il mese due del piano
+(spending, accountability) e il mese tre (tecnico, consolidamento Noesia)
+diventano il primo trimestre del 2027, con due pezzi a settimana e le stesse
+fonti.
 
 ### Quello che non si scrive adesso
 
-I cluster su **MCP**, **trust/safety** e **company building** richiedono materiale
-che oggi non esiste: un'implementazione MCP reale, una posizione sulla
-responsabilità firmata, i numeri del mese. Un pezzo su "come si revoca un
-agente" scritto senza una misura di revoca è la cosa che il contratto editoriale
-chiama *overclaim*, ed è anche il modo più veloce per farsi smontare da un
-lettore tecnico.
+Tre pezzi hanno il titolo e la data ma non la fonte, e restano in attesa:
+
+- **Why Noesia is not a payment company.** Aspetta una verifica con il CTO
+  sulla posizione legale. Il materiale c'è, la firma no.
+- **What we changed after people attacked Noesia.** Il materiale esiste
+  (`lib/feedback.ts`), ma il pezzo va scritto come conseguenza, non come
+  riassunto della pagina di feedback.
+- **Building Noesia in public: ottobre 2026.** Non si scrive a dicembre per
+  ottobre: si scrive ai primi di novembre, con i fatti del mese.
+
+E un pezzo che non si scrive affatto, perché il piano lo chiede e il contratto
+lo vieta: la pagina di aggregazione per topic (`/thoughts/ai-agent-authorization/`
+e simili). Ventuno URL che rispondono alla stessa domanda di quelli che già
+esistono è il modo più veloce per farsi declassare come hub di pagine vuote. Il
+piano chiedeva anche la pagina `/now` come pagina propria: oggi la sezione
+**Now** sta sulla home ed è un paragrafo, e la sua versione lunga ha più senso
+come nota che come rotta nuova.
+
+### Una nota operativa sulle card
+
+`scripts/og.ps1` legge i registri come testo e filtra per data, quindi salta i
+pezzi non ancora pubblicati. Se si lancia il giro **completo** lo script
+sovrascrive anche le card ritoccate a mano dopo la generazione, che è il caso
+della card di Raj. Per un pezzo nuovo si usa sempre `-Only <slug>`.
 
 ## 4 · L'annuncio, con i limiti veri
 

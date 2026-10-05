@@ -16,6 +16,12 @@
 #
 # I titoli, le descrizioni e le date vengono letti da lib/posts.ts e lib/notes.ts:
 # zero duplicazioni. Rilanciare lo script quando cambia un articolo o cambia il dominio.
+#
+# ATTENZIONE al giro completo: sovrascrive **tutte** le card, anche quelle che
+# qualcuno ha ritoccato a mano dopo la generazione. La card di Raj e' in questo
+# caso (commit 3993165, "trim the transparent band"). Con `-Only <slug>` si
+# rigenera solo quella che si sta toccando; il giro completo va fatto quando si
+# cambia lo sfondo, e in quel caso le card ritoccate vanno ritagliate di nuovo.
 
 param(
   [switch]$HomeOnly,
@@ -225,7 +231,7 @@ function Get-Articles($fileName, $label) {
   # arriverebbe al disegno sdoppiato dal default ANSI di PowerShell 5.1).
   $src = Get-Content (Join-Path $Root $fileName) -Raw -Encoding UTF8
   $re = [regex]'(?s)slug:\s*"([^"]+)".*?title:\s*"([^"]+)".*?description:\s*"((?:[^"\\]|\\.)*)".*?date:\s*"([^"]+)"'
-  return $re.Matches($src) | ForEach-Object {
+  $all = $re.Matches($src) | ForEach-Object {
     [pscustomobject]@{
       Kind        = $label
       Slug        = $_.Groups[1].Value
@@ -235,6 +241,23 @@ function Get-Articles($fileName, $label) {
       Meta        = $label + " " + $Dot + " " + ([datetime]::ParseExact($_.Groups[4].Value, "yyyy-MM-dd", $null).ToString("d MMMM yyyy", [System.Globalization.CultureInfo]::InvariantCulture))
     }
   }
+  # Questa funzione legge il registro come testo: non vede il filtro di
+  # `lib/publication.ts`. Un pezzo con la data nel futuro e' quindi visibile qui
+  # mentre non esiste in nessuna pagina. Senza questo controllo gli si generava
+  # la card, la card finiva nell'export, e `verify.js` trovava l'immagine di un
+  # articolo che non c'e': build rossa per un errore che nessuno collega alla
+  # causa. Il futuro si salta, e lo dice.
+  #
+  # `Write-Host` e non `Write-Output`: dentro una funzione, `Write-Output`
+  # finisce nell'array di ritorno insieme agli articoli. Il chiamante lo
+  # riceverebbe come se fosse un articolo, con lo slug vuoto, e produrrebbe
+  # una card chiamata `notes/cover.png` senza titolo.
+  $today = [datetime]::UtcNow.Date
+  $future = @($all | Where-Object { [datetime]::ParseExact($_.Date, "yyyy-MM-dd", $null) -gt $today })
+  if ($future.Count -gt 0) {
+    Write-Host ("saltati (data futura): " + (($future | ForEach-Object { $_.Slug }) -join ", "))
+  }
+  return @($all | Where-Object { [datetime]::ParseExact($_.Date, "yyyy-MM-dd", $null) -le $today })
 }
 
 # ---------------------------------------------------------------- esecuzione
