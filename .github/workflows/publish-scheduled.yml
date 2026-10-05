@@ -1,33 +1,42 @@
 # La pubblicazione programmata.
 #
-# Il sito è statico: un articolo con la data nel futuro è già nel repository, e
+# Il sito e' statico: un articolo con la data nel futuro e' gia' nel repository, e
 # diventa una pagina solo quando una build gira dopo quella data. Questo
-# workflow è la build che gira. Non pubblica niente di suo: chiede a Cloudflare
-# di ricostruire, e a decidere cosa esce è `lib/publication.ts`.
+# workflow e' la build che gira. Non pubblica niente di suo: spinge un commit
+# vuoto, Cloudflare vede il push e ricostruisce, e a decidere cosa esce e'
+# `lib/publication.ts`.
 #
-# Quattro volte a settimana, lunedì, mercoledì, giovedì e venerdì: sono i giorni
-# in cui la coda editoriale può uscire (lunedì e giovedì), più due di riserva
-# per il caso in cui una build fallisce e un pezzo con la data di oggi resterebbe
-# fuori fino alla successiva. Ricostruire quando non c'è niente da pubblicare non
-# costa niente di visibile: il sitemap esce identico,
-# `scripts/ping-indexnow.mjs` non annuncia nulla se nessun pezzo porta la data di
-# oggi, e nessuna pagina cambia. È per questo che il ping è condizionato alla
-# data invece di partire a ogni build.
+# Perche' un commit vuoto e non una richiesta a un deploy hook.
+#
+# Il deploy hook era la strada giusta e non esiste piu'. La dashboard di un
+# progetto Pages ha le schede Deployments, Metrics, Custom domains e Settings:
+# non c'e' piu' nessuna sezione per gli hook, l'API risponde 405 su
+# `POST .../deploy-hooks`, e Wrangler non ha il comando. Un commit vuoto spinge
+# lo stesso meccanismo che fa ricostruire a ogni push normale, quindi non
+# serve nessuna credenziale per farlo funzionare: il `GITHUB_TOKEN` del
+# workflow basta e non va configurato da nessuna parte.
+#
+# Il costo e' una riga in cronologia, e per questo il workflow spinge solo
+# quando qualcosa esce davvero. `scripts/is-anything-due-today.mjs` legge i
+# registri e risponde: quattro volte a settimana, due sono giorni di coda e due
+# sono di riserva, e senza questo controllo la cronologia si riempirebbe di
+# duecento commit che non cambiavano niente. Nei giorni in cui non esce nulla
+# il workflow esce verde e lo dice, che e' un esito normale e non un guasto.
+#
+# Quattro volte a settimana, lunedi', mercoledi', giovedi' e venerdi': i due
+# giorni della coda (lunedi' e giovedi') piu' due di riserva per il caso in cui
+# un push fallisce e un pezzo con la data di oggi resterebbe fuori fino alla
+# successiva. Ricostruire quando non c'e' niente da pubblicare non costa niente
+# di visibile: il sitemap esce identico, `scripts/ping-indexnow.mjs` non
+# annuncia nulla se nessun pezzo porta la data di oggi, e nessuna pagina
+# cambia.
 #
 # Il giorno conta: la data di pubblicazione si confronta con il giorno UTC della
-# build (`BUILD_DAY` in `lib/publication.ts`). Un pezzo datato giovedì esce con la
-# build di giovedì alle 06:00 UTC e, se quella build cade, con quella di venerdì.
-# Per questo il giovedì è nel cron: con il solo lun/mer/ven un pezzo di giovedì
-# sarebbe rimasto in attesa fino al venerdì senza che nessuno lo notasse.
-#
-# Il segreto da configurare: `CLOUDFLARE_DEPLOY_HOOK` nelle impostazioni del
-# repository (Settings → Secrets and variables → Actions), lo stesso valore che
-# il pannello amministrativo ha come variabile sul progetto Pages. È un URL di
-# deploy hook, non una chiave API: può solo avviare una build.
-#
-# Senza il segreto il workflow esce verde e lo dice nel log. Un fallimento qui
-# non deve sembrare un guasto del sito quando l'unica cosa che manca è una
-# configurazione che nessuno ha ancora fatto.
+# build (`BUILD_DAY` in `lib/publication.ts`). Un pezzo datato giovedi' esce con
+# la build di giovedi' alle 06:00 UTC e, se quel push cade, con quello di
+# venerdi'. Per questo il giovedi' e' nel cron: con il solo lun/mer/ven un
+# pezzo di giovedi' sarebbe rimasto in attesa fino al venerdi' senza che nessuno
+# lo notasse.
 
 name: Publish scheduled pieces
 
@@ -36,46 +45,46 @@ on:
     - cron: "0 6 * * 1,3,4,5"
   workflow_dispatch:
 
+permissions:
+  contents: write
+
+concurrency:
+  group: publish-scheduled
+  cancel-in-progress: false
+
 jobs:
   rebuild:
     runs-on: ubuntu-latest
     steps:
-      - name: Trigger the Cloudflare Pages rebuild
-        env:
-          DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
-          PROJECT_NAME: mattiaciuni
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Check whether a piece is due today
+        id: due
         run: |
-          if [ -z "$DEPLOY_HOOK" ]; then
-            echo "CLOUDFLARE_DEPLOY_HOOK is not configured; nothing to trigger."
-            echo "Pieces whose date has arrived will publish on the next push instead."
-            exit 0
-          fi
-          # La chiave IndexNow e una stringa esadecimale, non un indirizzo: e'
-          # cosi' che questo segreto e' gia' stato sbagliato una volta, e senza
-          # questo controllo la curl risponderebbe con un codice che sembra un
-          # guasto di Cloudflare invece che un valore sbagliato, il giorno in cui
-          # un pezzo doveva uscire e nessuno saprebbe perche' non e' uscito.
-          # Solo la forma "non e' un indirizzo" blocca: se un giorno Cloudflare
-          # cambiasse la forma dell'URL, un avviso dice che il valore non e' quello
-          # aspettato, ma un hook valido continua a funzionare.
-          case "$DEPLOY_HOOK" in
-            https://*) ;;
-            *)
-              echo "::error::CLOUDFLARE_DEPLOY_HOOK is not a URL."
-              echo "It is the deploy hook URL from Cloudflare > $PROJECT_NAME > Settings > Builds > Add deploy hook, not a key."
-              exit 1
-              ;;
-          esac
-          case "$DEPLOY_HOOK" in
-            *deploy-hooks/*) ;;
-            *)
-              echo "::warning::CLOUDFLARE_DEPLOY_HOOK does not look like a Cloudflare deploy hook URL."
-              echo "Trying it anyway, but check the value if the build does not start."
-              ;;
-          esac
-          status=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$DEPLOY_HOOK")
-          echo "deploy hook answered $status"
-          if [ "$status" -ge 300 ]; then
-            echo "::error::The deploy hook refused the build (HTTP $status)."
-            exit 1
-          fi
+          set -euo pipefail
+          # Lo script stampa `due=true` o `due=false` e poi gli slug. In un output
+          # di GitHub Actions ogni riga dopo la prima diventerebbe un valore
+          # diverso, quindi la risposta va ridotta alla sua prima riga.
+          answer=$(node scripts/is-anything-due-today.mjs)
+          echo "$answer"
+          echo "due=$(printf '%s\n' "$answer" | head -1 | cut -d= -f2)" >> "$GITHUB_OUTPUT"
+
+      - name: Rebuild by pushing an empty commit
+        if: steps.due.outputs.due == 'true'
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit --allow-empty -m "chore: rebuild so the pieces dated today are exported"
+          git push origin HEAD:main
+          echo "pushed; Cloudflare rebuilds from this commit"
+
+      - name: Nothing was due today
+        if: steps.due.outputs.due != 'true'
+        run: |
+          echo "no piece carries today's date; not pushing anything."
+          echo "the next due piece publishes on the next push or on the next run."
