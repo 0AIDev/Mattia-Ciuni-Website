@@ -5,21 +5,49 @@ import { join } from "node:path";
 const email = process.env.GOOGLE_SERVICE_ACCOUNT_EMAIL?.trim();
 const privateKey = process.env.GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY?.replace(/\\n/g, "\n");
 const home = join(process.cwd(), "out", "index.html");
-const exportedOrigin = existsSync(home)
-  ? (readFileSync(home, "utf8").match(/<link rel="canonical" href="([^"]+)"/)?.[1] || "").replace(/\/$/, "")
+const canonicalHref = existsSync(home)
+  ? readFileSync(home, "utf8").match(/<link rel="canonical" href="([^"]+)"/)?.[1] || ""
   : "";
-const configuredSiteUrl = process.env.GOOGLE_SEARCH_CONSOLE_SITE_URL?.trim().replace(/\/+$/, "");
-const siteUrl = (configuredSiteUrl || exportedOrigin).replace(/\/$/, "");
+const exportedOrigin = canonicalHref.replace(/\/$/, "");
+const exportedHost = safeHost(exportedOrigin);
+const configured = process.env.GOOGLE_SEARCH_CONSOLE_SITE_URL?.trim().replace(/\/+$/, "") || "";
 
-if (configuredSiteUrl && configuredSiteUrl !== exportedOrigin) {
+// Search Console accetta due tipi di proprieta' con nomi diversi: un prefisso
+// URL (`https://mattiaciuni.com`) e un dominio (`sc-domain:mattiaciuni.com`).
+// Sono lo stesso sito ma due chiavi diverse nell'API, e la Sitemap API vuole
+// esattamente quella che e' stata verificata. Il confronto diretto con
+// l'origine esportata funzionava solo per la prima forma: con una proprieta'
+// di dominio il valore corretto finiva scartato come se fosse sbagliato, e la
+// build si fermava li' con un avviso che il salto non arriva a spiegare.
+const domainProperty = configured.startsWith("sc-domain:");
+const siteUrl = (configured || exportedOrigin).replace(/\/$/, "");
+
+// Il confronto e' sul nome di dominio in entrambe le forme, cosi' che
+// `sc-domain:mattiaciuni.com` e `https://mattiaciuni.com` descrivono lo stesso
+// sito e vengono entrambe accettate, mentre una proprieta' di un altro dominio
+// viene scartata: senza questo controllo la Sitemap API risponderebbe su una
+// proprieta' che esiste ma non e' questa, e l'avviso direbbe solo che la
+// richiesta e' fallita. Il nome del sito resta quello esportato, perche' e'
+// l'unica origine i cui file sono gia' stati scritti.
+const configuredHost = domainProperty ? siteUrl.slice("sc-domain:".length).trim() : safeHost(siteUrl);
+
+if (configured && configuredHost !== exportedHost) {
   console.warn(
-    `google search console: skipped (GOOGLE_SEARCH_CONSOLE_SITE_URL must match the export origin ${exportedOrigin || "missing"})`,
+    `google search console: skipped (the property ${siteUrl || "(empty)"} is not this site; the export is ${exportedHost || "missing"})`,
   );
   process.exit(0);
 }
-if (!siteUrl) {
+if (!siteUrl || (!domainProperty && !exportedOrigin)) {
   console.warn("google search console: skipped (the export has no absolute production canonical)");
   process.exit(0);
+}
+
+function safeHost(value) {
+  try {
+    return new URL(value.includes("://") ? value : `https://${value}`).hostname;
+  } catch {
+    return "";
+  }
 }
 
 if (!email || !privateKey) {
@@ -54,7 +82,10 @@ if (!tokenResponse.ok) {
   process.exit(0);
 }
 const { access_token: accessToken } = await tokenResponse.json();
-const sitemap = `${siteUrl}/sitemap.xml`;
+// Il file da inviare si indica sempre con l'indirizzo completo, anche quando la
+// proprieta' e' un dominio: `sc-domain:` serve per scegliere la proprieta',
+// non per costruire l'URL del sitemap.
+const sitemap = `${exportedOrigin}/sitemap.xml`;
 const endpoint = `https://www.googleapis.com/webmasters/v3/sites/${encodeURIComponent(siteUrl)}/sitemaps/${encodeURIComponent(sitemap)}`;
 const response = await fetch(endpoint, {
   method: "PUT",

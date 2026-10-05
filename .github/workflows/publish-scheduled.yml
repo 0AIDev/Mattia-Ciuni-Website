@@ -43,12 +43,36 @@ jobs:
       - name: Trigger the Cloudflare Pages rebuild
         env:
           DEPLOY_HOOK: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
+          PROJECT_NAME: mattiaciuni
         run: |
           if [ -z "$DEPLOY_HOOK" ]; then
             echo "CLOUDFLARE_DEPLOY_HOOK is not configured; nothing to trigger."
             echo "Pieces whose date has arrived will publish on the next push instead."
             exit 0
           fi
+          # La chiave IndexNow e una stringa esadecimale, non un indirizzo: e'
+          # cosi' che questo segreto e' gia' stato sbagliato una volta, e senza
+          # questo controllo la curl risponderebbe con un codice che sembra un
+          # guasto di Cloudflare invece che un valore sbagliato, il giorno in cui
+          # un pezzo doveva uscire e nessuno saprebbe perche' non e' uscito.
+          # Solo la forma "non e' un indirizzo" blocca: se un giorno Cloudflare
+          # cambiasse la forma dell'URL, un avviso dice che il valore non e' quello
+          # aspettato, ma un hook valido continua a funzionare.
+          case "$DEPLOY_HOOK" in
+            https://*) ;;
+            *)
+              echo "::error::CLOUDFLARE_DEPLOY_HOOK is not a URL."
+              echo "It is the deploy hook URL from Cloudflare > $PROJECT_NAME > Settings > Builds > Add deploy hook, not a key."
+              exit 1
+              ;;
+          esac
+          case "$DEPLOY_HOOK" in
+            *deploy-hooks/*) ;;
+            *)
+              echo "::warning::CLOUDFLARE_DEPLOY_HOOK does not look like a Cloudflare deploy hook URL."
+              echo "Trying it anyway, but check the value if the build does not start."
+              ;;
+          esac
           status=$(curl -s -o /dev/null -w "%{http_code}" -X POST "$DEPLOY_HOOK")
           echo "deploy hook answered $status"
           if [ "$status" -ge 300 ]; then
