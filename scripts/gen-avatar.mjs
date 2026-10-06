@@ -1,8 +1,8 @@
 // L'avatar della home, dal master al file che la pagina serve davvero.
 //
-// Il master è `mattia.png` in root (1254×1254, come `og.png`, `Vector.svg` e
-// `sfondo.svg`: i disegni a mano stanno lì, i file da servire stanno in
-// `public/`). Qui diventa quello che serve: **80×80**, cioè il doppio dei 40px a
+// Il master è `design/mattia.png` (1254×1254, come `design/og.png`,
+// `design/Vector.svg` e `design/sfondo.svg`: i disegni a mano stanno in
+// `design/`, i file da servire stanno in `public/`). Qui diventa quello che serve: **80×80**, cioè il doppio dei 40px a
 // cui la pagina lo mostra (`h-10 w-10`), quindi nitido sui display 2x e senza
 // pixel sprecati.
 //
@@ -23,11 +23,11 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const master = join(root, "mattia.png");
+const master = join(root, "design", "mattia.png");
 const dest = join(root, "public", "mattia.webp");
 
 if (!existsSync(master)) {
-  console.error("avatar: manca il master mattia.png in root");
+  console.error("avatar: manca il master design/mattia.png");
   process.exit(1);
 }
 

@@ -2,7 +2,7 @@
 #
 #   powershell -NoProfile -ExecutionPolicy Bypass -File scripts/og-media.ps1          # scrive in public/
 #   powershell ... -File scripts/og-media.ps1 -Preview                                # scrive in out/_tmp/og-media (per approvare)
-#   powershell ... -File scripts/og-media.ps1 -Video -Title "..." -Subtitle "..." -Thumb og.png
+#   powershell ... -File scripts/og-media.ps1 -Video -Title "..." -Subtitle "..." -Thumb design/og.png
 #   powershell ... -File scripts/og-media.ps1 -Audio -Title "..." -Subtitle "..." -Duration 4:18
 #
 # Due disegni, stessa grammatica del resto del sito (Instrument Serif + Inter,
@@ -11,7 +11,7 @@
 #   video       ->  miniatura centrata (16:9, angoli tondi), titolo sotto, sottotitolo, CTA "Watch video";
 #   voice note  ->  waveform centrata (barre, stile minimal) + durata, titolo, sottotitolo, CTA "Listen the voice note".
 #
-# La miniatura di default e' public/og.png; il testo arriva dai parametri, non dai
+# La miniatura di default e' il master `design/og.png`; il testo arriva dai parametri, non dai
 # registri: voice notes e videos non hanno ancora una sorgente dati, quindi lo
 # script e' deliberatamente manuale. Quando esisteranno, si aggiungera' la lettura
 # dal registro (come fa og.ps1 per lib/posts.ts e lib/notes.ts).
@@ -21,7 +21,7 @@ param(
   [switch]$Audio,
   [string]$Title = "",
   [string]$Subtitle = "",
-  [string]$Thumb = "og.png",
+  [string]$Thumb = "design\og.png",
   [string]$Duration = "0:00",
   [switch]$Preview
 )
@@ -100,7 +100,12 @@ function Draw-TitleBlock($g, $title, $subtitle, $topY) {
 # Miniatura centrata (larghezza 640, 16:9), titolo sotto, sottotitolo, CTA.
 function New-VideoCard($title, $subtitle, $thumbFile, $outPath) {
   $pair = New-Canvas; $bmp = $pair[0]; $g = $pair[1]
+  # Un nome nudo ("og.png") si cerca prima in design/ — dove vivono i master —
+  # e poi in root; un path con separatore ("public/videos/og.png") vale com'e'.
   $thumbPath = Join-Path $Root $thumbFile
+  if (!(Test-Path $thumbPath) -and ($thumbFile -notmatch "[\\/]")) {
+    $thumbPath = Join-Path (Join-Path $Root "design") $thumbFile
+  }
   $thumbW = 560; $thumbH = 315; $thumbY = 52
   if (Test-Path $thumbPath) {
     $img = [System.Drawing.Image]::FromFile($thumbPath)

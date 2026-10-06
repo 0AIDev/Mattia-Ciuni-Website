@@ -1,4 +1,4 @@
-// Genera public/logo.svg a partire da Vector.svg (nuovo logo, in root).
+// Genera public/logo.svg a partire da design/Vector.svg (nuovo logo).
 // Esegui con: node scripts/gen-logo.mjs
 // Il file sorgente ha canvas 1298x670 ma il tratto sborda a ~1225 di altezza
 // e un filtro ombra sfocata: qui ritagliamo il viewBox sul tratto (con padding)
@@ -8,10 +8,10 @@ import { join, dirname } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const src = readFileSync(join(root, "Vector.svg"), "utf8");
+const src = readFileSync(join(root, "design", "Vector.svg"), "utf8");
 const m = src.match(/<path d="([^"]*)"/);
 if (!m) {
-  console.error("Vector.svg non trovato o path non valido");
+  console.error("design/Vector.svg non trovato o path non valido");
   process.exit(1);
 }
 const d = m[1];

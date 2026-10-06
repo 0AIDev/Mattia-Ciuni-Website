@@ -12,7 +12,7 @@
 // un artefatto che non e' quello dichiarato).
 //
 // Le fonti stanno in `agent-skills/<name>/SKILL.md` (a mano, come gli altri
-// master in root: `Vector.svg`, `sfondo.svg`). L'indirizzo esce da `lib/site.ts`,
+// master disegnati a mano in `design/`: `Vector.svg`, `sfondo.svg`). L'indirizzo esce da `lib/site.ts`,
 // come per sitemap e canonical.
 import { readFileSync, writeFileSync, mkdirSync, existsSync, readdirSync } from "node:fs";
 import { createHash } from "node:crypto";

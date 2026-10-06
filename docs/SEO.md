@@ -92,10 +92,10 @@ produzione, e che ognuna nomini una pagina che nell'export esiste davvero (un
 | `public/_headers`, `public/_redirects` | **a mano** | le regole che legge l'host (header di sicurezza, redirect, tipo dei file senza estensione): riguardano il dominio, non la pagina, e sono l'unica cosa qui che nessuno rigenera |
 | `public/_routes.json` | **a mano** | quali rotte invocano la Pages Function: le sole in cui compaiono indirizzi assoluti (pagine, sitemap, robots, feed, `llms.txt`, card, `/.well-known/`) |
 | `functions/_middleware.ts` | **a mano** | l'unico codice: markdown a richiesta e conservazione dell'origine SEO production dichiarata dal build |
-| `public/og.png`, `public/thoughts/og.png`, `public/notes/og.png` | `scripts/og.ps1` | i master disegnati in root (`og.png`, `thoughts-og.png`, `notesog.png`) ridotti a 1200×630 |
+| `public/og.png`, `public/thoughts/og.png`, `public/notes/og.png` | `scripts/og.ps1` | i master disegnati in `design/` (`og.png`, `thoughts-og.png`, `notesog.png`) ridotti a 1200×630 |
 | `public/thoughts/<slug>/og.png`, `public/notes/<slug>/og.png` | `scripts/og.ps1` | articoli e note dal template: `og-sfondo.png` + Instrument Serif + Inter Light (font in `scripts/fonts/`) |
 | `public/thoughts/<slug>/cover.png`, `public/notes/<slug>/cover.png` | `scripts/og.ps1` (stesso giro) | la stessa card **senza il logo**, ed è quella che la pagina mostra sopra il `h1` (`components/CoverImage.tsx`): dentro il sito, non nella `<head>` |
-| `public/logo.svg` | `scripts/gen-logo.mjs` | dal `Vector.svg` in root |
+| `public/logo.svg` | `scripts/gen-logo.mjs` | dal `design/Vector.svg` |
 | le card in `public/` (sviluppo) | `scripts/gen-cards.mjs` (`predev`) | la stessa card che finisce in `out/`, servita da `next dev` |
 
 **Nessuno di questi si scrive a mano.** Un `sitemap.xml` scritto a mano è un

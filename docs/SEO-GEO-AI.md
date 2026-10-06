@@ -86,9 +86,9 @@ voce in lib/posts.ts ──►  rotta /thoughts/<slug>/
 | la `<head>` di ogni pagina | `generateMetadata` nella pagina, dai campi del registro |
 | `public/_headers`, `public/_redirects` | **a mano**: li legge l'host (Pages), non la pagina |
 | `public/_routes.json` | **a mano**: quali rotte invocano la Function (le sole in cui compaiono indirizzi assoluti) |
-| `public/og.png`, `public/thoughts/og.png`, `public/notes/og.png` | `scripts/og.ps1` | i tre master disegnati a mano in root (`og.png`, `thoughts-og.png`, `notesog.png`), solo ridotti a 1200×630 |
+| `public/og.png`, `public/thoughts/og.png`, `public/notes/og.png` | `scripts/og.ps1` | i tre master disegnati a mano in `design/` (`og.png`, `thoughts-og.png`, `notesog.png`), solo ridotti a 1200×630 |
 | `public/thoughts/<slug>/og.png`, `public/notes/<slug>/og.png` | `scripts/og.ps1` | dal template: `og-sfondo.png` (da `sfondo.svg`) + Instrument Serif + Inter Light |
-| `public/logo.svg` | `scripts/gen-logo.mjs` (dal `Vector.svg` in root) |
+| `public/logo.svg` | `scripts/gen-logo.mjs` (dal `design/Vector.svg`) |
 | `app/icon.png` | a mano (è il logo raster) |
 
 Le card sono l'esempio che vale la pena copiare: si generano **dall'HTML già
@@ -394,7 +394,7 @@ ognuna è verificata da `verify.js` (non «il file c'è» ma «ciò che dichiara
 | negoziazione `Accept: text/markdown` | serve la card `.md` della pagina richiesta | provata su workerd, non dedotta (§5.3) |
 
 La skill è l'unico contenuto **scritto a mano** per gli agenti, e sta in
-`agent-skills/<nome>/SKILL.md` (come gli altri master in root): dice dove stanno
+`agent-skills/<nome>/SKILL.md` (come gli altri master scritti a mano): dice dove stanno
 le cose leggibili, come si cita, e cosa **non** c'è — perché una skill che promette
 una ricerca o un'API inesistente è la stessa bugia di un endpoint inventato, con
 un giro di ritardo.

@@ -1,11 +1,11 @@
 // La figura del header di /link, dal master al file che la pagina serve davvero.
 //
-// Il master è `mattia 1.png` in root (1004×1000, PNG con trasparenza: la figura
+// Il master è `design/mattia 1.png` (1004×1000, PNG con trasparenza: la figura
 // ritagliata senza sfondo). Qui diventa **560px di larghezza**, cioè il doppio
 // dei 280px a cui la pagina la mostra, quindi nitida sui display 2x e senza
 // pixel sprecati. Stessa regola dell'avatar (vedi `scripts/gen-avatar.mjs`):
 //
-//   i disegni a mano stanno in root, i file da servire stanno in `public/`.
+//   i disegni a mano stanno in `design/`, i file da servire stanno in `public/`.
 //
 //   node scripts/gen-cutout.mjs            # rigenera public/mattia-cutout.webp
 //
@@ -18,11 +18,11 @@ import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const master = join(root, "mattia 1.png");
+const master = join(root, "design", "mattia 1.png");
 const dest = join(root, "public", "mattia-cutout.webp");
 
 if (!existsSync(master)) {
-  console.error("cutout: manca il master 'mattia 1.png' in root");
+  console.error("cutout: manca il master 'design/mattia 1.png'");
   process.exit(1);
 }
 

@@ -2,7 +2,7 @@
 //
 // Perché serve un passo separato: GDI+ (scripts/og.ps1) disegna il testo ma non sa
 // leggere un SVG, quindi lo sfondo si rasterizza una volta qui e resta come master
-// accanto agli altri (Vector.svg -> public/logo.svg, og.png -> public/og.png).
+// accanto agli altri (design/Vector.svg -> public/logo.svg, design/og.png -> public/og.png).
 //
 // Due raster, dallo stesso disegno:
 //   og-sfondo.png        com'è: logo in alto al centro, per le card social (og.png);
@@ -15,16 +15,19 @@
 //
 // Quando sfondo.svg cambia, rilanciare questo comando: og.ps1 avvisa se lo sfondo
 // rasterizzato è più vecchio dell'SVG.
+//
+// Sorgenti e risultati vivono tutti in `design/` (master disegnati a mano e i due
+// raster che ne derivano): root resta per i file di configurazione.
 
 import { existsSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const root = join(dirname(fileURLToPath(import.meta.url)), "..");
-const src = join(root, "sfondo.svg");
+const src = join(root, "design", "sfondo.svg");
 
 if (!existsSync(src)) {
-  console.log("og-sfondo: sfondo.svg non trovato in root — niente da rasterizzare");
+  console.log("og-sfondo: design/sfondo.svg assente — niente da rasterizzare");
   process.exit(0);
 }
 
@@ -55,12 +58,11 @@ const svgCover = svg.replace(logoPath[0], "");
 const render = (input) => sharp(input, { density: 144 }).resize(1920, 1008, { fit: "fill" }).png({ compressionLevel: 9 }).toBuffer();
 
 const withLogo = await render(Buffer.from(svg));
-writeFileSync(join(root, "og-sfondo.png"), withLogo);
+writeFileSync(join(root, "design", "og-sfondo.png"), withLogo);
 
 const withoutLogo = await render(Buffer.from(svgCover));
-writeFileSync(join(root, "og-sfondo-cover.png"), withoutLogo);
+writeFileSync(join(root, "design", "og-sfondo-cover.png"), withoutLogo);
 
-console.log(
-  `og-sfondo: og-sfondo.png ${(withLogo.length / 1024).toFixed(1)}KB · ` +
-    `og-sfondo-cover.png ${(withoutLogo.length / 1024).toFixed(1)}KB (da sfondo.svg)`,
+console.log(    `og-sfondo: design/og-sfondo.png ${(withLogo.length / 1024).toFixed(1)}KB · ` +
+    `design/og-sfondo-cover.png ${(withoutLogo.length / 1024).toFixed(1)}KB (da sfondo.svg)`,
 );

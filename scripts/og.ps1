@@ -10,7 +10,7 @@
 # NB: le pagine indice (/thoughts/, /notes/) hanno le loro immagini, non passano di qui.
 #
 # Tre mestieri, tre sorgenti:
-#   1. homepage  <- `og.png` (master disegnato a mano in root), ridotto a 1200x630;
+#   1. homepage  <- `design/og.png` (master disegnato a mano), ridotto a 1200x630;
 #   2. articoli  <- `og-sfondo.png` (sfondo, da sfondo.svg: vedi scripts/gen-og-bg.mjs)
 #                   + titolo in Instrument Serif Regular + sottotitolo in Inter Light,
 #                   entrambi centrati sotto il logo (font in scripts/fonts/);
@@ -37,6 +37,10 @@ param(
 Add-Type -AssemblyName System.Drawing
 
 $Root     = Split-Path $PSScriptRoot -Parent
+# I master disegnati a mano vivono in `design/`: root resta per i file di
+# configurazione. Ogni lettura di un master passa da qui, cosi' il giorno in cui
+# la cartella cambia nome si tocca una riga sola.
+$Design   = Join-Path $Root "design"
 # Il punto medio si compone dal codepoint e non si scrive nel file: PowerShell 5.1
 # legge i .ps1 senza BOM come ANSI, quindi un carattere non-ASCII scritto qui
 # arriverebbe sdoppiato nel testo disegnato ("Notes A· 12 September 2026" invece
@@ -112,11 +116,12 @@ if (!$serifFamily -or !$sansFamily) {
 Write-Output ("font: titolo in " + $serifFamily.Name + ", sottotitolo in " + $sansFamily.Name)
 
 # ------------------------------------------------------------ 1. OG della home
-# Il disegno e' un master a mano (og.png in root, come Vector.svg e mattia.png):
-# qui si porta a 1200x630 e si ricodifica, senza disegnare niente. Il master e'
-# 1920x1008, cioe' lo stesso rapporto di 1200x630, quindi la riduzione e' esatta.
+# Il disegno e' un master a mano (design/og.png, come design/Vector.svg e
+# design/mattia.png): qui si porta a 1200x630 e si ricodifica, senza disegnare
+# niente. Il master e' 1920x1008, cioe' lo stesso rapporto di 1200x630,
+# quindi la riduzione e' esatta.
 function Copy-MasterCard($masterFile, $outPath) {
-  $master = Join-Path $Root $masterFile
+  $master = Join-Path $Design $masterFile
   if (!(Test-Path $master)) { Write-Output "master assente: $masterFile (salto)"; return }
   $srcImg = [System.Drawing.Image]::FromFile($master)
   $bmp = New-Object System.Drawing.Bitmap(1200, 630, [System.Drawing.Imaging.PixelFormat]::Format24bppRgb)
@@ -132,7 +137,7 @@ function Copy-MasterCard($masterFile, $outPath) {
 }
 
 function New-HomeCard($outPath) {
-  if (Test-Path (Join-Path $Root "og.png")) { Copy-MasterCard "og.png" $outPath; return }
+  if (Test-Path (Join-Path $Design "og.png")) { Copy-MasterCard "og.png" $outPath; return }
   Write-Output "og.png (master) assente: disegno la OG della homepage con il testo"
   $pair = New-OgCanvas; $bmp = $pair[0]; $g = $pair[1]
   $titleFont = New-Object System.Drawing.Font("Segoe UI Semibold", 96, [System.Drawing.FontStyle]::Bold)
@@ -277,12 +282,12 @@ if (!$Only -or $HomeOnly) { New-HomeCard (Join-Path $OutRoot "og.png") }
 if ($Preview -and !$Only) { Write-Output "-Preview: la homepage si rigenera solo con -HomeOnly" }
 if ($HomeOnly) { Write-Output "solo homepage: fatto"; exit 0 }
 
-$bgCard = Join-Path $Root "og-sfondo.png"
+$bgCard = Join-Path $Design "og-sfondo.png"
 if (!(Test-Path $bgCard)) {
   Write-Error 'og-sfondo.png assente: lancialo prima con  node scripts/gen-og-bg.mjs'
   exit 1
 }
-if ((Get-Item (Join-Path $Root "sfondo.svg")).LastWriteTime -gt (Get-Item $bgCard).LastWriteTime) {
+if ((Get-Item (Join-Path $Design "sfondo.svg")).LastWriteTime -gt (Get-Item $bgCard).LastWriteTime) {
   Write-Output 'ATTENZIONE: sfondo.svg e'' piu'' recente di og-sfondo.png: rilancia  node scripts/gen-og-bg.mjs'
 }
 
@@ -334,7 +339,7 @@ $noCtaSlugs = @("finding-ghassen-the-co-founder-question-answered-in-three-weeks
 # (la card in pagina mostrerebbe dentro l'articolo la sua stessa call to action,
 # «Read feedback»), quindi generare una cover significherebbe spedire un file che
 # nessuna pagina nomina.
-$bgCover = Join-Path $Root "og-sfondo-cover.png"
+$bgCover = Join-Path $Design "og-sfondo-cover.png"
 if (!(Test-Path $bgCover)) {
   Write-Error 'og-sfondo-cover.png assente: lancialo prima con  node scripts/gen-og-bg.mjs'
   exit 1
@@ -348,7 +353,7 @@ foreach ($a in $articles) {
   $subText = if ($Subtitle -eq "meta") { $a.Meta } else { $a.Description }
   $cta = if ($noCtaSlugs -contains $a.Slug) { "" } elseif ($a.Kind -eq "Thoughts") { "Read thought" } elseif ($a.Kind -eq "Feedback") { "Read feedback" } else { "Read note" }
 
-  # Master editoriali disegnati a mano, uno per articolo, in root.
+  # Master editoriali disegnati a mano, uno per articolo, in `design/`.
   #
   # La chiave e' lo slug e il valore e' il file: i master non seguono lo slug
   # (sono `<nome>-og.png`, come `ghassen-og.png`), quindi la corrispondenza si
@@ -365,14 +370,14 @@ foreach ($a in $articles) {
     "welcoming-alex-mwaniki-founding-engineer-core" = "alex-og.png"
   }
   $masterFile = $masters[$a.Slug]
-  if ($masterFile -and (Test-Path (Join-Path $Root $masterFile))) {
+  if ($masterFile -and (Test-Path (Join-Path $Design $masterFile))) {
     Copy-MasterCard $masterFile $ogPath
   } else {
     New-ArticleCard $bgCard $a.Title $subText $ogPath 230 604 $cta
   }
 
   if ($a.Kind -ne "Feedback") {
-    if ($masterFile -and (Test-Path (Join-Path $Root $masterFile))) {
+    if ($masterFile -and (Test-Path (Join-Path $Design $masterFile))) {
       Copy-MasterCard $masterFile $coverPath
     } else {
       New-ArticleCard $bgCover $a.Title $subText $coverPath 60 570 $cta
