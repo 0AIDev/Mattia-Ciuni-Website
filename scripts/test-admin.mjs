@@ -5,6 +5,9 @@ import { totpCode } from "../lib/totp.ts";
 
 const TOKEN = "0".repeat(64);
 const COFOUNDER_TOKEN = "1".repeat(64);
+// Il pannello esiste solo in locale, quindi la suite gira su localhost: l'unica
+// cosa che deve partire da un host remoto e' il caso che verifica il gate.
+const LOCAL = "http://localhost:8787";
 const ORIGIN = "https://example.test";
 const IP = "203.0.113.7";
 let failures = 0;
@@ -24,27 +27,37 @@ function env() { return { FEEDBACK: store(), RATE_LIMIT: store(), ADMIN_TOKEN: T
 
 // The local Pages runtime has no KV binding. LOCAL_ADMIN enables the intentionally
 // in-memory adapter so the browser flow can be exercised without production data.
+//
+// The panel is local-only, so what used to be the interesting case here - a
+// remote host that could still start the TOTP enrolment - is now closed before
+// anything reads a body, a cookie or a token.
 {
   const local = { LOCAL_ADMIN: "1", ADMIN_TOKEN: TOKEN };
+  const remote = await onRequestGet({ request: request({ url: `${ORIGIN}/api/admin/feedback` }), env: local });
+  check("a deployed host gets 404, not 401: the panel is local-only", remote.status === 404);
+  const remoteSetup = await onRequestPost({
+    request: request({ method: "POST", url: `${ORIGIN}/api/admin/feedback`, body: { action: "setup", token: TOKEN } }),
+    env: local,
+  });
+  check("the same gate holds on POST, before the body is read", remoteSetup.status === 404);
   const response = await onRequestPost({
     request: request({ method: "POST", body: { action: "setup", token: TOKEN } }),
     env: local,
   });
-  const nonLoopbackDashboard = await onRequestGet({ request: request(), env: local });
-  check("LOCAL_ADMIN does not bypass auth on a non-loopback host", response.status === 200 && nonLoopbackDashboard.status === 401);
-  const localDashboard = await onRequestGet({
-    request: request({ url: "http://localhost:8787/api/admin/feedback" }),
-    env: local,
-  });
+  check("localhost + LOCAL_ADMIN runs the setup flow without TOTP", response.status === 200);
+  const localDashboard = await onRequestGet({ request: request(), env: local });
   check("localhost + LOCAL_ADMIN opens the dashboard without TOTP", localDashboard.status === 200);
 }
 
 {
+  // Senza binding KV non c'e' coda: 503, distinto dallo stato di setup, cosi' chi
+  // legge i log sa che il problema e' il runtime e non la configurazione. La
+  // richiesta parte da localhost perche' e' l'unico host su cui il ramo esiste.
   const missing = { ADMIN_TOKEN: TOKEN };
   const response = await onRequestGet({ request: request(), env: missing });
-  check("a deployed API without FEEDBACK returns 503, not setup_required", response.status === 503);
+  check("an API without the FEEDBACK binding returns 503, not setup_required", response.status === 503);
 }
-function request({ method = "GET", body, cookie, totp, origin, type = "application/json", length, url = `${ORIGIN}/api/admin/feedback`, headers: extraHeaders = {} } = {}) {
+function request({ method = "GET", body, cookie, totp, origin, type = "application/json", length, url = `${LOCAL}/api/admin/feedback`, headers: extraHeaders = {} } = {}) {
   const headers = { "Content-Type": type, "CF-Connecting-IP": IP, ...extraHeaders };
   if (cookie) headers.Cookie = cookie;
   if (totp) headers["X-Admin-TOTP"] = totp;

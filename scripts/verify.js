@@ -284,17 +284,6 @@ check(
   "index: the feedback panel has no heavy rule",
   index.includes("rounded-3xl bg-gray-100") && !index.includes("border-t-2 border-gray-1200")
 );
-const adminPage = read("admin/feedback/index.html");
-// Il titolo del documento non e' un buon appiglio per questo controllo: e' una
-// stringa di copy, e il pannello e' cambiato due volte senza che la pagina
-// cambiasse natura. L'identificatore della pagina invece e' il contratto vero,
-// perche' e' lo stesso che la CSS usa per nascondere newsletter e footer.
-check(
-  "admin: private dashboard scaffold, never indexed",
-  adminPage.includes('id="admin-feedback-page"') &&
-    adminPage.includes('name="robots" content="noindex, nofollow, nocache"') &&
-    fs.existsSync(path.join(__dirname, "..", "functions", "api", "admin", "feedback.ts"))
-);
 const adminApiSource = readFileSync(path.join(__dirname, "..", "functions", "api", "admin", "feedback.ts"), "utf8");
 // Tailwind's preflight sets every heading to `font-size: inherit`, so a heading
 // without an explicit size renders at body size. That is invisible in markup
@@ -530,6 +519,123 @@ check(
 );
 if (retiredHosts.length && retiredHosts.some((host) => !allowedRetired.has(host)))
   console.log("     host non derivabili dal dominio production: " + retiredHosts.filter((h) => !allowedRetired.has(h)).join(", "));
+// L'attribuzione ha la stessa copia dell'host, e per il motivo speculare: un
+// referrer che arriva da un host nostro non e' una sorgente, e' la stessa visita
+// un passo piu' in la'. Se `lib/attribution.ts` conoscesse solo l'host corrente,
+// ogni visita che passa dal vecchio indirizzo entrerebbe nei report come
+// `referral` con il sottodominio del progetto come sorgente: un dato inventato
+// che sembra traffico e che nessuno riconoscerebbe come un guasto. La regola
+// deve coprire ogni host che il sito ha avuto - l'apex, il `www` (che la regola
+// toglie prima di confrontare), il sottodominio del progetto e le sue anteprime -
+// e il confronto qui sotto e' con la stessa lista che il middleware ritira.
+const attributionSource = readFileSync(path.join(__dirname, "..", "lib", "attribution.ts"), "utf8");
+const attributionHost = /const SITE_HOST = "([^"]+)"/.exec(attributionSource)?.[1];
+const pagesHost = `${prodHost.split(".")[0]}.pages.dev`;
+const coveredAsOwnHost = (host) =>
+  host === prodHost || host === `www.${prodHost}` || host === pagesHost || host.endsWith(`.${pagesHost}`);
+// La regola va usata da entrambe le strade che registrano un referrer: il client
+// e il collettore. Due copie divergenti classificherebbero lo stesso referrer in
+// due modi a seconda di quale arriva prima, che e' peggio di non classificarlo.
+const collectorSource = readFileSync(path.join(__dirname, "..", "functions", "api", "collect.ts"), "utf8");
+check(
+  "origin: attribution counts every host of this site as internal, not as a source",
+  collectorSource.includes('from "../../lib/attribution.ts"') &&
+    collectorSource.includes("isOwnHost") &&
+    !/url\.hostname === new URL\(request\.url\)\.hostname/.test(collectorSource) &&
+    attributionHost === prodHost &&
+    /\$\{SITE_HOST[^}]*\}\.pages\.dev/.test(attributionSource) &&
+    /export function isOwnHost\(/.test(attributionSource) &&
+    attributionSource.includes("isOwnHost(host)") &&
+    !/host === window\.location\.hostname/.test(attributionSource) &&
+    retiredHosts.every(coveredAsOwnHost),
+);
+// Il pannello admin e' uno strumento di sviluppo: esiste su questa macchina e non
+// e' pubblicato. Non e' l'allentamento del controllo che c'era prima - quello
+// verificava una pagina *esportata* e difesa dal solo TOTP - ma la stessa
+// proprieta' chiesta al contrario, e piu' stretta: la pagina non viene
+// esportata, il middleware rifiuta l'host, e i due endpoint rifiutano prima di
+// guardare una credenziale. Sono tre cose indipendenti, quindi valgono tutte e
+// tre: se una regola di routing smettesse di instradare il ramo privato, il file
+// non ci sarebbe comunque; se il file tornasse nell'export, il middleware
+// risponderebbe 404.
+const adminExportPath = path.join(__dirname, "..", "out", "admin");
+// Due export sono legittimi e opposti, e il marcatore dice quale sta davanti.
+//
+// Senza questa distinzione il controllo direbbe il falso ogni volta che si lancia
+// `npm run dev:pages`, che e' l'unico comando che serve il pannello: l'export
+// conterrebbe `out/admin` perche' **deve** contenerlo, e il controllo lo
+// leggerebbe come una fuga. Un allarme che suona sul caso corretto e' un allarme
+// che si impara a ignorare, quindi guarda il marcatore che scrive la potatura
+// (`PRUNE_LOCAL_ONLY=0`) e chiede la proprieta' giusta a ciascuno dei due.
+const localBuildMarker = path.join(__dirname, "..", "out", ".local-build");
+const isLocalExport = fs.existsSync(localBuildMarker);
+const mediaApiSource = readFileSync(path.join(__dirname, "..", "functions", "api", "admin", "media.ts"), "utf8");
+const pruneSource = readFileSync(path.join(__dirname, "..", "scripts", "prune-local-only.mjs"), "utf8");
+check(
+  "admin: the dashboard is local-only, not exported and not reachable",
+  (isLocalExport ? fs.existsSync(adminExportPath) : !fs.existsSync(adminExportPath)) &&
+    pruneSource.includes('"admin"') &&
+    /const LOCAL_HOSTS = new Set\(\[/.test(middleware) &&
+    middleware.includes("isLocalRequest(url)") &&
+    middleware.includes('url.pathname === "/admin"') &&
+    adminApiSource.includes("localOnly(request)") &&
+    mediaApiSource.includes("localOnly(request)"),
+);
+if (isLocalExport)
+  console.log("     out/ is a local build (served by dev:pages), so the panel is expected there");
+// La potatura sa fare due cose opposte - pubblicare un export senza il ramo
+// privato, o servirlo in locale con il ramo dentro - e le sceglie da una
+// variabile che nessun file di configurazione scrive. Se `dev-pages.mjs`
+// smettesse di passarla, il comando che apre il pannello comincerebbe col
+// cancellarlo: un guasto che sembra "il pannello e' rotto" e non "la variabile
+// e' sparita". Il vincolo fra le due copie e' questo controllo.
+const devPagesSource = readFileSync(path.join(__dirname, "..", "scripts", "dev-pages.mjs"), "utf8");
+check(
+  "admin: local builds keep the panel, deploy builds prune it",
+  /PRUNE_LOCAL_ONLY:\s*"0"/.test(devPagesSource) &&
+    pruneSource.includes("process.env.PRUNE_LOCAL_ONLY") &&
+    /LOCAL_BUILD[\s\S]{0,600}process\.exit\(0\)/.test(pruneSource) &&
+    /unlinkSync\(marker\)/.test(pruneSource),
+);
+// Su Windows un `.cmd` lanciato senza shell e' un EINVAL dalla fix di
+// CVE-2024-27980, quindi `dev:pages` — l'unico modo di aprire il pannello —
+// moriva sulla prima riga con un errore che non lo spiegava. Il vincolo e' sul
+// codice, non sull'esito: se qualcuno riscrivesse lo spawn a mano, la shell
+// tornerebbe a mancare senza che niente lo dica, perche' questa macchina puo'
+// anche non essere quella che lo esegue.
+//
+// Il commento si toglie prima di leggere, e non e' un dettaglio: un controllo
+// che cerca `shell: false` in un file trova anche la frase che *spiega* perche'
+// non c'e' piu'. E' successo tre volte in questa sessione — l'attribuzione e la
+// guardia del marchio — e ogni volta il rosso era nella prosa. Un allarme che
+// suona sul commento e' un allarme che si impara a ignorare, quindi si guarda il
+// codice: i commenti si rimuovono, le stringhe no, quindi niente passa per
+// sbaglio.
+const devPagesCode = devPagesSource.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+check(
+  "admin: dev:pages spawns its commands with the Windows shell they need",
+  /shell:\s*IS_WINDOWS/.test(devPagesCode) &&
+    !/shell:\s*false/.test(devPagesCode) &&
+    !/"npm\.cmd"|"npx\.cmd"/.test(devPagesCode),
+);
+// Le due copie della regola "questo host e' locale" non devono divergere: e' lo
+// stesso vincolo che lega l'origine production scritta due volte, e per la stessa
+// ragione (il middleware non importa moduli condivisi). Una divergenza qui non
+// romperebbe niente in modo visibile: il pannello smetterebbe di aprirsi in
+// locale, o - peggio - si aprirebbe su un host che non e' questa macchina.
+const adminSessionSource = readFileSync(path.join(__dirname, "..", "functions", "lib", "admin-session.ts"), "utf8");
+const middlewareLocalHosts = [
+  ...(/const LOCAL_HOSTS = new Set\(\[([^\]]*)\]/.exec(middleware)?.[1] ?? "").matchAll(/"([^"]+)"/g),
+].map((match) => match[1]);
+const sessionLocalHosts = [
+  ...(/hostname === "localhost"[^;]*;/.exec(adminSessionSource)?.[0] ?? "").matchAll(/"([^"]+)"/g),
+].map((match) => match[1]);
+check(
+  "admin: the middleware and the shared session module agree on what counts as local",
+  middlewareLocalHosts.length > 0 && middlewareLocalHosts.join("|") === sessionLocalHosts.join("|"),
+);
+if (middlewareLocalHosts.join("|") !== sessionLocalHosts.join("|"))
+  console.log(`     middleware: ${middlewareLocalHosts.join(", ")} | session: ${sessionLocalHosts.join(", ")}`);
 // Ogni endpoint sotto `functions/api/` deve essere instradato: una rotta non
 // elencata non arriva **mai** alla Function, la richiesta cade sull'handler
 // statico e torna un 405 che sembra un metodo sbagliato invece di un endpoint
@@ -1400,6 +1506,34 @@ check(
   "theme: back button keeps a theme-aware white arrow",
   historyButtonSource.includes("text-gray-1200") && historyButtonSource.includes('stroke="currentColor"'),
 );
+
+// La pagina 404 ha **una** freccia indietro, quella con il testo accanto.
+//
+// Ne aveva due: una da sola in testa sopra il titolo e una accanto a "Go back
+// home", entrambe con la stessa etichetta. A uno schermo lettore sono due
+// controlli identici che dicono la stessa cosa per la stessa azione, e il primo
+// non ha neanche un nome che lo distingua. Il vincolo e' sulle due versioni:
+// il sorgente deve renderizzarla una volta sola, e l'export deve contenerne uno
+// solo (l'export con due bottoni e' la versione vecchia, quindi questo controllo
+// segnala anche un out/ da rifare).
+const notFoundSource = readFileSync(path.join(__dirname, "..", "app", "not-found.tsx"), "utf8");
+const notFoundBackButtons = (notFoundSource.match(/<HistoryBackButton/g) || []).length;
+const notFoundExportPath = path.join(__dirname, "..", "out", "404.html");
+const notFoundExport = fs.existsSync(notFoundExportPath) ? readFileSync(notFoundExportPath, "utf8") : "";
+// Solo le etichette che iniziano per "Go back": il chrome della pagina ha altri
+// bottoni (lingua, tema) che non c'entrano, e contarli darebbe sempre 3.
+const exportedBackButtons = (notFoundExport.match(/aria-label="Go back/g) || []).length;
+check(
+  "ui: the 404 page renders one back control, and so does its export",
+  notFoundBackButtons === 1 && fs.existsSync(notFoundExportPath) && exportedBackButtons === 1,
+);
+if (notFoundBackButtons !== 1 || !fs.existsSync(notFoundExportPath) || exportedBackButtons !== 1) {
+  console.log(
+    `     source: ${notFoundBackButtons} <HistoryBackButton>, export: ${
+      fs.existsSync(notFoundExportPath) ? exportedBackButtons : "404.html missing"
+    }`,
+  );
+}
 
 // Collegamenti interni (blog): testo → note/altri articoli, sezioni, correlati
 // I link interni hanno la barra finale, come la canonical: con

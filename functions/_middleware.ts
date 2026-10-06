@@ -30,6 +30,17 @@
  *     alle API che costruiscono link applicativi, separatamente dalla
  *     configurazione SEO.
  *
+ * 4 · **Il pannello admin non esiste su questo host.** Il pannello e' uno
+ *     strumento di sviluppo: si apre su `localhost` con `npm run dev:pages` e
+ *     su `mattiaciuni.com` risponde 404, come qualunque indirizzo che non
+ *     esiste. Fino a ieri l'export conteneva la sua pagina e la proteggeva solo
+ *     il TOTP: la superficie era pubblica, enumerabile, e un errore nel percorso
+ *     di autenticazione era un errore nel punto piu' costoso del sito. Ora la
+ *     pagina non viene nemmeno esportata (`scripts/prune-local-only.mjs`) e
+ *     questa funzione chiude il percorso prima di guardare gli asset, perche' un
+ *     file gia' in cache all'edge continuerebbe a rispondere per tutta la sua
+ *     scadenza anche dopo che il file non c'e' piu'.
+ *
  * Tutto il resto passa agli asset, come se questa funzione non ci fosse: gli
  * header di `public/_headers`, il 404, le regole di `_redirects`. E grazie a
  * `public/_routes.json` la funzione **non viene nemmeno invocata** per immagini,
@@ -60,6 +71,26 @@ const PRODUCTION_ORIGIN = "https://mattiaciuni.com";
  * all'altro "e' qui".
  */
 const RETIRED_HOSTS = new Set(["mattiaciuni.pages.dev", "www.mattiaciuni.com"]);
+
+/**
+ * Gli host su cui il pannello admin puo' esistere.
+ *
+ * Qui e' scritta una copia della regola che sta in
+ * `functions/lib/admin-session.ts` (`isLoopbackRequest`), e non un import della
+ * stessa: questa funzione sta davanti a ogni richiesta del sito, e un import in
+ * piu' e' un modo in piu' di far cadere tutto invece di una riga. Il vincolo tra
+ * le due copie e' un controllo di `scripts/verify.js`, che legge entrambi i file
+ * e confronta le liste, come gia' fa per l'origine production.
+ *
+ * Le parentesi di IPv6 si tolgono: `new URL("http://[::1]:8788/").hostname`
+ * restituisce `[::1]`, e un confronto con `::1` senza normalizzare non
+ * combacerebbe mai.
+ */
+const LOCAL_HOSTS = new Set(["localhost", "127.0.0.1", "::1"]);
+
+function isLocalRequest(url: URL): boolean {
+  return LOCAL_HOSTS.has(url.hostname.toLowerCase().replace(/^\[|\]$/g, ""));
+}
 
 /**
  * Il 301, con percorso e query intatti.
@@ -142,6 +173,21 @@ export const onRequest = async (context: Context): Promise<Response> => {
   // HTTPS di Cloudflare e non qui.
   if (RETIRED_HOSTS.has(url.hostname.toLowerCase())) {
     return retiredHostRedirect(url);
+  }
+
+  // Il ramo privato non esiste fuori da questa macchina. Prima di ogni altra
+  // cosa, perche' l'ordine qui e' la garanzia: se questa riga scendesse sotto,
+  // una risposta servita prima non verrebbe piu' corretta dopo.
+  if (!isLocalRequest(url) && (url.pathname === "/admin" || url.pathname.startsWith("/admin/"))) {
+    return new Response("Not found", {
+      status: 404,
+      headers: {
+        "Content-Type": "text/plain; charset=utf-8",
+        "Cache-Control": "no-store",
+        "X-Robots-Tag": "noindex, nofollow",
+        "X-Content-Type-Options": "nosniff",
+      },
+    });
   }
 
   // Sotto un percorso privato non esiste nessuna card, e va detto **qui**, non

@@ -13,6 +13,7 @@ const EVENTI = [
 ];
 
 const helper = read("lib/analytics.ts");
+const attribution = read("lib/attribution.ts");
 const analytics = read("components/GoogleAnalytics.tsx");
 const umami = read("components/UmamiAnalytics.tsx");
 const layout = read("app/layout.tsx");
@@ -84,6 +85,20 @@ assert.match(helper, /currentAttribution/);
 assert.match(analytics, /attributionParams/);
 assert.match(analytics, /document\.addEventListener\("click", onClick/);
 assert.match(media, /track\("media_progress"/);
+
+// La migrazione di dominio e' anche un problema di attribuzione: fino al 5
+// ottobre 2026 il sito viveva sul sottodominio del progetto Pages, che ora
+// risponde 301. Chi arriva da li' deve restare "interno", non diventare una
+// sorgente con il nome del vecchio host accanto a Google nei report.
+assert.match(attribution, /const SITE_HOST = "mattiaciuni\.com"/);
+assert.match(attribution, /\$\{SITE_HOST[^}]*\}\.pages\.dev/, "il sottodominio del progetto si deriva dall'apex, non si scrive a mano");
+assert.match(attribution, /export function isOwnHost\(/);
+assert.match(attribution, /isOwnHost\(host\) \? "\(internal\)"/);
+assert.doesNotMatch(
+  attribution,
+  /host === window\.location\.hostname/,
+  "confrontare il referrer con il solo host corrente fa entrare il vecchio host nei report come sorgente",
+);
 
 const pages = readdirSync(join(root, "out"), { withFileTypes: true }).filter((e) => e.isDirectory()).length;
 console.log(`analytics: ${EVENTI.length} eventi, un solo punto di uscita verso GA, Umami e la copia nel database, nessun tag GA prima del consenso (${pages} cartelle nell'export)`);

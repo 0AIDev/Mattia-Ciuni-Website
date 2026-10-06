@@ -51,6 +51,7 @@
     "/api/nda",
     "/api/locale",
     "/api/macbook/rehearsal-log",
+    "/admin",
     "/admin/*",
     "/.well-known/*",
     "/api/admin/*",

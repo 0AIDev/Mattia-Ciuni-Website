@@ -12,6 +12,8 @@ import { blocksToMarkdown, contentDataWithBody, markdownToBlocks, parsePublished
 import { isCmsKind, isCmsStatus, type AdminContentItem, type CmsContentData, type CmsKind } from "../../../lib/cms-types.ts";
 // @ts-expect-error Pages bundles extensionless function imports; Node's offline loader needs `.ts`.
 import { cmsSeedContent } from "../../../lib/generated/cms-seed.ts";
+// @ts-expect-error Pages bundles extensionless function imports; Node's offline loader needs `.ts`.
+import { isLoopbackRequest, localOnly } from "../../lib/admin-session.ts";
 
 // GET/POST /api/admin/feedback — la coda di review dei feedback.
 //
@@ -182,11 +184,6 @@ const localFeedback: Store = {
   },
   async delete(key) { localStore.delete(key); },
 };
-
-function isLoopbackRequest(request: Request): boolean {
-  const hostname = new URL(request.url).hostname;
-  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
-}
 
 // This bypass is intentionally double-gated: the explicit local flag and a
 // loopback URL are both required. It can never authorize a deployed hostname.
@@ -900,6 +897,10 @@ async function createSession(env: Env, role: AdminRole): Promise<string> {
 }
 
 export const onRequestGet = async ({ request, env: incomingEnv }: PagesContext): Promise<Response> => {
+  // Il pannello esiste solo in locale: prima del binding, prima dell'auth, e
+  // prima di qualunque risposta che riveli l'esistenza di questo ramo.
+  const notLocal = localOnly(request);
+  if (notLocal) return notLocal;
   const env = withLocalStore(incomingEnv);
   // A production deployment without the FEEDBACK binding is unavailable, not
   // an unconfigured administrator. Keep this distinct from the one-time TOTP
@@ -916,6 +917,8 @@ export const onRequestGet = async ({ request, env: incomingEnv }: PagesContext):
 };
 
 export const onRequestPost = async ({ request, env: incomingEnv }: PagesContext): Promise<Response> => {
+  const notLocal = localOnly(request);
+  if (notLocal) return notLocal;
   const env = withLocalStore(incomingEnv);
   const declaredLength = Number.parseInt(request.headers.get("Content-Length") || "0", 10);
   if (Number.isFinite(declaredLength) && declaredLength > MAX_CONTENT_BODY_BYTES) {

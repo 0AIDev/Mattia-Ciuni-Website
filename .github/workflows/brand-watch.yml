@@ -1,0 +1,87 @@
+# La sorveglianza settimanale del marchio ritirato, fuori dal repository.
+#
+# `npm run check:brand` guarda solo dentro: garantisce che nessun file tracciato
+# nomini il nome vecchio. Il nome perň tornava da fuori — un sito aziendale
+# ancora sotto il marchio precedente, le stesse cariche sui profili di terze
+# parti, un indice di ricerca che serviva l'istantanea di un mese prima. Il
+# repository puň essere immacolato e la risposta che un motore dŕ su Mattia
+# comunque sbagliata. Questo workflow č il controllo che guarda fuori.
+#
+# Non installa niente e non usa credenziali: `scripts/check-external-brand.mjs`
+# non ha dipendenze e ogni suo controllo č una richiesta HTTP pubblica. Un
+# `npm ci` qui non servirebbe a nulla e aggiungerebbe un minuto e una superficie
+# in piů a ogni giro.
+#
+# I tre esiti dello script sono tre cose diverse e il workflow non le appiattisce:
+#
+#   exit 0  ogni superficie raggiungibile č pulita -> verde
+#   exit 1  il nome ritirato č pubblicato -> rosso, che č il segnale
+#   exit 2  niente trovato, ma almeno una superficie non č verificabile
+#           (una pagina di blocco, un 4xx, un timeout) -> giallo
+#
+# L'exit 2 non fa fallire il job ed č voluto. LinkedIn, Medium e Crunchbase
+# rispondono 403 o 999 a qualunque client che non sia un browser: fallire ogni
+# lunedě per quello renderebbe il rosso la norma, e un allarme che suona sempre
+# č un allarme che si impara a ignorare. L'incompletezza perň viene dichiarata:
+# un `::warning::` annotato e il riepilogo del job, non un verde silenzioso.
+#
+# Una superficie il cui *nome* porta un token ritirato non puň essere scritta in
+# un file tracciato, quindi non č in elenco nello script. Si aggiunge da qui, con
+# la variabile d'ambiente `BRAND_WATCH_URLS` (separata da spazi o virgole), che
+# esiste esattamente per questo caso: un target che non si puň nominare nel
+# repository resta sorvegliabile dal workflow.
+
+name: Watch the retired brand outside the repo
+
+on:
+  schedule:
+    # Lunedě alle 07:00 UTC, un'ora dopo la build di pubblicazione: il report
+    # guarda il sito giŕ ricostruito, non quello di ieri.
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  watch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Look for the retired name on the external surfaces
+        id: watch
+        run: |
+          set -uo pipefail
+          # Il codice di uscita si cattura prima di qualunque filtro: una pipe
+          # restituisce lo stato dell'ultimo comando, e `| tee` trasformerebbe
+          # un fallimento in un successo senza che nessuno se ne accorga.
+          set +e
+          node scripts/check-external-brand.mjs 2>&1 | tee brand-watch.log
+          status=${PIPESTATUS[0]}
+          set -e
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Brand watch"
+            echo ""
+            echo '```'
+            cat brand-watch.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          case "$status" in
+            0) echo "clean";;
+            1) echo "::error::the retired name is still published - see the job summary";;
+            2) echo "::warning::nothing found, but the run was incomplete - see the job summary";;
+            *) echo "::error::the monitor itself failed with status $status"; exit "$status";;
+          esac
+
+      - name: Fail only on a real finding
+        if: steps.watch.outputs.status == '1'
+        run: |
+          set -euo pipefail
+          echo "The retired name is on a live surface. Fix the source, then re-run this workflow."
+          exit 1

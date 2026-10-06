@@ -1,0 +1,105 @@
+# La sorveglianza delle due marchi su Google, giorno per giorno e settimana per
+# settimana.
+#
+# Tre controlli, tre oggetti diversi:
+#
+#   npm run check:brand          cosa dice il repository (file tracciati)
+#   check:external-brand         cosa pubblicano le pagine che controlliamo
+#   search-watch (questo)        cosa restituisce un motore di ricerca
+#
+# Il terzo non e' un redundante dei primi: l'indice di Google ha tenuto in vita
+# il vecchio titolo per settimane dopo che ogni file era pulito, e nessuno dei
+# due controlli che guardano la sorgente poteva vederne il motivo. La prima
+# riga di un risultato e' quella che legge una persona.
+#
+# Due scadenze, una profondita' diversa:
+#
+#   06:00 UTC ogni giorno   due query in ricerca web (2 crediti)
+#   07:00 UTC ogni lunedi   piu' il dominio letterale e le immagini (5 crediti)
+#
+# Il lunedi e' un'ora dopo la build di pubblicazione e un'ora dopo il controllo
+# settimanale del marchio su URL, quindi il report guarda il sito ricostruito e
+# le pagine appena verificate, non quelle di ieri.
+#
+# I crediti non sono un dettaglio: il piano gratuito conta 250 ricerche al mese
+# e il consumo atteso e' di 82 (31x2 + 4x5). Il numero reale finisce in ogni
+# riepilogo del job, quindi si controlla sulla dashboard invece di crederci.
+#
+# Non installa niente: scripts/check-search-brand.mjs e' Node puro con il fetch
+# nativo, e l'unico segreto e' la chiave del provider SERP. Senza quella chiave
+# lo script esce 2 e il job annota il motivo: un giro senza verdetto non e'
+# un giro pulito.
+#
+# I tre esiti restano tre cose diverse, esattamente come in brand-watch.yml:
+#
+#   exit 0  niente di ritirato nei risultati -> verde
+#   exit 1  un token ritirato torna da Google -> rosso, che e' il segnale
+#   exit 2  niente trovato, ma il giro e' incompleto -> giallo, mai verde
+#
+# L'exit 2 non fa fallire il job, e' voluto: LinkedIn e Google rispondono a un
+# client senza browser in modi che non controlliamo, e fallire ogni giorno per
+# quello renderebbe il rosso la norma.
+
+name: Watch both brands on Google
+
+on:
+  schedule:
+    - cron: "0 6 * * *"
+    - cron: "0 7 * * 1"
+  workflow_dispatch:
+    inputs:
+      mode:
+        description: "daily (solo ricerca web) oppure weekly (web + immagini)"
+        required: false
+        default: "daily"
+
+permissions:
+  contents: read
+
+jobs:
+  search-watch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Ask Google what comes up
+        id: watch
+        env:
+          SERPAPI_KEY: ${{ secrets.SERPAPI_KEY }}
+          SEARCH_WATCH_MODE: ${{ inputs.mode || (github.event.schedule == '0 7 * * 1' && 'weekly' || 'daily') }}
+          SEARCH_WATCH_GL: ${{ vars.SEARCH_WATCH_GL }}
+          SEARCH_WATCH_HL: ${{ vars.SEARCH_WATCH_HL }}
+        run: |
+          set -uo pipefail
+          # Il codice di uscita si cattura prima di qualunque filtro: una pipe
+          # restituisce lo stato dell'ultimo comando, e `tee` trasformerebbe un
+          # fallimento in un successo senza che nessuno se ne accorga.
+          set +e
+          node scripts/check-search-brand.mjs 2>&1 | tee search-watch.log
+          status=${PIPESTATUS[0]}
+          set -e
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Google brand watch"
+            echo ""
+            echo '```'
+            cat search-watch.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          case "$status" in
+            0) echo "clean";;
+            1) echo "::error::Google is still returning the retired name - see the job summary";;
+            2) echo "::warning::no verdict this run (missing key, failed request or unrecognised payload) - see the job summary";;
+            *) echo "::error::the monitor itself failed with status $status"; exit "$status";;
+          esac
+
+      - name: Fail only on a real finding
+        if: steps.watch.outputs.status == '1'
+        run: |
+          set -euo pipefail
+          echo "Google returned the retired name. Fix the page that earns that result, then re-run this workflow."
+          exit 1

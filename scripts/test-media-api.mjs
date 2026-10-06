@@ -65,8 +65,9 @@ function base64(text) {
   return Buffer.from(text, "utf8").toString("base64");
 }
 
-// Auth senza sessione e senza localhost: il bypass e' doppio gate, e qui si
-// verifica proprio che il gate singolo non basta.
+// Senza sessione e senza localhost: la libreria media fa parte del pannello, che
+// esiste solo in locale, quindi su un host remoto non e' "non autorizzata" -
+// inesistente. Un 401 direbbe che li' c'e' qualcosa da autorizzare.
 {
   const unauthorized = await onRequestPost({
     request: new Request("https://admin.example.com/api/admin/media", {
@@ -76,7 +77,7 @@ function base64(text) {
     }),
     env: { MEDIA: bucket, FEEDBACK: kv(), LOCAL_ADMIN: "1" },
   });
-  check("media: a remote host is not authorized by LOCAL_ADMIN alone", unauthorized.status === 401, `got ${unauthorized.status}`);
+  check("media: a remote host gets 404, not 401: the library is local-only", unauthorized.status === 404, `got ${unauthorized.status}`);
 }
 
 // Upload valido.

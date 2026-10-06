@@ -2,6 +2,14 @@
 import { supabaseConfigured, supabaseRequest } from "../lib/supabase.ts";
 // @ts-expect-error Pages bundles extensionless function imports; Node's offline loader needs `.ts`.
 import { supabaseKv } from "../lib/supabase-kv.ts";
+// La regola su quali host sono "questo sito" sta in un posto solo, e il client
+// la usa gia': la copia non puo' avere un'idea diversa di cosa sia una
+// provenienza, altrimenti lo stesso referrer verrebbe classificato in due modi
+// a seconda di quale delle due strade lo registra.
+// Da qui `../lib` e' `functions/lib`, il codice condiviso delle Function: la
+// regola del client sta invece nel `lib/` della radice, quindi due livelli in su.
+// @ts-expect-error Pages bundles extensionless function imports; Node's offline loader needs `.ts`.
+import { isOwnHost } from "../../lib/attribution.ts";
 
 /**
  * POST /api/collect: la copia dei dati di misura nel database del sito.
@@ -182,14 +190,21 @@ function deviceOf(userAgent: string): string {
 }
 
 /** Il dominio di provenienza, mai l'indirizzo intero: un referrer può contenere
- *  una query di ricerca, e quella non ci serve. */
+ *  una query di ricerca, e quella non ci serve.
+ *
+ *  Un referrer che arriva da un host nostro non e' una provenienza: fino al 5
+ *  ottobre 2026 il sito viveva sul sottodominio del progetto Pages, che ora
+ *  risponde 301 verso l'origine, quindi il vecchio host puo' comparire come
+ *  referrer di una pagina nuova. Paragonarlo all'host della richiesta non lo
+ *  riconosceva - sono due host diversi - e lo avrebbe scritto nel database come
+ *  sorgente. La regola e' quella condivisa con il client. */
 function referrerHost(request: Request): string {
   const referer = request.headers.get("Referer");
   if (!referer) return "";
   try {
-    const url = new URL(referer);
-    if (url.hostname === new URL(request.url).hostname) return "";
-    return url.hostname.replace(/^www\./, "").slice(0, 120);
+    const host = new URL(referer).hostname;
+    if (isOwnHost(host)) return "";
+    return host.replace(/^www\./, "").slice(0, 120);
   } catch {
     return "";
   }

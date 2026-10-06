@@ -87,9 +87,53 @@ export async function sha256(value: string): Promise<string> {
   return Array.from(new Uint8Array(digest), (byte) => byte.toString(16).padStart(2, "0")).join("");
 }
 
+/**
+ * Vero solo per una richiesta che arriva da questa macchina.
+ *
+ * `new URL("http://[::1]:8788/").hostname` restituisce `[::1]`, con le
+ * parentesi: senza toglierle il confronto con `::1` non combaciava mai e il
+ * caso IPv6 finiva nel ramo sbagliato. Il difetto era invisibile finche' la
+ * funzione serviva solo a un bypass locale; smette di esserlo ora che decide
+ * se il pannello esiste, quindi le parentesi si tolgono qui.
+ */
 export function isLoopbackRequest(request: Request): boolean {
-  const hostname = new URL(request.url).hostname;
+  const hostname = new URL(request.url).hostname.replace(/^\[|\]$/g, "");
   return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
+}
+
+/**
+ * Il pannello admin e i suoi endpoint esistono **solo in locale**.
+ *
+ * Perche' e' un gate e non un permesso. Prima il pannello era pubblicato come
+ * pagina statica su `mattiaciuni.com` e protetto solo dal TOTP: la superficie
+ * esisteva in produzione, si poteva enumerarla, e un errore nel percorso di
+ * autenticazione era un errore nel punto piu' costoso del sito. Ora la
+ * superficie non c'e': l'export non contiene nessuna pagina sotto `/admin`, il
+ * middleware risponde 404 su qualunque host che non sia questa macchina, e
+ * questi due endpoint fanno la stessa cosa prima di guardare cookie o token.
+ *
+ * Perche' 404 e non 401. Un 401 dice "esiste un endpoint di autenticazione, e
+ * ti manca la credenziale": e' un invito a provarci, e distingue questo ramo da
+ * tutto il resto del sito. Un 404 e' la stessa risposta che il sito da' a
+ * qualunque indirizzo che non esiste, quindi non annuncia niente. Il caso
+ * legittimo — `npm run dev:pages` su localhost — non cambia.
+ *
+ * Le anteprime di Cloudflare (`<hash>.pages.dev`) non sono loopback, quindi il
+ * pannello non e' disponibile nemmeno li'. E' voluto: "solo in locale" vuol dire
+ * solo in locale, e un'anteprima ha un indirizzo raggiungibile da chiunque abbia
+ * il link.
+ */
+export function localOnly(request: Request): Response | null {
+  if (isLoopbackRequest(request)) return null;
+  return new Response("Not found", {
+    status: 404,
+    headers: {
+      "Content-Type": "text/plain; charset=utf-8",
+      "Cache-Control": "no-store",
+      "X-Robots-Tag": "noindex, nofollow",
+      "X-Content-Type-Options": "nosniff",
+    },
+  });
 }
 
 /** Confronto a tempo costante: due digest della stessa lunghezza, xor accumulato. */

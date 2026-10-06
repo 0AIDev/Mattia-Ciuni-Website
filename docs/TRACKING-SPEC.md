@@ -92,6 +92,7 @@ Normalization:
 
 - source and medium are lowercased;
 - referrers are reduced to hostname only;
+- a referrer from any host of this site - the apex, `www`, the legacy Pages subdomain and its previews - is `(internal)`, never a source: the site moved from the Pages subdomain on 5 October 2026 and that host now redirects, so a visit arriving from an address still in someone's cache or history must not enter the reports as a `referral` alongside Google;
 - landing pages store pathname only, never the full query string;
 - absent source is `direct / none`;
 - search referrers become `organic_search`;
@@ -192,6 +193,25 @@ Recommended reports:
 - email, social, outbound and copy events;
 - Supabase row contains attribution but no PII;
 - admin endpoint returns aggregates only after authentication.
+
+## Domain migration, 5 October 2026
+
+On that date the site moved from the Cloudflare Pages subdomain `mattiaciuni.pages.dev` to `mattiaciuni.com`. The old host now answers 301. The measurement surface had to move with it, and it splits into three parts that behave differently.
+
+**Nothing in the repository names a domain, and that is not an oversight.** The GA4 Measurement ID, the Umami website ID and the Clarity project ID are public identifiers; none of them encodes a hostname, and all are served by the tag on whichever host loads it. So there is no domain to change in the code, and the identifiers do not need rotating after a migration.
+
+**The one place the host was code, and it was wrong.** Attribution classified a referrer as `(internal)` only when it matched the host serving the page. After the migration the legacy host is a *redirect* to that host, so it is a different string: a visit arriving from an address still in someone's cache or history was recorded as `source = mattiaciuni.pages.dev, medium = referral`, an invented source sitting next to Google in every acquisition report. Cloudflare preview hosts had the same problem. The rule now lives in `lib/attribution.ts` (`isOwnHost`), covers the apex, `www`, the project subdomain and its previews, and is used by both the client and `functions/api/collect.ts` - the collector's server-side fallback compared the referrer to the host of the request, which failed for exactly the same reason. `scripts/verify.js` asserts the two copies agree and that the legacy host is covered.
+
+**In the vendor dashboards, four settings, and only one of them can lose data:**
+
+| Tool | What to change | Why it matters |
+|---|---|---|
+| GA4 | Admin → Data streams → the web stream's URL, and Configure tag settings → *List unwanted referrals*: add the legacy Pages host | the stream URL is a label and the reports key off the identifier, but the unwanted-referral list is functional: without it a session that arrives from the old host can be cut in two |
+| Umami Cloud | the website's domain field | the tracker reports the real hostname, so data keeps flowing either way - but a domain restriction left configured on the old host is the one setting that would silently drop real visits, so it is worth checking rather than assuming |
+| Clarity | the project's site URL | a label. Sessions are grouped by the URL of the page that loads the tag, so nothing breaks; the setting is updated only so the settings screen is not misleading |
+| Cloudflare Web Analytics | nothing | it is off in the Pages project on purpose and the CSP does not authorise its beacon |
+
+**History is not rewritten, and the two halves age differently.** The owned first-party copy stores `page_path`, never a host, so it has no split at all: a report by path is continuous across the migration. The three external tools keep the old host in the pre-migration period, which is a true record of where the traffic was and should stay as it is. What must not stay is a *new* row attributed to an internal host, and that is the part the fix above closes.
 
 ## Not implemented without credentials
 

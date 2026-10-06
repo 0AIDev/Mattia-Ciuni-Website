@@ -43,11 +43,40 @@ function clean(value: string | null | undefined, fallback = "") {
   return (value || "").trim().slice(0, 200) || fallback;
 }
 
+/**
+ * Gli host di questo sito, e perche' non e' uno solo.
+ *
+ * Un referrer che arriva da un host nostro non e' una sorgente: e' la stessa
+ * visita un passo piu' in la'. Fino al 5 ottobre 2026 il sito viveva su
+ * `mattiaciuni.pages.dev`, che da allora risponde 301 verso l'apex: chi ha
+ * ancora una pagina vecchia in cache o in cronologia arriva da li'. Con il
+ * confronto precedente, che paragonava il referrer al solo host corrente, quel
+ * referrer non veniva riconosciuto e diventava una sorgente col nome del vecchio
+ * host, con medium `referral`: un dato inventato che nei report sta accanto a
+ * Google, e che nessuno riconoscerebbe come un guasto. Le anteprime di
+ * Cloudflare (`<hash>.mattiaciuni.pages.dev`) hanno lo stesso problema.
+ *
+ * L'host e' scritto qui e non importato da `lib/site-origin.ts` per la stessa
+ * ragione per cui non lo importa il middleware: quel modulo lancia se
+ * `NEXT_PUBLIC_SITE_URL` non coincide, e questo file gira dentro componenti
+ * client. Le due copie non possono divergere, perche' `scripts/verify.js`
+ * confronta questa costante con l'origine production e con gli host ritirati
+ * del middleware.
+ */
+const SITE_HOST = "mattiaciuni.com";
+const PAGES_HOST = `${SITE_HOST.split(".")[0]}.pages.dev`;
+
+/** Vero per ogni host che e' questo sito: apex, `www`, il progetto Pages e le sue anteprime. */
+export function isOwnHost(host: string): boolean {
+  const bare = host.replace(/^www\./, "");
+  return bare === SITE_HOST || bare === PAGES_HOST || bare.endsWith(`.${PAGES_HOST}`);
+}
+
 function referrerDomain() {
   if (typeof document === "undefined" || !document.referrer) return "(none)";
   try {
-    const host = new URL(document.referrer).hostname.replace(/^www\./, "");
-    return host === window.location.hostname ? "(internal)" : host.slice(0, 120);
+    const host = new URL(document.referrer).hostname;
+    return isOwnHost(host) ? "(internal)" : host.replace(/^www\./, "").slice(0, 120);
   } catch {
     return "(unknown)";
   }

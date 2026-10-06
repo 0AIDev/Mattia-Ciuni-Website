@@ -97,6 +97,10 @@ qualcosa:
    alla migrazione. Le righe scoperte vanno aggiunte a `public/_redirects` come
    `/vecchio  /nuovo  301` (regole di percorso, non di host).
 
+La versione operativa e completa di questi passi — le proprietà da creare, le
+sitemap da inviare, le rimozioni, le richieste di indicizzazione e le cose da non
+fare — sta in **`docs/search-console.md`**.
+
 ## Come si torna indietro
 
 Il rollback è un ripristino di DNS, e i valori sono qui per quello:

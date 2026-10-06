@@ -16,7 +16,7 @@ import { supabaseKv } from "../../lib/supabase-kv.ts";
 // @ts-expect-error Cloudflare bundles extensionless TS imports; Node's native strip loader needs `.ts` for the offline test.
 import { MEDIA_MAX_BYTES, isAllowedContentType, kindForName, mediaUrl, safeMediaKey, type MediaItem } from "../../../lib/media.ts";
 // @ts-expect-error Pages bundles extensionless function imports; Node's native loader needs `.ts`.
-import { isAuthorized, json, sameOrigin, type Store } from "../../lib/admin-session.ts";
+import { isAuthorized, isLoopbackRequest, json, localOnly, sameOrigin, type Store } from "../../lib/admin-session.ts";
 
 interface R2ObjectBody {
   key?: string;
@@ -61,11 +61,6 @@ function base64ToBytes(value: string): Uint8Array {
   return bytes;
 }
 
-function isLoopback(request: Request): boolean {
-  const hostname = new URL(request.url).hostname;
-  return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1";
-}
-
 /**
  * Il bypass locale esiste perche' `npm run dev:pages` non ha un bucket R2: senza
  * di esso non si puo' provare il pannello in locale. E' doppio gate come
@@ -74,7 +69,7 @@ function isLoopback(request: Request): boolean {
  * da loopback.
  */
 function authorized(request: Request, env: Env): Promise<boolean> {
-  if (env.LOCAL_ADMIN === "1" && isLoopback(request)) return Promise.resolve(true);
+  if (env.LOCAL_ADMIN === "1" && isLoopbackRequest(request)) return Promise.resolve(true);
   return isAuthorized(request, env).then((role) => role === "ceo");
 }
 
@@ -164,6 +159,9 @@ async function deleteMeta(env: Env, key: string): Promise<void> {
 }
 
 export const onRequestGet = async ({ request, env }: PagesContext): Promise<Response> => {
+  // Solo in locale: la libreria media e' parte del pannello, non un servizio.
+  const notLocal = localOnly(request);
+  if (notLocal) return notLocal;
   if (!(await authorized(request, env))) return json({ code: "unauthorized" }, 401);
   const bucket = env.MEDIA;
   if (!bucket) return json({ items: [], storage: "unconfigured" });
@@ -190,6 +188,8 @@ export const onRequestGet = async ({ request, env }: PagesContext): Promise<Resp
 };
 
 export const onRequestPost = async ({ request, env }: PagesContext): Promise<Response> => {
+  const notLocal = localOnly(request);
+  if (notLocal) return notLocal;
   if (!sameOrigin(request)) return json({ code: "forbidden" }, 403);
   if (!(await authorized(request, env))) return json({ code: "unauthorized" }, 401);
 
