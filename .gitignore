@@ -32,6 +32,9 @@ public/.well-known/
 .freebuff/
 # anteprime delle mail: rigenerate da `npm run email:preview`, contengono le immagini in base64
 emails/preview*.html
+# log del dev server: sorgente mai, e se viene committato il guard del brand lo
+# legge come contenuto (stessa ragione di `*.out` sopra)
+*.log
 
 # Inventario di pulizia del marchio: contiene i nomi ritirati, quindi non puo`
 # essere tracciato (check-brand li vieta nei file tracciati e la lista delle
