@@ -1727,5 +1727,63 @@ check(
     /publicJobs\(\)\.map\(\(job\)/.test(careersParamsSource),
 );
 
+// Il monitor del marchio fuori dal repository esiste in tre pezzi, e ognuno
+// guarda qualcosa che gli altri due non vedono: gli URL che controlliamo
+// (`check-external-brand.mjs`, senza credenziali), quello che Google restituisce
+// (`check-search-brand.mjs`, SerpAPI), le pagine che si rifiutano di essere
+// lette e quelle che nessuno ha ancora messo in elenco (`check-brand-reading.mjs`
+// e `discover-brand-surfaces.mjs`).
+//
+// Due vincoli che nessuno degli altri controlli copre.
+//
+// Il primo: la lista delle superfici bloccate e quella dei target sorvegliati
+// devono restare la stessa lista. Sono due copie per una ragione vera - la
+// lettura ha bisogno di una credenziale e la baseline no - e due copie che
+// possono divergere divergono: una superficie aggiunta a una sola delle due
+// sarebbe letta e non sorvegliata, o sorvegliata e mai letta.
+const externalBrandSource = readFileSync(
+  path.join(__dirname, "..", "scripts", "check-external-brand.mjs"),
+  "utf8",
+);
+const brandReadingSource = readFileSync(
+  path.join(__dirname, "..", "scripts", "check-brand-reading.mjs"),
+  "utf8",
+);
+const watchedUrls = new Set(
+  [...externalBrandSource.matchAll(/url:\s*"(https?:\/\/[^"]+)"/g)].map((match) => match[1]),
+);
+const blockedUrls = [...brandReadingSource.matchAll(/url:\s*"(https?:\/\/[^"]+)"/g)].map(
+  (match) => match[1],
+);
+check(
+  `brand: the surfaces that need a credential are also watched without one (${blockedUrls.length} blocked, ${watchedUrls.size} watched)`,
+  watchedUrls.size > 0 && blockedUrls.length > 0 && blockedUrls.every((url) => watchedUrls.has(url)),
+);
+if (!blockedUrls.every((url) => watchedUrls.has(url))) {
+  console.log(
+    "     " + blockedUrls.filter((url) => !watchedUrls.has(url)).join(", ") + " is read but not watched",
+  );
+}
+
+// Il secondo: un monitor che nessuno chiama non e' un monitor. Due script con
+// una chiave e una scadenza vivono o muoiono su questo - il codice puo' essere
+// perfetto e il workflow dimenticarsene, e il risultato e' verde per sempre.
+// Qui si lega il comando al file e il workflow al comando, piu' la cadenza che
+// l'utente ha chiesto: quotidiana per la lettura, settimanale per la scoperta.
+const packageScripts = JSON.parse(readFileSync(path.join(__dirname, "..", "package.json"), "utf8")).scripts;
+const deepWatchWorkflow = readFileSync(
+  path.join(__dirname, "..", ".github", "workflows", "brand-deep-watch.yml"),
+  "utf8",
+);
+check(
+  "brand: the deep monitors are reachable and scheduled at the cadence they promise",
+  packageScripts["check:brand-reading"] === "node scripts/check-brand-reading.mjs" &&
+    packageScripts["discover:brand-surfaces"] === "node scripts/discover-brand-surfaces.mjs" &&
+    deepWatchWorkflow.includes("node scripts/check-brand-reading.mjs") &&
+    deepWatchWorkflow.includes("node scripts/discover-brand-surfaces.mjs") &&
+    /cron: "30 6 \* \* \*"/.test(deepWatchWorkflow) &&
+    /cron: "30 7 \* \* 1"/.test(deepWatchWorkflow),
+);
+
 check("weight: homepage html+css < 135KB raw", bytes < 135 * 1024);
 process.exit(fail ? 1 : 0);

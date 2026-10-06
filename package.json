@@ -21,6 +21,8 @@
     "check:brand": "node scripts/check-brand.mjs",
     "check:external-brand": "node scripts/check-external-brand.mjs",
     "check:search-brand": "node scripts/check-search-brand.mjs",
+    "check:brand-reading": "node scripts/check-brand-reading.mjs",
+    "discover:brand-surfaces": "node scripts/discover-brand-surfaces.mjs",
     "test:brand": "node scripts/test-brand.mjs",
     "test:newsletter": "node scripts/test-newsletter.mjs",
     "test:admin": "node --disable-warning=MODULE_TYPELESS_PACKAGE_JSON scripts/test-admin.mjs",

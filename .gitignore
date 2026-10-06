@@ -32,3 +32,8 @@ public/.well-known/
 .freebuff/
 # anteprime delle mail: rigenerate da `npm run email:preview`, contengono le immagini in base64
 emails/preview*.html
+
+# Inventario di pulizia del marchio: contiene i nomi ritirati, quindi non puo`
+# essere tracciato (check-brand li vieta nei file tracciati e la lista delle
+# eccezioni e` bloccata a due file). Vive solo su questa macchina.
+BRAND-CLEANUP.local.md

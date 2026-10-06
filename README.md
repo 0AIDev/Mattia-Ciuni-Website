@@ -66,6 +66,8 @@ node scripts/check-live.mjs --site=https://mattiaciuni.com  # gli stessi control
 npm run check:brand         # cosa dice il repository (anche in prebuild)
 npm run check:external-brand  # cosa pubblicano le pagine esterne: marchio ritirato e canonical derivate
 npm run check:search-brand  # cosa restituisce Google (richiede SERPAPI_KEY; senza, esce 2 e non dice nulla di falso)
+npm run check:brand-reading  # legge le pagine che bloccano una richiesta senza browser (TAVILY_API_KEY)
+npm run discover:brand-surfaces  # cerca le superfici che non sono in nessun elenco (EXA_API_KEY)
 ```
 
 ## Deploy su Cloudflare Pages
@@ -126,21 +128,27 @@ Il sottodominio `mattiaciuni.pages.dev` che Cloudflare assegna al progetto non �
 5. Per inviare automaticamente `/sitemap.xml` a Google Search Console dopo ogni build, assegna a un service account il permesso sulla proprietà e configura i Secret `GOOGLE_SERVICE_ACCOUNT_EMAIL` e `GOOGLE_SERVICE_ACCOUNT_PRIVATE_KEY`, più `GOOGLE_SEARCH_CONSOLE_SITE_URL`. Se non sono configurati, il build salta l'invio senza errori. Questo usa la Sitemap API, non l'Indexing API: gli articoli normali non vanno inviati all'Indexing API.
 6. Gli articoli hanno JSON-LD `BlogPosting`, RSS e news sitemap. Questo rende il sito tecnicamente idoneo alla scansione, ma Google News decide autonomamente l'inclusione editoriale e non può essere garantita dal codice.
 
-### Sorveglianza del marchio: tre controlli, tre oggetti
+### Sorveglianza del marchio: cinque controlli, cinque domande
 
-Non è la stessa domanda ripetuta tre volte, e nessuno dei tre copre gli altri due:
+Non è la stessa domanda ripetuta cinque volte, e nessuno dei cinque copre gli altri quattro:
 
 | Controllo | Domanda | Quando |
 | --- | --- | --- |
 | `npm run check:brand` | che cosa dicono i file di questo repository | a ogni build (`prebuild`) |
 | `npm run check:external-brand` | che cosa pubblicano le pagine che controlliamo, i profili e i domini collegati | ogni lunedì alle 07:00 UTC |
 | `npm run check:search-brand` | che cosa restituisce Google su entrambi i marchi — ricerca web tutti i giorni, più le immagini ogni settimana | 06:00 UTC ogni giorno, 07:00 UTC ogni lunedì |
+| `npm run check:brand-reading` | che cosa dicono le pagine che si rifiutano di essere lette: LinkedIn, Medium e la scheda di terze parti, che il controllo senza credenziali dichiara come `unverified` | 06:30 UTC ogni giorno |
+| `npm run discover:brand-surfaces` | quali pagine parlano dei due marchi **senza essere in nessun elenco**: direttori, interviste, schede su piattaforme che non conosciamo | 07:30 UTC ogni lunedì |
 
 Il terzo è quello che guarda dal lato del lettore. Un indice di Google può restare sbagliato per settimane dopo che ogni file è pulito — è successo, ed è il motivo per cui esiste — e nessun controllo sulla sorgente lo vedeva: le righe di un risultato sono la cosa che legge una persona. Copre due soggetti separati, la persona e il prodotto, perché Google li tratta separatamente, e riporta in riepilogo quali pagine nostre compaiono e a che posizione: uscire dai risultati per il proprio nome è un dato, non un guasto.
 
 Il monitor non contiene il nome ritirato: lo legge dal guard (`scripts/check-brand.mjs`), come `check-external-brand.mjs`, quindi un rinominamento ha un solo posto da toccare. E ha tre esiti distinti, come l'altro: `0` pulito, `1` il nome ritirato nei risultati (l'allarme), `2` nessun verdetto (chiave mancante, richiesta fallita, payload di forma sconosciuta). Un giro incompleto **non** è un giro pulito, e il workflow lo annota invece di colorarlo di verde.
 
-**Cosa serve**: il secret `SERPAPI_KEY` nei secret del repository (chiave gratuita da serpapi.com). Più le due variabili opzionali `SEARCH_WATCH_GL` / `SEARCH_WATCH_HL` (default `it` / `en`) se vuoi controllare un'altra locale: Google restituisce risultati diversi per paese, quindi cambiarle cambia ciò che si guarda. Una ricerca costa un credito e il consumo atteso è di **82 al mese** (31 giornalieri × 2 + 4 settimanali × 5) contro le 250 del piano gratuito; il numero reale appare in ogni riepilogo, quindi si controlla sulla dashboard invece di crederci.
+**Cosa serve**: tre secret nei secret del repository, tutti con piano gratuito — `SERPAPI_KEY` (serpapi.com), `TAVILY_API_KEY` (tavily.com), `EXA_API_KEY` (exa.ai). Più le due variabili opzionali `SEARCH_WATCH_GL` / `SEARCH_WATCH_HL` (default `it` / `en`) se vuoi controllare un'altra locale: Google restituisce risultati diversi per paese, quindi cambiarle cambia ciò che si guarda. **Senza una chiave il suo monitor esce 2 e non finge il verde**: il job gira, annota il motivo, e gli altri due continuano a funzionare.
+
+Perché tre fornitori e non uno: ognuno risponde a una domanda che gli altri due non sanno fare. SerpAPI mostra quello che Google **espone** (posizioni, answer box, immagini, AI Overview); Tavily **legge** una pagina che rifiuta una richiesta senza browser; Exa **trova** le pagine che nessuno ha messo in elenco. Un secondo fornitore senza un mestiere suo sarebbe solo un secondo modo di fallire. E il monitor senza credenziali resta senza credenziali di proposito: è la rete di sicurezza che gira anche quando una chiave scade o non è mai stata configurata, quindi le capacità che richiedono una chiave vivono in file separati e in un workflow separato.
+
+Il consumo atteso, per poterlo controllare invece di crederci — il numero reale appare in ogni riepilogo: SerpAPI **82/250** ricerche al mese (31 × 2 + 4 × 5); Tavily **~30/1.000** crediti al mese (una lettura di tre URL costa 1 credito, e il livello `basic` ne fa 5 per credito); Exa **~8 ricerche** al mese contro i crediti mensili del piano gratuito (due query a settimana, senza chiedere il testo delle pagine — quello lo legge Tavily, pagarlo due volte sarebbe pagare due volte gli stessi byte).
 
 ## Scrivere un articolo
 

@@ -261,19 +261,8 @@ for (const query of queries) {
   // di lavoro viene descritto — e non compaiono mai in organic_results.
   // `search_parameters` escluso: e' il riecheggio della richiesta, e non e'
   // risultato. Se ci fosse dentro, la query stessa falserebbe il controllo.
-  const echoed = { ...payload };
-  delete echoed.search_parameters;
-  const json = JSON.stringify(echoed);
-  for (const token of retired) {
-    // La ricerca e' sul testo originale e con un indice che appartiene a quel
-    // testo: un `toLowerCase()` sul payload intero puo' cambiare la lunghezza
-    // delle stringhe e spostare ogni match rispetto al contesto che poi si
-    // stampa. La regex con `i` tiene insieme il confronto e la posizione.
-    const match = new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i").exec(json);
-    if (!match) continue;
-    findings.push({ query, context: contextAround(json, match.index) });
-    break; // un ritrovamento per query basta: l'allarme e' che ci sia, non quante volte
-  }
+  const hit = findRetired(payload, retired);
+  if (hit) findings.push({ query, where: hit.where, context: hit.context });
 
   // Dove compaiono le nostre pagine: informativo, mai un fallimento.
   visible.forEach((row) => {
@@ -294,6 +283,71 @@ for (const query of queries) {
 function contextAround(text, index, width = 200) {
   const from = Math.max(0, index - 60);
   return text.slice(from, index + width).replace(/\s+/g, " ");
+}
+
+/**
+ * Dove e' comparso il nome ritirato, in una forma leggibile.
+ *
+ * Il primo giro vero (6 ottobre 2026) ha prodotto un allarme illeggibile: il
+ * contesto era una fetta di JSON tagliata a meta' - `exact spelling"},"inline_
+ * images":[{"source":…` - perche' si cercava nel payload serializzato e si
+ * stampavano i caratteri intorno alla posizione. Un report che non si legge non
+ * serve a niente, e l'allarme e' l'unica cosa che deve essere capita in fretta:
+ * quindi si guarda prima dove il nome avrebbe un senso, cioe' le righe visibili,
+ * e solo dopo i blocchi che non hanno forma di riga, ognuno **nominato**.
+ */
+function findRetired(payload, tokens) {
+  // I campi che non sono risultati: il riecheggio della richiesta e la struttura.
+  // `search_parameters` e' la richiesta stessa - se ci finisse dentro, la query
+  // falserebbe il controllo che la sta eseguendo. L'insieme sta **dentro** la
+  // funzione e non a livello di modulo perche' la funzione viene chiamata prima
+  // che il modulo finisca di valutarsi: un `const` in fondo al file sarebbe in
+  // zona morta temporale, e il caso pulito morirebbe con un ReferenceError - che
+  // il primo giro di prove ha colto subito, quattro casi su nove.
+  const NOT_A_RESULT = new Set([
+    "search_parameters",
+    "search_metadata",
+    "search_information",
+    "pagination",
+    "organic_results",
+    "images_results",
+  ]);
+
+  const test = (value) => {
+    if (typeof value !== "string" || !value) return null;
+    for (const token of tokens) {
+      // La regex con `i` tiene insieme il confronto e la posizione del contesto:
+      // un `toLowerCase()` sul testo intero puo' cambiare la lunghezza delle
+      // stringhe e spostare ogni match rispetto a cio' che poi si stampa.
+      const pattern = new RegExp(token.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "i");
+      const match = pattern.exec(value);
+      if (match) return { token, index: match.index };
+    }
+    return null;
+  };
+
+  for (const key of ["organic_results", "images_results"]) {
+    for (const [index, row] of (payload[key] ?? []).entries()) {
+      for (const field of ["title", "snippet", "link"]) {
+        const hit = test(row?.[field]);
+        if (!hit) continue;
+        return {
+          where: `${key} #${index + 1} (${field})`,
+          context: String(row[field]).replace(/\s+/g, " ").slice(0, 160),
+        };
+      }
+    }
+  }
+
+  for (const [key, value] of Object.entries(payload)) {
+    if (NOT_A_RESULT.has(key)) continue;
+    const serialised = JSON.stringify(value);
+    const hit = test(serialised);
+    if (!hit) continue;
+    return { where: `${key} (blocco non a righe)`, context: contextAround(serialised, hit.index, 140) };
+  }
+
+  return null;
 }
 
 const label = mode === "weekly" ? "weekly (web + images)" : "daily (web)";
@@ -320,7 +374,7 @@ if (selfHits.length) {
 }
 
 for (const finding of findings) {
-  console.error(`\n  FOUND     ${finding.query.kind} ${finding.query.q}`);
+  console.error(`\n  FOUND     ${finding.query.kind} ${finding.query.q} — ${finding.where}`);
   console.error(`            ${finding.context}`);
   console.error(`            ${finding.query.why}`);
 }

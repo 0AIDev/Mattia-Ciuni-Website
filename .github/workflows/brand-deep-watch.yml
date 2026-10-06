@@ -1,0 +1,120 @@
+# I due monitor che hanno bisogno di una chiave: leggere le pagine bloccate e
+# cercare le superfici che non conosciamo.
+#
+# Stanno in un workflow separato da `brand-watch.yml` per una ragione precisa:
+# quello gira senza credenziali e deve continuare a girare anche se una chiave
+# scade, viene revocata o non e' mai stata configurata. Se i tre convivessero, un
+# segreto mancante renderebbe rosso anche il controllo che non ha bisogno di
+# niente. Cosi' invece ognuno fallisce per conto suo.
+#
+# Due scadenze, due mestieri:
+#
+#   06:30 UTC ogni giorno   check:brand-reading      legge le pagine che
+#                           rispondono 403/999 a una richiesta senza browser
+#                           (LinkedIn, Medium, la scheda di terze parti), che
+#                           il monitor senza credenziali dichiara come
+#                           "unverified". 1 credito Tavily per giro.
+#   07:30 UTC ogni lunedi   discover:brand-surfaces  cerca sul web aperto le
+#                           pagine che non sono in nessun elenco. Il suo output
+#                           e' la riga BRAND_READ_URLS da dare al primo.
+#
+# La lettura e' quotidiana perche' una carica su un profilo cambia in un minuto e
+# resta sbagliata per mesi; la scoperta e' settimanale perche' una superficie
+# nuova compare lentamente, e non ha senso pagare ogni giorno per trovarla.
+#
+# Nessuna dipendenza da installare: i due script sono Node puro con il fetch
+# nativo. Senza la chiave corrispondente lo script esce 2, il job annota il
+# motivo e **non** colora di verde: un giro senza verdetto non e' un giro pulito.
+#
+# I tre esiti restano tre cose diverse, come negli altri due workflow:
+#
+#   exit 0  pulito -> verde
+#   exit 1  il nome ritirato e' pubblicato -> rosso, che e' il segnale
+#   exit 2  nessun verdetto (chiave mancante, richiesta fallita, payload
+#           sconosciuto, superficie che non si e' lasciata leggere) -> giallo
+#
+# L'exit 2 non fa fallire il job, ed e' voluto: un profilo che non si lascia
+# leggere non e' una scoperta, e' una lacuna — che viene dichiarata invece di
+# essere nascosta dietro un verde.
+
+name: Read the blocked surfaces and discover new ones
+
+on:
+  schedule:
+    - cron: "30 6 * * *"
+    - cron: "30 7 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  deep-watch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out main
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 1
+
+      - name: Read the surfaces that block a plain request
+        id: reading
+        env:
+          TAVILY_API_KEY: ${{ secrets.TAVILY_API_KEY }}
+        run: |
+          set -uo pipefail
+          # Il codice di uscita si cattura prima di qualunque filtro: una pipe
+          # restituisce lo stato dell'ultimo comando, e `tee` trasformerebbe un
+          # fallimento in un successo senza che nessuno se ne accorga.
+          set +e
+          node scripts/check-brand-reading.mjs 2>&1 | tee brand-reading.log
+          status=${PIPESTATUS[0]}
+          set -e
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Brand deep watch — reading"
+            echo ""
+            echo '```'
+            cat brand-reading.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          case "$status" in
+            0) echo "clean";;
+            1) echo "::error::the retired name is published on a surface a reader can open - see the job summary";;
+            2) echo "::warning::no verdict this run (missing key, or a surface that could not be read) - see the job summary";;
+            *) echo "::error::the reader itself failed with status $status"; exit "$status";;
+          esac
+
+      - name: Discover surfaces that are in nobody's list
+        id: discovery
+        if: github.event.schedule == '30 7 * * 1' || github.event_name == 'workflow_dispatch'
+        env:
+          EXA_API_KEY: ${{ secrets.EXA_API_KEY }}
+        run: |
+          set -uo pipefail
+          set +e
+          node scripts/discover-brand-surfaces.mjs 2>&1 | tee brand-discovery.log
+          status=${PIPESTATUS[0]}
+          set -e
+          echo "status=$status" >> "$GITHUB_OUTPUT"
+          {
+            echo "## Brand deep watch — discovery"
+            echo ""
+            echo '```'
+            cat brand-discovery.log
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+          case "$status" in
+            0) echo "clean";;
+            1) echo "::error::a page with the retired name was found outside the watched list - see the job summary";;
+            2) echo "::warning::no verdict this run (missing key or unrecognised payload) - see the job summary";;
+            *) echo "::error::the discovery itself failed with status $status"; exit "$status";;
+          esac
+
+      - name: Fail on a real finding
+        if: steps.reading.outputs.status == '1' || steps.discovery.outputs.status == '1'
+        run: |
+          set -euo pipefail
+          echo "The retired name is on a live surface. Fix the page, then add it to the watched list and re-run."
+          exit 1
