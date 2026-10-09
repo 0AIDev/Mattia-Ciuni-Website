@@ -1,6 +1,6 @@
 # Note | Mattia Ciuni
 
-> Note più lunghe e lente su agenti AI, pagamenti e come costruire cose che durano.
+> Note più lunghe e lente su contesto, AI e come costruire cose che durano.
 
 - URL: https://mattiaciuni.com/it/notes
 - Type: Page

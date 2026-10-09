@@ -1,6 +1,6 @@
-# Build with Noesia — Careers | Mattia Ciuni
+# Build with Know Computer — Careers | Mattia Ciuni
 
-> I hire by artifact: ship something real, then we talk. Open roles at Noesia.
+> I hire by artifact: ship something real, then we talk.
 
 - URL: https://mattiaciuni.com/careers
 - Type: Page

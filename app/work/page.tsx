@@ -5,14 +5,14 @@ import { site } from "@/lib/site";
 import { socialImages } from "@/lib/social";
 import { languageAlternates } from "@/lib/seo";
 
-const pageTitle = "Work by Mattia Ciuni | Noesia, Celeste and AI Payments";
+const pageTitle = "Work by Mattia Ciuni | Know Computer, Celeste, Payle, Ceilya, Noesia";
 const description =
-  "The work of Mattia Ciuni: building Noesia's payments infrastructure for AI agents, after building Celeste, an AI browser.";
+  "The work of Mattia Ciuni: building Know Computer, a personal context layer for the AI era, with Celeste and earlier payment work for AI agents.";
 const card = socialImages("/og.png", "Work | Mattia Ciuni");
 const base = site.url.replace(/\/$/, "");
 
 export const metadata: Metadata = {
-  title: "Work by Mattia Ciuni | Noesia, Celeste and AI Payments",
+  title: "Work by Mattia Ciuni | Know Computer, Celeste, Payle, Ceilya, Noesia",
   description,
   alternates: { canonical: "/work/", types: { "text/markdown": "/work.md" }, languages: languageAlternates("/work/") },
   openGraph: {
@@ -41,9 +41,9 @@ const workJsonLd = {
       {
         "@type": "ListItem",
         position: 1,
-        name: "Noesia",
+        name: "Know Computer",
         url: site.companyUrl,
-        item: { "@type": "Organization", name: "Noesia", url: site.companyUrl },
+        item: { "@type": "Organization", name: "Know Computer", url: site.companyUrl },
       },
       {
         "@type": "ListItem",
@@ -70,22 +70,22 @@ export default function WorkPage() {
           I build the systems that let software act in the real world.
         </h1>
         <p className="mt-6 max-w-[600px] text-lg leading-relaxed text-text-paragraph">
-          This is the short map of Mattia Ciuni&apos;s work. The common thread is not a job title or a list of technologies. It is the point where software stops being a tool you click and starts acting on someone&apos;s behalf. First that meant helping an agent navigate the web. Now it means giving an agent controlled, accountable spending power.
+          This is the short map of Mattia Ciuni&apos;s work. The common thread is context and continuity: helping computers and AI understand what matters so people can pick up where they left off.
         </p>
       </section>
 
-      <section id="noesia" aria-labelledby="company-title" className="mb-16 border-t border-gray-300 pt-8 sm:mb-24">
+      <section id="know" aria-labelledby="company-title" className="mb-16 border-t border-gray-300 pt-8 sm:mb-24">
         <div className="flex flex-wrap items-baseline justify-between gap-3">
-          <h2 id="company-title" className="font-serif text-3xl font-medium">Noesia</h2>
+          <h2 id="company-title" className="font-serif text-3xl font-medium">Know Computer</h2>
           <span className="text-sm text-gray-1000">Current work</span>
         </div>
         <p className="mt-5 max-w-[600px] text-text-paragraph">
-          Noesia is the money layer for AI agents. I am building the authorization and payments infrastructure that makes autonomous spending safe enough to use: scoped capabilities, per-agent and per-task limits, merchant rules, approval thresholds, idempotency, revocation and receipts that explain what happened. The goal is not to hand a model an unrestricted wallet. The goal is controlled delegation: a person or company defines the boundaries once, an agent works inside them, and every decision can be inspected afterwards.
+          Know Computer is a personal context and intelligence layer for computers and AI. It gives people continuous, useful context across their files, browser activity, applications, conversations, coding tools, and connected services. The goal is to make personal information retrievable and actionable while keeping people in control of their context, permissions and data.
         </p>
         <p className="mt-4 max-w-[600px] text-text-paragraph">
-          This work sits across AI agents, agentic commerce, fintech infrastructure, risk, payments and software reliability. The difficult questions are deliberately practical. What happens when two identical requests arrive together? What does a merchant need to verify? How should a failed risk service behave? How can an operator revoke authority immediately? I write the answers as I discover them in <Link href="/thoughts/" className="article-underline">Thoughts</Link> and <Link href="/notes/" className="article-underline">Notes</Link>, and I publish useful corrections from other people in <Link href="/feedback/" className="article-underline">Feedback</Link>.
+          Know Layer is the financial action and payment infrastructure within the Know Computer ecosystem, carrying forward controlled actions and payments from earlier work on Payle, Ceilya and Noesia.
         </p>
-        <a href={site.companyUrl} rel="noopener noreferrer" className="mt-5 inline-flex article-underline text-sm text-gray-1000">Visit Noesia →</a>
+        <a href={site.companyUrl} rel="noopener noreferrer" className="mt-5 inline-flex article-underline text-sm text-gray-1000">Visit Know Computer →</a>
       </section>
 
       <section id="celeste" aria-labelledby="celeste-title" className="mb-16 border-t border-gray-300 pt-8 sm:mb-24">
@@ -94,10 +94,10 @@ export default function WorkPage() {
           <span className="text-sm text-gray-1000">Earlier work</span>
         </div>
         <p className="mt-5 max-w-[600px] text-text-paragraph">
-          Before Noesia, I built Celeste, an AI browser. It could open pages, follow instructions, research, compare options and complete workflows. The important lesson was not that the agent could navigate a browser. It was that the last ten percent of an apparently finished task exposed a completely different infrastructure problem. The agent could do the thinking and the work, then it stopped at the credit card form because the financial system assumed that every actor was a human with a hand, a wallet and a phone.
+          Before Know, I built Celeste, an AI browser. Earlier work on Payle, Ceilya and Noesia focused on financial infrastructure for AI agents. These experiences informed the shift toward a broader personal context layer for computers and AI.
         </p>
         <p className="mt-4 max-w-[600px] text-text-paragraph">
-          That experience became the starting point for Noesia. It connected a product question about browsers to a larger question about authority, liability and trust. Celeste is part of the context for the current work, not a separate keyword page or a claim that the two products are the same.
+          I preserve the full history of these projects across the site - the lessons, not just the outcomes.
         </p>
       </section>
 
@@ -107,14 +107,14 @@ export default function WorkPage() {
           The projects are connected by a set of questions I keep returning to: how agents receive permissions, how a payment system remains deterministic under concurrency, how trust can be represented in a receipt, and how a founder can build in public without turning the work into theatre. These are the subjects behind the site, and they are more useful than a page of invented expertise.
         </p>
         <ul className="mt-6 grid gap-x-8 gap-y-3 text-text-paragraph sm:grid-cols-2">
-          <li>AI agent payments</li>
-          <li>Agentic commerce</li>
-          <li>Authorization and policy</li>
-          <li>Spending limits and revocation</li>
-          <li>Idempotency and reliable systems</li>
-          <li>Fintech infrastructure</li>
+          <li>Personal context and memory</li>
+          <li>Intelligence augmentation</li>
+          <li>Context-aware AI</li>
+          <li>Controlled actions and payments</li>
+          <li>Data ownership and permissions</li>
+          <li>Building in public</li>
           <li>Founder-led product building</li>
-          <li>Artifact-based hiring</li>
+          <li>Reliable systems</li>
         </ul>
       </section>
 

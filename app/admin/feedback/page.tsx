@@ -84,7 +84,7 @@ function localPreviewEnabled() {
 
 export default function FeedbackAdminPage() {
   const [token, setToken] = useState("");
-  const [email, setEmail] = useState("m@withnoesia.com");
+  const [email, setEmail] = useState("m@knowcomputer.com");
   const [code, setCode] = useState("");
   const [setup, setSetup] = useState<Setup | null>(null);
   const [mode, setMode] = useState<"loading" | "setup" | "login">("loading");
@@ -248,7 +248,7 @@ export default function FeedbackAdminPage() {
       }
       setSetup(null);
       setToken("");
-      setEmail("m@withnoesia.com");
+      setEmail("m@knowcomputer.com");
       setCode("");
       await load();
     } catch (caught) {
@@ -304,7 +304,7 @@ export default function FeedbackAdminPage() {
         throw new Error(response.status === 429 ? "Too many attempts. Try again later." : response.status === 401 ? "That admin email or authenticator code is not valid." : localApiMessage(response));
       }
       setToken("");
-      setEmail("m@withnoesia.com");
+      setEmail("m@knowcomputer.com");
       setCode("");
       await load();
     } catch (caught) {
@@ -323,7 +323,7 @@ export default function FeedbackAdminPage() {
         body: JSON.stringify({ action: "logout" }),
       });
     } finally {
-      setEmail("m@withnoesia.com");
+      setEmail("m@knowcomputer.com");
       setCode("");
       setToken("");
       setRecords([]);

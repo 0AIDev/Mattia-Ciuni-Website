@@ -1,6 +1,6 @@
-# Noesia, the money layer for AI agents | Mattia Ciuni
+# Know Computer, a personal context layer for the AI era | Mattia Ciuni
 
-> Founder & CEO at Noesia, the money layer for AI agents. AI agents can already research, compare and execute entire tasks.
+> Founder & CEO at Know Computer, a personal context layer for the AI era.
 
 - URL: https://mattiaciuni.com/en
 - Type: Page

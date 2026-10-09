@@ -63,7 +63,7 @@ export function shouldShowRoleSearch(jobCount: number): boolean {
  * quindi resta una descrizione vera.
  */
 export function jobMetaDescription(job: CareerJob): string {
-  return job.shortPitch?.trim() || "I hire by artifact: ship something real, then we talk. Open roles at Noesia.";
+  return job.shortPitch?.trim() || "I hire by artifact: ship something real, then we talk.";
 }
 
 /**

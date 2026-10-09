@@ -1,6 +1,6 @@
 # Réflexions | Mattia Ciuni
 
-> Réflexions sur les agents IA, les paiements et la construction de Noesia.
+> Réflexions sur le contexte, l'IA et la construction de Know Computer.
 
 - URL: https://mattiaciuni.com/fr/thoughts
 - Type: Page

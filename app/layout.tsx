@@ -42,7 +42,7 @@ const instrumentSerif = Instrument_Serif({
 });
 
 // La card della home, dichiarata una volta e usata da Open Graph e Twitter.
-const homeCard = socialImages("/og.png", "Mattia Ciuni | Founder & CEO at Noesia");
+const homeCard = socialImages("/og.png", "Mattia Ciuni | Founder & CEO at Know Computer");
 
 // WebMCP è una capability opzionale del browser. Lo script è deferred e
 // statico, così gli agenti trovano strumenti reali senza bloccare l'LCP.
@@ -51,10 +51,9 @@ export const metadata: Metadata = {
   metadataBase: new URL(site.url),
   title: {
     // Il titolo della home: il prefisso resta "Mattia Ciuni | Founder & CEO at
-    // Noesia" (è il contratto che `verify.js` controlla), più la query che il
-    // sito vuole presidiare. A 37 caratteri la riga lasciava vuota metà della
-    // SERP; questa ne fa 57.
-    default: "Mattia Ciuni | Founder & CEO at Noesia, AI agent payments",
+    // Know Computer" (è il contratto che `verify.js` controlla), più la query che il
+    // sito vuole presidiare.
+    default: "Mattia Ciuni | Founder & CEO at Know Computer, context for AI",
     // Un solo divisore, sempre il trattino: mai puntini o punti di sospensione.
     template: "%s | Mattia Ciuni",
   },
@@ -64,15 +63,14 @@ export const metadata: Metadata = {
     "Mattia Ciuni",
     "who is Mattia Ciuni",
     "what does Mattia Ciuni do",
-    "Mattia Ciuni Noesia",
-    "CEO of Noesia",
-    "Noesia founder",
-    "Noesia CEO",
-    "Noesia",
-    "AI agents payments",
-    "fintech founder",
-    "agentic commerce",
-    "AI spending",
+    "Mattia Ciuni Know Computer",
+    "CEO of Know Computer",
+    "Know Computer founder",
+    "Know Computer CEO",
+    "Know Computer",
+    "personal context layer",
+    "context for AI",
+    "AI memory",
     "Italian founder",
   ],
   authors: [{ name: "Mattia Ciuni", url: site.url }],
@@ -91,7 +89,7 @@ export const metadata: Metadata = {
     type: "website",
     url: "/",
     siteName: "Mattia Ciuni",
-    title: "Mattia Ciuni | Founder & CEO at Noesia, AI agent payments",
+    title: "Mattia Ciuni | Founder & CEO at Know Computer, context for AI",
     description: site.description,
     locale: site.locale,
     images: homeCard.og,
@@ -99,7 +97,7 @@ export const metadata: Metadata = {
   twitter: {
     card: "summary_large_image",
     creator: "@mattiaciuni",
-    title: "Mattia Ciuni | Founder & CEO at Noesia, AI agent payments",
+    title: "Mattia Ciuni | Founder & CEO at Know Computer, context for AI",
     description: site.description,
     images: homeCard.twitter,
   },

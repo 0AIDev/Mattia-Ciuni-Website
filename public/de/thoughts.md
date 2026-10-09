@@ -1,6 +1,6 @@
 # Gedanken | Mattia Ciuni
 
-> Gedanken über KI-Agenten, Zahlungen und den Aufbau von Noesia.
+> Gedanken über Kontext, KI und den Aufbau von Know Computer.
 
 - URL: https://mattiaciuni.com/de/thoughts
 - Type: Page

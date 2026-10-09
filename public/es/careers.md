@@ -1,4 +1,4 @@
-# Carreras — Noesia | Mattia Ciuni
+# Carreras — Know Computer | Mattia Ciuni
 
 > Carreras. Sigue el trabajo en el Sunday log.
 

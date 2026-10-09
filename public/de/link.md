@@ -1,6 +1,6 @@
 # Links | Mattia Ciuni
 
-> Founder & CEO at Noesia, die Geldschicht für KI-Agenten.
+> Founder & CEO at Know Computer, eine persönliche Kontextschicht für das KI-Zeitalter.
 
 - URL: https://mattiaciuni.com/de/link
 - Type: Page

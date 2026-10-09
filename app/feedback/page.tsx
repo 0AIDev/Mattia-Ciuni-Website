@@ -14,13 +14,13 @@ import { FeedbackModalButton } from "@/components/FeedbackForm";
  * Card piccole e minimal come le righe degli altri elenchi, ma chiuse in un
  * riquadro tondo; l'autore in testa con il suo GitHub quando lo rivendica.
  */
-const pageTitle = "Feedback on Noesia | Mattia Ciuni";
-const card = socialImages("/feedback/og.png", "Feedback on Noesia | Mattia Ciuni");
+const pageTitle = "Feedback | Mattia Ciuni";
+const card = socialImages("/feedback/og.png", "Feedback | Mattia Ciuni");
 
 export const metadata: Metadata = {
-  title: "Feedback on Noesia",
+  title: "Feedback",
   description:
-    "A public record of what users and people interested in Noesia think, what they want to see next, and which signals are worth building around.",
+    "A public record of what readers think of the work, what they want to see next, and which signals are worth building around.",
   alternates: {
     canonical: "/feedback/",
     types: { "text/markdown": "/feedback.md" },
@@ -32,14 +32,14 @@ export const metadata: Metadata = {
     siteName: "Mattia Ciuni",
     title: pageTitle,
     description:
-      "Feedback from users and people interested in Noesia: what resonates, what they want next, and how to share your perspective.",
+      "Feedback from readers: what resonates, what they want next, and how to share your perspective.",
     images: card.og,
   },
   twitter: {
     card: "summary_large_image",
     title: pageTitle,
     description:
-      "Feedback from users and people interested in Noesia: what resonates, what they want next, and how to share your perspective.",
+      "Feedback from readers: what resonates, what they want next, and how to share your perspective.",
     images: card.twitter,
   },
 };
@@ -73,11 +73,11 @@ export default function FeedbackIndex() {
           You share what you see. It gets better. I publish it.
         </h1>
         <p className="mt-5 max-w-[560px] text-text-paragraph">
-          This is a public record of the people paying attention to Noesia:
-          what interests them, what they would use, and what they want to see
-          next. Every useful signal that survives review is published here,
-          credited with your name or just an initial, your choice. Over time,
-          these exchanges show the traction and intent behind what we are
+          This is a public record of the people paying attention to the
+          work: what interests them, what they would use, and what they want
+          to see next. Every useful signal that survives review is published
+          here, credited with your name or just an initial, your choice. Over
+          time, these exchanges show the traction and intent behind what I am
           building.
         </p>
         <div className="mt-7">

@@ -1,6 +1,6 @@
 # Thoughts | Mattia Ciuni
 
-> Thoughts on AI agents, payments and building Noesia.
+> Thoughts on context, AI and building Know Computer.
 
 - URL: https://mattiaciuni.com/en/thoughts
 - Type: Page

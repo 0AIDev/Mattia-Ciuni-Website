@@ -22,8 +22,8 @@ import { TwitterIcon } from "@/components/ui/twitter";
 // Il contenuto è corto e lo è apposta: profilo, icone dei profili, e i pochi
 // posti che valgono un tocco.
 const description =
-  "Everywhere Mattia Ciuni is: Noesia, LinkedIn, X, GitHub, Instagram, YouTube, the Spotify podcast, Crunchbase, and the writing published on this site.";
-const card = socialImages("/og.png", "Mattia Ciuni | Founder & CEO at Noesia");
+  "Everywhere Mattia Ciuni is: Know Computer, LinkedIn, X, GitHub, Instagram, YouTube, the Spotify podcast, Crunchbase, and the writing published on this site.";
+const card = socialImages("/og.png", "Mattia Ciuni | Founder & CEO at Know Computer");
 
 export const metadata: Metadata = {
   title: "Links",
@@ -51,7 +51,7 @@ const personJsonLd = {
   "@type": "Person",
   "@id": personId,
   name: "Mattia Ciuni",
-  jobTitle: "Founder & CEO of Noesia",
+  jobTitle: "Founder & CEO of Know Computer",
   url: site.url,
   sameAs: Object.values(site.social),
   email: `mailto:${site.email}`,
@@ -167,9 +167,9 @@ export default function Page() {
               rel="noopener noreferrer"
               className="font-semibold underline decoration-transparent underline-offset-4 transition-colors hover:decoration-gray-1200"
             >
-              Noesia
+              Know Computer
             </a>
-            , the money layer for AI agents.
+            , a personal context layer for the AI era.
           </p>
         </div>
 
@@ -192,8 +192,8 @@ export default function Page() {
       <div className="mt-8 flex flex-col gap-2">
         <Row
           href={site.companyUrl}
-          label="Noesia"
-          note="withnoesia.com"
+          label="Know Computer"
+          note="knowcomputer.com"
           icon={<GlobeIcon size={19} />}
           external
         />

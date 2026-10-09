@@ -17,11 +17,12 @@ export async function generateMetadata({ params }: { params: Promise<{ locale: s
   const title = copy[locale].homeTitle;
   const serpTitle = `${title} | Mattia Ciuni`;
   // La description è la riga di SERP, non il corpo della pagina: `homeBody` è
-  // lungo 226-253 caratteri e Google lo tagliava a metà frase. Qui si compone
-  // dalle due stringhe già tradotte (la riga del founder e la prima frase del
-  // corpo), quindi non nasce copy nuovo e resta sotto i 155 caratteri in tutte
-  // e cinque le lingue.
-  const description = `${copy[locale].founder} ${copy[locale].homeBody.split(/(?<=\.)\s/)[0]}`;
+  // lungo 226-253 caratteri e Google lo tagliava a metà frase. La riga del
+  // founder contiene già il brand e la promessa del prodotto, ed è l'unica
+  // parte che resta sotto i 160 caratteri in tutte e cinque le lingue con la
+  // composizione più lunga (founder + prima frase del corpo superava il limite
+  // in quattro lingue su cinque), quindi la description è quella e basta.
+  const description = copy[locale].founder;
   return {
     title,
     description,

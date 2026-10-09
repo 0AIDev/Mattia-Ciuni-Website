@@ -5,7 +5,7 @@ import { languageAlternates } from "@/lib/seo";
 export const metadata: Metadata = {
   title: "Newsletter",
   description:
-    "One email a week: what I shipped, what broke, what I decided and why. Building Noesia in public.",
+    "One email a week: what I shipped, what broke, what I decided and why. Building Know Computer in public.",
   alternates: { canonical: "/newsletter/", languages: languageAlternates("/newsletter/") },
 };
 
@@ -21,7 +21,7 @@ export default function Page() {
         </h1>
         <p className="mt-4 text-[15px] leading-[1.75] text-text-paragraph">
           One email a week: what I shipped, what broke, what I decided and why.
-          Building Noesia in public, from Italy to San Francisco.
+          Building Know Computer in public, from Italy.
         </p>
         <NewsletterSection />
       </div>

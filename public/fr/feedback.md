@@ -1,6 +1,6 @@
 # Retours | Mattia Ciuni
 
-> Un registre public des personnes qui observent Noesia et des corrections retenues après examen.
+> Un registre public des personnes qui observent le travail et des corrections retenues après examen.
 
 - URL: https://mattiaciuni.com/fr/feedback
 - Type: Page

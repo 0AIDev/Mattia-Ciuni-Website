@@ -16,6 +16,82 @@ export interface Note {
 
 const raw: Note[] = [
   {
+    slug: "noesia-is-now-know-computer",
+    title: "Noesia is now Know Computer: a founder update",
+    description:
+      "Noesia is now Know Computer: what changed, what stayed the same, and why every old article keeps its old name.",
+    date: "2026-10-09",
+    keywords: [
+      "Noesia",
+      "Know Computer",
+      "founder update",
+      "rebrand",
+      "Mattia Ciuni",
+    ],
+    content: [
+      {
+        type: "p",
+        text: "This is a dated update about a name. If you searched for Noesia and landed here: Noesia is now Know Computer. Nothing disappeared, nothing was acquired, nothing was shut down. The company changed its banner, and this site keeps every older banner exactly where it was published. Search engines will keep sending people searching the old name for a while, and this note is for them. A rename is the one company announcement anyone can verify from the outside, which is why I am writing it down instead of editing a footer.",
+      },
+      { type: "h2", text: "Why Noesia became Know Computer" },
+      {
+        type: "p",
+        text: "Every name I have used described the problem as I understood it at that moment, and my understanding moved. Payle came first, then Ceilya, then Noesia. The git history is unromantic about it: the last two renames are single commits, and one of them still reads \"Rename the brand from Ceilya to Noesia and move the product to withnoesia.com\". A name changes in an afternoon. Everything the name pointed at takes years.",
+      },
+      {
+        type: "p",
+        text: "Payle and Ceilya were the payment-infrastructure years. I was trying to make software able to pay for things: the plumbing between an agent that decides and an account that moves. The honest reading of those first attempts is in [the moment my AI agent asked for my credit card](/notes/the-moment-my-ai-agent-asked-for-my-credit-card/): the agent did ninety percent of the work and then stopped at sixteen little boxes meant for a human hand.",
+      },
+      {
+        type: "p",
+        text: "Noesia was the narrowing, and the narrowing is what made it serious. Not payments in general: authorization. What is an agent allowed to do with money, who decided, under which boundary, and what record survives the argument. That work produced the things I am still proud of: a deterministic policy engine with no model in the decision path, an append-only ledger whose entries hash into each other, an idempotency core that returns exactly one decision for a hundred identical concurrent requests. The public version of the argument is [the money layer for AI agents](/thoughts/money-layer-for-ai-agents/), and it still reads the way I meant it.",
+      },
+      {
+        type: "p",
+        text: "The limit that kept showing up was not a payments limit. Agents could act inside a boundary, and they still did not know the person they were acting for. Files in one place, browser in another, the conversation in one tool and the project in another. The permission layer answered what an agent may do. Nobody answered what it knows. Know Computer is that answer: a personal context layer for the AI era, with the financial work continuing inside it as [Know Layer](https://knowcomputer.com).",
+      },
+      {
+        type: "p",
+        text: "Each rename was also a small admission: the story I had told was narrower, or wider, than the work actually was. The cost of admitting it three times is real, in links, in email addresses, in muscle memory. I paid it three times on purpose, because a name that has outlived its accuracy becomes the most visible lie a company tells.",
+      },
+      { type: "h2", text: "What did not change" },
+      {
+        type: "p",
+        text: "The laws, for one. No LLM in the authorization path. Deterministic code decides where money moves; AI plans and advises. That rule was written under Noesia because a hallucinated charge is not a typo, and the letterhead above it does not change the reasoning.",
+      },
+      {
+        type: "p",
+        text: "The standard, for another. I publish what fails as well as what ships, I test what I ship, and I care more about working systems than impressive demos. The team is still distributed across countries and still writes everything down, because written communication is the only format a distributed team cannot fake.",
+      },
+      {
+        type: "p",
+        text: "If you applied under an older banner, nothing about the process changes: same artifact challenge, paid like real work, same written verdict either way. The hiring page now says Build with Know Computer, and the roles it lists are the ones this repository says are open. Roles are the one place where presenting an old name as current would do real damage: a candidate deserves to know which company they are joining.",
+      },
+      { type: "h2", text: "Why the old articles keep their old names" },
+      {
+        type: "p",
+        text: "Because editing them would turn this site into a brochure. An interview conducted at Noesia stays an interview at Noesia: the date is real, the words were real, and a reader who checks them against the present should find the present explained here, not smuggled into the past.",
+      },
+      {
+        type: "p",
+        text: "So the check that guards this is worth describing, because it is the boring kind of engineering I keep saying I prefer. The brand rules in this repository do not ban the old names. They ban presenting an old name as the current company, the current role or the current contact address. A preserved article passes the build. A stale job description, an old string baked into a social card, a metadata line still claiming the previous company: those fail the build with a file name and a line number. I rewrote that check for this rename, and its best test case came from a card that still named the previous company on every share of the homepage, visible to anyone and invisible to every test until someone ran an OCR pass by hand.",
+      },
+      {
+        type: "p",
+        text: "The same reasoning applies to the machine readers. llms.txt, the markdown versions of these pages and the structured data all say the same thing now, because an AI that reads half this site will confidently answer with the wrong company, and being misquoted by a machine is still being misquoted.",
+      },
+      { type: "h2", text: "What changes if you look for me" },
+      {
+        type: "p",
+        text: "The contact address on this site is now [m@knowcomputer.com](mailto:m@knowcomputer.com), and the product link is [knowcomputer.com](https://knowcomputer.com). Old links inside old articles stay as they were published, quotes and all. If something still reaches you from an old address, write to the new one: email is the one place a rename is done by hand, one person at a time. The domain of this site does not move: mattiaciuni.com has been, and stays, the personal site. If you want the long version of where this is going, I wrote it the same week: [Why I'm building Know Computer](/thoughts/why-im-building-knowcomputer/).",
+      },
+      {
+        type: "p",
+        text: "That is the whole update, and it has a date, which is the point. The name on the door changed. The work, the standard and the record stayed where they were. New name, same job: build a computer that understands the person using it.",
+      },
+    ],
+  },
+  {
     slug: "what-a-security-audit-taught-me",
     title: "The wall in my code: what a security audit taught me that no bootcamp will",
     description:

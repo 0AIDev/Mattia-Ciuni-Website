@@ -14,7 +14,7 @@ const card = socialImages("/og.png", "Voice Notes | Mattia Ciuni");
 
 export const metadata: Metadata = {
   title: "Voice Notes | Spoken, unedited",
-  description: "Unedited spoken notes from Mattia Ciuni on building Noesia, work and the questions between decisions.",
+  description: "Unedited spoken notes from Mattia Ciuni on building in public, work and the questions between decisions.",
   authors: [{ name: "Mattia Ciuni", url: site.url }],
   alternates: { canonical: "/voice-notes/", languages: languageAlternates("/voice-notes/") },
   openGraph: {
@@ -22,10 +22,10 @@ export const metadata: Metadata = {
     url: "/voice-notes/",
     siteName: "Mattia Ciuni",
     title: pageTitle,
-    description: "Unedited spoken notes from Mattia Ciuni on building Noesia.",
+    description: "Unedited spoken notes from Mattia Ciuni on building in public.",
     images: card.og,
   },
-  twitter: { card: "summary_large_image", title: pageTitle, description: "Unedited spoken notes from Mattia Ciuni on building Noesia.", images: card.twitter },
+  twitter: { card: "summary_large_image", title: pageTitle, description: "Unedited spoken notes from Mattia Ciuni on building in public.", images: card.twitter },
 };
 
 export default function VoiceNotesPage() {

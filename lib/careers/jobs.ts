@@ -56,7 +56,7 @@ export const jobs: CareerJob[] = [
     shortPitch: "Build the execution layer that lets AI agents act without losing the rules that keep money safe.",
     description: `### The role
 
-Noesia's authorization engine is live: agents ask for permission, a deterministic policy engine decides, every transaction lands in a hash-chained ledger that anyone can verify. The money path is audited, money-tested under concurrency, and finished.
+Know Computer's authorization engine is live: agents ask for permission, a deterministic policy engine decides, every transaction lands in a hash-chained ledger that anyone can verify. The money path is audited, money-tested under concurrency, and finished.
 
 What's missing is the layer agents run on. You would own it end to end: the agent runtime that searches real retailers, captures evidence, compares offers, attempts purchases through the authorization gate, and verifies outcomes. Your work is the reason the gate exists: without the runtime, the engine is a vault with no hands.
 
@@ -109,7 +109,7 @@ Your first artifact: a small agent with a hard boundary. Build an agent that doe
     shortPitch: "Build the trust layer for autonomous agent spending: fraud scoring, on a behavioral dataset that doesn't exist anywhere else.",
     description: `### The role
 
-Noesia's authorization engine decides, in milliseconds, whether an AI agent is allowed to spend money. It's deterministic, policy-driven, and live. What it doesn't have yet is a risk layer: the ML that scores transactions for fraud, scores merchants for quality, and builds trust profiles for agents over time.
+Know Computer's authorization engine decides, in milliseconds, whether an AI agent is allowed to spend money. It's deterministic, policy-driven, and live. What it doesn't have yet is a risk layer: the ML that scores transactions for fraud, scores merchants for quality, and builds trust profiles for agents over time.
 
 Phase 0 of that risk engine is rules-based and in final build. Phase 1 is yours: evolve it into real ML on a dataset nobody else on earth has: an append-only ledger of every agent authorization, payment, and outcome, with full context attached.
 

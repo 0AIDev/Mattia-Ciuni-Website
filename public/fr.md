@@ -1,6 +1,6 @@
-# Noesia, la couche financière des agents IA | Mattia Ciuni
+# Know Computer, une couche de contexte personnelle pour l'ère de l'IA | Mattia Ciuni
 
-> Founder & CEO at Noesia, la couche financière des agents IA. Les agents IA peuvent déjà rechercher, comparer et exécuter des tâches.
+> Founder & CEO at Know Computer, une couche de contexte personnelle pour l'ère de l'IA.
 
 - URL: https://mattiaciuni.com/fr
 - Type: Page

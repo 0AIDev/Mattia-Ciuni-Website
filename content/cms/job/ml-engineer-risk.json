@@ -46,7 +46,7 @@
     },
     {
       "type": "p",
-      "text": "Noesia's authorization engine decides, in milliseconds, whether an AI agent is allowed to spend money. It's deterministic, policy-driven, and live. What it doesn't have yet is a risk layer: the ML that scores transactions for fraud, scores merchants for quality, and builds trust profiles for agents over time."
+      "text": "Know Computer's authorization engine decides, in milliseconds, whether an AI agent is allowed to spend money. It's deterministic, policy-driven, and live. What it doesn't have yet is a risk layer: the ML that scores transactions for fraud, scores merchants for quality, and builds trust profiles for agents over time."
     },
     {
       "type": "p",

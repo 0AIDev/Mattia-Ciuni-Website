@@ -1,6 +1,6 @@
 # Trabajo | Mattia Ciuni
 
-> El hilo conductor es la delegación controlada: el software puede actuar, pero sus permisos siguen siendo explícitos, limitados y verificables.
+> El hilo conductor es el contexto y la continuidad: ayudar a los ordenadores y la IA a entender lo que importa para que las personas retomen donde lo dejaron.
 
 - URL: https://mattiaciuni.com/es/work
 - Type: Page

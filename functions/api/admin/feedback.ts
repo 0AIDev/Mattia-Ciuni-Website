@@ -51,7 +51,7 @@ import { isLoopbackRequest, localOnly } from "../../lib/admin-session.ts";
 // identico per "token mancante" e "token sbagliato" (non dice quale), `no-store` e
 // `noindex` su ogni risposta, nessun contenuto nei log.
 //
-// Il percorso da riga di comando, se usato, richiede `X-Admin-Email: m@withnoesia.com`
+// Il percorso da riga di comando, se usato, richiede `X-Admin-Email: m@knowcomputer.com`
 // e `X-Admin-TOTP: 123456`. Il token di bootstrap non è una credenziale di login.
 
 interface Store {
@@ -83,7 +83,7 @@ interface PagesContext {
 }
 
 type AdminRole = "ceo";
-const ADMIN_EMAIL = "m@withnoesia.com" as const;
+const ADMIN_EMAIL = "m@knowcomputer.com" as const;
 const JOBS_KEY = "content:jobs";
 const CONTENT_INDEX_KEY = "content:admin:index";
 const CONTENT_PREFIX = "content:admin:";

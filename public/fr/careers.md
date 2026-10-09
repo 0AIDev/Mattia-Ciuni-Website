@@ -1,4 +1,4 @@
-# Carrières — Noesia | Mattia Ciuni
+# Carrières — Know Computer | Mattia Ciuni
 
 > Carrières. Suivez le travail dans le Sunday log.
 

@@ -380,7 +380,7 @@ export function AdminContentEditor({
               <Field label="Name"><TextInput value={String(draft.data.name || "")} onChange={(value) => updateData({ name: value })} /></Field>
               <Field label="Role" hint="The line under the name on the home."><TextInput value={String(draft.data.role || "")} onChange={(value) => updateData({ role: value })} /></Field>
               <Field label="Email" hint="Feeds the contact link and the NDA page."><TextInput value={String(draft.data.email || "")} onChange={(value) => updateData({ email: value })} /></Field>
-              <Field label="Noesia URL"><TextInput value={String(draft.data.companyUrl || "")} onChange={(value) => updateData({ companyUrl: value })} /></Field>
+              <Field label="Company URL"><TextInput value={String(draft.data.companyUrl || "")} onChange={(value) => updateData({ companyUrl: value })} /></Field>
               <div className="sm:col-span-2">
                 <Field label="SEO description" hint="Around 155 characters. An empty field falls back to the one in code.">
                   <TextArea rows={2} value={String(draft.data.description || "")} onChange={(value) => updateData({ description: value })} />

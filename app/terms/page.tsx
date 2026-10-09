@@ -114,8 +114,8 @@ const sections: LegalSection[] = [
       <p>
         Articles and notes are personal writing for information and discussion. They are not financial, legal,
         investment or tax advice, and nothing here is an offer to buy or sell anything. This is my personal site: the
-        opinions are mine, and what I write about Noesia is my own view as its founder, not a company statement or a
-        commitment on Noesia&apos;s behalf. Links to other sites are provided for context and those sites have their own
+        opinions are mine, and what I write about Know Computer is my own view as its founder, not a company statement or a
+        commitment on the company&apos;s behalf. Links to other sites are provided for context and those sites have their own
         terms.
       </p>
     ),

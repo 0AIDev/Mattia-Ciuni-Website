@@ -1,6 +1,6 @@
 # Notes | Mattia Ciuni
 
-> Des textes plus longs sur les agents IA, les paiements et la construction de systèmes durables.
+> Des textes plus longs sur le contexte, l'IA et la construction de systèmes durables.
 
 - URL: https://mattiaciuni.com/fr/notes
 - Type: Page

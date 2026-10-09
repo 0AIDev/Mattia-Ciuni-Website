@@ -1,6 +1,6 @@
 # Link | Mattia Ciuni
 
-> Founder & CEO at Noesia, il money layer per gli agenti AI.
+> Founder & CEO at Know Computer, un context layer personale per l'era AI.
 
 - URL: https://mattiaciuni.com/it/link
 - Type: Page

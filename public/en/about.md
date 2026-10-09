@@ -1,6 +1,6 @@
 # About | Mattia Ciuni
 
-> An Italian founder working on the rules, authorization and receipts that let software act and spend on behalf of people.
+> An Italian founder working on the context, memory and permissions that let a computer understand what you are working on and help you continue.
 
 - URL: https://mattiaciuni.com/en/about
 - Type: Page

@@ -1,6 +1,6 @@
 # À propos | Mattia Ciuni
 
-> Un fondateur italien qui travaille sur les règles, l'autorisation et les reçus permettant aux logiciels d'agir et de dépenser pour les personnes.
+> Un fondateur italien qui travaille sur le contexte, la mémoire et les autorisations pour aider les ordinateurs à comprendre votre travail.
 
 - URL: https://mattiaciuni.com/fr/about
 - Type: Page

@@ -1,6 +1,6 @@
 # Ideas | Mattia Ciuni
 
-> Ideas sobre agentes de IA, pagos y la construcción de Noesia.
+> Ideas sobre contexto, IA y la construcción de Know Computer.
 
 - URL: https://mattiaciuni.com/es/thoughts
 - Type: Page

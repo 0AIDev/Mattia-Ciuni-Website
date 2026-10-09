@@ -17,7 +17,7 @@
     },
     {
       "type": "p",
-      "text": "Noesia's authorization engine is live: agents ask for permission, a deterministic policy engine decides, every transaction lands in a hash-chained ledger that anyone can verify. The money path is audited, money-tested under concurrency, and finished."
+      "text": "Know Computer's authorization engine is live: agents ask for permission, a deterministic policy engine decides, every transaction lands in a hash-chained ledger that anyone can verify. The money path is audited, money-tested under concurrency, and finished."
     },
     {
       "type": "p",

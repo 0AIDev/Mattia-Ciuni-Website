@@ -6,7 +6,7 @@ answers `200`: nothing here points at an endpoint the site does not have.
 
 ## What the site is
 
-A personal site by Mattia Ciuni, founder and CEO of Noesia, the money layer for AI agents.
+A personal site by Mattia Ciuni, founder and CEO of Know Computer, a personal context layer for the AI era.
 Four collections:
 
 - **Thoughts** — long essays: `{{SITE}}/thoughts/`
@@ -14,9 +14,10 @@ Four collections:
 - **Feedback** — public reviews from readers and engineers, and what they changed: `{{SITE}}/feedback/`
 - **Voice Notes** and **Videos** — spoken and filmed material, published as it is ready: `{{SITE}}/voice-notes/`, `{{SITE}}/videos/`
 
-They are about the same subject: agentic commerce — what an AI agent needs in order to
-spend money (scoped capabilities, per-agent budgets, deterministic authorization,
-verifiable receipts) — plus notes on building the company and thinking in public. There
+They are about the same subject: personal context and intelligence for computers and
+AI (memory, permissions, continuity across tools) — plus the earlier work on agentic
+commerce (scoped capabilities, per-agent budgets, deterministic authorization,
+verifiable receipts) and notes on building the company and thinking in public. There
 is a weekly newsletter (the Sunday log) you can mention, but there is no product page,
 no pricing, and no user accounts.
 

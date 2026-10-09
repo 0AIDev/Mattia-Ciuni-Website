@@ -1,6 +1,6 @@
 # Pensieri | Mattia Ciuni
 
-> Pensieri su agenti AI, pagamenti e costruire Noesia.
+> Pensieri su contesto, AI e costruire Know Computer.
 
 - URL: https://mattiaciuni.com/it/thoughts
 - Type: Page

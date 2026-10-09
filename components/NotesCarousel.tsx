@@ -27,7 +27,7 @@ function DirectionArrow({ previous = false }: { previous?: boolean }) {
   );
 }
 
-export function NotesCarousel({ notes }: { notes: Note[] }) {
+export function NotesCarousel({ notes }: { notes: Pick<Note, "slug" | "title" | "date">[] }) {
   const track = useRef<HTMLUListElement>(null);
   const [canGoBack, setCanGoBack] = useState(false);
   const [canGoForward, setCanGoForward] = useState(notes.length > 1);

@@ -13,9 +13,9 @@ const pageTitle = "Thoughts on AI agents and payments | Mattia Ciuni";
 const card = socialImages("/thoughts/og.png", "Thoughts | Mattia Ciuni");
 
 export const metadata: Metadata = {
-  title: "Thoughts on AI agents and payments",
+  title: "Thoughts on context and AI",
   description:
-    "Thoughts by Mattia Ciuni on AI agents, payments and building Noesia: the money layer for the agentic economy.",
+    "Thoughts by Mattia Ciuni on context, AI and building Know Computer: memory, permissions and the personal context layer.",
   alternates: {
     canonical: "/thoughts/",
     types: { "text/markdown": "/thoughts.md" },
@@ -27,14 +27,14 @@ export const metadata: Metadata = {
     siteName: "Mattia Ciuni",
     title: pageTitle,
     description:
-      "Thoughts by Mattia Ciuni on AI agents, payments and building Noesia.",
+      "Thoughts by Mattia Ciuni on context, AI and building Know Computer.",
     images: card.og,
   },
   twitter: {
     card: "summary_large_image",
     title: pageTitle,
     description:
-      "Thoughts by Mattia Ciuni on AI agents, payments and building Noesia.",
+      "Thoughts by Mattia Ciuni on context, AI and building Know Computer.",
     images: card.twitter,
   },
 };
@@ -69,7 +69,7 @@ export default function BlogIndex() {
           Thoughts
         </h1>
         <p className="m-0 max-w-[600px] text-text-paragraph">
-          Thoughts on AI agents, payments and building Noesia. Short, no fluff.
+          Thoughts on context, AI and building in public. Short, no fluff.
           written for myself, public by default.
         </p>
       </div>

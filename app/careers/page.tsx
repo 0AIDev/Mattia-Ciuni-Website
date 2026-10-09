@@ -8,8 +8,8 @@ import { careersUi } from "@/lib/careers/ui";
 import { socialImages } from "@/lib/social";
 import { languageAlternates } from "@/lib/seo";
 
-const careersTitle = "Build with Noesia — Careers";
-const careersDescription = "I hire by artifact: ship something real, then we talk. Open roles at Noesia.";
+const careersTitle = "Build with Know Computer — Careers";
+const careersDescription = "I hire by artifact: ship something real, then we talk.";
 const careersCard = socialImages("/careers/og.png", careersTitle);
 
 export const metadata: Metadata = {

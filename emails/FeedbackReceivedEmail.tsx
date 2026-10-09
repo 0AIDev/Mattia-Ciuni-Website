@@ -21,7 +21,7 @@ export type FeedbackReceivedEmailProps = {
 };
 
 const siteUrl = "https://mattiaciuni.com";
-const siteEmail = "m@withnoesia.com";
+const siteEmail = "m@knowcomputer.com";
 
 // I tre esiti possibili, così come sono scritti. La freccia è un'immagine
 // (public/mail-arrow.png): in posta un'icona inline nel testo non è affidabile.
@@ -229,9 +229,8 @@ export function FeedbackReceivedEmail({
                   </span>{" "}
                   has a real answer, and I&apos;ve written it: the feedback that
                   changes the design gets published in the Feedback series, with
-                  the contributor credited. The strongest corrections Noesia
-                  received are already there, changing how the product talks
-                  about itself.
+                  the contributor credited. The strongest corrections the work
+                  received are already there, changing how it talks about itself.
                 </Text>
 
                 <Text
@@ -253,7 +252,7 @@ export function FeedbackReceivedEmail({
                 <Text className="email-ink m-0 mt-1 font-serif text-[16px] leading-6 text-ink">
                   Founder &amp; CEO,{" "}
                   <span style={{ fontFamily: "Inter, Arial, sans-serif", fontWeight: 700 }}>
-                    Noesia
+                    Know Computer
                   </span>
                 </Text>
                 <Text

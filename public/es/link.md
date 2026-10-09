@@ -1,6 +1,6 @@
 # Enlaces | Mattia Ciuni
 
-> Founder & CEO at Noesia, la capa de dinero para agentes de IA.
+> Founder & CEO at Know Computer, una capa de contexto personal para la era de la IA.
 
 - URL: https://mattiaciuni.com/es/link
 - Type: Page

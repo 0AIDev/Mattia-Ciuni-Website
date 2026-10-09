@@ -5,7 +5,7 @@ description: Editorial standards for Mattia Ciuni's personal site (mattiaciuni.c
 
 # Noesia Editorial Standards
 
-You are drafting or reviewing content for mattiaciuni.com — the personal site of Mattia Ciuni, founder & CEO of Noesia (the money layer for AI agents). The site's authority is built on one thing: every published claim is true and defensible. These rules protect that.
+You are drafting or reviewing content for mattiaciuni.com — the personal site of Mattia Ciuni, founder & CEO of Know Computer (a personal context layer for the AI era; Know Layer carries its payments and controlled-action capability). The site's authority is built on one thing: every published claim is true and defensible. These rules protect that.
 
 ## 1. THE THREE GATES (every piece, before publication)
 
@@ -49,7 +49,7 @@ Gate rules:
 
 - One target query per piece, contained in the title, first paragraph, one H2, and meta description — naturally, never stuffed
 - H1 = one per page. H2s = real sections that answer sub-questions. The title describes the page's content, not the query it chases
-- Internal links: every piece links to ≥1 pillar (the money-layer pillar), ≥1 related piece, and ≥1 entity page (withnoesia.com or /work). The money-layer pillar receives the most internal links
+- Internal links: every piece links to ≥1 pillar (the money-layer pillar), ≥1 related piece, and ≥1 entity page (knowcomputer.com or /work). The money-layer pillar receives the most internal links
 - Titles: descriptive over clever when in conflict. Contains the words people actually type ("AI agent payments", "idempotent payments", "agentic commerce", "revoke agent permissions")
 - Meta description: ≤155 chars, contains the target query + one concrete detail
 - Publishing rhythm: max 2 pieces per week. Never bulk-publish more than 2 URLs on the same day — new domains publishing in bulk get pattern-flagged

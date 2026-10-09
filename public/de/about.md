@@ -1,6 +1,6 @@
 # Über mich | Mattia Ciuni
 
-> Ein italienischer Gründer, der an Regeln, Autorisierung und Belegen arbeitet, damit Software im Namen von Menschen handeln und ausgeben kann.
+> Ein italienischer Gründer, der an Kontext, Gedächtnis und Berechtigungen arbeitet, damit dein Computer versteht, woran du arbeitest.
 
 - URL: https://mattiaciuni.com/de/about
 - Type: Page

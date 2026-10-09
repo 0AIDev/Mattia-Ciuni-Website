@@ -1,6 +1,6 @@
 # Arbeit | Mattia Ciuni
 
-> Der rote Faden ist kontrollierte Delegation: Software kann handeln, aber ihre Berechtigungen bleiben explizit, begrenzt und nachvollziehbar.
+> Der rote Faden ist Kontext und Kontinuität: Computern und KI helfen zu verstehen, was wichtig ist, damit Menschen weitermachen können.
 
 - URL: https://mattiaciuni.com/de/work
 - Type: Page

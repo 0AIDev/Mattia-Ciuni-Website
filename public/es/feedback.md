@@ -1,6 +1,6 @@
 # Comentarios | Mattia Ciuni
 
-> Un registro público de las personas que observan Noesia y de las correcciones que superan la revisión.
+> Un registro público de las personas que observan el trabajo y de las correcciones que superan la revisión.
 
 - URL: https://mattiaciuni.com/es/feedback
 - Type: Page

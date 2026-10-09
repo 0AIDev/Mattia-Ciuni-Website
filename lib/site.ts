@@ -3,26 +3,18 @@ import { withSiteSettings } from "./cms-settings";
 
 const siteDefaults = {
   name: "Mattia Ciuni",
-  role: "Founder & CEO at Noesia",
+  role: "Founder & CEO at Know Computer",
   // Dominio di produzione. `lib/site-origin.ts` valida la configurazione
   // `NEXT_PUBLIC_SITE_URL` del progetto Pages e restituisce sempre l'unica
   // origine SEO autorizzata. Usato da metadataBase, canonical, sitemap,
   // robots, llms.txt, JSON-LD, RSS e OG.
   url: SITE_ORIGIN,
-  // La description è una riga di SERP, non una bio: oltre i ~155 caratteri
-  // Google la taglia, e quella vecchia ne faceva 166. Il dettaglio concreto
-  // ("una ricevuta verificabile per ogni pagamento") resta; la coda su YC e San
-  // Francisco no, perché il testo della home la dice già per esteso.
   description:
-    "Founder & CEO of Noesia, the money layer for AI agents. Scoped permissions, deterministic authorization and a verifiable receipt for every payment.",
-  email: "m@withnoesia.com",
-  companyUrl: "https://withnoesia.com",
+    "Founder & CEO of Know Computer, a personal context layer for the AI era.",
+  email: "m@knowcomputer.com",
+  companyUrl: "https://knowcomputer.com",
   locale: "en_US",
   language: "en",
-  // I profili sono un solo elenco, e `Object.values(site.social)` è il `sameAs`
-  // del Person JSON-LD: un canale aggiunto qui è un canale che i motori e gli
-  // agenti riconoscono come la stessa persona. Facebook non c'è perché non
-  // esiste; YouTube e Spotify sì, e sono i due canali dove il lavoro si vede.
   social: {
     linkedin: "https://www.linkedin.com/in/mattiaciuni",
     github: "https://github.com/0AIDev",

@@ -1,6 +1,6 @@
-# Noesia, la capa de dinero para agentes de IA | Mattia Ciuni
+# Know Computer, una capa de contexto personal para la era de la IA | Mattia Ciuni
 
-> Founder & CEO at Noesia, la capa de dinero para agentes de IA. Los agentes de IA ya pueden investigar, comparar y ejecutar tareas completas.
+> Founder & CEO at Know Computer, una capa de contexto personal para la era de la IA.
 
 - URL: https://mattiaciuni.com/es
 - Type: Page

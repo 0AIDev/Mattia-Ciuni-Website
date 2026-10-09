@@ -86,15 +86,15 @@ if (builtFor !== SITE_ORIGIN) {
 check("post: canonical", post.includes(`rel="canonical" href="${PROD}/thoughts/money-layer-for-ai-agents/"`));
 check("index: og:image absolute", index.includes(`og:image" content="${PROD}/og.png"`));
 check("index: og:site_name", index.includes('og:site_name" content="Mattia Ciuni"'));
-check("index: title uses entity and topic", index.includes("Mattia Ciuni | Founder &amp; CEO at Noesia"));
-check("index: role links bold Noesia", index.includes("Founder &amp; CEO at") && index.includes('href="https://withnoesia.com"') && index.includes(">Noesia</a>"));
+check("index: title uses entity and topic", index.includes("Mattia Ciuni | Founder &amp; CEO at Know Computer"));
+check("index: role links bold Know Computer", index.includes("Founder &amp; CEO at") && index.includes('href="https://knowcomputer.com"') && index.includes(">Know Computer</a>"));
 check("index: WebSite identity", !!ldJson(index).find((j) => j["@type"] === "WebSite" && j.name === "Mattia Ciuni" && j.url === PROD));
 check("post: og:type article", post.includes('og:type" content="article"'));
 check("post: article:published_time", post.includes("article:published_time"));
 check("blog: twitter title fixed", blog.includes('twitter:title" content="Thoughts'));
 check("index: twitter large image", index.includes('twitter:card" content="summary_large_image"'));
 check("index: rel=me x3", (index.match(/rel="me noopener"/g) || []).length === 3);
-check("index: mailto", index.includes("mailto:m@withnoesia.com"));
+check("index: mailto", index.includes("mailto:m@knowcomputer.com"));
 // Il theme-color segue il tema: due meta con media query (light #FCFCFC, dark
 // #0A0A0A), gli stessi valori di --tc-background in globals.css. Un solo valore
 // fisso lascerebbe la barra del browser del colore sbagliato in dark mode.
@@ -102,9 +102,9 @@ check("index: theme-color", index.includes('name="theme-color" content="#FCFCFC"
 check("index: Google Search Console verification", index.includes('name="google-site-verification" content="2Yp93wGXnpI1i5vhC09zwHdmGr1vY6rFCZIXptWOITI"'));
 
 const person = ldJson(index).find((j) => j["@type"] === "Person");
-check("index: Person JSON-LD valid", !!person && person.name === "Mattia Ciuni" && person.worksFor.name === "Noesia" && person.sameAs.length === 5);
+check("index: Person JSON-LD valid", !!person && person.name === "Mattia Ciuni" && person.worksFor.name === "Know Computer" && person.sameAs.length === 5);
 const organization = ldJson(index).find((j) => j["@type"] === "Organization");
-check("index: Noesia Organization JSON-LD valid", !!organization && organization.name === "Noesia" && organization.founder?.["@id"]?.endsWith("/#mattia-ciuni"));
+check("index: Know Computer Organization JSON-LD valid", !!organization && organization.name === "Know Computer" && organization.founder?.["@id"]?.endsWith("/#mattia-ciuni"));
 const art = ldJson(post).find((j) => j["@type"] === "BlogPosting");
 check("post: BlogPosting JSON-LD valid", !!art && !!art.headline && !!art.datePublished && !!art.author);
 const crumb = ldJson(post).find((j) => j["@type"] === "BreadcrumbList");
@@ -270,7 +270,15 @@ check("card thoughts index: one line per post", (thoughtsCard.match(/^\- \[.*\]\
 const postCard = read("thoughts/money-layer-for-ai-agents.md");
 check("card post: content", postCard.includes("- Type: Blog post") && postCard.includes(PROD + "/thoughts/money-layer-for-ai-agents") && postCard.includes("- Published: 2026-09-20"));
 const notesCard = read("notes.md");
-check("card notes index: 8 notes", (notesCard.match(/^\- \[.*\]\(notes\/[a-z0-9-]+\.md\)/gm) || []).length === 8 && notesCard.includes("what-a-security-audit-taught-me.md") && notesCard.includes("the-moment-my-ai-agent-asked-for-my-credit-card.md") && notesCard.includes("idempotent-payments-for-ai-agents.md") && notesCard.includes("the-agentic-economy-is-a-trust-problem.md") && notesCard.includes("on-boring-systems.md") && notesCard.includes("what-interviews-teach-me-about-people-and-my-own-company.md") && notesCard.includes("honestly-im-excited.md") && notesCard.includes("about-the-name.md"));
+// Anche qui il conteggio viene dal registro, come per la card dei pensieri e
+// come per il sitemap: un numero scritto a mano fa fallire il controllo al
+// primo pezzo nuovo, per il motivo sbagliato. Il controllo vero è che ogni
+// nota pubblicata abbia la sua riga, e le otto ancore qui sotto restano il
+// richiamo che il formato della card non è cambiato.
+check(
+  "card notes index: one line per note",
+  (notesCard.match(/^\- \[.*\]\(notes\/[a-z0-9-]+\.md\)/gm) || []).length === publishedSlugs("lib/notes.ts").length &&
+    notesCard.includes("what-a-security-audit-taught-me.md") && notesCard.includes("the-moment-my-ai-agent-asked-for-my-credit-card.md") && notesCard.includes("idempotent-payments-for-ai-agents.md") && notesCard.includes("the-agentic-economy-is-a-trust-problem.md") && notesCard.includes("on-boring-systems.md") && notesCard.includes("what-interviews-teach-me-about-people-and-my-own-company.md") && notesCard.includes("honestly-im-excited.md") && notesCard.includes("about-the-name.md"));
 const feedbackIndexPage = read("feedback/index.html");
 const feedbackPostPage = read("feedback/a-stranger-redesigned-my-pitch-in-one-comment/index.html");
 check("feedback: index + post built", feedbackIndexPage.includes("What people are saying") && feedbackPostPage.includes("A stranger redesigned my pitch in one comment"));
@@ -403,7 +411,7 @@ check(
     readFileSync(path.join(__dirname, "..", "functions", "api", "admin", "feedback.ts"), "utf8").includes("ADMIN_TOKEN") &&
     feedbackSource.includes("api.brevo.com/v3/smtp/email") &&
     feedbackSource.includes("BREVO_API_KEY") &&
-    feedbackSource.includes("m@withnoesia.com")
+    feedbackSource.includes("m@knowcomputer.com")
 );
 check(
   "feedback: the author gets the frozen Resend confirmation",
@@ -1330,7 +1338,7 @@ check("security: CSP allows Clarity", /script-src[^;]*https:\/\/www\.clarity\.ms
 check("legal: cookies lists the Clarity session cookies", cookies.includes("_clck") && cookies.includes("_clsk") && cookies.includes("Microsoft Clarity"));
 check("legal: cookies says Umami writes nothing", cookies.includes("Umami") && cookies.includes("no cookie, no local storage"));
 check("security: production hardening headers are configured", headersFile.includes("Content-Security-Policy:") && headersFile.includes("Strict-Transport-Security:") && headersFile.includes("Cross-Origin-Opener-Policy:") && headersFile.includes("X-Frame-Options: DENY") && headersFile.includes("X-Content-Type-Options: nosniff") && headersFile.includes("frame-ancestors 'none'"));
-check("security: vulnerability disclosure document is published", fs.existsSync(path.join(out, ".well-known", "security.txt")) && read(".well-known/security.txt").includes("Contact: mailto:m@withnoesia.com") && read(".well-known/security.txt").includes("Canonical:"));
+check("security: vulnerability disclosure document is published", fs.existsSync(path.join(out, ".well-known", "security.txt")) && read(".well-known/security.txt").includes("Contact: mailto:m@knowcomputer.com") && read(".well-known/security.txt").includes("Canonical:"));
 check("security: public forms reject cross-origin browser posts", readFileSync(path.join(__dirname, "..", "functions", "api", "feedback.ts"), "utf8").includes("cross_origin") && readFileSync(path.join(__dirname, "..", "functions", "api", "subscribe.ts"), "utf8").includes("cross_origin"));
 check("accessibility: feedback dialog has a labelled focusable implementation", readFileSync(path.join(__dirname, "..", "components", "FeedbackForm.tsx"), "utf8").includes("aria-labelledby=\"feedback-dialog-title\"") && readFileSync(path.join(__dirname, "..", "components", "FeedbackForm.tsx"), "utf8").includes("event.key !== \"Tab\"") && readFileSync(path.join(__dirname, "..", "components", "FeedbackForm.tsx"), "utf8").includes("triggerRef"));
 check("WebMCP: registration is present in the page",

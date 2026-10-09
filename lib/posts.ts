@@ -39,6 +39,132 @@ function minutesOf(blocks: Block[]): number {
 
 const raw: Post[] = [
   {
+    slug: "why-im-building-knowcomputer",
+    title: "Why I'm Building Know Computer",
+    category: "Thoughts",
+    description:
+      "After Celeste, Payle, Ceilya and Noesia, why I'm building Know Computer, a personal context layer for the AI era, and what it has to get right.",
+    date: "2026-10-09",
+    tags: ["Know Computer", "personal context", "intelligence augmentation", "building in public"],
+    keywords: [
+      "Know Computer",
+      "personal context layer",
+      "AI that remembers",
+      "Mattia Ciuni",
+      "building in public",
+      "intelligence augmentation",
+    ],
+    content: [
+      {
+        type: "p",
+        text: "I'm building Know Computer, a personal context layer for the AI era. This is the honest account of why, after four companies, this is the problem I want to spend the next decades of my life on.",
+      },
+      {
+        type: "p",
+        text: "It started as personal chaos. Building a company means holding too many tools, conversations, decisions and responsibilities at once. I was switching context all day, forgetting why I had decided things, losing useful information in tabs and threads, and rebuilding the pieces of my own work from scratch. I wasn't looking for another productivity app. I wanted my computer to understand what I was doing and help me continue. So I started building a system for myself, and I have been using it to build the company behind it ever since.",
+      },
+      { type: "h2", text: "We have been building computers backwards" },
+      {
+        type: "p",
+        text: "Computers have never been more powerful, and our digital lives have never been more fragmented. We move between browser tabs, chatbots, coding agents, messages, files and applications, and each one stores its own slice of the story. None of them keeps a coherent view of what we are trying to do. The machine knows everything about its own files and nothing about us.",
+      },
+      {
+        type: "p",
+        text: "The cost is small and constant. Ask a tool where you saw something, and it knows only its own index. Ask why you decided something, and no system has the answer, because the decision lived in a thread, a call, and your head. We reconstruct context by hand, over and over. The person has become the integration layer between their own tools, and that is backwards.",
+      },
+      { type: "h2", text: "What the earlier companies taught me" },
+      {
+        type: "p",
+        text: "Before Know I built Celeste, an AI browser. It taught me where context actually lives: in the tabs people keep open for weeks, in the half-finished searches, in the page you were reading when the call came. Context is not a document. It is a trail of intentions.",
+      },
+      {
+        type: "p",
+        text: "Then the payment work. Payle, Ceilya and Noesia were three attempts at financial infrastructure for AI agents, iterations rather than a roadmap I had drawn in advance. [The money layer argument](/thoughts/money-layer-for-ai-agents/) is where the public thinking started. The systems got serious: deterministic authorization, a hash-chained ledger, receipts that survive being questioned. And one limit kept showing up. Agents could act, but they did not know me. The moment my own agent asked for my [credit card](/notes/the-moment-my-ai-agent-asked-for-my-credit-card/) is when the two problems stopped being separate in my head.",
+      },
+      {
+        type: "p",
+        text: "I don't want to rewrite that history as a tidy origin story. It was turns and wrong starts, and the work on payments continues inside Know through Know Layer. What survived is the conviction that an agent acting for a person needs two things: permission, which we had built, and context, which nobody had.",
+      },
+      { type: "h2", text: "What Know Computer is becoming" },
+      {
+        type: "p",
+        text: "Know Computer is a personal context and intelligence layer for computers and AI. The aim is continuous, useful context across a person's files, browser activity, applications, conversations, coding tools and connected services, so personal information becomes retrievable and actionable while the person stays in control of their context, permissions and data.",
+      },
+      {
+        type: "list",
+        items: [
+          "What was I working on yesterday?",
+          "Where did I see that article?",
+          "Why did I make that decision?",
+          "What did I promise that person?",
+          "What was I trying to accomplish before I got interrupted?",
+        ],
+      },
+      {
+        type: "p",
+        text: "Those read like search queries, and they are not. Answering them needs memory that spans tools, permission to read what that memory needs, and a record the owner can inspect and revoke. Deeper down, memory raises [why memory alone is not enough](#why-memory-alone-is-not-enough). And with permissioned agents, context can become action: [Know Layer](https://knowcomputer.com) is the financial action and payments infrastructure inside the Know ecosystem, carrying the earlier payment work forward instead of replacing it.",
+      },
+      {
+        type: "p",
+        text: "I keep two versions of this apart on purpose. What exists today is a system I use daily, in prototype form. It breaks, I fix it, and I notice what it forgets. Part of what I described above is built, and part is the direction we are heading. Anyone can describe a future in adjectives. The only difference I care about is whether the working part keeps growing.",
+      },
+      { type: "h2", text: "Why memory alone is not enough" },
+      {
+        type: "p",
+        text: "Storing everything is a hard drive away. The hard part is memory that earns trust: inspectable, scoped, revocable, with consent as a mechanism instead of a setting. Memory without permission is surveillance, and memory without action is just search. Neither is what I want to live with.",
+      },
+      {
+        type: "p",
+        text: "This is also where the payment work re-enters. Payments are the hardest action a person can delegate, because the mistakes are real. A permission system has to know what you intended and what you allowed, and context is what turns a boundary into a decision an agent can make on your behalf. I wrote out the authorization half in [what a permission system actually is](/thoughts/why-ai-agents-need-permission-systems/#what-a-permission-system-actually-is); the context half is the part the industry is still missing.",
+      },
+      { type: "h2", text: "What making humans superhuman could mean" },
+      {
+        type: "p",
+        text: "I don't use superhuman as an adjective for marketing. I use it as a direction. A person with continuity of memory, real awareness of their commitments, faster learning and better decision support can take on more ambitious work than the same person without those things. That is the whole claim.",
+      },
+      {
+        type: "p",
+        text: "Day to day it looks unglamorous. Fewer moments of re-reading your own history. Fewer promises that evaporate. A draft that starts with yesterday's reasoning instead of a blank page. Superhuman, in the end, is a pile of small recovered hours and fewer dropped threads.",
+      },
+      {
+        type: "p",
+        text: "The ambition behind it is old and good: writing about intelligence augmentation has argued for decades that computers should extend human memory, attention and judgment rather than replace the person doing the thinking. I want to find out what happens when that becomes true in a small, daily, verifiable way. To be precise about what I am not saying: Know does not read your brain, it does not scientifically improve how you think, and today's prototype proves none of the grand version yet. The honest version is more modest. A person whose tools remember the thread makes better decisions than the same person starting from zero, every time the thread is picked back up.",
+      },
+      { type: "h2", text: "Why now" },
+      {
+        type: "p",
+        text: "Models can reason, write, program and use tools now, and that changes what is worth building. It does not solve personal continuity. A stronger model without permissioned access to your context still asks you to rebuild the world in every conversation, which is why the most capable thing on my machine still starts each morning knowing nothing about me. Capability has finally outgrown context, and the bottleneck moved.",
+      },
+      {
+        type: "p",
+        text: "The missing layer is not another chatbot. It is the connection between personal context, useful intelligence and controlled action. I think that connection becomes one of the important problems in computing, and I would rather build it than wait for it.",
+      },
+      { type: "h2", text: "How I intend to build this" },
+      {
+        type: "list",
+        items: [
+          "Build something I personally need, not a market abstraction.",
+          "Use it every day, on real work, where failures are embarrassing.",
+          "Test it against real problems and learn from what breaks.",
+          "Share progress in public, including the parts that do not work.",
+          "Stay willing to change my assumptions, and prefer working systems to impressive demos.",
+        ],
+      },
+      {
+        type: "p",
+        text: "The [Sunday founder newsletter](/newsletter/) is where that happens: what I built, what broke, what I learned, and the decisions behind the company. It is an invitation to watch the work instead of reading about it later, and it is the only pitch I have.",
+      },
+      {
+        type: "p",
+        text: "I'm not trying to build another assistant that talks to you about your day. I'm trying to build a computer that was paying attention.",
+      },
+      {
+        type: "quote",
+        text: "For the last fifty years, we've been teaching humans how to use computers. I want to spend the next fifty building computers that understand humans.",
+      },
+    ],
+  },
+  {
     slug: "why-ai-agents-need-permission-systems",
     title: "Why AI agents need permission systems",
     category: "Thoughts",

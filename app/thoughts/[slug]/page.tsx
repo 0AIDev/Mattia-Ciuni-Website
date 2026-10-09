@@ -254,11 +254,11 @@ export default async function BlogPost({
           <BlockFlow blocks={post.content} />
           {post.slug === "finding-ghassen-the-co-founder-question-answered-in-three-weeks" ? <GhassenLinks /> : null}
           <p className="mt-12 w-full text-text-paragraph">
-            Building the money layer for AI agents at{" "}
+            Building{" "}
             <a href={site.companyUrl} rel="noopener noreferrer" className="article-underline">
-              Noesia
-            </a>
-            . Reply via{" "}
+              Know Computer
+            </a>,{" "}
+            a personal context layer for the AI era. Reply via{" "}
             <a
               href={`mailto:${site.email}`}
               className="article-underline inline-flex items-center gap-1.5"

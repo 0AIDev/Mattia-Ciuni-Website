@@ -1,6 +1,6 @@
 # Notizen | Mattia Ciuni
 
-> Längere, langsamere Texte über KI-Agenten, Zahlungen und dauerhafte Systeme.
+> Längere, langsamere Texte über Kontext, KI und dauerhafte Systeme.
 
 - URL: https://mattiaciuni.com/de/notes
 - Type: Page

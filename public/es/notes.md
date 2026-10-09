@@ -1,6 +1,6 @@
 # Notas | Mattia Ciuni
 
-> Textos más largos sobre agentes de IA, pagos y cómo construir cosas duraderas.
+> Textos más largos sobre contexto, IA y cómo construir cosas duraderas.
 
 - URL: https://mattiaciuni.com/es/notes
 - Type: Page
